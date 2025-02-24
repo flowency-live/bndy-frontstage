@@ -1,7 +1,7 @@
 // src/components/MapView.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Script from "next/script";
 
 export default function MapView() {
@@ -12,21 +12,21 @@ export default function MapView() {
     lng: -0.09,
   });
 
-  // Initialize the map
-  function handleScriptLoad() {
+  // Use useCallback so the function is stable for the useEffect dependency array.
+  const handleScriptLoad = useCallback(() => {
     if (mapRef.current && !map) {
-      const google = (window as any).google;
-      if (!google) return;
-      const newMap = new google.maps.Map(mapRef.current, {
+      // Check if window.google is defined without casting to any.
+      if (typeof window.google === "undefined") return;
+      const newMap = new window.google.maps.Map(mapRef.current, {
         center: userLocation,
         zoom: 10,
         disableDefaultUI: true,
       });
       setMap(newMap);
     }
-  }
+  }, [map, userLocation]);
 
-  // Request user location once on mount
+  // Request user location on mount.
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -41,19 +41,19 @@ export default function MapView() {
     }
   }, []);
 
-  // Re-center the map when userLocation updates
+  // Re-center the map when userLocation changes.
   useEffect(() => {
     if (map) {
       map.setCenter(userLocation);
     }
   }, [userLocation, map]);
 
-  // If the script is already loaded and map is null (e.g., after toggling back), initialize the map.
+  // If the Google Maps script is loaded and map is still null (e.g., after toggling back), initialize it.
   useEffect(() => {
-    if ((window as any).google && mapRef.current && !map) {
+    if (typeof window.google !== "undefined" && mapRef.current && !map) {
       handleScriptLoad();
     }
-  }, [map]);
+  }, [map, handleScriptLoad]);
 
   return (
     <div className="relative w-full h-[600px]">
