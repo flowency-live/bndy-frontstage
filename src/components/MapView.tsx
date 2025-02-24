@@ -1,7 +1,7 @@
 // src/components/MapView.tsx - Updated
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
 // Separate map component to ensure proper loading after API is available
