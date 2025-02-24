@@ -2,38 +2,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import BndyLogo from "@/components/ui/bndylogo";
 import { Sun, Moon, Map as MapIcon, List as ListIcon } from "lucide-react";
+import { useViewToggle } from "@/context/ViewToggleContext";
 
-interface HeaderProps {
-  activeView: "map" | "list";
-  setActiveView: React.Dispatch<React.SetStateAction<"map" | "list">>;
-}
-
-export default function Header({ activeView, setActiveView }: HeaderProps) {
+export default function Header() {
   const [isDark, setIsDark] = useState(false);
+  const pathname = usePathname();
+  const { activeView, setActiveView } = useViewToggle();
 
   // Toggle dark mode by adding/removing the "dark" class on <html>
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
-  // Toggling between map and list view.
+  // Only show the map/list toggle if we are on the home page ("/")
+  const showViewToggle = pathname === "/";
+
   const handleViewToggle = () => {
     setActiveView((prev) => (prev === "map" ? "list" : "map"));
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)] shadow p-4">
+    <header 
+    className="fixed top-3 left-0 right-0 z-50"
+    style={{ 
+      backgroundColor: 'var(--background)',
+      boxShadow: 'none',
+      borderBottom: 'none'
+    }}
+  >
       <div className="relative container mx-auto">
-        {/* Toggles in the top-right corner */}
+        {/* Toggles in top-right corner */}
         <div className="absolute top-0 right-0 mt-2 mr-2 flex items-center space-x-4">
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle */}
           <button
             onClick={() => setIsDark((prev) => !prev)}
             className="flex items-center focus:outline-none"
@@ -44,32 +47,27 @@ export default function Header({ activeView, setActiveView }: HeaderProps) {
               <Moon className="w-5 h-5 text-[var(--foreground)]" />
             )}
           </button>
-
-          {/* Map/List Toggle Icon Button */}
-          <button
-            onClick={handleViewToggle}
-            className="flex items-center focus:outline-none"
-          >
-            {activeView === "map" ? (
-              <ListIcon className="w-5 h-5 text-[var(--foreground)]" />
-            ) : (
-              <MapIcon className="w-5 h-5 text-[var(--foreground)]" />
-            )}
-          </button>
+          {/* Conditionally render the Map/List toggle */}
+          {showViewToggle && (
+            <button onClick={handleViewToggle} className="flex items-center focus:outline-none">
+              {activeView === "map" ? (
+                <ListIcon className="w-5 h-5 text-[var(--foreground)]" />
+              ) : (
+                <MapIcon className="w-5 h-5 text-[var(--foreground)]" />
+              )}
+            </button>
+          )}
         </div>
-
         {/* Centered logo and tagline */}
         <div className="text-center">
           <div className="flex justify-center">
             <BndyLogo />
           </div>
-          <p className="mt-4 text-lg">
+          <p className="mt-1 text-lg">
             Keeping{" "}
-            <span className="font-extrabold text-[var(--primary)]">LIVE</span>{" "}
+            <span className="font-extrabold text-[var(--secondary)]">LIVE</span>{" "}
             music{" "}
-            <span className="font-extrabold text-[var(--secondary)]">
-              ALIVE
-            </span>
+            <span className="font-extrabold text-[var(--primary)]">ALIVE</span>
           </p>
         </div>
       </div>
