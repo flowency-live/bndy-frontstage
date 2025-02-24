@@ -2,20 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================
+   1. Root Variables for Theme Switching
+   ========================================= */
+/* Light Mode (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffffff;           /* Light background */
+  --foreground: #171717;           /* Dark text */
+  --primary: #F97316;              /* Orange-500 */
+  --secondary: #06B6D4;            /* Cyan-500 (electric blue) */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark Mode Overrides */
+.dark {
+  --background: hsl(222, 47%, 11%); /* Dark slate blue */
+  --foreground: hsl(210, 40%, 98%);  /* Near-white text */
+  --primary: #F97316;              /* Orange-500 remains unchanged */
+  --secondary: #06B6D4;            /* Cyan-500 remains unchanged */
 }
 
 body {
+  background-color: var(--background);
   color: var(--foreground);
-  background: var(--background);
+  margin: 0;
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-overflow-scrolling: touch;
 }
