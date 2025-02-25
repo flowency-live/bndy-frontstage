@@ -14,13 +14,14 @@ interface ViewToggleContextType {
 
 const ViewToggleContext = createContext<ViewToggleContextType | undefined>(undefined);
 
+// src/context/ViewToggleContext.tsx
 export function ViewToggleProvider({ children }: { children: ReactNode }) {
-  // View state
+  // View state - Default to map
   const [activeView, setActiveView] = useState<View>("map");
-  
-  // Theme state
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // Default to dark theme
-  
+
+  // Theme state - Default to dark theme
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+
   // Load saved preferences from localStorage on client-side mount
   useEffect(() => {
     // Load view preference
@@ -28,18 +29,18 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
     if (savedView === "map" || savedView === "list") {
       setActiveView(savedView);
     }
-    
+
     // Load theme preference
     const savedTheme = localStorage.getItem("bndy-theme-preference");
     // If no preference is saved, we default to dark (from the initial state)
     // Otherwise we use their saved preference
     const shouldUseDarkMode = savedTheme === null ? true : savedTheme === "dark";
     setIsDarkMode(shouldUseDarkMode);
-    
+
     // Apply the theme to the document
     document.documentElement.classList.toggle("dark", shouldUseDarkMode);
   }, []);
-  
+
   // Function to toggle theme and save preference
   const toggleTheme = () => {
     setIsDarkMode(prev => {
@@ -51,19 +52,19 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
       return newValue;
     });
   };
-  
+
   // Save view preference when it changes
   useEffect(() => {
     localStorage.setItem("bndy-view-preference", activeView);
   }, [activeView]);
-  
+
   return (
-    <ViewToggleContext.Provider 
-      value={{ 
-        activeView, 
-        setActiveView, 
-        isDarkMode, 
-        toggleTheme 
+    <ViewToggleContext.Provider
+      value={{
+        activeView,
+        setActiveView,
+        isDarkMode,
+        toggleTheme
       }}
     >
       {children}

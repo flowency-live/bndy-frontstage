@@ -28,7 +28,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 body {
@@ -142,6 +142,45 @@ main {
 .list-container {
   width: 100%;
   min-height: calc(100vh - 12rem); /* Minimum height considering header and footer */
+}
+
+/* Card styling for light and dark modes */
+.event-card {
+  @apply border rounded-lg p-4 hover:shadow-md transition-shadow;
+  background-color: var(--background);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.dark .event-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Table row styling */
+.event-row {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors;
+}
+
+.event-row td {
+  @apply border-b border-gray-200 dark:border-gray-700;
+}
+
+/* Section headers */
+.section-header {
+  @apply p-3 bg-gray-100 dark:bg-gray-800 cursor-pointer border-b border-gray-200 dark:border-gray-700;
+}
+
+/* Search and filter elements */
+.search-input {
+  @apply p-2 pl-9 pr-8 border rounded-md;
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--foreground);
+}
+
+.dark .search-input {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* =========================================

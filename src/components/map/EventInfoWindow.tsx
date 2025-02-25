@@ -35,21 +35,3 @@ export function createEventInfoContent(props: EventInfoProps, isDark: boolean): 
     </div>
   `;
 }
-
-export function createUserLocationInfoContent(isDark: boolean): string {
-  return `
-    <div style="
-      background-color: ${isDark ? '#1e293b' : 'white'}; 
-      color: ${isDark ? 'white' : 'black'};
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      width: 150px;
-      font-family: Arial, sans-serif;
-    ">
-      <div style="font-weight: bold; margin-bottom: 4px;">
-        Your Location
-      </div>
-    </div>
-  `;
-}

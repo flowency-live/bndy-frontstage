@@ -3,6 +3,9 @@
 
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import Map from "./map/Map";
+import EventFilter from "./filters/EventFilter";
+import { MapViewEventsFilter } from "./filters/MapViewEventsFilter";
+import { useState } from "react";
 
 const renderStatus = (status: Status): React.ReactElement => {
   switch (status) {
@@ -16,15 +19,31 @@ const renderStatus = (status: Status): React.ReactElement => {
 };
 
 export default function MapView() {
+  const [filterType, setFilterType] = useState<'artist' | 'venue' | null>(null);
+  const [filterId, setFilterId] = useState<string | null>(null);
+
+  const handleFilterChange = (type: 'artist' | 'venue' | null, id: string | null) => {
+    setFilterType(type);
+    setFilterId(id);
+  };
+
   return (
     <div className="map-container relative">
+      {/* Search filter above the map */}
+      <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2">
+        <EventFilter onFilterChange={handleFilterChange} showRadiusFilter={false} />
+      </div>
+
       <Wrapper
         apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
         render={renderStatus}
         libraries={["places"]}
       >
-        <Map />
+        <Map filterType={filterType} filterId={filterId} />
       </Wrapper>
+
+      {/* Quick filter button in the bottom right */}
+      <MapViewEventsFilter />
     </div>
   );
 }
