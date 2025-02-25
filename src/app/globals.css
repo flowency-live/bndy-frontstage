@@ -68,6 +68,10 @@ main {
 
 /* Footer styling */
 .footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   height: 28px;
   display: flex;
@@ -75,6 +79,8 @@ main {
   justify-content: center;
   margin: 0;
   padding: 0;
+  background-color: var(--background);
+  z-index: 40;
 }
 
 .footer p {
@@ -87,8 +93,49 @@ main {
 /* Map container specific */
 .map-container {
   width: 100%;
-  height: calc(100vh - 12rem); /* Adjust for header and footer */
+  height: calc(100vh - 116px); /* Header (88px) + Footer (28px) */
+  margin-bottom: 28px; /* Add space for the footer */
   position: relative;
+}
+
+/* Event Info Card Specific */
+/* Add to globals.css */
+.bndy-event-card {
+  --card-bg: var(--background);
+  --card-text: var(--foreground);
+  --card-accent: var(--primary);
+  --card-secondary: var(--secondary);
+  
+  background-color: var(--card-bg);
+  color: var(--card-text);
+  border-left: 4px solid var(--card-accent);
+  font-family: Arial, sans-serif;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  max-width: 250px;
+}
+
+.custom-info-overlay {
+  z-index: 1000; /* Ensure it appears above other elements */
+  pointer-events: auto; /* Allow clicking */
+  user-select: none; /* Prevent text selection */
+}
+
+.bndy-event-card .title {
+  font-weight: bold;
+  color: var(--card-accent);
+  margin-bottom: 4px;
+}
+
+.bndy-event-card .description {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.bndy-event-card .action {
+  font-size: 12px;
+  color: var(--card-secondary);
 }
 
 /* List view specific */

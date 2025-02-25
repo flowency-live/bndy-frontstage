@@ -2,14 +2,15 @@
   "name": "bndylivebeta",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "node server.js",
-  "dev:next": "next dev --turbopack",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint"
-},
+  "scripts": {
+    "dev": "node server.js",
+    "dev:next": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
+    "@googlemaps/markerclusterer": "^2.5.3",
     "@googlemaps/react-wrapper": "^1.1.42",
     "express": "^4.21.2",
     "firebase": "^11.3.1",
