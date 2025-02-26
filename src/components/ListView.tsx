@@ -1,25 +1,29 @@
-// src/components/ListView.tsx
+// src/components/ListView.tsx - Search input section
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useEvents } from "@/context/EventsContext";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, X, MapPin } from "lucide-react";
 import { EventCard } from "./listview/EventCard";
 import { EventRow } from "./listview/EventRow";
+import LocationSelector from "./filters/LocationSelector";
+import { EventSectionHeader } from "./listview/EventSectionHeader";
 
 export default function ListView() {
   const {
-    allEvents,
+    events,
     loading,
     error,
     refreshEvents,
     radius,
-    setRadius
+    setRadius,
+    selectedLocation
   } = useEvents();
 
   const [expandedSections, setExpandedSections] = useState<string[]>(['today']);
   const [groupedEvents, setGroupedEvents] = useState<Record<string, any[]>>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [tempRadius, setTempRadius] = useState(radius);
   const [searchResults, setSearchResults] = useState<{
     type: 'artist' | 'venue' | null;
     id: string | null;
@@ -30,7 +34,19 @@ export default function ListView() {
     name: null
   });
 
-  // Handle search
+  // Sync tempRadius with radius when radius changes from context
+  useEffect(() => {
+    setTempRadius(radius);
+  }, [radius]);
+
+  // Apply radius function
+  const applyRadius = () => {
+    if (tempRadius !== radius) {
+      setRadius(tempRadius);
+    }
+  };
+
+  // Handle search - using direct text matching
   useEffect(() => {
     if (!searchTerm || searchTerm.length < 2) {
       setSearchResults({ type: null, id: null, name: null });
@@ -38,53 +54,76 @@ export default function ListView() {
     }
 
     const term = searchTerm.toLowerCase();
+    console.log(`Searching for: ${term}`);
 
-    // Check if search matches any artist
-    const artistMatch = allEvents.find(event =>
+    // Find ALL events matching the artist name
+    const artistMatches = events.filter(event =>
       event.name.toLowerCase().includes(term)
     );
 
-    // Check if search matches any venue
-    const venueMatch = allEvents.find(event =>
+    // Find ALL events matching the venue name
+    const venueMatches = events.filter(event =>
       event.venueName.toLowerCase().includes(term)
     );
 
-    if (artistMatch) {
+    console.log(`Found ${artistMatches.length} artist matches and ${venueMatches.length} venue matches`);
+
+    // Prioritize artists over venues when both match
+    if (artistMatches.length > 0) {
       setSearchResults({
         type: 'artist',
-        id: artistMatch.id,
-        name: artistMatch.name
+        id: null,
+        name: term
       });
-    } else if (venueMatch) {
+    } else if (venueMatches.length > 0) {
       setSearchResults({
         type: 'venue',
-        id: venueMatch.venueId,
-        name: venueMatch.venueName
+        id: null,
+        name: term
       });
     } else {
       setSearchResults({ type: null, id: null, name: null });
     }
-  }, [searchTerm, allEvents]);
+  }, [searchTerm, events]);
 
-  // Filter events based on search results
+  // Filter events based on search text
   const filteredEvents = useMemo(() => {
-    if (!searchResults.type || !searchResults.id) {
-      return allEvents;
+    // If there's a search term but no results were found, return empty array
+    if (searchTerm && searchTerm.length >= 2 && !searchResults.type) {
+      return [];
+    }
+    
+    if (!searchResults.type || !searchResults.name) {
+      return events;
     }
 
-    return allEvents.filter(event => {
+    console.log(`Filtering events by ${searchResults.type}: "${searchResults.name}"`);
+
+    return events.filter(event => {
       if (searchResults.type === 'artist') {
         return event.name.toLowerCase().includes(searchResults.name?.toLowerCase() || '');
       } else if (searchResults.type === 'venue') {
         return event.venueName.toLowerCase().includes(searchResults.name?.toLowerCase() || '');
       }
-      return true;
+      return false;
     });
-  }, [allEvents, searchResults]);
+  }, [events, searchResults, searchTerm]);
 
   // Group events by date category
   useEffect(() => {
-    if (!filteredEvents.length) return;
+    console.log(`Grouping ${filteredEvents.length} filtered events by date category`);
+    
+    if (!filteredEvents.length) {
+      setGroupedEvents({
+        'today': [],
+        'tomorrow': [],
+        'thisWeek': [],
+        'nextWeek': [],
+        'thisMonth': [],
+        'future': []
+      });
+      return;
+    }
 
     const grouped: Record<string, any[]> = {
       'today': [],
@@ -134,6 +173,7 @@ export default function ListView() {
       }
     });
 
+    console.log("Grouped events:", Object.keys(grouped).map(key => `${key}: ${grouped[key].length}`));
     setGroupedEvents(grouped);
   }, [filteredEvents]);
 
@@ -143,6 +183,12 @@ export default function ListView() {
         ? prev.filter(s => s !== section)
         : [...prev, section]
     );
+  };
+
+  // Increase radius helper function
+  const increaseRadius = () => {
+    const newRadius = Math.min(radius + 5, 50);
+    setRadius(newRadius);
   };
 
   // Format section titles with dates
@@ -209,57 +255,96 @@ export default function ListView() {
     0
   );
 
+  // Determine if we're showing "no results" due to search filtering
+  const noSearchResults = searchTerm.length >= 2 && totalEvents === 0 && events.length > 0;
+
   return (
     <div className="flex flex-col h-[calc(100vh-116px)] overflow-hidden">
-  <div className="p-2 sm:p-4">
-        {/* Search and filter controls */}
-        <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center">
+      <div className="p-2 sm:p-4">
+        {/* Search and filter controls - now location and radius are always on same line */}
+        <div className="mb-4">
           {/* Search input */}
-          <div className="relative flex-grow max-w-md">
+          <div className="relative flex-grow mb-2">
             <input
               type="text"
               placeholder="Search artist or venue..."
-              className="w-full p-2 pl-9 border rounded-md bg-white dark:bg-gray-800 text-[var(--foreground)]"
+              className="w-full p-2 pl-9 pr-8 border-2 border-gray-400 dark:border-gray-700 rounded-md bg-[var(--background)] text-[var(--foreground)]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute left-2 top-2.5 w-5 h-5 text-gray-400" />
 
-            {/* Show search result indicator if we have a match */}
-            {searchResults.type && searchResults.name && (
-              <div className={`absolute right-2 top-2.5 px-2 py-0.5 rounded text-xs text-white ${searchResults.type === 'artist' ? 'bg-[var(--primary)]' : 'bg-[var(--secondary)]'
-                }`}>
-                {searchResults.type === 'artist' ? 'Artist' : 'Venue'}
-              </div>
+            {/* Clear button */}
+            {searchTerm && (
+              <button
+                className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                onClick={() => setSearchTerm('')}
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
+
           </div>
 
-          {/* Radius filter */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm whitespace-nowrap">Radius: {radius} miles</span>
-            <input
-              type="range"
-              min="5"
-              max="50"
-              step="5"
-              value={radius}
-              onChange={(e) => setRadius(parseInt(e.target.value))}
-              className="w-32"
-            />
+          {/* Location selector and radius on same line */}
+          <div className="flex flex-row items-center gap-2">
+            <LocationSelector />
+            
+            <div className="flex flex-1 items-center space-x-2">
+              <span className="text-sm whitespace-nowrap">Radius: {tempRadius} miles</span>
+              <input
+                type="range"
+                min="5"
+                max="50"
+                step="5"
+                value={tempRadius}
+                onChange={(e) => setTempRadius(parseInt(e.target.value))}
+                onMouseUp={applyRadius}
+                onTouchEnd={applyRadius}
+                className="flex-1"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto px-2 sm:px-4 pb-20">
-        {totalEvents === 0 ? (
+        {noSearchResults ? (
+          <div className="text-center py-10">
+            <p className="text-lg text-[var(--foreground)]">No matches found for "{searchTerm}"</p>
+            <button
+              onClick={() => setSearchTerm('')}
+              className="mt-4 px-4 py-2 bg-[var(--primary)] text-white rounded hover:opacity-90"
+            >
+              Clear Search
+            </button>
+          </div>
+        ) : totalEvents === 0 ? (
           <div className="text-center py-10">
             <p className="text-lg text-[var(--foreground)]">No upcoming events found.</p>
-            <p className="text-[var(--secondary)]">
-              {searchTerm ? "Try adjusting your search terms." :
-                radius < 50 ? "Try increasing your search radius." :
-                  "Check back soon for new events!"}
-            </p>
+            <div className="flex flex-col items-center mt-4">
+              <div className="inline-flex items-center mb-2 text-[var(--secondary)]">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span>{selectedLocation?.name || 'Current location'}</span>
+                <span className="ml-2">({radius} mile radius)</span>
+              </div>
+              <p className="text-[var(--foreground)] mb-4">
+                {searchTerm 
+                  ? "Try adjusting your search terms or increasing your search radius."
+                  : radius < 50 
+                    ? "Try increasing your search radius to find more events." 
+                    : "Check back soon for new events!"}
+              </p>
+              {radius < 50 && (
+                <button
+                  onClick={increaseRadius}
+                  className="px-4 py-2 bg-[var(--primary)] text-white rounded hover:opacity-90"
+                >
+                  Increase to {radius + 5} miles
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -271,19 +356,13 @@ export default function ListView() {
               const sectionTitle = formatSectionTitle(section, events.length);
 
               return (
-                <div key={section} className="border rounded-lg overflow-hidden">
+                <div key={section} className="border rounded-lg overflow-hidden border-gray-300 dark:border-gray-700">
                   {/* Section header */}
-                  <div
-                    className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-800 cursor-pointer"
+                  <EventSectionHeader
+                    title={sectionTitle}
+                    isExpanded={isExpanded}
                     onClick={() => toggleSection(section)}
-                  >
-                    <h3 className="font-medium text-[var(--foreground)]">{sectionTitle}</h3>
-                    {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-[var(--foreground)]" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-[var(--foreground)]" />
-                    )}
-                  </div>
+                  />
 
                   {/* Events list or cards depending on section */}
                   {isExpanded && (
@@ -314,7 +393,7 @@ export default function ListView() {
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                          <tbody className="bg-[var(--background)] divide-y divide-gray-200 dark:divide-gray-700">
                             {events.map((event) => (
                               <EventRow key={event.id} event={event} showFullDate={section !== 'today' && section !== 'tomorrow'} />
                             ))}

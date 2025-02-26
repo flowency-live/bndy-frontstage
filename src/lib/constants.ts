@@ -30,3 +30,19 @@ export const DISTANCE_OPTIONS = [
   { value: 25, label: "25mile radius" },
   { value: 50, label: "50mile radius" }
 ] as const;
+
+export const CITY_LOCATIONS = {
+  STOKE_ON_TRENT: { 
+    lat: 53.0027, 
+    lng: -2.1794, 
+    name: "Stoke-on-Trent" 
+  },
+  STOCKPORT: { 
+    lat: 53.4106, 
+    lng: -2.1584, 
+    name: "Stockport" 
+  }
+};
+
+// Default location for the app
+export const DEFAULT_LOCATION = CITY_LOCATIONS.STOKE_ON_TRENT;

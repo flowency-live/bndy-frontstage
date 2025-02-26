@@ -19,12 +19,14 @@ const renderStatus = (status: Status): React.ReactElement => {
 };
 
 export default function MapView() {
-  const [filterType, setFilterType] = useState<'artist' | 'venue' | null>(null);
+  // Update the state type to include 'nomatch'
+  const [filterType, setFilterType] = useState<'artist' | 'venue' | 'nomatch' | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
 
-  const handleFilterChange = (type: 'artist' | 'venue' | null, id: string | null) => {
+  const handleFilterChange = (type: 'artist' | 'venue' | 'nomatch' | null, text: string | null) => {
+    console.log(`Setting filter: ${type} - "${text}"`);
     setFilterType(type);
-    setFilterId(id);
+    setFilterId(text);
   };
 
   return (

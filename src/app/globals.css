@@ -11,6 +11,8 @@
   --foreground: #171717;           /* Dark text */
   --primary: #F97316;              /* Orange-500 */
   --secondary: #06B6D4;            /* Cyan-500 (electric blue) */
+  --border-light: rgba(0, 0, 0, 0.12);
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* Dark Mode Overrides */
@@ -19,6 +21,8 @@
   --foreground: hsl(210, 40%, 98%);  /* Near-white text */
   --primary: #F97316;              /* Orange-500 remains unchanged */
   --secondary: #06B6D4;            /* Cyan-500 remains unchanged */
+  --border-light: rgba(255, 255, 255, 0.1);
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* =========================================
@@ -62,8 +66,8 @@ main {
   right: 0;
   z-index: 50;
   background-color: var(--background);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-light);
 }
 
 /* Footer styling */
@@ -81,6 +85,8 @@ main {
   padding: 0;
   background-color: var(--background);
   z-index: 40;
+  border-top: 1px solid var(--border-light);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .footer p {
@@ -88,6 +94,7 @@ main {
   padding: 0;
   width: 100%;
   text-align: center;
+  color: var(--foreground);
 }
 
 /* Map container specific */
@@ -98,8 +105,38 @@ main {
   position: relative;
 }
 
+/* Search filter container - improved styling for light mode */
+.map-container .search-filter-container {
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-light);
+  padding: 10px;
+  z-index: 10;
+}
+
+/* Improved search input styling */
+.search-input {
+  @apply p-2 pl-9 pr-8 border-2 rounded-md;
+  border-color: var(--border-light);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark .search-input {
+  border-color: var(--border-light);
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--foreground);
+}
+
+/* List view search input - theme aware */
+.list-search-input {
+  @apply w-full p-2 pl-9 border-2 rounded-md;
+  border-color: var(--border-light);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
 /* Event Info Card Specific */
-/* Add to globals.css */
 .bndy-event-card {
   --card-bg: var(--background);
   --card-text: var(--foreground);
@@ -148,39 +185,63 @@ main {
 .event-card {
   @apply border rounded-lg p-4 hover:shadow-md transition-shadow;
   background-color: var(--background);
-  border-color: rgba(0, 0, 0, 0.12);
+  border-color: var(--border-light);
+  color: var(--foreground);
 }
 
 .dark .event-card {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-light);
   background-color: rgba(255, 255, 255, 0.03);
+  color: var(--foreground);
 }
 
 /* Table row styling */
 .event-row {
-  @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors;
+  @apply hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors;
 }
 
 .event-row td {
   @apply border-b border-gray-200 dark:border-gray-700;
+  color: var(--foreground);
 }
 
 /* Section headers */
 .section-header {
-  @apply p-3 bg-gray-100 dark:bg-gray-800 cursor-pointer border-b border-gray-200 dark:border-gray-700;
+  @apply p-3 bg-gray-100 dark:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600;
+  color: var(--foreground);
 }
 
 /* Search and filter elements */
 .search-input {
-  @apply p-2 pl-9 pr-8 border rounded-md;
-  border-color: rgba(0, 0, 0, 0.2);
-  background-color: rgba(255, 255, 255, 0.9);
+  @apply p-2 pl-9 pr-8 border-2 rounded-md;
+  border-color: var(--border-light);
+  background-color: var(--background);
   color: var(--foreground);
 }
 
 .dark .search-input {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-light);
   background-color: rgba(0, 0, 0, 0.2);
+  color: var(--foreground);
+}
+
+/* Table styling for dark mode */
+.dark thead {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark tbody {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark th {
+  color: var(--foreground);
+}
+
+.dark td {
+  color: var(--foreground);
 }
 
 /* =========================================
@@ -230,4 +291,44 @@ main {
 
 .hidden {
   display: none;
+}
+
+/* =========================================
+   6. Dark Mode Specifics
+   ========================================= */
+.dark .event-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .section-header {
+  background-color: rgba(30, 41, 59, 0.8);
+}
+
+.dark .event-card {
+  background-color: rgba(30, 41, 59, 0.8);
+}
+
+.dark thead tr {
+  background-color: rgba(30, 41, 59, 1);
+}
+
+.dark tbody tr {
+  background-color: rgba(30, 41, 59, 0.6);
+}
+
+/* Location selector styling */
+.location-selector {
+  @apply relative;
+}
+
+.location-dropdown {
+  @apply absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-md z-50 min-w-[200px];
+}
+
+.location-option {
+  @apply w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300;
+}
+
+.location-selected {
+  @apply text-[var(--primary)] font-medium;
 }

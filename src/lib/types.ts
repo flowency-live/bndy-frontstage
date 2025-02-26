@@ -1,4 +1,4 @@
-// src/lib/types.ts
+// src/lib/types.ts - Added postcode field
 
 // =========================================
 // CURRENT ACTIVE TYPES - USED IN APP
@@ -50,6 +50,7 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
   isOpenMic?: boolean;
+  postcode?: string; // Added postcode field for events
 }
 
 // Artist Types

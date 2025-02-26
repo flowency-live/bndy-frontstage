@@ -38,9 +38,9 @@ export const createEventMarker = () => {
   export const createUserLocationMarker = () => {
     return {
       path: google.maps.SymbolPath.CIRCLE,
-      fillColor: "#06B6D4", // Cyan-500
+      fillColor: "#ffd7b5",
       fillOpacity: 1,
-      strokeColor: "#F97316", // Orange-500
+      strokeColor: "#D3D3D3",
       strokeWeight: 3,
       scale: 8
     };

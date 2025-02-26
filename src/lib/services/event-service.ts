@@ -1,5 +1,4 @@
-// src/lib/services/event-service.ts - Updated for current use
-
+// src/lib/services/event-service.ts - Updated for radius filtering
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/config/firebase';
 import { COLLECTIONS } from '@/lib/constants';
@@ -7,15 +6,22 @@ import { calculateDistance } from '@/lib/utils/geo';
 import type { Event } from '@/lib/types';
 
 /**
- * Fetches events from Firestore with efficient loading
+ * Fetches events from Firestore with efficient loading and accurate radius filtering
  */
 export async function getEvents(
   userLocation: google.maps.LatLngLiteral | null,
-  radius: number = 25,
+  radius: number = 5,
   dateStart: Date = new Date(),
   maxEvents: number = 100
 ): Promise<Event[]> {
   try {
+    console.log(`Fetching events with radius: ${radius} miles from location:`, userLocation);
+    
+    if (!userLocation) {
+      console.warn("No location provided for radius filtering, using default");
+      return [];
+    }
+    
     // Create query - order by date, filter to future events
     const eventsRef = collection(db, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
@@ -36,12 +42,18 @@ export async function getEvents(
         ...data,
       } as Event;
     });
+    
+    console.log(`Retrieved ${events.length} events from database`);
 
     // Apply distance filter if we have user location
     if (userLocation) {
-      events = events.filter(event => {
-        // Skip filtering if event has no location
-        if (!event.location) return true;
+      console.log(`Filtering events by ${radius} mile radius`);
+      
+      // First, calculate distances for all events
+      const eventsWithDistance = events.map(event => {
+        if (!event.location || !event.location.lat || !event.location.lng) {
+          return { ...event, distance: null };
+        }
         
         const distance = calculateDistance(
           userLocation.lat,
@@ -50,8 +62,31 @@ export async function getEvents(
           event.location.lng
         );
         
-        return distance <= radius;
+        return { ...event, distance };
       });
+      
+      // For debugging: log some distance calculations
+      eventsWithDistance.slice(0, 5).forEach(event => {
+        console.log(
+          `Event: ${event.name} at ${event.venueName} - Distance: ${
+            event.distance !== null ? `${event.distance.toFixed(1)} miles` : 'No location'
+          }`
+        );
+      });
+      
+      // Apply radius filter
+      events = eventsWithDistance.filter(event => {
+        // Skip events with no location
+        if (!event.location) return false;
+        
+        // Skip events with invalid location
+        if (!event.distance) return false;
+        
+        // Include only events within radius
+        return event.distance <= radius;
+      });
+      
+      console.log(`After radius filtering: ${events.length} events within ${radius} miles`);
     }
 
     return events;
@@ -60,7 +95,6 @@ export async function getEvents(
     throw error;
   }
 }
-
 // Add a new function to get all events without distance filtering
 export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[]> {
   try {
