@@ -16,7 +16,7 @@ export function EventRow({
   )}`;
 
   return (
-    <tr className="event-row hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <>
       <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-[var(--foreground)] border-b border-gray-200 dark:border-gray-700">
         {showFullDate ? (
           <div>
@@ -56,6 +56,6 @@ export function EventRow({
           <span className="text-xs font-medium text-[var(--secondary)]">£ree</span>
         )}
       </td>
-    </tr>
+    </>
   );
 }

@@ -31,18 +31,15 @@ export function MapViewEventsFilter() {
 
   // Add detailed debugging
   useEffect(() => {
-    console.log("MapViewEventsFilter mounted with selectedFilter:", selectedFilter);
     handleFilterSelect(selectedFilter);
   }, []);
   
   const handleFilterSelect = (filter: string) => {
-    console.log(`Selected filter: ${filter}`);
     // Update the state first
     setSelectedFilter(filter);
     
     // Get date range
     const { startDate, endDate } = getDateRangeForFilter(filter);
-    console.log(`Date range: ${startDate} to ${endDate}`);
     
     // IMPORTANT: Use the filter parameter here, not the selectedFilter state
     // as state updates are asynchronous
@@ -52,7 +49,7 @@ export function MapViewEventsFilter() {
   
   // Convert date range to context's expected format
   const handleFilterChange = (filter: string, startDate: string, endDate: string) => {
-    console.log(`Setting date range for: ${filter}`);
+
     // Map the filter values to the format expected by EventsContext
     const filterMap: Record<string, string> = {
       "today": "today",
@@ -63,7 +60,6 @@ export function MapViewEventsFilter() {
     };
     
     const mappedFilter = filterMap[filter] || "today";
-    console.log(`Mapped filter: ${mappedFilter}`);
     
     // Set the date range in the context
     setDateRange(mappedFilter);

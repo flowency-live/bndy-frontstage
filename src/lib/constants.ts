@@ -5,10 +5,10 @@ export const GENRES = [
 ] as const;
 
 export const COLLECTIONS = {
-  BANDS: 'bf_bands',
   EVENTS: 'bf_events',
   VENUES: 'bf_venues',
-  ARTISTS: 'bf_artists'
+  ARTISTS: 'bf_artists',
+  USERS: 'bf_users'
 } as const;
 
 // Date range options for list view

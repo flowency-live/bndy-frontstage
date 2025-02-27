@@ -43,7 +43,6 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   
   // Get user location - only once when component mounts
   useEffect(() => {
-    console.log("Requesting user location...");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -52,12 +51,10 @@ export function EventsProvider({ children }: { children: ReactNode }) {
             lng: position.coords.longitude,
             name: "Current Location"
           };
-          console.log("User location obtained:", userLoc);
           setUserLocation(userLoc);
           
           // Only set selected location if we haven't done it yet
           if (!initialLocationSet) {
-            console.log("Setting initial location to user location");
             setSelectedLocation(userLoc);
             setInitialLocationSet(true);
             // Load events with the user's location
@@ -66,10 +63,8 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         },
         (error) => {
           // Default to Stoke-on-Trent if location permission denied
-          console.log("Geolocation error, using default location:", error.message);
           // If we haven't set location yet, use the default
           if (!initialLocationSet) {
-            console.log("Setting initial location to default (Stoke-on-Trent)");
             setInitialLocationSet(true);
             // Keep using the default location that was set in useState
             loadEvents(DEFAULT_LOCATION, radius);
@@ -78,7 +73,6 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       );
     } else {
       // Fallback for browsers without geolocation
-      console.log("Geolocation not available, using default location");
       if (!initialLocationSet) {
         setInitialLocationSet(true);
         loadEvents(DEFAULT_LOCATION, radius);
@@ -88,14 +82,12 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   
   // Function to manually set selected location and load events
   const handleSetSelectedLocation = (location: google.maps.LatLngLiteral & { name?: string }) => {
-    console.log(`Setting location to: ${location.name || 'Unknown'}`);
     setSelectedLocation(location);
     loadEvents(location, radius);
   };
   
   // Function to manually set radius and load events
   const handleSetRadius = (newRadius: number) => {
-    console.log(`Setting radius to: ${newRadius} miles`);
     setRadius(newRadius);
     // Make sure we're actually loading events with the new radius
     loadEvents(selectedLocation, newRadius);
@@ -106,8 +98,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     location: google.maps.LatLngLiteral & { name?: string } = selectedLocation, 
     rad: number = radius
   ) => {
-    console.log(`Loading events with radius: ${rad} miles from ${location.name || 'unknown location'}`);
-    
+  
     setLoading(true);
     try {
       const [filteredEventsData, allEventsData] = await Promise.all([
@@ -116,9 +107,6 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         // Get all events for map view (no radius filtering)
         getAllEvents()
       ]);
-      
-      console.log(`Retrieved ${filteredEventsData.length} events within ${rad} miles of ${location.name || 'unknown location'}`);
-      console.log(`Retrieved ${allEventsData.length} total events for map view`);
       
       setEvents(filteredEventsData);
       setAllEvents(allEventsData);

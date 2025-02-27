@@ -1,4 +1,4 @@
-// src/components/ListView.tsx - Search input section
+// src/components/ListView.tsx - Update to include AddEventButton
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -7,7 +7,10 @@ import { ChevronDown, ChevronRight, Search, X, MapPin } from "lucide-react";
 import { EventCard } from "./listview/EventCard";
 import { EventRow } from "./listview/EventRow";
 import LocationSelector from "./filters/LocationSelector";
+import EventInfoOverlay from "./overlays/EventInfoOverlay";
 import { EventSectionHeader } from "./listview/EventSectionHeader";
+import { Event } from "@/lib/types";
+import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
   const {
@@ -33,6 +36,9 @@ export default function ListView() {
     id: null,
     name: null
   });
+  // Add state for the selected event and overlay visibility
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventOverlay, setShowEventOverlay] = useState(false);
 
   // Sync tempRadius with radius when radius changes from context
   useEffect(() => {
@@ -54,7 +60,6 @@ export default function ListView() {
     }
 
     const term = searchTerm.toLowerCase();
-    console.log(`Searching for: ${term}`);
 
     // Find ALL events matching the artist name
     const artistMatches = events.filter(event =>
@@ -65,8 +70,6 @@ export default function ListView() {
     const venueMatches = events.filter(event =>
       event.venueName.toLowerCase().includes(term)
     );
-
-    console.log(`Found ${artistMatches.length} artist matches and ${venueMatches.length} venue matches`);
 
     // Prioritize artists over venues when both match
     if (artistMatches.length > 0) {
@@ -92,12 +95,10 @@ export default function ListView() {
     if (searchTerm && searchTerm.length >= 2 && !searchResults.type) {
       return [];
     }
-    
+
     if (!searchResults.type || !searchResults.name) {
       return events;
     }
-
-    console.log(`Filtering events by ${searchResults.type}: "${searchResults.name}"`);
 
     return events.filter(event => {
       if (searchResults.type === 'artist') {
@@ -111,8 +112,7 @@ export default function ListView() {
 
   // Group events by date category
   useEffect(() => {
-    console.log(`Grouping ${filteredEvents.length} filtered events by date category`);
-    
+
     if (!filteredEvents.length) {
       setGroupedEvents({
         'today': [],
@@ -173,7 +173,6 @@ export default function ListView() {
       }
     });
 
-    console.log("Grouped events:", Object.keys(grouped).map(key => `${key}: ${grouped[key].length}`));
     setGroupedEvents(grouped);
   }, [filteredEvents]);
 
@@ -183,6 +182,12 @@ export default function ListView() {
         ? prev.filter(s => s !== section)
         : [...prev, section]
     );
+  };
+
+  // Function to handle event click
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventOverlay(true);
   };
 
   // Increase radius helper function
@@ -261,14 +266,14 @@ export default function ListView() {
   return (
     <div className="flex flex-col h-[calc(100vh-116px)] overflow-hidden">
       <div className="p-2 sm:p-4">
-        {/* Search and filter controls - now location and radius are always on same line */}
+        {/* Search and filter controls - location and radius always on same line */}
         <div className="mb-4">
           {/* Search input */}
           <div className="relative flex-grow mb-2">
             <input
               type="text"
               placeholder="Search artist or venue..."
-              className="w-full p-2 pl-9 pr-8 border-2 border-gray-400 dark:border-gray-700 rounded-md bg-[var(--background)] text-[var(--foreground)]"
+              className="w-full p-2 pl-9 pr-8 border-2 border-gray-400 dark:border-gray-700 rounded-md bg-white/90 dark:bg-black/20 backdrop-blur-sm text-gray-800 dark:text-gray-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -283,13 +288,12 @@ export default function ListView() {
                 <X className="w-4 h-4" />
               </button>
             )}
-
           </div>
 
           {/* Location selector and radius on same line */}
           <div className="flex flex-row items-center gap-2">
             <LocationSelector />
-            
+
             <div className="flex flex-1 items-center space-x-2">
               <span className="text-sm whitespace-nowrap">Radius: {tempRadius} miles</span>
               <input
@@ -330,10 +334,10 @@ export default function ListView() {
                 <span className="ml-2">({radius} mile radius)</span>
               </div>
               <p className="text-[var(--foreground)] mb-4">
-                {searchTerm 
+                {searchTerm
                   ? "Try adjusting your search terms or increasing your search radius."
-                  : radius < 50 
-                    ? "Try increasing your search radius to find more events." 
+                  : radius < 50
+                    ? "Try increasing your search radius to find more events."
                     : "Check back soon for new events!"}
               </p>
               {radius < 50 && (
@@ -370,7 +374,12 @@ export default function ListView() {
                       // Card view for today's events
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                         {events.map((event) => (
-                          <EventCard key={event.id} event={event} />
+                          <div
+                            key={event.id}
+                            onClick={() => handleEventClick(event)}
+                          >
+                            <EventCard event={event} />
+                          </div>
                         ))}
                       </div>
                     ) : (
@@ -395,7 +404,13 @@ export default function ListView() {
                           </thead>
                           <tbody className="bg-[var(--background)] divide-y divide-gray-200 dark:divide-gray-700">
                             {events.map((event) => (
-                              <EventRow key={event.id} event={event} showFullDate={section !== 'today' && section !== 'tomorrow'} />
+                              <tr
+                                key={event.id}
+                                className="cursor-pointer event-row hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                onClick={() => handleEventClick(event)}
+                              >
+                                <EventRow event={event} showFullDate={section !== 'today' && section !== 'tomorrow'} />
+                              </tr>
                             ))}
                           </tbody>
                         </table>
@@ -408,6 +423,22 @@ export default function ListView() {
           </div>
         )}
       </div>
+
+      {/* Add Event Button */}
+      <AddEventButton />
+
+      {/* Event Info Overlay */}
+      {selectedEvent && (
+        <EventInfoOverlay
+          event={selectedEvent}
+          isOpen={showEventOverlay}
+          onClose={() => {
+            setShowEventOverlay(false);
+            setSelectedEvent(null);
+          }}
+          position="list"
+        />
+      )}
     </div>
   );
 }

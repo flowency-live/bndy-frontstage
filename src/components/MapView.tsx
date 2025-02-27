@@ -1,11 +1,12 @@
-// src/components/MapView.tsx
+// src/components/MapView.tsx - Updated to include AddEventButton
 "use client";
 
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import Map from "./map/Map";
 import EventFilter from "./filters/EventFilter";
 import { MapViewEventsFilter } from "./filters/MapViewEventsFilter";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { AddEventButton } from "./events/AddEventButton";
 
 const renderStatus = (status: Status): React.ReactElement => {
   switch (status) {
@@ -19,14 +20,17 @@ const renderStatus = (status: Status): React.ReactElement => {
 };
 
 export default function MapView() {
-  // Update the state type to include 'nomatch'
   const [filterType, setFilterType] = useState<'artist' | 'venue' | 'nomatch' | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
 
   const handleFilterChange = (type: 'artist' | 'venue' | 'nomatch' | null, text: string | null) => {
-    console.log(`Setting filter: ${type} - "${text}"`);
     setFilterType(type);
     setFilterId(text);
+  };
+
+  const handleMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
   };
 
   return (
@@ -41,11 +45,17 @@ export default function MapView() {
         render={renderStatus}
         libraries={["places"]}
       >
-        <Map filterType={filterType} filterId={filterId} />
+        <Map 
+          filterType={filterType} 
+          filterId={filterId} 
+        />
       </Wrapper>
 
-      {/* Quick filter button in the bottom right */}
+      {/* Quick filter button in the bottom left */}
       <MapViewEventsFilter />
+      
+      {/* Add Event button in the bottom right - conditionally rendered based on permissions */}
+      <AddEventButton map={mapRef.current} />
     </div>
   );
 }

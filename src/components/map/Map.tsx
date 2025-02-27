@@ -1,4 +1,4 @@
-// src/components/Map/Map.tsx - Fixed search with no matches
+// src/components/Map/Map.tsx - Updated with EventInfoOverlay
 "use client";
 
 import { useRef, useEffect, useState } from "react";
@@ -8,10 +8,11 @@ import { useEvents } from "@/context/EventsContext";
 import { mapStyles } from "./MapStyles";
 import { CustomInfoOverlay } from './CustomInfoOverlay';
 import { createEnhancedEventMarker, createUserLocationMarker } from "./markerUtils";
-import { createEventInfoContent } from "./EventInfoWindow";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
 import { isDateInRange, DateRangeFilter } from '@/lib/utils/date-filter-utils';
 import { DEFAULT_CENTER } from "./sampleData";
+import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
+import { Event } from "@/lib/types";
 
 export default function Map({
   filterType,
@@ -29,6 +30,10 @@ export default function Map({
   const overlaysRef = useRef<CustomInfoOverlay[]>([]);
   const clustererRef = useRef<MarkerClusterer | null>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
+
+  // Add state for the selected event and modern overlay
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventOverlay, setShowEventOverlay] = useState(false);
 
   const { isDarkMode } = useViewToggle();
   const {
@@ -108,15 +113,10 @@ export default function Map({
 
   // Use allEvents instead of filteredEvents to show all on map regardless of distance
   if (!allEvents.length) {
-    console.log("No events to display on map");
     return;
   }
 
-  console.log(`Total events before filtering: ${allEvents.length}`);
-  console.log(`Current date filter: ${dateRange}`);
-  console.log(`Current filter: ${filterType} - "${filterId}"`);
-
-  // Updated filtering logic - KEY CHANGE: Handle 'nomatch' filterType
+  // Updated filtering logic for Map.tsx to correctly handle text-based search
   const dateFilteredEvents = allEvents.filter(event => {
     const eventDate = new Date(event.date);
     
@@ -148,8 +148,6 @@ export default function Map({
     return filterType === null;
   });
 
-  console.log(`Displaying ${dateFilteredEvents.length} events on map after filtering`);
-
   // Check if we need to center on a venue
   let shouldCenterOnVenue = false;
   let venueToCenter = null;
@@ -169,7 +167,6 @@ export default function Map({
   dateFilteredEvents.forEach((event) => {
     // Skip events with no location
     if (!event.location || !event.location.lat || !event.location.lng) {
-      console.log(`Skipping event without location: ${event.name}`);
       return;
     }
 
@@ -182,35 +179,47 @@ export default function Map({
 
     markers.push(marker);
 
-    // Format event details
-    const eventDate = formatEventDate(new Date(event.date));
-    const eventTime = formatTime(event.startTime);
-
-    // Use the imported function to create themed content
-    const content = createEventInfoContent(
-      {
-        title: event.name,
-        description: `${event.venueName} - ${eventDate} at ${eventTime}`
-      },
-      isDarkMode
-    );
-
-    const overlay = new CustomInfoOverlay(event.location, content, mapInstance);
-    overlays.push(overlay);
-
-    // Add click event handler
+    // Add click event handler to show the modern EventInfoOverlay instead of the old overlay
     marker.addListener("click", () => {
-      // Close all open overlays
-      overlays.forEach(o => o.hide());
-
-      // Open this overlay
-      overlay.show();
+      // Center the map on the marker with offset
+      if (mapInstance) {
+        // Save original center for animation
+        const markerPosition = marker.getPosition();
+        
+        // Apply vertical offset (adjust this value as needed)
+        const verticalOffset = 150; 
+        
+        // Use the projection to adjust the center point
+        const projection = mapInstance.getProjection();
+        if (projection && markerPosition) {
+          const point = projection.fromLatLngToPoint(markerPosition);
+          if (point) {
+            // Adjust point with offset (moving down in pixels means we need to decrease latitude)
+            point.y += verticalOffset / Math.pow(2, mapInstance.getZoom() || 0);
+            
+            // Convert back to LatLng
+            const offsetLatLng = projection.fromPointToLatLng(point);
+            if (offsetLatLng) {
+              // Pan to the adjusted position
+              mapInstance.panTo(offsetLatLng);
+            }
+          }
+        } else {
+          // Fallback if projection isn't ready
+          if (markerPosition) {
+            mapInstance.panTo(markerPosition);
+          }
+        }
+      }
+      
+      // Then show the event overlay
+      setSelectedEvent(event);
+      setShowEventOverlay(true);
     });
   });
 
-  // Save references to the current markers and overlays
+  // Save references to the current markers
   markersRef.current = markers;
-  overlaysRef.current = overlays;
 
   // Create clusterer AFTER creating all markers
   if (markers.length > 0) {
@@ -252,14 +261,14 @@ export default function Map({
 
   // If we should center on a venue, do it now
   if (shouldCenterOnVenue && venueToCenter && venueToCenter.location) {
-    console.log(`Centering map on venue: ${venueToCenter.venueName}`);
     mapInstance.setCenter(venueToCenter.location);
     mapInstance.setZoom(15); // Zoom in closer to the venue
   }
 
   // Close overlays when clicking elsewhere on the map
   mapInstance.addListener("click", () => {
-    overlays.forEach(overlay => overlay.hide());
+    setShowEventOverlay(false);
+    setSelectedEvent(null);
   });
 
   // Cleanup function for when component unmounts
@@ -305,6 +314,19 @@ export default function Map({
         <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm">
           No matches found for "{filterId}"
         </div>
+      )}
+      
+      {/* Event Info Overlay */}
+      {selectedEvent && (
+        <EventInfoOverlay
+          event={selectedEvent}
+          isOpen={showEventOverlay}
+          onClose={() => {
+            setShowEventOverlay(false);
+            setSelectedEvent(null);
+          }}
+          position="map"
+        />
       )}
     </>
   );

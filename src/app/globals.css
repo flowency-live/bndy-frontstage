@@ -10,9 +10,34 @@
   --background: #ffffff;           /* Light background */
   --foreground: #171717;           /* Dark text */
   --primary: #F97316;              /* Orange-500 */
+  --primary-translucent: rgba(249, 115, 22, 0.1); /* Translucent primary for backgrounds */
   --secondary: #06B6D4;            /* Cyan-500 (electric blue) */
+  --secondary-translucent: rgba(6, 182, 212, 0.1); /* Translucent secondary for backgrounds */
   --border-light: rgba(0, 0, 0, 0.12);
   --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
+  
+  /* Venue and Artist header backgrounds */
+  --venue-header-bg: #DFF5FA;      /* Light pastel blue for venue headers */
+  --artist-header-bg: #FFE6DC;     /* Light pastel orange for artist headers */
+  
+  /* UI Component Colors */
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.12);
+  --muted: #f7f7f7;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.12);
+  --input: rgba(0, 0, 0, 0.12);
+  --ring: #F97316;
+  
+  /* Surface Colors */
+  --surface-1: #ffffff;
+  --surface-2: #f5f5f5;
+  --surface-3: #e5e5e5;
+  --surface-4: #d4d4d4;
 }
 
 /* Dark Mode Overrides */
@@ -20,9 +45,31 @@
   --background: hsl(222, 47%, 11%); /* Dark slate blue */
   --foreground: hsl(210, 40%, 98%);  /* Near-white text */
   --primary: #F97316;              /* Orange-500 remains unchanged */
+  --primary-translucent: rgba(249, 115, 22, 0.15); /* Slightly stronger for dark mode */
   --secondary: #06B6D4;            /* Cyan-500 remains unchanged */
+  --secondary-translucent: rgba(6, 182, 212, 0.15); /* Slightly stronger for dark mode */
   --border-light: rgba(255, 255, 255, 0.1);
   --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.2);
+  
+  /* Dark mode venue and artist header backgrounds */
+  --venue-header-bg: #0a3244;      /* Deep blue for venue headers */
+  --artist-header-bg: #462923;     /* Deep burgundy for artist headers */
+  
+  /* UI Component Colors - Dark Mode */
+  --card-bg: hsl(222, 47%, 13%);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --muted: hsl(223, 47%, 15%);
+  --muted-foreground: hsl(215, 20%, 75%);
+  --accent: hsl(223, 47%, 15%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  
+  /* Surface Colors - Dark Mode */
+  --surface-1: hsl(222, 47%, 11%);
+  --surface-2: hsl(223, 47%, 15%);
+  --surface-3: hsl(223, 47%, 20%);
+  --surface-4: hsl(223, 47%, 25%);
 }
 
 /* =========================================
@@ -68,6 +115,17 @@ main {
   background-color: var(--background);
   border-bottom: 1px solid var(--border-light);
   box-shadow: var(--shadow-light);
+}
+
+/* Venue and Artist Detail Header Styles */
+.va-detail-header-venue {
+  background-color: var(--venue-header-bg);
+  color: white;
+}
+
+.va-detail-header-artist {
+  background-color: var(--artist-header-bg);
+  color: white;
 }
 
 /* Footer styling */
@@ -151,6 +209,14 @@ main {
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   max-width: 250px;
+}
+
+.overlay-centered {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  z-index: 1000;
 }
 
 .custom-info-overlay {
@@ -245,7 +311,198 @@ main {
 }
 
 /* =========================================
-   4. Mobile & iOS Safari Fixes
+   4. Event Wizard Specific Styles - NEW
+   ========================================= */
+/* Sheet and Container Styles */
+.event-wizard-sheet {
+  background-color: var(--background) !important;
+  border-right: 1px solid var(--border) !important;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.event-wizard-container {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+/* Progress/Step Indicator Styling */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.step-circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.step-circle.active {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.step-circle.completed {
+  background-color: var(--primary-translucent);
+  color: var(--primary);
+}
+
+.step-line {
+  flex: 1;
+  height: 0.25rem;
+  margin: 0 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--muted);
+}
+
+.step-line.completed {
+  background-color: var(--primary);
+}
+
+.step-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Date Picker Styling Fixes */
+.date-select-button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: normal;
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+}
+
+.date-select-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.date-select-popover {
+  background-color: var(--background) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 0.5rem !important;
+  z-index: 50 !important;
+  padding: 1rem !important;
+  outline: 2px solid var(--primary) !important;
+}
+
+/* Day Picker Specific Styles */
+.rdp-day_selected, 
+.rdp-day_selected:focus-visible, 
+.rdp-day_selected:hover {
+  background-color: var(--primary) !important;
+  color: white !important;
+}
+
+.rdp-day_today {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  font-weight: bold !important;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Event Button Consistent Styling */
+.event-add-button {
+  background-color: var(--primary) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.event-add-button:hover {
+  background-color: var(--primary) !important;
+  opacity: 0.9 !important;
+}
+
+.event-add-button-round {
+  border-radius: 9999px !important;
+  padding: 0.75rem 1.5rem !important;
+  position: fixed !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  z-index: 10 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Event Section Styles */
+.event-section {
+  background-color: var(--surface-1);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.event-section-header {
+  padding: 1rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.event-section-content {
+  padding: 1rem;
+}
+
+/* Form Elements in Event Wizard */
+.event-form-input {
+  background-color: var(--background) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+.event-form-input:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
+  border-color: transparent !important;
+}
+
+.event-form-label {
+  color: var(--foreground) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+}
+
+/* =========================================
+   5. Mobile & iOS Safari Fixes
    ========================================= */
 @supports (-webkit-touch-callout: none) {
   body, html {
@@ -265,10 +522,18 @@ main {
     overflow-y: auto; /* Allow scrolling in iOS */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling */
   }
+  
+  /* Fix for modal windows on Safari */
+  .safari-modal {
+    position: absolute !important;
+    height: 100% !important;
+    max-height: -webkit-fill-available !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
 }
 
 /* =========================================
-   5. Utility Classes
+   6. Utility Classes
    ========================================= */
 .flex-center {
   display: flex;
@@ -294,7 +559,7 @@ main {
 }
 
 /* =========================================
-   6. Dark Mode Specifics
+   7. Dark Mode Specifics
    ========================================= */
 .dark .event-row:hover {
   background-color: rgba(255, 255, 255, 0.05);
@@ -316,6 +581,29 @@ main {
   background-color: rgba(30, 41, 59, 0.6);
 }
 
+/* Dark mode specifics for Event Wizard */
+.dark .event-wizard-sheet {
+  background-color: var(--background) !important;
+  border-color: var(--border) !important;
+}
+
+.dark .step-circle {
+  background-color: var(--muted);
+}
+
+.dark .step-circle.active {
+  background-color: var(--primary);
+}
+
+.dark .step-circle.completed {
+  background-color: var(--primary-translucent);
+}
+
+.dark .event-section {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+}
+
 /* Location selector styling */
 .location-selector {
   @apply relative;
@@ -331,4 +619,111 @@ main {
 
 .location-selected {
   @apply text-[var(--primary)] font-medium;
+}
+
+/* =========================================
+   8. Critical Datepicker Fixes
+   ========================================= */
+
+/* Day Picker Calendar-specific styles */
+.rdp {
+  --rdp-cell-size: 40px;  /* Size of the day cells */
+  --rdp-accent-color: var(--primary);  /* Accent color for selected days */
+  --rdp-background-color: var(--primary-translucent);  /* Background color for hovered days */
+  --rdp-accent-color-dark: var(--primary);  /* Accent color for dark mode */
+  --rdp-background-color-dark: var(--primary-translucent);  /* Background color for hovered days in dark mode */
+  --rdp-outline: 2px solid var(--primary);  /* Focus outline */
+  --rdp-outline-selected: 2px solid var(--primary);  /* Focus outline for selected elements */
+  margin: 0; /* Remove extra margin */
+}
+
+/* Make sure the calendar buttons work properly */
+.rdp-button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-radius: 100%;
+  padding: 0;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  outline: none;
+  width: 40px;
+  height: 40px;
+}
+
+/* Apply visible styling to selected days */
+.rdp-day_selected {
+  background-color: var(--primary) !important;
+  color: white !important;
+  font-weight: bold;
+  opacity: 1 !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: var(--primary) !important;
+  color: white !important;
+}
+
+/* Make sure today is styled appropriately */
+.rdp-day_today {
+  border: 1px solid var(--primary);
+  font-weight: bold;
+}
+
+/* Fix day hover effects */
+.rdp-day:hover:not([aria-disabled='true']) {
+  background-color: var(--primary-translucent);
+  color: var(--foreground);
+}
+
+/* Fix navigation button styling */
+.rdp-nav_button {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  color: var(--foreground);
+  border-radius: 4px;
+}
+
+.rdp-nav_button:hover {
+  background-color: var(--primary-translucent);
+}
+
+/* Ensure date picker popover is visible and has correct z-index */
+.date-picker-popover {
+  z-index: 100;
+  background-color: var(--background) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--primary) !important;
+  border-radius: 8px;
+}
+
+/* Ensure the day wrapper is visible */
+.rdp-months {
+  display: flex;
+}
+
+/* Make sure the day cells have proper spacing */
+.rdp-cell {
+  padding: 0;
+  text-align: center;
+}
+
+/* Handle day button focusing properly */
+.rdp-button:focus, 
+.rdp-button:focus-visible {
+  outline: var(--rdp-outline);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Make sure the popover content is properly displayed */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
 }

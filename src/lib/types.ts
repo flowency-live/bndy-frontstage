@@ -1,4 +1,4 @@
-// src/lib/types.ts - Added postcode field
+// src/lib/types.ts - Updated with new fields
 
 // =========================================
 // CURRENT ACTIVE TYPES - USED IN APP
@@ -10,11 +10,20 @@ export interface BaseVenue {
   nameVariants?: string[];
   googlePlaceId?: string;
   location: {
-      lat: number;
-      lng: number;
+    lat: number;
+    lng: number;
   };
   address: string;
   postcode?: string;
+  description?: string;
+  imageUrl?: string;
+  phone?: string;
+  email?: string;
+  socialMediaURLs?: SocialMediaURL[];  // Unified social media URLs array
+  facilities?: string[];
+  standardStartTime?: string;
+  standardEndTime?: string;
+  standardTicketPrice?: string;
 }
 
 export interface Venue extends BaseVenue {
@@ -22,6 +31,43 @@ export interface Venue extends BaseVenue {
   validated: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// Artist Types
+export interface Artist {
+  id: string;
+  name: string;
+  nameVariants?: string[];
+  socialMediaURLs?: SocialMediaURL[];  // Unified social media URLs array
+  genres?: string[];
+  createdAt: string;
+  updatedAt: string;
+  profileImageUrl?: string;
+  description?: string;
+}
+
+// Artist and Venue Social Media URLs
+// Define the list of supported social platforms
+export type SocialPlatform = "website" | "spotify" | "facebook" | "instagram" | "youtube" | "x";
+
+// An object for a social media link
+export interface SocialMediaURL {
+  platform: SocialPlatform;
+  url: string;
+}
+
+
+
+// Member Types
+export interface ArtistMember {
+  id: string;
+  userId: string;
+  displayName: string;
+  photoURL?: string;
+  instruments?: string[];
+  role?: string;
+  isAdmin: boolean;
+  joinedAt: string;
 }
 
 // Event Types
@@ -50,21 +96,7 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
   isOpenMic?: boolean;
-  postcode?: string; // Added postcode field for events
-}
-
-// Artist Types
-export interface Artist {
-  id: string;
-  name: string;
-  nameVariants?: string[];
-  facebookUrl?: string;
-  instagramUrl?: string;
-  spotifyUrl?: string;
-  websiteUrl?: string;
-  genres?: string[];
-  createdAt: string;
-  updatedAt: string;
+  postcode?: string; // For event location postcode
 }
 
 // Filter Types
@@ -82,6 +114,18 @@ export interface LocationFilter {
       lat: number;
       lng: number;
   };
+}
+
+// User Types
+export interface User {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  postcode?: string;
+  instruments?: string[];
+  createdAt: string;
+  isAdmin?: boolean;
 }
 
 // =========================================
@@ -111,15 +155,17 @@ export interface EventFormData {
   eventUrl?: string;
   isOpenMic?: boolean;
   recurring?: RecurringEventConfig;
+  // Add this field for conflict tracking
+  dateConflicts?: DateConflict[];
 }
 
-// Conflict handling
+// Make sure DateConflict is properly defined
 export interface DateConflict {
-  type: 'venue' | 'artist';
+  type: 'venue' | 'artist' | 'exact_duplicate';
   name: string;
   existingEvent: {
-      name: string;
-      startTime: string;
+    name: string;
+    startTime: string;
   };
 }
 
@@ -151,4 +197,52 @@ export interface ImportMatch<T> {
   confidence: number;
   isNew?: boolean;
   data?: Partial<T>;
+}
+
+
+// Added helper functions to handle social media URLs for legacy properties
+export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
+  // Initialize an empty array
+  const socialMediaURLs: SocialMediaURL[] = [];
+
+  // Check if item already has the socialMediaURLs property
+  if (item.socialMediaURLs && item.socialMediaURLs.length > 0) {
+    return item.socialMediaURLs;
+  }
+
+  // Handle legacy venue social properties
+  if ('websiteUrl' in item && typeof item.websiteUrl === 'string') {
+    socialMediaURLs.push({ platform: 'website', url: item.websiteUrl });
+  }
+  
+  if ('facebookUrl' in item && typeof item.facebookUrl === 'string') {
+    socialMediaURLs.push({ platform: 'facebook', url: item.facebookUrl });
+  }
+
+  // Handle legacy artist social properties
+  if ('instagramUrl' in item && typeof item.instagramUrl === 'string') {
+    socialMediaURLs.push({ platform: 'instagram', url: item.instagramUrl });
+  }
+  
+  if ('spotifyUrl' in item && typeof item.spotifyUrl === 'string') {
+    socialMediaURLs.push({ platform: 'spotify', url: item.spotifyUrl });
+  }
+
+  return socialMediaURLs;
+}
+
+// Function to check if an item has any social media URLs
+export function hasSocialMedia(item: Venue | Artist): boolean {
+  // First check if it has socialMediaURLs
+  if (item.socialMediaURLs && item.socialMediaURLs.length > 0) {
+    return true;
+  }
+  
+  // Then check for legacy properties
+  return !!(
+    ('websiteUrl' in item && item.websiteUrl) ||
+    ('facebookUrl' in item && item.facebookUrl) ||
+    ('instagramUrl' in item && item.instagramUrl) ||
+    ('spotifyUrl' in item && item.spotifyUrl)
+  );
 }

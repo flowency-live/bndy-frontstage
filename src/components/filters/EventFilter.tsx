@@ -30,7 +30,6 @@ export default function EventFilter({
     }
 
     const term = searchTerm.toLowerCase();
-    console.log(`Searching for: ${term}`);
 
     // Find matching artists
     const artistMatches = allEvents.filter(event =>
@@ -41,8 +40,6 @@ export default function EventFilter({
     const venueMatches = allEvents.filter(event =>
       event.venueName.toLowerCase().includes(term)
     );
-
-    console.log(`Found ${artistMatches.length} artist matches and ${venueMatches.length} venue matches`);
 
     // Prioritize artist matches over venue matches
     if (artistMatches.length > 0) {

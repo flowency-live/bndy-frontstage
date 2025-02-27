@@ -143,22 +143,3 @@ export function getDateRangeDescription(filter: DateRangeFilter, baseDate: Date 
 /**
  * Debugging utility to analyze all date filters
  */
-export function debugDateFilters(baseDate: Date = new Date()): void {
-  const filters: DateRangeFilter[] = ['today', 'thisWeek', 'thisWeekend', 'nextWeek', 'nextWeekend'];
-  
-  console.group('Date Filter Debug');
-  console.log('Base date:', baseDate.toISOString().split('T')[0]);
-  
-  filters.forEach(filter => {
-    const { startDate, endDate } = getDateRange(filter, baseDate);
-    console.log(`${filter}:`, {
-      startDate: startDate.toISOString().split('T')[0],
-      startDay: startDate.toLocaleDateString('en-US', { weekday: 'short' }),
-      endDate: endDate.toISOString().split('T')[0],
-      endDay: endDate.toLocaleDateString('en-US', { weekday: 'short' }),
-      description: getDateRangeDescription(filter, baseDate)
-    });
-  });
-  
-  console.groupEnd();
-}

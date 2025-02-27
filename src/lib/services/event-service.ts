@@ -1,9 +1,9 @@
-// src/lib/services/event-service.ts - Updated for radius filtering
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+// src/lib/services/event-service.ts - Combined implementation
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/config/firebase';
 import { COLLECTIONS } from '@/lib/constants';
 import { calculateDistance } from '@/lib/utils/geo';
-import type { Event } from '@/lib/types';
+import { Event } from '@/lib/types';
 
 /**
  * Fetches events from Firestore with efficient loading and accurate radius filtering
@@ -15,7 +15,6 @@ export async function getEvents(
   maxEvents: number = 100
 ): Promise<Event[]> {
   try {
-    console.log(`Fetching events with radius: ${radius} miles from location:`, userLocation);
     
     if (!userLocation) {
       console.warn("No location provided for radius filtering, using default");
@@ -43,12 +42,10 @@ export async function getEvents(
       } as Event;
     });
     
-    console.log(`Retrieved ${events.length} events from database`);
 
     // Apply distance filter if we have user location
     if (userLocation) {
-      console.log(`Filtering events by ${radius} mile radius`);
-      
+     
       // First, calculate distances for all events
       const eventsWithDistance = events.map(event => {
         if (!event.location || !event.location.lat || !event.location.lng) {
@@ -65,15 +62,7 @@ export async function getEvents(
         return { ...event, distance };
       });
       
-      // For debugging: log some distance calculations
-      eventsWithDistance.slice(0, 5).forEach(event => {
-        console.log(
-          `Event: ${event.name} at ${event.venueName} - Distance: ${
-            event.distance !== null ? `${event.distance.toFixed(1)} miles` : 'No location'
-          }`
-        );
-      });
-      
+       
       // Apply radius filter
       events = eventsWithDistance.filter(event => {
         // Skip events with no location
@@ -86,7 +75,6 @@ export async function getEvents(
         return event.distance <= radius;
       });
       
-      console.log(`After radius filtering: ${events.length} events within ${radius} miles`);
     }
 
     return events;
@@ -95,7 +83,10 @@ export async function getEvents(
     throw error;
   }
 }
-// Add a new function to get all events without distance filtering
+
+/**
+ * Get all events without distance filtering
+ */
 export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[]> {
   try {
     // Create query - order by date, filter to future events
@@ -125,183 +116,284 @@ export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[
   }
 }
 
-// =========================================
-// FUTURE IMPLEMENTATION - NOT CURRENTLY USED
-// =========================================
+/**
+ * Get events for a specific artist
+ */
+export async function getEventsForArtist(
+  artistId: string, 
+  includeWhereNotMainArtist: boolean = false,
+  dateStart: Date = new Date()
+): Promise<Event[]> {
+  try {
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const dateFilter = dateStart.toISOString().split('T')[0];
+    
+    let eventsQuery;
 
-// TODO: These functions will be implemented in future iterations
+    if (includeWhereNotMainArtist) {
+      // Get events where artist is anywhere in the artistIds array
+      eventsQuery = query(
+        eventsRef,
+        where('artistIds', 'array-contains', artistId),
+        where('date', '>=', dateFilter),
+        orderBy('date', 'asc')
+      );
+    } else {
+      // Get events where this is the main artist (first in the array or single artist)
+      // For this simplified version, we'll just get all events and filter in JS
+      eventsQuery = query(
+        eventsRef,
+        where('date', '>=', dateFilter),
+        orderBy('date', 'asc')
+      );
+    }
 
-// const RECURRING_EVENT_LIMITS = {
-//     weekly: 12,   // 12 weeks maximum
-//     monthly: 3    // 3 months maximum
-// };
+    const snapshot = await getDocs(eventsQuery);
+    
+    let events = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Event));
 
-// src/lib/services/event-service.ts
-// export async function createEvent(data: EventFormData) {
-//     // Ensure venue exists in database
-//     let venueId = data.venue.id;
-//     if (!venueId) {
-//         const newVenue = await createVenue(data.venue);
-//         venueId = newVenue.id;
-//     }
+    // If not including where not main artist, filter for events where this is the first artist
+    if (!includeWhereNotMainArtist) {
+      events = events.filter(event => 
+        event.artistIds && 
+        event.artistIds.length > 0 && 
+        event.artistIds[0] === artistId
+      );
+    }
 
-//     // Only ensure artists exist if not an Open Mic event
-//     const artistIds = !data.isOpenMic ? await Promise.all(
-//         data.artists.map(async artist => {
-//             if (artist.id) return artist.id;
-//             const newArtist = await createArtist(artist);
-//             return newArtist.id;
-//         })
-//     ) : [];
-
-//     // Generate event name based on type
-//     const eventName = data.isOpenMic 
-//         ? `Open Mic Night @ ${data.venue.name}`
-//         : data.name || `${data.artists[0].name} @ ${data.venue.name}`;
-
-//     // Create event data with optional fields
-//     const eventData: Omit<Event, 'id'> = {
-//         venueId,
-//         venueName: data.venue.name,
-//         artistIds,
-//         name: eventName,
-//         date: data.date,
-//         startTime: data.startTime,
-//         location: data.venue.location,
-//         status: 'pending',
-//         source: 'bndy.live',
-//         createdAt: new Date().toISOString(),
-//         updatedAt: new Date().toISOString(),
-//         isOpenMic: data.isOpenMic || false
-//     };
-
-//     // Add optional fields if they have values
-//     if (data.endTime?.trim()) eventData.endTime = data.endTime;
-//     if (data.ticketPrice?.trim()) eventData.ticketPrice = data.ticketPrice;
-//     if (data.ticketUrl?.trim()) eventData.ticketUrl = data.ticketUrl;
-//     if (data.eventUrl?.trim()) eventData.eventUrl = data.eventUrl;
-//     if (data.description?.trim()) eventData.description = data.description;
-
-//     // Handle recurring events
-//     if (data.recurring) {
-//         const dates = generateRecurringDates(
-//             data.date,
-//             data.recurring.endDate,
-//             data.recurring.frequency
-//         );
-
-//         const batch = writeBatch(db);
-//         dates.forEach(date => {
-//             const docRef = doc(collection(db, COLLECTIONS.EVENTS));
-//             batch.set(docRef, { ...eventData, date });
-//         });
-
-//         return batch.commit();
-//     }
-
-//     return addDoc(collection(db, COLLECTIONS.EVENTS), eventData);
-// }
-
+    return events;
+  } catch (error) {
+    console.error(`Error fetching events for artist ${artistId}:`, error);
+    throw error;
+  }
+}
 
 /**
- * Fetches events from Firestore for a given date.
- * @param {string} date - The date in "YYYY-MM-DD" format.
- * @returns {Promise<Array>} - A list of events on the given date.
+ * Get events for a specific venue
  */
-// export const getEventsForDate = async (date) => {
-//     try {
-//         console.log(`📅 Fetching events for date: ${date}`);
+export async function getEventsForVenue(
+  venueId: string,
+  dateStart: Date = new Date()
+): Promise<Event[]> {
+  try {
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const dateFilter = dateStart.toISOString().split('T')[0];
+    
+    const eventsQuery = query(
+      eventsRef,
+      where('venueId', '==', venueId),
+      where('date', '>=', dateFilter),
+      orderBy('date', 'asc')
+    );
 
-//         const eventsRef = collection(db, "bf_events");
-//         const q = query(eventsRef, where("date", "==", date));
-//         const snapshot = await getDocs(q);
+    const snapshot = await getDocs(eventsQuery);
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Event));
+  } catch (error) {
+    console.error(`Error fetching events for venue ${venueId}:`, error);
+    throw error;
+  }
+}
 
-//         const events = snapshot.docs.map(doc => {
-//             const data = doc.data();
+/**
+ * Get a single event by ID
+ */
+export async function getEventById(eventId: string): Promise<Event | null> {
+  try {
+    const eventDoc = await getDoc(doc(db, COLLECTIONS.EVENTS, eventId));
+    
+    if (!eventDoc.exists()) {
+      return null;
+    }
+    
+    return {
+      id: eventDoc.id,
+      ...eventDoc.data(),
+    } as Event;
+  } catch (error) {
+    console.error(`Error fetching event ${eventId}:`, error);
+    throw error;
+  }
+}
 
-//             return {
-//                 id: doc.id,
-//                 ...data,
-//                 venueId: data.venueId || null,
-//                 artistIds: Array.isArray(data.artistIds) ? data.artistIds : [],
-//                 isOpenMic: data.isOpenMic || false  // Add this line
-//             };
-//         });
+/**
+ * Create a new event
+ */
+export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
+  try {
+    const now = new Date().toISOString();
+    
+    const newEvent = {
+      ...event,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), newEvent);
+    
+    return {
+      id: docRef.id,
+      ...newEvent,
+    } as Event;
+  } catch (error) {
+    console.error('Error creating event:', error);
+    throw error;
+  }
+}
 
-//         console.log(`✅ Found ${events.length} events on ${date}`);
-//         return events;
-//     } catch (error) {
-//         console.error("❌ Error fetching events:", error);
-//         return [];
-//     }
-// };
+/**
+ * Update an event
+ */
+export async function updateEvent(event: Event): Promise<void> {
+  try {
+    const { id, ...eventData } = event;
+    
+    await updateDoc(doc(db, COLLECTIONS.EVENTS, id), {
+      ...eventData,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`Error updating event ${event.id}:`, error);
+    throw error;
+  }
+}
 
+/**
+ * Delete an event
+ */
+export async function deleteEvent(eventId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.EVENTS, eventId));
+  } catch (error) {
+    console.error(`Error deleting event ${eventId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get events for a date range
+ */
+export async function getEventsForDateRange(
+  startDate: Date,
+  endDate: Date
+): Promise<Event[]> {
+  try {
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
+    const eventsQuery = query(
+      eventsRef,
+      where('date', '>=', startDateStr),
+      where('date', '<=', endDateStr),
+      orderBy('date', 'asc')
+    );
+
+    const snapshot = await getDocs(eventsQuery);
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Event));
+  } catch (error) {
+    console.error('Error fetching events for date range:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get events for a specific date
+ */
+export async function getEventsForDate(date: Date): Promise<Event[]> {
+  try {
+    const dateStr = date.toISOString().split('T')[0];
+    
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsQuery = query(
+      eventsRef,
+      where('date', '==', dateStr),
+      orderBy('startTime', 'asc')
+    );
+
+    const snapshot = await getDocs(eventsQuery);
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Event));
+  } catch (error) {
+    console.error('Error fetching events for date:', error);
+    throw error;
+  }
+}
 
 /**
  * Checks for event conflicts based on venue, artist, and date.
  * @param {Object} params - Object containing venue, artists, and date.
  * @returns {Promise<{ conflicts: Array, fullMatchConflict: boolean }>} - The detected conflicts and a boolean indicating a full conflict.
  */
-// export async function checkEventConflicts({ venue, artists, date, isOpenMic }) {
-//     console.log("🔍 Running checkEventConflicts with parameters:", { venue, artists, date, isOpenMic });
+export async function checkEventConflicts({ venue, artists, date, isOpenMic }: { venue: any, artists: any[], date: Date, isOpenMic: boolean }) {
+  console.log("🔍 Running checkEventConflicts with parameters:", { venue, artists, date, isOpenMic });
 
-//     const existingEvents = await getEventsForDate(date);
-//     console.log(`📊 Found ${existingEvents.length} existing events on ${date}`);
+  const existingEvents = await getEventsForDate(date);
+  console.log(`📊 Found ${existingEvents.length} existing events on ${date}`);
 
-//     let conflicts = [];
-//     let fullMatchConflict = false;
+  let conflicts: { type: string; name: string; existingEvent: Event }[] = [];
+  let fullMatchConflict = false;
 
-//     existingEvents.forEach(existingEvent => {
-       
+  existingEvents.forEach(existingEvent => {
+     
 
-//         const venueMatch = existingEvent.venueId === venue?.id;
-//         const artistMatch = !isOpenMic && existingEvent.artistIds?.some(id => artists.some(a => a.id === id));
+      const venueMatch = existingEvent.venueId === venue?.id;
+      const artistMatch = !isOpenMic && existingEvent.artistIds?.some(id => artists.some(a => a.id === id));
 
-//        if (!isOpenMic) {
-//             console.log(`🔹 Comparing Artist IDs: Selected ${artists.map(a => a.id).join(", ")} | Event ${existingEvent.artistIds?.join(", ")}`);
-//         }
+     if (!isOpenMic) {
+          console.log(`🔹 Comparing Artist IDs: Selected ${artists.map(a => a.id).join(", ")} | Event ${existingEvent.artistIds?.join(", ")}`);
+      }
 
-//         if (venueMatch) {
-//             const message = isOpenMic 
-//                 ? `⚠️ Venue Conflict Detected: Open Mic event at ${venue.name}`
-//                 : `⚠️ Venue Conflict Detected: ${artists.map(a => a.name).join(", ")} has an event at ${venue.name}`;
-//             console.warn(message);
-            
-//             conflicts.push({
-//                 type: "venue",
-//                 name: venue.name,
-//                 existingEvent
-//             });
-//         }
+      if (venueMatch) {
+          const message = isOpenMic 
+              ? `⚠️ Venue Conflict Detected: Open Mic event at ${venue.name}`
+              : `⚠️ Venue Conflict Detected: ${artists.map(a => a.name).join(", ")} has an event at ${venue.name}`;
+          console.warn(message);
+          
+          conflicts.push({
+              type: "venue",
+              name: venue.name,
+              existingEvent
+          });
+      }
 
-//         if (!isOpenMic && artistMatch) {
-//             console.warn(`⚠️ Artist Conflict Detected: ${artists.map(a => a.name).join(", ")} has an event at ${venue.name}`);
-//             conflicts.push({
-//                 type: "artist",
-//                 name: artists.find(a => existingEvent.artistIds.includes(a.id))?.name || "Unknown Artist",
-//                 existingEvent
-//             });
-//         }
+      if (!isOpenMic && artistMatch) {
+          console.warn(`⚠️ Artist Conflict Detected: ${artists.map(a => a.name).join(", ")} has an event at ${venue.name}`);
+          conflicts.push({
+              type: "artist",
+              name: artists.find(a => existingEvent.artistIds.includes(a.id))?.name || "Unknown Artist",
+              existingEvent
+          });
+      }
 
-//         // For Open Mic, exact duplicate is just venue match on same date
-//         // For regular events, need both venue and artist match
-//         if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
-//             (!isOpenMic && venueMatch && artistMatch)) {
-//             console.error(`🚨 FULL BLOCK: Exact duplicate event detected.`);
-//             fullMatchConflict = true;
+      // For Open Mic, exact duplicate is just venue match on same date
+      // For regular events, need both venue and artist match
+      if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
+          (!isOpenMic && venueMatch && artistMatch)) {
+          console.error(`🚨 FULL BLOCK: Exact duplicate event detected.`);
+          fullMatchConflict = true;
 
-//             conflicts.push({
-//                 type: "exact_duplicate",
-//                 name: "This event already exists!",
-//                 existingEvent
-//             });
-//         }
-//     });
+          conflicts.push({
+              type: "exact_duplicate",
+              name: "This event already exists!",
+              existingEvent
+          });
+      }
+  });
 
-//     console.log("🔎 Final Conflict Array:", conflicts);
-//     return { conflicts, fullMatchConflict };
-// }
-
-
-
-
+  console.log("🔎 Final Conflict Array:", conflicts);
+  return { conflicts, fullMatchConflict };
+}
