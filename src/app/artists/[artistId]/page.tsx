@@ -1,7 +1,6 @@
-// src/app/artists/[artistId]/page.tsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getArtistById, updateArtist } from "@/lib/services/artist-service";
 import { getEventsForArtist } from "@/lib/services/event-service";
@@ -17,12 +16,10 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Globe } from "lucide-react";
 import { FaFacebook, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa";
 import { XIcon } from "@/components/ui/icons/XIcon";
-import { ArtistAddEventButton } from "@/components/events/ArtistAddEventButton";
 
-function ArtistProfileContent() {
-  const params = useParams();
-  const artistId = params.artistId as string;
-  
+export default function ArtistProfilePage() {
+  const { artistId } = useParams();
+
   // State for viewing mode
   const [artist, setArtist] = useState<Artist | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
@@ -62,7 +59,7 @@ function ArtistProfileContent() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const artistData = await getArtistById(artistId);
+        const artistData = await getArtistById(artistId as string);
         if (!artistData) {
           setError(`Artist not found with ID: ${artistId}`);
           setLoading(false);
@@ -97,7 +94,7 @@ function ArtistProfileContent() {
         
         setSocialLinks(links);
 
-        const artistEvents = await getEventsForArtist(artistId);
+        const artistEvents = await getEventsForArtist(artistId as string);
         setEvents(artistEvents || []);
         setError(null);
       } catch (error) {
@@ -203,184 +200,174 @@ function ArtistProfileContent() {
     );
   }
 
-// Complete return part of the ArtistProfileContent component
-return (
-  <>
-    <DetailHeader item={artist} type="artist" />
-    <div className="container mx-auto pt-28 pb-20 px-4 overflow-y-auto max-h-screen">
-      {/* Artist Bio/Description */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Artist Profile</h2>
-          {/* Add ArtistAddEventButton here */}
-          <ArtistAddEventButton 
-            artist={artist} 
-            className="px-4 py-2 rounded-md text-sm" 
-          />
-        </div>
-             
-        {isEditing ? (
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Artist Name
-              </label>
-              <Input
-                id="name"
-                name="name"
-                value={editFormData.name || ""}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Description
-              </label>
-              <Textarea
-                id="description"
-                name="description"
-                value={editFormData.description || ""}
-                onChange={handleInputChange}
-                rows={5}
-                className="w-full"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Genres
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {genres.map((genre, index) => (
-                  <div 
-                    key={index} 
-                    className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full flex items-center gap-1"
-                  >
-                    <span>{genre}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveGenre(genre)}
-                      className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-[var(--primary)]/20"
-                    >
-                      <XIcon className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
+  return (
+    <>
+      <DetailHeader item={artist} type="artist" />
+      <div className="container mx-auto pt-28 pb-20 px-4 overflow-y-auto max-h-screen">
+        {/* Artist Bio/Description */}
+        <div className="mb-6">
+               
+          {isEditing ? (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Artist Name
+                </label>
                 <Input
-                  placeholder="Add a genre (e.g., Rock, Jazz, Folk)"
-                  value={newGenre}
-                  onChange={(e) => setNewGenre(e.target.value)}
-                  className="flex-1"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddGenre();
-                    }
-                  }}
+                  id="name"
+                  name="name"
+                  value={editFormData.name || ""}
+                  onChange={handleInputChange}
+                  className="w-full"
                 />
-                <button 
-                  type="button" 
-                  onClick={handleAddGenre}
-                  className="px-4 py-2 bg-[var(--primary)]/10 text-[var(--primary)] rounded-md hover:bg-[var(--primary)]/20"
-                >
-                  Add
-                </button>
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Social Media
-              </label>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <span className="w-8 text-[#4F46E5]"><Globe className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="Website URL"
-                    value={socialLinks.website}
-                    onChange={(e) => handleSocialLinkChange('website', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="w-8 text-[#1DB954]"><FaSpotify className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="Spotify URL"
-                    value={socialLinks.spotify}
-                    onChange={(e) => handleSocialLinkChange('spotify', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="w-8 text-[#1877F2]"><FaFacebook className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="Facebook URL"
-                    value={socialLinks.facebook}
-                    onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="w-8 text-[#E4405F]"><FaInstagram className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="Instagram URL"
-                    value={socialLinks.instagram}
-                    onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="w-8 text-[#FF0000]"><FaYoutube className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="YouTube URL"
-                    value={socialLinks.youtube}
-                    onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="w-8 text-[#000000] dark:text-[#FFFFFF]"><XIcon className="w-5 h-5" /></span>
-                  <Input
-                    placeholder="X (Twitter) URL"
-                    value={socialLinks.x}
-                    onChange={(e) => handleSocialLinkChange('x', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
+              
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Description
+                </label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={editFormData.description || ""}
+                  onChange={handleInputChange}
+                  rows={5}
+                  className="w-full"
+                />
               </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className="text-[var(--foreground)]/80">
-              {artist.description || "No description available for this artist."}
-            </p>
-            
-            {artist.genres && artist.genres.length > 0 && (
-              <div className="mt-4">
-                <div className="flex flex-wrap gap-2">
-                  {artist.genres.map((genre, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm"
+              
+              <div>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Genres
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {genres.map((genre, index) => (
+                    <div 
+                      key={index} 
+                      className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full flex items-center gap-1"
                     >
-                      {genre}
-                    </span>
+                      <span>{genre}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGenre(genre)}
+                        className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-[var(--primary)]/20"
+                      >
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </div>
                   ))}
                 </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a genre (e.g., Rock, Jazz, Folk)"
+                    value={newGenre}
+                    onChange={(e) => setNewGenre(e.target.value)}
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddGenre();
+                      }
+                    }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={handleAddGenre}
+                    className="px-4 py-2 bg-[var(--primary)]/10 text-[var(--primary)] rounded-md hover:bg-[var(--primary)]/20"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
-            )}
-          </>
-        )}
-      </div>
-      
-      {/* Events List */}
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Social Media
+                </label>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#4F46E5]"><Globe className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="Website URL"
+                      value={socialLinks.website}
+                      onChange={(e) => handleSocialLinkChange('website', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#1DB954]"><FaSpotify className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="Spotify URL"
+                      value={socialLinks.spotify}
+                      onChange={(e) => handleSocialLinkChange('spotify', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#1877F2]"><FaFacebook className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="Facebook URL"
+                      value={socialLinks.facebook}
+                      onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#E4405F]"><FaInstagram className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="Instagram URL"
+                      value={socialLinks.instagram}
+                      onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#FF0000]"><FaYoutube className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="YouTube URL"
+                      value={socialLinks.youtube}
+                      onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-8 text-[#000000] dark:text-[#FFFFFF]"><XIcon className="w-5 h-5" /></span>
+                    <Input
+                      placeholder="X (Twitter) URL"
+                      value={socialLinks.x}
+                      onChange={(e) => handleSocialLinkChange('x', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-[var(--foreground)]/80">
+                {artist.description || "No description available for this artist."}
+              </p>
+              
+              {artist.genres && artist.genres.length > 0 && (
+                <div className="mt-4">
+
+                  <div className="flex flex-wrap gap-2">
+                    {artist.genres.map((genre, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm"
+                      >
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        
+        {/* Events List */}
         {events.length > 0 ? (
           <VAEventsList
             events={events}
@@ -395,46 +382,32 @@ return (
             <p>No upcoming events scheduled for this artist.</p>
           </div>
         )}
-      </div>
 
-      {/* Claim this page button */}
-      <ClaimPageButton type="artist" id={artistId as string} />
+        {/* Claim this page button */}
+        <ClaimPageButton type="artist" id={artistId as string} />
 
-      {/* Edit Mode Toggle */}
-      <EditModeToggle
-        type="artist"
-        id={artistId as string}
-        isEditing={isEditing}
-        onEditModeChange={setIsEditing}
-        onSave={handleSaveChanges}
-      />
-
-      {/* Event Info Overlay */}
-      {selectedEvent && (
-        <EventInfoOverlay
-          event={selectedEvent}
-          isOpen={showEventOverlay}
-          onClose={() => {
-            setShowEventOverlay(false);
-            setSelectedEvent(null);
-          }}
-          position="list"
+        {/* Edit Mode Toggle */}
+        <EditModeToggle
+          type="artist"
+          id={artistId as string}
+          isEditing={isEditing}
+          onEditModeChange={setIsEditing}
+          onSave={handleSaveChanges}
         />
-      )}
-    </div>
-  </>
-);
-}
 
-// Main component with Suspense
-export default function ArtistProfilePage() {
-  return (
-    <Suspense fallback={
-      <div className="container mx-auto py-12 px-4">
-        <div className="animate-pulse text-center">Loading artist profile...</div>
+        {/* Event Info Overlay */}
+        {selectedEvent && (
+          <EventInfoOverlay
+            event={selectedEvent}
+            isOpen={showEventOverlay}
+            onClose={() => {
+              setShowEventOverlay(false);
+              setSelectedEvent(null);
+            }}
+            position="list"
+          />
+        )}
       </div>
-    }>
-      <ArtistProfileContent />
-    </Suspense>
+    </>
   );
 }

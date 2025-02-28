@@ -1,64 +1,97 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
   Building,
   Music,
-  Globe,
-  ExternalLink,
+  Globe
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa";
 import { XIcon } from "@/components/ui/icons/XIcon";
-import BndyIconLogo from "@/components/ui/BndyIconLogo";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Artist, Venue, SocialMediaURL, SocialPlatform, getSocialMediaURLs } from "@/lib/types";
 import { useViewToggle } from "@/context/ViewToggleContext";
 
-// Social media brand colors
-const SOCIAL_COLORS = {
-  website: "#4F46E5", // Indigo
-  spotify: "#1DB954", // Spotify green
-  facebook: "#1877F2", // Facebook blue
-  instagram: "#E4405F", // Instagram red/pink
-  youtube: "#FF0000", // YouTube red
-  x: "#000000", // X black
+// Social media brand colors for hover effects
+const SOCIAL_COLORS: Record<SocialPlatform, string> = {
+  website: "#4F46E5",
+  spotify: "#1DB954",
+  facebook: "#1877F2",
+  instagram: "#E4405F",
+  youtube: "#FF0000",
+  x: "#000000"
 };
 
 interface VADetailHeaderProps {
   item: Venue | Artist;
   type: "venue" | "artist";
+  isEditing?: boolean;
+  onChange?: (field: string, value: string) => void;
 }
 
-export default function VADetailHeader({ item, type }: VADetailHeaderProps) {
+export default function VADetailHeader({
+  item,
+  type,
+  isEditing = false,
+  onChange,
+}: VADetailHeaderProps) {
+  const router = useRouter();
   const { isDarkMode } = useViewToggle();
   const isVenue = type === "venue";
   const isArtist = type === "artist";
 
-  // Type guards
-  const isVenueType = (val: Venue | Artist): val is Venue => type === "venue";
-  const isArtistType = (val: Venue | Artist): val is Artist => type === "artist";
+  // Get social media URLs using the shared helper function.
+  const socialMediaURLs: SocialMediaURL[] = getSocialMediaURLs(item);
 
-  // Get social media URLs using the helper function
-  const socialMediaURLs = getSocialMediaURLs(item);
+  // Determine primary color & header background based on type.
+  const primaryColor = isVenue ? "var(--secondary)" : "var(--primary)";
+  const headerBgClass = isVenue
+    ? "bg-[var(--venue-header-bg)]"
+    : "bg-[var(--artist-header-bg)]";
 
-  // Google Maps URL builder (for Venues)
-  const getGoogleMapsUrl = (venue: Venue) => {
-    const query = `${venue.name}, ${venue.address || ""} ${venue.postcode || ""}`.trim();
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  // For edit mode, maintain local state for name and description.
+  const [name, setName] = useState(item.name);
+  const [description, setDescription] = useState(
+    "description" in item ? item.description || "" : ""
+  );
+
+  useEffect(() => {
+    setName(item.name);
+    if ("description" in item) {
+      setDescription(item.description || "");
+    }
+  }, [item]);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    onChange && onChange("name", e.target.value);
   };
 
-  // Social platform icon mapping
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setDescription(e.target.value);
+    onChange && onChange("description", e.target.value);
+  };
+
+  // Social icon mapping function.
   const getSocialIcon = (platform: SocialPlatform) => {
     switch (platform) {
-      case 'website':
+      case "website":
         return <Globe className="w-5 h-5" />;
-      case 'spotify':
+      case "spotify":
         return <FaSpotify className="w-5 h-5" />;
-      case 'facebook':
+      case "facebook":
         return <FaFacebook className="w-5 h-5" />;
-      case 'instagram':
+      case "instagram":
         return <FaInstagram className="w-5 h-5" />;
-      case 'youtube':
+      case "youtube":
         return <FaYoutube className="w-5 h-5" />;
-      case 'x':
+      case "x":
         return isDarkMode ? (
           <XIcon className="w-6 h-6" style={{ color: "#FFF" }} />
         ) : (
@@ -69,88 +102,93 @@ export default function VADetailHeader({ item, type }: VADetailHeaderProps) {
     }
   };
 
-  // Calculate primary color and header bg based on venue/artist type
-  const primaryColor = isVenue ? "var(--secondary)" : "var(--primary)";
-  const bgColorClass = isVenue ? "bg-[var(--venue-header-bg)]" : "bg-[var(--artist-header-bg)]";
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top color band with theme-aware background */}
-      <div className={`relative ${bgColorClass} h-24`}>
-        {/* Top bar: back button + brand logo */}
-        <div className="flex items-center justify-between px-4 py-2">
-          <Link href="/" className="p-1 rounded-full bg-white/10 hover:bg-white/20">
-            <ArrowLeft className="w-5 h-5 text-[var(--primary)" />
-          </Link>
-        </div>
-
-        {/* Avatar & Title at the bottom of the color band */}
-        <div className="flex items-end px-4 pb-0 gap-4">
-          {/* Avatar - larger with shadow and positioned to cross the color boundary */}
-          <div
-            className="h-24 w-24 rounded-full overflow-hidden flex-shrink-0 relative bottom-[-12px]"
-            style={{ 
-              boxShadow: "0 3px 8px rgba(0,0,0,0.15)", 
-              border: `3px solid ${primaryColor}`,
-              backgroundColor: "var(--background)",
-            }}
+      {/* Header background with type-specific color */}
+      <div className={`${headerBgClass} py-4 px-4 sm:px-8`}>
+        {/* Top row: Back button */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Back"
           >
-            {isVenueType(item) && item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.name} className="object-cover w-full h-full" />
-            ) : isArtistType(item) && item.profileImageUrl ? (
-              <img src={item.profileImageUrl} alt={item.name} className="object-cover w-full h-full" />
+            <ArrowLeft className="w-5 h-5 text-[var(--primary)]" />
+          </button>
+        </div>
+        {/* Main header content */}
+        <div className="flex items-center mt-4">
+          {/* Avatar (left) */}
+          <div
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0 mr-4 border-4"
+            style={{ borderColor: primaryColor, backgroundColor: "var(--background)" }}
+          >
+            {("profileImageUrl" in item && item.profileImageUrl) ? (
+              <img
+                src={item.profileImageUrl}
+                alt={item.name}
+                className="object-cover w-full h-full"
+              />
             ) : (
-              <div className="h-full w-full flex items-center justify-center bg-white dark:bg-gray-800">
+              <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800">
                 {isVenue ? (
-                  <Building className="h-10 w-10" style={{ color: "var(--secondary)" }} />
+                  <Building className="w-10 h-10" style={{ color: "var(--secondary)" }} />
                 ) : (
-                  <Music className="h-10 w-10" style={{ color: "var(--primary)" }} />
+                  <Music className="w-10 h-10" style={{ color: "var(--primary)" }} />
                 )}
               </div>
             )}
           </div>
-
-          {/* Title */}
-          <div className="pb-10">
-            <h1 className="text-2xl font-bold text-[var(--primary)">{item.name}</h1>
-            
-            {/* Move venue details up into the colored section for better alignment */}
-            {isVenueType(item) && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {item.address ? item.address : "No address available"}
-                {item.postcode && `, ${item.postcode}`}
-              </div>
+          {/* Title, description & social icons (right) */}
+          <div className="flex-1">
+            {isEditing ? (
+              <>
+                <Input
+                  value={name}
+                  onChange={handleNameChange}
+                  className="text-2xl font-bold text-[var(--primary)] bg-transparent border-b border-[var(--primary)] focus:outline-none"
+                />
+                <Textarea
+                  value={description}
+                  onChange={handleDescriptionChange}
+                  className="mt-2 text-sm text-[var(--foreground)] bg-transparent border-b border-[var(--foreground)] focus:outline-none"
+                />
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold text-[var(--primary)]">{name}</h1>
+                <p className="mt-1 text-sm text-[var(--foreground)]">{description}</p>
+              </>
             )}
-
+            {/* Social Icons */}
+            <div className="mt-2 flex items-center gap-3">
+              {socialMediaURLs.length > 0 ? (
+                socialMediaURLs.map((social) => {
+                  const icon = getSocialIcon(social.platform);
+                  const color = SOCIAL_COLORS[social.platform] || primaryColor;
+                  return (
+                    <a
+                      key={social.platform}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors duration-200 hover:opacity-80"
+                      style={{ color }}
+                      aria-label={`${social.platform} link`}
+                    >
+                      {icon}
+                    </a>
+                  );
+                })
+              ) : (
+                // If no socials provided, display a fallback icon.
+                <div className="text-2xl" style={{ color: primaryColor }}>
+                  {isVenue ? <Building /> : <Music />}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Bottom Section with background color and social icons */}
-      <div className="bg-[var(--background)] px-32 pt-3 pb-2">
-            {/* Social Icons - aligned with proper brand colors */}
-        {socialMediaURLs.length > 0 && (
-          <div className="flex items-center gap-3">
-            {socialMediaURLs.map((social: SocialMediaURL) => {
-              const icon = getSocialIcon(social.platform);
-              const color = SOCIAL_COLORS[social.platform] || primaryColor;
-              
-              return (
-                <a
-                  key={social.platform}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:opacity-80"
-                  style={{ color: color }}
-                  aria-label={`${social.platform} link`}
-                >
-                  {icon}
-                </a>
-              );
-            })}
-          </div>
-        )}
       </div>
     </header>
   );

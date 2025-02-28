@@ -1,206 +1,246 @@
-// src/components/overlays/EventInfoOverlay.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Clock, Ticket, ExternalLink, Music, Building, ChevronDown } from "lucide-react";
-import { Event } from "@/lib/types";
-import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
+import {
+  MapPin,
+  Clock,
+  Ticket,
+  ExternalLink,
+  Music,
+  CalendarDays,
+  Share2
+} from "lucide-react";
 import Link from "next/link";
+import { Event, Artist } from "@/lib/types";
+import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
+import { getArtistById } from "@/lib/services/artist-service";
+import { getVenueById } from "@/lib/services/venue-service";
+import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 
 interface EventInfoOverlayProps {
   event: Event;
   isOpen: boolean;
   onClose: () => void;
-  position?: 'map' | 'list';
-  verticalOffset?: number; // New prop for configurability
+  position?: "map" | "list";
+  verticalOffset?: number;
 }
 
-export default function EventInfoOverlay({ 
-  event, 
-  isOpen, 
+export default function EventInfoOverlay({
+  event,
+  isOpen,
   onClose,
-  position = 'map',
-  verticalOffset = 50 // CONFIG: Event Window Position
+  position = "map",
+  verticalOffset = 50
 }: EventInfoOverlayProps) {
-  const [showMore, setShowMore] = useState(false);
+  const [artist, setArtist] = useState<Artist | null>(null);
+  const [venue, setVenue] = useState<VenueData | null>(null);
 
-  // Format the date and time
-  const formattedDate = formatEventDate(new Date(event.date));
-  const formattedTime = formatTime(event.startTime);
-  
-  // Only get postcode if available (will be enhanced later)
-  const venuePostcode = event.postcode || "";
-  
-  // Create Google Maps URL
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${event.venueName}, ${venuePostcode}`
-  )}`;
+  // Fetch artist data from the first artist ID.
+  useEffect(() => {
+    if (event.artistIds && event.artistIds.length > 0) {
+      getArtistById(event.artistIds[0])
+        .then((artistData) => setArtist(artistData))
+        .catch((err) => console.error("Error fetching artist:", err));
+    }
+  }, [event.artistIds]);
 
-  // Create dynamic styling based on position context
-  const overlayStyles = position === 'map'
-    ? 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50'
-    : 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+  // Fetch venue data using event.venueId.
+  useEffect(() => {
+    if (event.venueId) {
+      getVenueById(event.venueId)
+        .then((venueData) => setVenue(venueData))
+        .catch((err) => console.error("Error fetching venue:", err));
+    }
+  }, [event.venueId]);
+
+  // Format date/time.
+  const eventDate = new Date(event.date);
+  const formattedDate = formatEventDate(eventDate);
+  const formattedTime = event.startTime ? formatTime(event.startTime) : "Time TBA";
+  const endTime = event.endTime ? formatTime(event.endTime) : undefined;
+
+  // Ticket price prefixed with "£" (or "£ree Entry" if zero).
+  const ticketPrice =
+    event.ticketPrice &&
+    event.ticketPrice.trim() !== "" &&
+    parseFloat(event.ticketPrice) !== 0
+      ? `£${event.ticketPrice}`
+      : "£ree Entry";
+
+  // Check if event is today.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isToday = eventDate.getTime() === today.getTime();
+
+  // Generate a single directions URL using our helper.
+  const directionsUrl = venue ? getDirectionsUrl(venue) : "";
+
+  // Define the outer overlay container styles.
+  const overlayStyles =
+    position === "map"
+      ? "fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center backdrop-blur-sm"
+      : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm";
+
+  // Placeholder share function.
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.name,
+          text: `Check out this event: ${event.name} on ${formattedDate} at ${formattedTime} at ${event.venueName}`,
+          url: window.location.href
+        });
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+    } else {
+      console.log("Web Share API not supported.");
+    }
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className={overlayStyles}>
+        // The outer container listens for clicks to close the overlay.
+        <div className={overlayStyles} onClick={onClose}>
+          {/* Stop propagation on the overlay card so that clicks inside do not trigger onClose */}
           <motion.div
+            onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="w-[300px] p-4 bg-[var(--background)] rounded-lg shadow-lg border-2 border-[var(--primary)]/20 relative"
+            className="relative w-[320px] bg-[var(--background)] rounded-lg shadow-lg border border-[var(--border)]"
+            style={{ boxShadow: "0 4px 10px rgba(0,0,0,0.15)" }}
           >
-            {/* Close button */}
-            <button 
-              onClick={onClose}
-              className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4 text-[var(--foreground)]" />
-            </button>
+            {/* Orange highlight strip on the left */}
+            <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
-            <div className="space-y-4 mt-2">
-              {/* Header with event name */}
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 bg-[var(--primary)]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Music className="w-4 h-4 text-[var(--primary)]" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[var(--foreground)]">
-                      {event.name}
-                    </h3>
-                    <p className="text-xs text-[var(--foreground)]/70">
-                      {formattedDate}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Venue section */}
-                <div 
-                  className="block p-2 -mx-2 rounded-md hover:bg-[var(--secondary)]/5 transition-colors group cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(mapUrl, '_blank');
-                  }}
+            <div className="p-4 pl-6">
+              {/* Artist Header */}
+              {event.artistIds && event.artistIds.length > 0 ? (
+                <Link
+                  href={`/artists/${event.artistIds[0]}`}
+                  className="group flex items-start gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
                 >
-                  <div className="flex items-start gap-2">
-                    <Building className="w-4 h-4 text-[var(--foreground)]/70 group-hover:text-[var(--secondary)] shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium group-hover:text-[var(--secondary)] transition-colors">
-                          {event.venueName}
-                        </span>
-                        <ExternalLink className="w-3 h-3 text-[var(--foreground)]/50" />
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-[var(--foreground)]/70">
-                        <MapPin className="w-3 h-3" />
-                        <span>{venuePostcode || "View on map"}</span>
-                      </div>
-                    </div>
+                  <div className="w-[3.125rem] h-[3.125rem] bg-[var(--primary-translucent)] rounded-full flex-shrink-0 flex items-center justify-center">
+                    <Music className="w-5 h-5 text-[var(--primary)]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                      {artist ? artist.name : "Loading artist..."}
+                    </h2>
+                    <span className="text-xs text-[var(--primary)]">(view artist)</span>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-[3.125rem] h-[3.125rem] bg-[var(--primary-translucent)] rounded-full flex-shrink-0 flex items-center justify-center">
+                    <Music className="w-5 h-5 text-[var(--primary)]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                      Unknown Artist
+                    </h2>
                   </div>
                 </div>
-              </div>
-
-              {/* Time information */}
-              <div className="flex items-center gap-1.5 text-sm text-[var(--foreground)]/70">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{formattedTime}</span>
-                {event.endTime && <span>- {formatTime(event.endTime)}</span>}
-              </div>
-
-              {/* Ticket information */}
-              <div className="flex items-center gap-1.5 text-sm text-[var(--foreground)]/70">
-                <Ticket className="w-3.5 h-3.5" />
-                <span>{event.ticketPrice || "£ree Entry"}</span>
-                {event.ticketUrl && (
-                  <a
-                    href={event.ticketUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-2 text-[var(--primary)] hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Buy Tickets
-                  </a>
-                )}
-              </div>
-
-              {/* Description - conditionally show if exists */}
-              {event.description && (
-                <p className="text-sm text-[var(--foreground)]/70">{event.description}</p>
               )}
 
-              {/* Collapsible action buttons section */}
-              <div>
-                <button 
-                  onClick={() => setShowMore(!showMore)}
-                  className="flex items-center justify-center gap-2 pt-2 w-full text-sm text-[var(--foreground)]/70 hover:text-[var(--primary)] transition-colors"
-                >
-                  <span>More options</span>
-                  <motion.div
-                    animate={{ rotate: showMore ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                    <AnimatePresence>
-                      {!showMore && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 blur-sm bg-[var(--primary)]/30 rounded-full animate-pulse"
-                        />
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                </button>
+              {/* Divider */}
+              <div className="h-px bg-[var(--border)] mb-3" />
 
-                <AnimatePresence>
-                  {showMore && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="grid grid-cols-2 gap-2 pt-4">
-                        {/* Venue page link */}
-                        <Link href={`/venues/${event.venueId}`} className="group">
-                          <div 
-                            className="text-center p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-[var(--secondary)]/50 transition-all"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Building className="w-4 h-4 mx-auto text-[var(--foreground)]/70 group-hover:text-[var(--secondary)]" />
-                            <span className="text-xs font-medium block mt-1 group-hover:text-[var(--secondary)]">
-                              Venue Page
-                            </span>
-                          </div>
-                        </Link>
-                        
-                        {/* Artist page link - assuming artistIds[0] is the main artist */}
-                        {event.artistIds && event.artistIds.length > 0 && (
-                          <Link href={`/artists/${event.artistIds[0]}`} className="group">
-                            <div 
-                              className="text-center p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-[var(--primary)]/50 transition-all"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Music className="w-4 h-4 mx-auto text-[var(--foreground)]/70 group-hover:text-[var(--primary)]" />
-                              <span className="text-xs font-medium block mt-1 group-hover:text-[var(--primary)]">
-                                Artist Page
-                              </span>
-                            </div>
-                          </Link>
-                        )}
-                      </div>
-                    </motion.div>
+              <div className="space-y-3 text-sm">
+                {/* Date Row with Today badge */}
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-[var(--foreground)]/70" />
+                  <span className="text-[var(--foreground)]">{formattedDate}</span>
+                  {isToday && (
+                    <div className="ml-auto inline-block px-2 py-1 bg-yellow-300 text-yellow-800 text-xs font-bold rounded-full animate-pulse">
+                      Today
+                    </div>
                   )}
-                </AnimatePresence>
+                </div>
+
+                {/* Time Row */}
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[var(--foreground)]/70" />
+                  <span className="text-[var(--foreground)]">
+                    {formattedTime}{endTime && ` - ${endTime}`}
+                  </span>
+                </div>
+
+                {/* Venue Row with single Directions link */}
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[var(--secondary)]/70" />
+                  <Link
+                    href={`/venues/${event.venueId}`}
+                    className="group text-[var(--secondary)] font-medium transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                  >
+                    {venue ? venue.name : event.venueName || "Unknown Venue"}
+                  </Link>
+                  {directionsUrl && (
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-[var(--foreground)]/70 text-xs hover:text-[var(--secondary)]"
+                    >
+                      Directions
+                    </a>
+                  )}
+                </div>
+
+                {/* Ticket Row */}
+                <div className="flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-yellow-500" />
+                  <span className="text-[var(--foreground)]">{ticketPrice}</span>
+                  {event.ticketUrl && (
+                    <a
+                      href={event.ticketUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-[var(--primary)] text-xs hover:underline"
+                    >
+                      Buy Tickets
+                    </a>
+                  )}
+                </div>
+
+                {/* Optional Event Details Link */}
+                {event.eventUrl && (
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4 text-[var(--foreground)]/70" />
+                    <a
+                      href={event.eventUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--primary)] text-xs hover:underline"
+                    >
+                      Event Details
+                    </a>
+                  </div>
+                )}
+
+                {/* Description */}
+                {event.description && (
+                  <p className="mt-2 text-[var(--foreground)]/80 text-sm leading-snug">
+                    {event.description}
+                  </p>
+                )}
               </div>
             </div>
+
+            {/* Share button at bottom right */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare();
+              }}
+              className="absolute bottom-2 right-2 p-2 rounded-full hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
+              aria-label="Share Event"
+            >
+              <Share2 className="w-5 h-5 text-[var(--foreground)]" />
+            </button>
           </motion.div>
         </div>
       )}
