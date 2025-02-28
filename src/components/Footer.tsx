@@ -26,7 +26,7 @@ export default function Footer() {
           </Link>
         ) : (
           <Link 
-            href="/profile" 
+            href="/admin" 
             className="inline-flex items-center text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors"
             title="Your Profile"
           >

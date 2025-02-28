@@ -1,13 +1,10 @@
-// src/components/events/createwizardsteps/ArtistStep/index.tsx
+// Refined update to ArtistStep component
 import { useState, useEffect, useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Input } from "@/components/ui/Input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Music } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { searchArtists } from '@/lib/services/artist-service';
 import type { Artist, EventFormData } from '@/lib/types';
 import { ArtistCard } from './ArtistCard';
@@ -69,7 +66,7 @@ export function ArtistStep({
             form.setValue('artists', [artist]);
             onArtistSelect?.(artist);
         } else {
-            const currentArtists = form.getValues('artists');
+            const currentArtists = form.getValues('artists') || [];
             if (!currentArtists.some(a => a.id === artist.id)) {
                 form.setValue('artists', [...currentArtists, artist]);
             }
@@ -77,93 +74,109 @@ export function ArtistStep({
     };
 
     const handleRemoveArtist = (artistId: string) => {
-        const currentArtists = form.getValues('artists');
+        const currentArtists = form.getValues('artists') || [];
         form.setValue('artists', currentArtists.filter(artist => artist.id !== artistId));
     };
 
     return (
-        <div className="space-y-4">
+        <div className="px-6 py-6">
             {/* Event Type Options */}
-            <Card className="mb-4">
-                <CardContent className="pt-4 space-y-2">
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="isOpenMic"
-                            checked={form.watch('isOpenMic')}
-                            onCheckedChange={(checked: boolean) => {
-                                form.setValue('isOpenMic', checked);
-                                if (checked) {
-                                    form.setValue('artists', []);
-                                    onNext?.();
+            <div className="bg-[var(--background-dark)] mb-6 rounded-lg p-4 border border-[var(--border)]">
+                <label className="flex items-center space-x-3 py-2 cursor-pointer">
+                    <div className="relative">
+                        <input
+                            type="radio"
+                            name="eventType"
+                            className="opacity-0 absolute h-0 w-0"
+                            checked={isOpenMic}
+                            onChange={() => {
+                                form.setValue('isOpenMic', true);
+                                if (form.getValues('isOpenMic') && onNext) {
+                                    onNext();
                                 }
                             }}
                         />
-                        <Label htmlFor="isOpenMic">This is an Open Mic event</Label>
-                    </div>
-    
-                    {!form.watch('isOpenMic') && (
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="multipleArtists"
-                                checked={multipleMode}
-                                onCheckedChange={(checked: boolean) => {
-                                    if (onToggleMultipleMode) {
-                                        onToggleMultipleMode(!!checked);
-                                    }
-                                    
-                                    if (!checked) {
-                                        form.setValue('artists', []);
-                                    }
-                                }}
-                            />
-                            <Label htmlFor="multipleArtists">List Multiple Artists?</Label>
+                        <div className={cn(
+                            "w-5 h-5 rounded-full border border-[var(--primary)]",
+                            isOpenMic ? "flex items-center justify-center" : ""
+                        )}>
+                            {isOpenMic && <div className="w-3 h-3 rounded-full bg-[var(--primary)]"></div>}
                         </div>
-                    )}
-                </CardContent>
-            </Card>
+                    </div>
+                    <span className="text-[var(--foreground)]">This is an Open Mic event</span>
+                </label>
+                
+                <label className="flex items-center space-x-3 py-2 cursor-pointer">
+                    <div className="relative">
+                        <input
+                            type="radio"
+                            name="eventType"
+                            className="opacity-0 absolute h-0 w-0"
+                            checked={!isOpenMic && multipleMode}
+                            onChange={() => {
+                                form.setValue('isOpenMic', false);
+                                if (onToggleMultipleMode) onToggleMultipleMode(true);
+                            }}
+                        />
+                        <div className={cn(
+                            "w-5 h-5 rounded-full border border-[var(--primary)]",
+                            !isOpenMic && multipleMode ? "flex items-center justify-center" : ""
+                        )}>
+                            {!isOpenMic && multipleMode && <div className="w-3 h-3 rounded-full bg-[var(--primary)]"></div>}
+                        </div>
+                    </div>
+                    <span className="text-[var(--foreground)]">List Multiple Artists?</span>
+                </label>
+            </div>
     
             {/* Artist Selection - Only show if not Open Mic */}
-            {!form.watch('isOpenMic') && (
+            {!isOpenMic && (
                 <>
                     {!showNewArtistForm ? (
                         <>
-                            <Input
-                                ref={searchInputRef}
-                                placeholder="Search for artists..."
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                className="w-full"
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Music className="w-5 h-5 text-[var(--primary)]" />
+                                </div>
+                                <input
+                                    ref={searchInputRef}
+                                    placeholder="Search for artists..."
+                                    value={searchTerm}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                                    style={{ borderColor: 'var(--primary)' }}
+                                />
+                            </div>
     
-                            <ScrollArea className={multipleMode ? "h-[300px]" : "h-[400px]"}>
-                                {loading ? (
-                                    <div className="p-4 text-center text-muted-foreground">
-                                        Searching artists...
-                                    </div>
-                                ) : searchResults.length > 0 ? (
-                                    searchResults.map((artist) => (
+                            {loading ? (
+                                <div className="text-center py-8 text-[var(--foreground-muted)]">
+                                    Searching artists...
+                                </div>
+                            ) : searchResults.length > 0 ? (
+                                <ScrollArea className="mt-4 max-h-[300px] border border-[var(--border)] rounded-lg overflow-hidden">
+                                    {searchResults.map((artist) => (
                                         <ArtistCard
                                             key={artist.id}
                                             artist={artist}
                                             onSelect={handleArtistSelect}
                                         />
-                                    ))
-                                ) : hasSearched && searchTerm.length >= 2 ? (
-                                    <div className="p-4 text-center space-y-4">
-                                        <p className="text-muted-foreground">No artists found</p>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setShowNewArtistForm(true)}
-                                        >
-                                            Add New Artist
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="p-4 text-center text-muted-foreground">
-                                        Start typing to search for artists
-                                    </div>
-                                )}
-                            </ScrollArea>
+                                    ))}
+                                </ScrollArea>
+                            ) : hasSearched && searchTerm.length >= 2 ? (
+                                <div className="text-center py-8 text-[var(--foreground-muted)]">
+                                    <p className="mb-4">No artists found</p>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowNewArtistForm(true)}
+                                    >
+                                        Add New Artist
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-[var(--foreground-muted)]">
+                                    Start typing to search for artists
+                                </div>
+                            )}
                         </>
                     ) : (
                         <NewArtistForm
@@ -177,11 +190,11 @@ export function ArtistStep({
                         />
                     )}
     
-                    {multipleMode && form.watch('artists').length > 0 && (
+                    {multipleMode && form.watch('artists')?.length > 0 && (
                         <div className="mt-4">
                             <h4 className="font-medium mb-2">Selected Artists</h4>
                             {form.watch('artists').map((artist: Artist) => (
-                                <div key={artist.id} className="flex items-center justify-between p-2 bg-accent rounded mb-2">
+                                <div key={artist.id} className="flex items-center justify-between p-2 bg-[var(--accent)] rounded mb-2">
                                     <span>{artist.name}</span>
                                     <Button
                                         variant="ghost"
@@ -198,23 +211,34 @@ export function ArtistStep({
                     <div className="flex gap-4 mt-6">
                         {onBack && (
                             <Button variant="outline" className="flex-1" onClick={onBack}>
-                                <ChevronLeft className="w-4 h-4 mr-1" />
                                 Back
                             </Button>
                         )}
                         
                         {multipleMode && (
                             <Button
-                                className="flex-1"
-                                disabled={form.watch('artists').length === 0}
+                                className="flex-1 bg-[var(--primary)] text-white"
+                                disabled={form.watch('artists')?.length === 0}
                                 onClick={onNext}
                             >
                                 Next
-                                <ChevronRight className="w-4 h-4 ml-1" />
                             </Button>
                         )}
                     </div>
                 </>
+            )}
+            
+            {isOpenMic && onNext && (
+                <div className="flex gap-4 mt-6">
+                    {onBack && (
+                        <Button variant="outline" className="flex-1" onClick={onBack}>
+                            Back
+                        </Button>
+                    )}
+                    <Button className="flex-1 bg-[var(--primary)] text-white" onClick={onNext}>
+                        Next
+                    </Button>
+                </div>
             )}
         </div>
     );

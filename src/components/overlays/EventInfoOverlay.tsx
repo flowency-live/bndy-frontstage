@@ -9,14 +9,15 @@ import {
   ExternalLink,
   Music,
   CalendarDays,
-  Share2
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
-import { Event, Artist } from "@/lib/types";
+import { Event, Artist, getSocialMediaURLs } from "@/lib/types";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
 import { getArtistById } from "@/lib/services/artist-service";
 import { getVenueById } from "@/lib/services/venue-service";
 import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
+import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface EventInfoOverlayProps {
   event: Event;
@@ -31,10 +32,12 @@ export default function EventInfoOverlay({
   isOpen,
   onClose,
   position = "map",
-  verticalOffset = 50
+  verticalOffset = 50,
 }: EventInfoOverlayProps) {
   const [artist, setArtist] = useState<Artist | null>(null);
   const [venue, setVenue] = useState<VenueData | null>(null);
+  // Flag to avoid repeated fetch attempts in overlay.
+  const [hasFetched, setHasFetched] = useState(false);
 
   // Fetch artist data from the first artist ID.
   useEffect(() => {
@@ -54,13 +57,18 @@ export default function EventInfoOverlay({
     }
   }, [event.venueId]);
 
+  // Extract artist social URLs to possibly fetch a profile picture.
+  const socialMediaURLs = artist ? getSocialMediaURLs(artist) : [];
+  const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
+  const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
+
   // Format date/time.
   const eventDate = new Date(event.date);
   const formattedDate = formatEventDate(eventDate);
   const formattedTime = event.startTime ? formatTime(event.startTime) : "Time TBA";
   const endTime = event.endTime ? formatTime(event.endTime) : undefined;
 
-  // Ticket price prefixed with "£" (or "£ree Entry" if zero).
+  // Ticket price.
   const ticketPrice =
     event.ticketPrice &&
     event.ticketPrice.trim() !== "" &&
@@ -73,7 +81,7 @@ export default function EventInfoOverlay({
   today.setHours(0, 0, 0, 0);
   const isToday = eventDate.getTime() === today.getTime();
 
-  // Generate a single directions URL using our helper.
+  // Generate directions URL.
   const directionsUrl = venue ? getDirectionsUrl(venue) : "";
 
   // Define the outer overlay container styles.
@@ -89,7 +97,7 @@ export default function EventInfoOverlay({
         await navigator.share({
           title: event.name,
           text: `Check out this event: ${event.name} on ${formattedDate} at ${formattedTime} at ${event.venueName}`,
-          url: window.location.href
+          url: window.location.href,
         });
       } catch (err) {
         console.error("Error sharing", err);
@@ -102,9 +110,7 @@ export default function EventInfoOverlay({
   return (
     <AnimatePresence>
       {isOpen && (
-        // The outer container listens for clicks to close the overlay.
         <div className={overlayStyles} onClick={onClose}>
-          {/* Stop propagation on the overlay card so that clicks inside do not trigger onClose */}
           <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.9 }}
@@ -113,44 +119,57 @@ export default function EventInfoOverlay({
             className="relative w-[320px] bg-[var(--background)] rounded-lg shadow-lg border border-[var(--border)]"
             style={{ boxShadow: "0 4px 10px rgba(0,0,0,0.15)" }}
           >
-            {/* Orange highlight strip on the left */}
             <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
             <div className="p-4 pl-6">
-              {/* Artist Header */}
-              {event.artistIds && event.artistIds.length > 0 ? (
+              {event.artistIds && event.artistIds.length > 0 && artist && (
                 <Link
                   href={`/artists/${event.artistIds[0]}`}
-                  className="group flex items-start gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
+                  className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
                 >
-                  <div className="w-[3.125rem] h-[3.125rem] bg-[var(--primary-translucent)] rounded-full flex-shrink-0 flex items-center justify-center">
-                    <Music className="w-5 h-5 text-[var(--primary)]" />
+                  <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
+                    {artist.profileImageUrl ? (
+                      <img
+                        src={artist.profileImageUrl}
+                        alt=""
+                        className="object-cover w-full h-full"
+                        onError={() => {
+                          console.log("Overlay: Profile image failed; reverting to icon.");
+                          setArtist({ ...artist, profileImageUrl: "" });
+                          setHasFetched(true);
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
+                        <Music className="w-5 h-5 text-[var(--primary)]" />
+                      </div>
+                    )}
+                    {!artist.profileImageUrl && !hasFetched && (
+                      <ProfilePictureFetcher
+                        facebookUrl={fbURL}
+                        instagramUrl={igURL}
+                        onPictureFetched={(url) => {
+                          console.log("Overlay: Fetched profile picture URL:", url);
+                          setArtist({ ...artist, profileImageUrl: url });
+                          setHasFetched(true);
+                        }}
+                      />
+                    )}
                   </div>
                   <div className="flex flex-col">
-                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                      {artist ? artist.name : "Loading artist..."}
-                    </h2>
+                    {artist.name && (
+                      <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                        {artist.name}
+                      </h2>
+                    )}
                     <span className="text-xs text-[var(--primary)]">(view artist)</span>
                   </div>
                 </Link>
-              ) : (
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-[3.125rem] h-[3.125rem] bg-[var(--primary-translucent)] rounded-full flex-shrink-0 flex items-center justify-center">
-                    <Music className="w-5 h-5 text-[var(--primary)]" />
-                  </div>
-                  <div className="flex flex-col">
-                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                      Unknown Artist
-                    </h2>
-                  </div>
-                </div>
               )}
 
-              {/* Divider */}
               <div className="h-px bg-[var(--border)] mb-3" />
 
               <div className="space-y-3 text-sm">
-                {/* Date Row with Today badge */}
                 <div className="flex items-center gap-2">
                   <CalendarDays className="w-4 h-4 text-[var(--foreground)]/70" />
                   <span className="text-[var(--foreground)]">{formattedDate}</span>
@@ -161,7 +180,6 @@ export default function EventInfoOverlay({
                   )}
                 </div>
 
-                {/* Time Row */}
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[var(--foreground)]/70" />
                   <span className="text-[var(--foreground)]">
@@ -169,7 +187,6 @@ export default function EventInfoOverlay({
                   </span>
                 </div>
 
-                {/* Venue Row with single Directions link */}
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[var(--secondary)]/70" />
                   <Link
@@ -190,7 +207,6 @@ export default function EventInfoOverlay({
                   )}
                 </div>
 
-                {/* Ticket Row */}
                 <div className="flex items-center gap-2">
                   <Ticket className="w-4 h-4 text-yellow-500" />
                   <span className="text-[var(--foreground)]">{ticketPrice}</span>
@@ -206,7 +222,6 @@ export default function EventInfoOverlay({
                   )}
                 </div>
 
-                {/* Optional Event Details Link */}
                 {event.eventUrl && (
                   <div className="flex items-center gap-2">
                     <ExternalLink className="w-4 h-4 text-[var(--foreground)]/70" />
@@ -221,7 +236,6 @@ export default function EventInfoOverlay({
                   </div>
                 )}
 
-                {/* Description */}
                 {event.description && (
                   <p className="mt-2 text-[var(--foreground)]/80 text-sm leading-snug">
                     {event.description}
@@ -230,7 +244,6 @@ export default function EventInfoOverlay({
               </div>
             </div>
 
-            {/* Share button at bottom right */}
             <button
               onClick={(e) => {
                 e.stopPropagation();

@@ -2,19 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Building,
-  Music,
-  Globe
-} from "lucide-react";
+import { ArrowLeft, Building, Music, Globe } from "lucide-react";
 import { FaFacebook, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa";
 import { XIcon } from "@/components/ui/icons/XIcon";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Artist, Venue, SocialMediaURL, SocialPlatform, getSocialMediaURLs } from "@/lib/types";
+import {
+  Artist,
+  Venue,
+  SocialMediaURL,
+  SocialPlatform,
+  getSocialMediaURLs,
+} from "@/lib/types";
 import { useViewToggle } from "@/context/ViewToggleContext";
+import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 // Social media brand colors for hover effects
 const SOCIAL_COLORS: Record<SocialPlatform, string> = {
@@ -23,7 +24,7 @@ const SOCIAL_COLORS: Record<SocialPlatform, string> = {
   facebook: "#1877F2",
   instagram: "#E4405F",
   youtube: "#FF0000",
-  x: "#000000"
+  x: "#000000",
 };
 
 interface VADetailHeaderProps {
@@ -44,8 +45,19 @@ export default function VADetailHeader({
   const isVenue = type === "venue";
   const isArtist = type === "artist";
 
+  // Maintain local state for the profile picture.
+  const [profileImageUrl, setProfileImageUrl] = useState(
+    "profileImageUrl" in item ? item.profileImageUrl : ""
+  );
+  // New flag to avoid repeated fetch attempts.
+  const [hasFetched, setHasFetched] = useState(false);
+
   // Get social media URLs using the shared helper function.
   const socialMediaURLs: SocialMediaURL[] = getSocialMediaURLs(item);
+
+  // Look for Facebook and Instagram URLs.
+  const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
+  const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
 
   // Determine primary color & header background based on type.
   const primaryColor = isVenue ? "var(--secondary)" : "var(--primary)";
@@ -71,9 +83,7 @@ export default function VADetailHeader({
     onChange && onChange("name", e.target.value);
   };
 
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
     onChange && onChange("description", e.target.value);
   };
@@ -123,11 +133,16 @@ export default function VADetailHeader({
             className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0 mr-4 border-4"
             style={{ borderColor: primaryColor, backgroundColor: "var(--background)" }}
           >
-            {("profileImageUrl" in item && item.profileImageUrl) ? (
+            {profileImageUrl ? (
               <img
-                src={item.profileImageUrl}
-                alt={item.name}
+                src={profileImageUrl}
+                alt=""
                 className="object-cover w-full h-full"
+                onError={() => {
+                  console.log("Profile image failed to load; reverting to icon.");
+                  setProfileImageUrl("");
+                  setHasFetched(true);
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800">
@@ -137,6 +152,18 @@ export default function VADetailHeader({
                   <Music className="w-10 h-10" style={{ color: "var(--primary)" }} />
                 )}
               </div>
+            )}
+            {/* Mount the fetcher only once if no image is set */}
+            {!profileImageUrl && !hasFetched && (
+              <ProfilePictureFetcher
+                facebookUrl={fbURL}
+                instagramUrl={igURL}
+                onPictureFetched={(url) => {
+                  console.log("Fetched profile picture:", url);
+                  setProfileImageUrl(url);
+                  setHasFetched(true);
+                }}
+              />
             )}
           </div>
           {/* Title, description & social icons (right) */}
