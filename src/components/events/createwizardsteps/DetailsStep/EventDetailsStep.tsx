@@ -1,8 +1,8 @@
 //src\components\events\createwizardsteps\EventDetailsStep.tsx
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Artist, Venue } from '@/lib/types';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import {

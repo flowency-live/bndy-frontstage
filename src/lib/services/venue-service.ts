@@ -104,53 +104,92 @@ export async function getAllVenues(): Promise<Venue[]> {
 /**
  * Search for venues in Firestore and Google Places
  */
+// In venue-service.ts
 export async function searchVenues(searchTerm: string): Promise<Venue[]> {
   if (!searchTerm || searchTerm.length < 3) return [];
-  
+
+  // 1. Firestore fuzzy search
+  const existingVenues = await getFuzzyMatchedVenues(searchTerm);
+  if (existingVenues.length > 0) {
+    return existingVenues.map(v => ({ ...v, validated: true }));
+  }
+
+  // 2. If no Firestore match, do Google Places
+  const placesResults = await searchVenueWithIncreasingRadius(searchTerm);
+
+  // 3. Cross-check each Place against your bf_venues
+  const allBfVenues = await getAllVenues(); // or you can store them in memory
+  const filteredPlaces = placesResults.filter(place => {
+    // a) Check googlePlaceId
+    const placeIdMatch = place.place_id && allBfVenues.some(
+      v => v.googlePlaceId === place.place_id
+    );
+    if (placeIdMatch) return false; // skip, already in Firestore
+
+    // b) Or do a name+address fuzzy check
+    const placeName = (place.name || "").trim().toLowerCase();
+    const placeAddr = (place.formatted_address || "").trim().toLowerCase();
+
+    return !allBfVenues.some(v => {
+      const vName = (v.name || "").trim().toLowerCase();
+      const vAddr = (v.address || "").trim().toLowerCase();
+      // A simple check:
+      return vName === placeName && vAddr === placeAddr;
+    });
+  });
+
+  // 4. Convert filtered places into your Venue objects
+  const now = new Date().toISOString();
+  return filteredPlaces.map(place => ({
+    name: place.name || '',
+    address: place.formatted_address || '',
+    location: place.geometry?.location?.toJSON() || { lat: 0, lng: 0 },
+    googlePlaceId: place.place_id || '',
+    validated: false,
+    id: '',
+    createdAt: now,
+    updatedAt: now,
+  }));
+}
+
+/**
+ * Token-based matching:
+ *   - Split the searchTerm by spaces => tokens
+ *   - Combine name + address => single string
+ *   - Return true if *every* token is found somewhere in that combined string.
+ */
+function matchAllTokens(venue: Venue, searchTerm: string): boolean {
+  const tokens = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
+  const combined = ((venue.name || "") + " " + (venue.address || "")).toLowerCase();
+
+  // Check if every token is included in the combined string
+  return tokens.every(token => combined.includes(token));
+}
+
+export async function getFuzzyMatchedVenues(searchTerm: string): Promise<Venue[]> {
+  if (!searchTerm || searchTerm.length < 2) {
+    return [];
+  }
+
   try {
-    // First search in Firestore
-    const venuesRef = collection(db, COLLECTIONS.VENUES);
-    const snapshot = await getDocs(venuesRef);
-    
-    const existingVenues = snapshot.docs
-      .filter(doc => {
-        const data = doc.data();
-        const nameMatch = data.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const variantMatch = data.nameVariants?.some(
-          (variant: string) => variant.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        return nameMatch || variantMatch;
-      })
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        validated: true
-      })) as Venue[];
-
-    if (existingVenues.length > 0) {
-      return existingVenues;
-    }
-
-    // If no Firestore matches, try Google Places API
-    const placesResults = await searchVenueWithIncreasingRadius(searchTerm);
-    const now = new Date().toISOString();
-    
-    return placesResults.map(place => ({
-      name: place.name || '',
-      address: place.formatted_address || '',
-      location: place.geometry?.location?.toJSON() || { lat: 0, lng: 0 },
-      googlePlaceId: place.place_id,
-      validated: false,
-      id: '',  // Will be assigned when saved
-      createdAt: now,
-      updatedAt: now
+    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
+    const allVenues = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
     })) as Venue[];
 
+    // Filter by nameVariants too, if desired:
+    // For each token, check if it appears in nameVariants
+    // But let's keep it simpler for now.
+
+    return allVenues.filter(venue => matchAllTokens(venue, searchTerm));
   } catch (error) {
-    console.error('Error searching venues:', error);
+    console.error("Error in getFuzzyMatchedVenues:", error);
     return [];
   }
 }
+
+
 
 /**
  * Get venues by admin user ID
@@ -292,4 +331,82 @@ export function extractPostcodeFromAddress(address: string): string | null {
   const match = address.match(postcodeRegex);
   
   return match ? match[0] : null;
+}
+
+
+// Add this function to your existing venue-service.ts file
+
+/**
+ * Search Google Places API directly for venues
+ * This is used for creating new venues that don't exist in the database yet
+ */
+export async function searchGooglePlaces(query: string): Promise<Venue[]> {
+  if (!query || query.length < 2 || !window.google || !window.google.maps) {
+    return [];
+  }
+
+  try {
+    // Create a new session token for each search
+    const sessionToken = new google.maps.places.AutocompleteSessionToken();
+    const autocompleteService = new google.maps.places.AutocompleteService();
+    const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+
+    // Get predictions from Google Places
+    const predictions = await new Promise<google.maps.places.AutocompletePrediction[]>((resolve, reject) => {
+      autocompleteService.getPlacePredictions({
+        input: query,
+        types: ['establishment'],
+        componentRestrictions: { country: 'gb' },
+        sessionToken
+      }, (predictions, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+          resolve(predictions);
+        } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          resolve([]);
+        } else {
+          reject(status);
+        }
+      });
+    });
+
+    // Get details for each prediction
+    const venues = await Promise.all(
+      predictions.map(prediction => 
+        new Promise<Venue | null>((resolve) => {
+          placesService.getDetails({
+            placeId: prediction.place_id,
+            fields: ['name', 'formatted_address', 'geometry', 'place_id'],
+            sessionToken
+          }, (place, detailStatus) => {
+            if (detailStatus === google.maps.places.PlacesServiceStatus.OK && place) {
+              // Create a venue object from the place details
+              const venue: Venue = {
+                id: '', // Will be assigned when saved
+                name: place.name || '',
+                address: place.formatted_address || '',
+                googlePlaceId: place.place_id || '',
+                location: {
+                  lat: place.geometry?.location?.lat() || 0,
+                  lng: place.geometry?.location?.lng() || 0
+                },
+                socialMediaURLs: [],
+                validated: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              resolve(venue);
+            } else {
+              resolve(null);
+            }
+          });
+        })
+      )
+    );
+
+    // Filter out null results
+    return venues.filter(venue => venue !== null) as Venue[];
+  } catch (error) {
+    console.error("Error searching Google Places:", error);
+    return [];
+  }
 }

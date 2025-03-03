@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Event } from "@/lib/types";
 import { Ticket, Map, Calendar, Clock, Sparkles } from "lucide-react";
 import { formatTime } from "@/lib/utils/date-utils";
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
 interface TodayEventHighlightProps {

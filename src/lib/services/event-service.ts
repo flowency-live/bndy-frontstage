@@ -349,74 +349,70 @@ export async function checkEventConflicts({
   date: Date, 
   isOpenMic: boolean 
 }) {
-  // Format date as YYYY-MM-DD string for Firestore query
   const dateStr = date.toISOString().split('T')[0];
   
   try {
-      // Get all events for this specific date only - we don't filter by time
-      const eventsRef = collection(db, COLLECTIONS.EVENTS);
-      const q = query(
-          eventsRef,
-          where('date', '==', dateStr)
-      );
-      const snapshot = await getDocs(q);
-      const existingEvents = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-      })) as Event[];
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const q = query(
+      eventsRef,
+      where('date', '==', dateStr)
+    );
+    const snapshot = await getDocs(q);
+    const existingEvents = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Event[];
 
-      console.log(`Found ${existingEvents.length} events on ${dateStr}`);
+    console.log(`Found ${existingEvents.length} events on ${dateStr}`);
+    
+    let conflicts: { type: string; name: string; existingEvent: Event }[] = [];
+    let fullMatchConflict = false;
+    
+    existingEvents.forEach(existingEvent => {
+      const venueMatch = existingEvent.venueId === venue?.id;
+      const artistMatch = !isOpenMic && existingEvent.artistIds?.some(
+        id => artists.some(a => a.id === id)
+      );
+
+      console.log(`Checking event ${existingEvent.id}: venueMatch=${venueMatch}, artistMatch=${artistMatch}, isOpenMic=${isOpenMic}`);
       
-      let conflicts: { type: string; name: string; existingEvent: Event }[] = [];
-      let fullMatchConflict = false;
+      if (venueMatch) {
+        console.log(`Pushing venue conflict for event ${existingEvent.id}`);
+        conflicts.push({
+          type: "venue",
+          name: venue.name,
+          existingEvent
+        });
+      }
       
-      // Check each existing event for conflicts
-      existingEvents.forEach(existingEvent => {
-          // Venue conflict: same venue on same date
-          const venueMatch = existingEvent.venueId === venue?.id;
-          
-          // Artist conflict: at least one artist in common (if not open mic)
-          const artistMatch = !isOpenMic && existingEvent.artistIds?.some(
-              id => artists.some(a => a.id === id)
-          );
-          
-          if (venueMatch) {
-              conflicts.push({
-                  type: "venue",
-                  name: venue.name,
-                  existingEvent
-              });
-          }
-          
-          if (!isOpenMic && artistMatch) {
-              const conflictingArtist = artists.find(
-                  a => existingEvent.artistIds.includes(a.id)
-              );
-              
-              conflicts.push({
-                  type: "artist",
-                  name: conflictingArtist?.name || "Unknown Artist",
-                  existingEvent
-              });
-          }
-          
-          // For Open Mic, exact duplicate is just venue match on same date
-          // For regular events, need both venue and artist match
-          if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
-              (!isOpenMic && venueMatch && artistMatch)) {
-              fullMatchConflict = true;
-              
-              conflicts.push({
-                  type: "exact_duplicate",
-                  name: "This event already exists!",
-                  existingEvent
-              });
-          }
-      });
+      if (!isOpenMic && artistMatch) {
+        const conflictingArtist = artists.find(
+          a => existingEvent.artistIds.includes(a.id)
+        );
+        console.log(`Pushing artist conflict for event ${existingEvent.id}: ${conflictingArtist?.name}`);
+        conflicts.push({
+          type: "artist",
+          name: conflictingArtist?.name || "Unknown Artist",
+          existingEvent
+        });
+      }
       
-      return { conflicts, fullMatchConflict };
+      if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
+          (!isOpenMic && venueMatch && artistMatch)) {
+        fullMatchConflict = true;
+        console.log(`Exact duplicate found for event ${existingEvent.id}`);
+        conflicts.push({
+          type: "exact_duplicate",
+          name: "This event already exists!",
+          existingEvent
+        });
+      }
+    });
+    
+    console.log("Final conflicts array:", conflicts);
+    return { conflicts, fullMatchConflict };
   } catch (error) {
-      console.error("Error checking for conflicts:", error);
-      return { conflicts: [], fullMatchConflict: false };
+    console.error("Error checking for conflicts:", error);
+    return { conflicts: [], fullMatchConflict: false };
   }
 }

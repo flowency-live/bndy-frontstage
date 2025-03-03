@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 
 // Add these interfaces at the top
 interface TableHTMLAttributes extends React.HTMLAttributes<HTMLTableElement> {

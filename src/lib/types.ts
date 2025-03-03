@@ -44,6 +44,7 @@ export interface Artist {
   updatedAt: string;
   profileImageUrl?: string;
   description?: string;
+  location?:string
 }
 
 // Artist and Venue Social Media URLs
@@ -128,11 +129,6 @@ export interface User {
   isAdmin?: boolean;
 }
 
-// =========================================
-// FUTURE IMPLEMENTATION TYPES - NOT CURRENTLY USED
-// =========================================
-
-// TODO: These types will be implemented in future iterations
 
 // Recurring Event Types
 export type RecurringFrequency = 'weekly' | 'monthly';

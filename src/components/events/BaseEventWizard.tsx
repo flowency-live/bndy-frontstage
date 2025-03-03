@@ -94,13 +94,22 @@ export function BaseEventWizard({
 
     const handleStepComplete = (stepId: StepId) => {
         setCompletedSteps(prev => new Set([...prev, stepId]));
+
+        // Get the next step if available
+        const currentIndex = AVAILABLE_STEPS.findIndex(s => s.id === stepId);
+        if (currentIndex < AVAILABLE_STEPS.length - 1) {
+            const nextStep = AVAILABLE_STEPS[currentIndex + 1].id;
+            setCurrentStep(nextStep);
+        }
     };
 
     const handleStepChange = (stepId: StepId) => {
         const currentIndex = AVAILABLE_STEPS.findIndex(s => s.id === currentStep);
         const newIndex = AVAILABLE_STEPS.findIndex(s => s.id === stepId);
 
+        // Only allow moving to completed steps or the next step
         if (newIndex === currentIndex + 1 || completedSteps.has(stepId)) {
+            // Important: Don't trigger form submission, just change the step
             setCurrentStep(stepId);
         }
     };
@@ -108,7 +117,7 @@ export function BaseEventWizard({
     const handleSubmit = async (data: EventFormData) => {
         setLoading(true);
         try {
-            // First create venue if it's new
+            // Create venue if it's new
             let venueId = data.venue.id;
             if (!venueId) {
                 const newVenue = await createVenue({
@@ -121,16 +130,16 @@ export function BaseEventWizard({
                 venueId = newVenue.id;
                 data.venue = newVenue;
             }
-
+    
             if (data.recurring) {
-                // Generate all event dates
+                // Generate all event dates for recurring events
                 const dates = generateRecurringDates(
                     data.date,
                     data.recurring.endDate,
                     data.recurring.frequency
                 );
-
-                // Create each event
+    
+                // Create an event for each date
                 await Promise.all(dates.map(async (date) => {
                     const eventData = {
                         ...data,
@@ -143,12 +152,13 @@ export function BaseEventWizard({
                         source: 'bndy.live' as const,
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
+                        ...(data.endTime ? { endTime: data.endTime } : {}),
                     };
-
+    
                     await createEvent(eventData);
                 }));
             } else {
-                // Create single event
+                // Create a single event
                 const eventData = {
                     ...data,
                     venueId,
@@ -159,23 +169,24 @@ export function BaseEventWizard({
                     source: 'bndy.live' as const,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
+                    ...(data.endTime ? { endTime: data.endTime } : {}),
                 };
-
+    
                 await createEvent(eventData);
             }
-
+    
             toast({
                 title: data.recurring ? "Recurring Events Created!" : "Event Created!",
                 description: "Successfully added to the calendar.",
             });
-
+    
             if (map && data.venue.location) {
                 setTimeout(() => {
                     map.panTo(data.venue.location);
                     map.setZoom(15);
                 }, 300);
             }
-
+    
             onSuccess();
         } catch (error) {
             console.error('Error creating event:', error);
@@ -188,6 +199,7 @@ export function BaseEventWizard({
             setLoading(false);
         }
     };
+    
 
     // Dynamic title based on form state
     const title = useMemo(() => {
@@ -234,6 +246,7 @@ export function BaseEventWizard({
         const currentIndex = AVAILABLE_STEPS.findIndex(s => s.id === currentStep);
         if (currentIndex > 0) {
             const prevStep = AVAILABLE_STEPS[currentIndex - 1].id;
+            // Just change the step, don't trigger form submission
             setCurrentStep(prevStep);
         }
     };
@@ -281,8 +294,21 @@ export function BaseEventWizard({
 
             <div className="text-lg font-semibold mb-6">{title}</div>
 
+            
+
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <form
+                    onSubmit={(e) => {
+                        // Only allow submission in the details step
+                        if (currentStep !== 'details') {
+                            e.preventDefault();
+                            return false;
+                        }
+                        // Otherwise, use the form's handleSubmit
+                        form.handleSubmit(handleSubmit)(e);
+                    }}
+                    className="space-y-4"
+                >
                     {currentStep === 'venue' && (
                         <VenueStep
                             form={form}
@@ -302,8 +328,6 @@ export function BaseEventWizard({
                                 }
 
                                 handleStepComplete('venue');
-                                const nextStep = skipArtistStep ? 'date' : 'artists';
-                                handleStepChange(nextStep);
                             }}
                         />
                     )}
@@ -314,14 +338,14 @@ export function BaseEventWizard({
                             multipleMode={multipleArtists}
                             onToggleMultipleMode={setMultipleArtists}
                             onArtistSelect={(artist: Artist) => {
-                                if (!multipleArtists) {
+                                // For single artist selection mode
+                                if (!multipleArtists && !form.getValues('isOpenMic')) {
                                     handleStepComplete('artists');
-                                    handleStepChange('date');
                                 }
                             }}
                             onNext={() => {
+                                // For multiple artists mode or open mic
                                 handleStepComplete('artists');
-                                handleStepChange('date');
                             }}
                             onBack={handleBack}
                         />
@@ -332,7 +356,6 @@ export function BaseEventWizard({
                             form={form}
                             onComplete={() => {
                                 handleStepComplete('date');
-                                handleStepChange('time');
                             }}
                             onBack={handleBack}
                         />
@@ -343,7 +366,6 @@ export function BaseEventWizard({
                             form={form}
                             onComplete={() => {
                                 handleStepComplete('time');
-                                handleStepChange('details');
                             }}
                             onBack={handleBack}
                         />

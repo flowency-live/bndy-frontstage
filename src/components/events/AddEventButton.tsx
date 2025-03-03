@@ -1,6 +1,6 @@
 // src/components/events/AddEventButton.tsx
 import { Plus } from 'lucide-react';
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -23,13 +23,14 @@ export function AddEventButton({ map }: AddEventButtonProps) {
   const { isGodMode } = useAuth();
 
   // Only show the button if the user is an admin
+
   if (!isGodMode) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
       <Button
-  className="fixed bottom-4 right-4 z-10 bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-6 py-3 shadow-lg"
+  className="fixed bottom-10 right-4 z-10 bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-6 py-3 shadow-lg"
 >
   <Plus className="w-4 h-4 mr-2" />
   Add Event

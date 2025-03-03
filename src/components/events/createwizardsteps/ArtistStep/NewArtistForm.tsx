@@ -1,8 +1,8 @@
 // src/components/events/steps/ArtistStep/NewArtistForm.tsx
 import { useState } from 'react';
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, X } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
 import type { Artist } from '@/lib/types';

@@ -1,21 +1,30 @@
-// /components/admin/ArtistsTable.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { collection, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { Artist } from "@/lib/types";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
-import { Pencil, Trash2, Save, X } from "lucide-react";
+import Link from "next/link";
+import { PlusCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,258 +36,210 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface Artist {
-  id: string;
-  name: string;
-  genres?: string[];
-  facebookUrl?: string;
-  instagramUrl?: string;
-  spotifyUrl?: string;
-  websiteUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export function ArtistsTable() {
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Partial<Artist>>({});
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("all");
+  const [selectedArtists, setSelectedArtists] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    loadArtists();
+    fetchArtists();
   }, []);
 
-  const loadArtists = async () => {
-    setLoading(true);
+  const fetchArtists = async () => {
     try {
+      setLoading(true);
       const snapshot = await getDocs(collection(db, COLLECTIONS.ARTISTS));
       const artistData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Artist[];
+      setArtists(artistData);
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Sort artists by name
-      const sortedArtists = artistData.sort((a, b) =>
-        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+  const filteredArtists = artists.filter((artist) => {
+    const matchesSearch = 
+      searchTerm === "" || 
+      artist.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artist.location?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterType === "missing-facebook") {
+      const hasFacebookUrl = artist.socialMediaURLs?.some(sm => 
+        sm.platform === "facebook" && sm.url && sm.url.trim() !== ""
       );
-      setArtists(sortedArtists);
-    } catch (error) {
-      console.error("Error loading artists:", error);
-    } finally {
-      setLoading(false);
+      return matchesSearch && !hasFacebookUrl;
+    }
+    return matchesSearch;
+  });
+
+  // Compute duplicate counts by name
+  const duplicateCounts = filteredArtists.reduce<Record<string, number>>((acc, artist) => {
+    const key = (artist.name || "").trim().toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  const getSocialMediaUrl = (artist: Artist, platform: string): string => {
+    return artist.socialMediaURLs?.find(sm => sm.platform === platform)?.url || "Not set";
+  };
+
+  // Selection handling
+  const handleSelect = (id: string) => {
+    setSelectedArtists((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedArtists.size === filteredArtists.length) {
+      setSelectedArtists(new Set());
+    } else {
+      setSelectedArtists(new Set(filteredArtists.map((artist) => artist.id)));
     }
   };
 
-  const startEditing = (artist: Artist) => {
-    setEditingId(artist.id);
-    setEditData(artist);
-  };
-
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditData({});
-  };
-
-  const saveEditing = async (id: string) => {
-    setLoading(true);
+  const handleBatchDelete = async () => {
     try {
-      const artistRef = doc(db, COLLECTIONS.ARTISTS, id);
-      await updateDoc(artistRef, {
-        ...editData,
-        updatedAt: new Date().toISOString(),
-      });
-      cancelEditing();
-      loadArtists();
+      await Promise.all(
+        [...selectedArtists].map((id) => deleteDoc(doc(db, COLLECTIONS.ARTISTS, id)))
+      );
+      setSelectedArtists(new Set());
+      setConfirmDelete(false);
+      fetchArtists();
     } catch (error) {
-      console.error("Error updating artist:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error deleting artists:", error);
     }
   };
-
-  const deleteArtist = async (id: string) => {
-    setLoading(true);
-    try {
-      await deleteDoc(doc(db, COLLECTIONS.ARTISTS, id));
-      setDeleteConfirmId(null);
-      loadArtists();
-    } catch (error) {
-      console.error("Error deleting artist:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter artists based on search query.
-  const filteredArtists = artists.filter((artist) =>
-    artist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (artist.genres &&
-      artist.genres.join(", ").toLowerCase().includes(searchQuery.toLowerCase()))
-  );
 
   return (
-    <div>
-      <Input
-        type="text"
-        placeholder="Search artists..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="mb-4"
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Genres</TableHead>
-            <TableHead>Social Links</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredArtists.map((artist, index) => (
-            <TableRow key={artist.id || `artist-${index}`}>
-              <TableCell>
-                {editingId === artist.id ? (
-                  <Input
-                    value={editData.name || ""}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                  />
-                ) : (
-                  artist.name
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === artist.id ? (
-                  <Input
-                    value={editData.genres?.join(", ") || ""}
-                    onChange={(e) =>
-                      setEditData((prev) => ({
-                        ...prev,
-                        genres: e.target.value.split(",").map((g) => g.trim()),
-                      }))
-                    }
-                    placeholder="Comma-separated genres"
-                  />
-                ) : (
-                  artist.genres?.join(", ")
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === artist.id ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={editData.facebookUrl || ""}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          facebookUrl: e.target.value,
-                        }))
-                      }
-                      placeholder="Facebook URL"
-                    />
-                    <Input
-                      value={editData.instagramUrl || ""}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          instagramUrl: e.target.value,
-                        }))
-                      }
-                      placeholder="Instagram URL"
-                    />
-                    <Input
-                      value={editData.spotifyUrl || ""}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          spotifyUrl: e.target.value,
-                        }))
-                      }
-                      placeholder="Spotify URL"
-                    />
-                    <Input
-                      value={editData.websiteUrl || ""}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          websiteUrl: e.target.value,
-                        }))
-                      }
-                      placeholder="Website URL"
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {artist.facebookUrl && <div>FB: {artist.facebookUrl}</div>}
-                    {artist.instagramUrl && <div>IG: {artist.instagramUrl}</div>}
-                    {artist.spotifyUrl && <div>Spotify: {artist.spotifyUrl}</div>}
-                    {artist.websiteUrl && <div>Web: {artist.websiteUrl}</div>}
-                  </div>
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {editingId === artist.id ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => saveEditing(artist.id)}
-                      >
-                        <Save className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={cancelEditing}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditing(artist)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setDeleteConfirmId(artist.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Artists</h2>
+        <Link href="/admin/artists/create">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Artist
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="flex flex-wrap gap-2">
+        <Input
+          placeholder="Search artists..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="mb-4"
+        />
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Artists</SelectItem>
+            <SelectItem value="missing-facebook">Missing Facebook URL</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <AlertDialog
-        open={!!deleteConfirmId}
-        onOpenChange={() => setDeleteConfirmId(null)}
-      >
+      {selectedArtists.size > 0 && (
+        <div className="mb-4">
+          <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+            Delete Selected ({selectedArtists.size})
+          </Button>
+        </div>
+      )}
+      
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <Checkbox
+                  checked={
+                    selectedArtists.size === filteredArtists.length &&
+                    filteredArtists.length > 0
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Facebook URL</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  Loading artists...
+                </TableCell>
+              </TableRow>
+            ) : filteredArtists.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No artists found
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredArtists.map((artist, index) => {
+                const key = (artist.name || "").trim().toLowerCase();
+                const isDuplicate = duplicateCounts[key] > 1;
+                return (
+                  <TableRow
+                    key={artist.id || `artist-${index}`}
+                    className={isDuplicate ? "bg-yellow-50" : ""}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedArtists.has(artist.id)}
+                        onCheckedChange={() => handleSelect(artist.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {artist.name} {isDuplicate && <span className="text-xs text-red-600">(Duplicate)</span>}
+                    </TableCell>
+                    <TableCell>{artist.location || "Not set"}</TableCell>
+                    <TableCell>{getSocialMediaUrl(artist, "facebook")}</TableCell>
+                    <TableCell>
+                      <Link href={`/admin/artists/${artist.id}`}>
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={confirmDelete} onOpenChange={() => setConfirmDelete(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the artist.
+              This will permanently delete {selectedArtists.size} artist(s). This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                deleteConfirmId && deleteArtist(deleteConfirmId)
-              }
-            >
+            <AlertDialogAction onClick={handleBatchDelete}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

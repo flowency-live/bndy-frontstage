@@ -1,6 +1,6 @@
 // src/components/ui/time-select.tsx
 import React, { useRef, useState, useEffect } from 'react';
-import { Button } from "./Button";
+import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { formatTime } from '@/lib/utils/date-utils';
 import { Clock, ChevronUp, ChevronDown } from "lucide-react";

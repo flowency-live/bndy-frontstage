@@ -1,4 +1,3 @@
-// src/app/venues/[venueId]/page.tsx
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -6,17 +5,17 @@ import { useParams } from "next/navigation";
 import { getVenueById, updateVenue } from "@/lib/services/venue-service";
 import { getEventsForVenue } from "@/lib/services/event-service";
 import { Venue, Event, SocialMediaURL } from "@/lib/types";
-import { Map as MapIcon, ExternalLink, Globe, Facebook, Phone, Mail, XCircle, Plus } from "lucide-react";
-import DetailHeader from "@/components/shared/VADetailHeader";
+import { MapIcon, ExternalLink, Globe, Facebook, Phone, Mail, XCircle, Plus } from "lucide-react";
+import VADetailHeader from "@/components/shared/VADetailHeader";
 import VAEventsList from "@/components/shared/VAEventsList";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EditModeToggle from "@/components/shared/EditModeToggle";
 import ClaimPageButton from "@/components/shared/ClaimPageButton";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { VenueAddEventButton } from "@/components/events/VenueAddEventButton";
 
 function VenueProfileContent() {
@@ -67,7 +66,8 @@ function VenueProfileContent() {
         setEditFormData({
           name: venueData.name,
           description: venueData.description || "",
-          address: venueData.address ? `${venueData.address}${venueData.postcode ? ', ' + venueData.postcode : ''}` : "",
+          address: venueData.address || "",
+          postcode: venueData.postcode || "",
           phone: venueData.phone || "",
           email: venueData.email || ""
         });
@@ -75,7 +75,7 @@ function VenueProfileContent() {
         // Initialize facilities
         setFacilities(venueData.facilities || []);
         
-        // Initialize social links
+        // Initialize social links with existing values
         const links = {
           website: "",
           facebook: ""
@@ -141,6 +141,20 @@ function VenueProfileContent() {
     setFacilities(prev => prev.filter(facility => facility !== facilityToRemove));
   };
 
+  const handleHeaderChange = (field: string, value: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleProfileImageUpdate = (url: string) => {
+    if (venue) {
+      const updatedVenue = { ...venue, profileImageUrl: url };
+      setVenue(updatedVenue);
+    }
+  };
+
   const handleSaveChanges = async () => {
     if (!venue) return;
     
@@ -204,219 +218,237 @@ function VenueProfileContent() {
     );
   }
 
+  // Create social media URLs array for the header
+  const headerSocialMediaURLs = Object.entries(socialLinks)
+    .filter(([_, url]) => url.trim() !== "")
+    .map(([platform, url]) => ({
+      platform: platform as any,
+      url
+    }));
+
   return (
     <>
-      {/* Header */}
-      <DetailHeader item={venue} type="venue" />
-
-      {/* Main Content */}
-      <div className="container mx-auto pt-28 pb-20 px-4 overflow-y-auto max-h-screen">
-        {/* Venue Information Section */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Venue Information</h2>
-            {/* Add VenueAddEventButton here */}
-            <VenueAddEventButton 
-              venue={venue} 
-              className="px-4 py-2 rounded-md text-sm" 
-            />
+      {/* Profile Header */}
+      <VADetailHeader 
+        item={venue} 
+        type="venue"
+        isEditing={isEditing}
+        onChange={handleHeaderChange}
+        overrideSocialMediaURLs={isEditing ? headerSocialMediaURLs : undefined}
+        onProfileImageUpdate={handleProfileImageUpdate}
+      />
+      
+      <div className="container mx-auto pt-48 pb-20 px-4">
+        {/* Venue Info */}
+        {venue.description && !isEditing && (
+          <div className="mb-6">
+            <p className="text-[var(--foreground)]/80">
+              {venue.description}
+            </p>
           </div>
-          
-          {isEditing ? (
-            <div className="space-y-4">
+        )}
+        
+        {/* Edit Form */}
+        {isEditing && (
+          <div className="space-y-4 mb-6">
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={editFormData.description || ""}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                Address
+              </label>
+              <Input
+                id="address"
+                name="address"
+                value={editFormData.address || ""}
+                onChange={handleInputChange}
+                className="w-full"
+                placeholder="Street address"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="postcode" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                Postcode
+              </label>
+              <Input
+                id="postcode"
+                name="postcode"
+                value={editFormData.postcode || ""}
+                onChange={handleInputChange}
+                className="w-full"
+                placeholder="Postcode"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Venue Name
+                <label htmlFor="phone" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Phone
                 </label>
                 <Input
-                  id="name"
-                  name="name"
-                  value={editFormData.name || ""}
+                  id="phone"
+                  name="phone"
+                  value={editFormData.phone || ""}
                   onChange={handleInputChange}
                   className="w-full"
                 />
               </div>
               
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Description
+                <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                  Email
                 </label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={editFormData.description || ""}
+                <Input
+                  id="email"
+                  name="email"
+                  value={editFormData.email || ""}
                   onChange={handleInputChange}
-                  rows={3}
                   className="w-full"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Full Address (including postcode)
-                </label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={editFormData.address || ""}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full"
-                  placeholder="Enter complete address with postcode"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Phone
-                  </label>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                Social Media
+              </label>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <Globe className="w-5 h-5 mr-2 text-[var(--foreground)]/70" />
                   <Input
-                    id="phone"
-                    name="phone"
-                    value={editFormData.phone || ""}
-                    onChange={handleInputChange}
-                    className="w-full"
+                    placeholder="Website URL"
+                    value={socialLinks.website}
+                    onChange={(e) => handleSocialLinkChange('website', e.target.value)}
+                    className="flex-1"
                   />
                 </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Email
-                  </label>
+                <div className="flex items-center">
+                  <Facebook className="w-5 h-5 mr-2 text-[var(--foreground)]/70" />
                   <Input
-                    id="email"
-                    name="email"
-                    value={editFormData.email || ""}
-                    onChange={handleInputChange}
-                    className="w-full"
+                    placeholder="Facebook URL"
+                    value={socialLinks.facebook}
+                    onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
+                    className="flex-1"
                   />
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Social Media
-                </label>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <Globe className="w-5 h-5 mr-2 text-[var(--foreground)]/70" />
-                    <Input
-                      placeholder="Website URL"
-                      value={socialLinks.website}
-                      onChange={(e) => handleSocialLinkChange('website', e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
-                  <div className="flex items-center">
-                    <Facebook className="w-5 h-5 mr-2 text-[var(--foreground)]/70" />
-                    <Input
-                      placeholder="Facebook URL"
-                      value={socialLinks.facebook}
-                      onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Facilities
-                </label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {facilities.map((facility, index) => (
-                    <div 
-                      key={index} 
-                      className="px-3 py-1 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full flex items-center gap-1"
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                Facilities
+              </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {facilities.map((facility, index) => (
+                  <div 
+                    key={index} 
+                    className="px-3 py-1 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full flex items-center gap-1"
+                  >
+                    <span>{facility}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFacility(facility)}
+                      className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-[var(--secondary)]/20"
                     >
-                      <span>{facility}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFacility(facility)}
-                        className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-[var(--secondary)]/20"
-                      >
-                        <XCircle className="w-3 h-3" />
-                      </button>
-                    </div>
+                      <XCircle className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a facility (e.g., Parking, Food, Sound System)"
+                  value={newFacility}
+                  onChange={(e) => setNewFacility(e.target.value)}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddFacility();
+                    }
+                  }}
+                />
+                <button 
+                  type="button" 
+                  onClick={handleAddFacility}
+                  className="px-4 py-2 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-md hover:bg-[var(--secondary)]/20"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Contact Information (Only when not editing) */}
+        {!isEditing && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {(venue.phone || venue.email) && (
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">Contact</h3>
+                {venue.phone && (
+                  <div className="flex items-center text-sm text-[var(--foreground)]/70 mb-1">
+                    <Phone className="w-4 h-4 mr-2 text-[var(--secondary)]" />
+                    <span>{venue.phone}</span>
+                  </div>
+                )}
+                {venue.email && (
+                  <div className="flex items-center text-sm text-[var(--foreground)]/70">
+                    <Mail className="w-4 h-4 mr-2 text-[var(--secondary)]" />
+                    <span>{venue.email}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Facilities */}
+            {venue.facilities && venue.facilities.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">Facilities</h3>
+                <div className="flex flex-wrap gap-2">
+                  {venue.facilities.map((facility, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full text-sm"
+                    >
+                      {facility}
+                    </span>
                   ))}
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a facility (e.g., Parking, Food, Sound System)"
-                    value={newFacility}
-                    onChange={(e) => setNewFacility(e.target.value)}
-                    className="flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddFacility();
-                      }
-                    }}
-                  />
-                  <button 
-                    type="button" 
-                    onClick={handleAddFacility}
-                    className="px-4 py-2 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-md hover:bg-[var(--secondary)]/20"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-[var(--foreground)]/80 mb-4">
-                {venue.description || "No description available for this venue."}
-              </p>
-              
-              {/* Contact Information */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                {(venue.phone || venue.email) && (
-                  <div>
-                    <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">Contact</h3>
-                    {venue.phone && (
-                      <div className="flex items-center text-sm text-[var(--foreground)]/70 mb-1">
-                        <Phone className="w-4 h-4 mr-2 text-[var(--secondary)]" />
-                        <span>{venue.phone}</span>
-                      </div>
-                    )}
-                    {venue.email && (
-                      <div className="flex items-center text-sm text-[var(--foreground)]/70">
-                        <Mail className="w-4 h-4 mr-2 text-[var(--secondary)]" />
-                        <span>{venue.email}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Facilities */}
-                {venue.facilities && venue.facilities.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">Facilities</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {venue.facilities.map((facility, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full text-sm"
-                        >
-                          {facility}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-   
+            )}
+          </div>
+        )}
+        
         {/* Tabs for Events and Map */}
         <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="map">Map</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between items-center mb-4">
+            <TabsList>
+              <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="map">Map</TabsTrigger>
+            </TabsList>
+            
+            {/* Create Event Button */}
+            {!isEditing && venue && (
+              <VenueAddEventButton
+                venue={venue}
+                className="px-4 py-2 rounded-md text-sm bg-[var(--secondary)] text-white hover:bg-[var(--secondary)]/90"
+              />
+            )}
+          </div>
 
           {/* Events Tab */}
           <TabsContent value="events">

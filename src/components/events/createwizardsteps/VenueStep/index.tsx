@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { MapPin } from 'lucide-react';
 import { searchVenues } from '@/lib/services/venue-service';
 import type { EventFormData, Venue } from '@/lib/types';
@@ -47,11 +47,7 @@ export function VenueStep({ form, map, onVenueSelect, onBack }: VenueStepProps) 
     };
 
     const handleVenueSelect = (venue: Venue) => {
-        // If we have a map and the venue has a location, center the map
-        if (map && venue.location) {
-            map.panTo(venue.location);
-            map.setZoom(16);
-        }
+     
         
         onVenueSelect(venue);
     };

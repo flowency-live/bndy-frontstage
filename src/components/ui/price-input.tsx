@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input } from "./Input";
+import { Input } from "./input";
 
 interface PriceInputProps {
   value: string;

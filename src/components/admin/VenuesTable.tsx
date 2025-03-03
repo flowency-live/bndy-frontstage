@@ -1,14 +1,30 @@
-// /components/admin/VenuesTable.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { collection, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Venue } from "@/lib/types";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
-import { Pencil, Trash2, Save, X } from "lucide-react";
+import Link from "next/link";
+import { PlusCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,210 +36,212 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface Venue {
-  id: string;
-  name: string;
-  address?: string;
-  location: {
-    lat: number;
-    lng: number;
-  };
-  googlePlaceId?: string;
-  standardStartTime?: string;
-  standardEndTime?: string;
-  standardTicketPrice?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export function VenuesTable() {
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Partial<Venue>>({});
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("all");
+  const [selectedVenues, setSelectedVenues] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    loadVenues();
+    fetchVenues();
   }, []);
 
-  const loadVenues = async () => {
-    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
-    const venueData = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Venue[];
-    setVenues(venueData);
-  };
-
-  const startEditing = (venue: Venue) => {
-    setEditingId(venue.id);
-    setEditData(venue);
-  };
-
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditData({});
-  };
-
-  const saveEditing = async (id: string) => {
+  const fetchVenues = async () => {
     try {
-      const venueRef = doc(db, COLLECTIONS.VENUES, id);
-      await updateDoc(venueRef, {
-        ...editData,
-        updatedAt: new Date().toISOString()
-      });
-      cancelEditing();
-      loadVenues();
+      setLoading(true);
+      const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
+      const venueData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Venue[];
+      setVenues(venueData);
     } catch (error) {
-      console.error("Error updating venue:", error);
+      console.error("Error fetching venues:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteVenue = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, COLLECTIONS.VENUES, id));
-      setDeleteConfirmId(null);
-      loadVenues();
-    } catch (error) {
-      console.error("Error deleting venue:", error);
+  // Filter venues based on search term and filter type
+  const filteredVenues = venues.filter((venue) => {
+    const matchesSearch = 
+      searchTerm === "" || 
+      venue.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      venue.address?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterType === "missing-facebook") {
+      const hasFacebookUrl = venue.socialMediaURLs?.some(sm => 
+        sm.platform === "facebook" && sm.url && sm.url.trim() !== ""
+      );
+      return matchesSearch && !hasFacebookUrl;
+    }
+    return matchesSearch;
+  });
+
+  // Compute duplicate counts by name (case-insensitive)
+  const duplicateCounts = filteredVenues.reduce<Record<string, number>>((acc, venue) => {
+    const key = (venue.name || "").trim().toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Get the Facebook URL for display
+  const getSocialMediaUrl = (venue: Venue, platform: string): string => {
+    return venue.socialMediaURLs?.find(sm => sm.platform === platform)?.url || "Not set";
+  };
+
+  // Selection handling
+  const handleSelect = (id: string) => {
+    setSelectedVenues((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedVenues.size === filteredVenues.length) {
+      setSelectedVenues(new Set());
+    } else {
+      setSelectedVenues(new Set(filteredVenues.map((venue) => venue.id)));
     }
   };
 
-  // Filter venues based on the search query.
-  const filteredVenues = venues.filter(venue =>
-    venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (venue.address && venue.address.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const handleBatchDelete = async () => {
+    try {
+      await Promise.all(
+        [...selectedVenues].map((id) => deleteDoc(doc(db, COLLECTIONS.VENUES, id)))
+      );
+      setSelectedVenues(new Set());
+      setConfirmDelete(false);
+      fetchVenues();
+    } catch (error) {
+      console.error("Error deleting venues:", error);
+    }
+  };
 
   return (
-    <div>
-      <Input
-        type="text"
-        placeholder="Search venues..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="mb-4"
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Start Time</TableHead>
-            <TableHead>End Time</TableHead>
-            <TableHead>Ticket Price</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredVenues.map(venue => (
-            <TableRow key={venue.id}>
-              <TableCell>
-                {editingId === venue.id ? (
-                  <Input
-                    value={editData.name || ''}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                  />
-                ) : (
-                  venue.name
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === venue.id ? (
-                  <Input
-                    value={editData.address || ''}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                  />
-                ) : (
-                  venue.address
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === venue.id ? (
-                  <Input
-                    type="time"
-                    value={editData.standardStartTime || ''}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, standardStartTime: e.target.value }))
-                    }
-                  />
-                ) : (
-                  venue.standardStartTime || "-"
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === venue.id ? (
-                  <Input
-                    type="time"
-                    value={editData.standardEndTime || ''}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, standardEndTime: e.target.value }))
-                    }
-                  />
-                ) : (
-                  venue.standardEndTime || "-"
-                )}
-              </TableCell>
-              <TableCell>
-                {editingId === venue.id ? (
-                  <Input
-                    type="number"
-                    value={editData.standardTicketPrice?.toString() || ''}
-                    onChange={(e) =>
-                      setEditData((prev) => ({
-                        ...prev,
-                        standardTicketPrice: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                ) : (
-                  venue.standardTicketPrice
-                    ? `£${venue.standardTicketPrice.toFixed(2)}`
-                    : "-"
-                )}
-              </TableCell>
-              <TableCell className="flex gap-2">
-                {editingId === venue.id ? (
-                  <>
-                    <Button size="sm" variant="ghost" onClick={() => saveEditing(venue.id)}>
-                      <Save className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={cancelEditing}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button size="sm" variant="ghost" onClick={() => startEditing(venue)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDeleteConfirmId(venue.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Venues</h2>
+        <Link href="/admin/venues/create">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Venue
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="flex flex-wrap gap-2">
+        <Input
+          placeholder="Search venues..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="mb-4"
+        />
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Venues</SelectItem>
+            <SelectItem value="missing-facebook">Missing Facebook URL</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+      {selectedVenues.size > 0 && (
+        <div className="mb-4">
+          <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+            Delete Selected ({selectedVenues.size})
+          </Button>
+        </div>
+      )}
+      
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <Checkbox
+                  checked={
+                    selectedVenues.size === filteredVenues.length &&
+                    filteredVenues.length > 0
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead>Facebook URL</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  Loading venues...
+                </TableCell>
+              </TableRow>
+            ) : filteredVenues.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No venues found
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredVenues.map((venue, index) => {
+                const key = (venue.name || "").trim().toLowerCase();
+                const isDuplicate = duplicateCounts[key] > 1;
+                return (
+                  <TableRow
+                    key={venue.id || `venue-${index}`}
+                    className={isDuplicate ? "bg-yellow-50" : ""}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedVenues.has(venue.id)}
+                        onCheckedChange={() => handleSelect(venue.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {venue.name} {isDuplicate && <span className="text-xs text-red-600">(Duplicate)</span>}
+                    </TableCell>
+                    <TableCell>{venue.address || "Not set"}</TableCell>
+                    <TableCell>{getSocialMediaUrl(venue, "facebook")}</TableCell>
+                    <TableCell>
+                      <Link href={`/admin/venues/${venue.id}`}>
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={confirmDelete} onOpenChange={() => setConfirmDelete(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will permanently delete the venue. Are you sure you want to proceed?
+              This will permanently delete {selectedVenues.size} venue(s). This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteConfirmId && deleteVenue(deleteConfirmId)}>
+            <AlertDialogAction onClick={handleBatchDelete}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
