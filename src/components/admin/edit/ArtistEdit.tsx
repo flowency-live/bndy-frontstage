@@ -1,7 +1,7 @@
 // /components/admin/edit/ArtistEdit.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Artist, SocialMediaURL, SocialPlatform } from "@/lib/types";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, MapPin } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, MapPin, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getArtistById, createArtist, updateArtist } from "@/lib/services/artist-service";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -62,6 +62,7 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
   const [locationQuery, setLocationQuery] = useState("");
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
   const [locationPredictions, setLocationPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
@@ -71,6 +72,7 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
   
   const locationRef = useRef<HTMLDivElement>(null);
   const placesServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const fetchingRef = useRef(false);
   
   const [artist, setArtist] = useState<Partial<Artist>>({
     id: "",
@@ -83,10 +85,15 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
 
   // Handle Google Maps API load
   const handleGoogleMapsLoad = () => {
+    console.log("Google Maps API loaded");
     setGoogleMapsLoaded(true);
     try {
-      if (window.google && window.google.maps) {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        console.log("Creating AutocompleteService");
         placesServiceRef.current = new window.google.maps.places.AutocompleteService();
+      } else {
+        console.warn("Google Maps Places library not available");
+        setGoogleMapsError(true);
       }
     } catch (error) {
       console.error("Error initializing Google Maps:", error);
@@ -100,54 +107,72 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
     setGoogleMapsError(true);
     setGoogleMapsLoaded(false);
   };
+  
+  // Check if Google Maps is already loaded
+  useEffect(() => {
+    if (window.google && window.google.maps && window.google.maps.places) {
+      console.log("Google Maps already loaded");
+      setGoogleMapsLoaded(true);
+      placesServiceRef.current = new window.google.maps.places.AutocompleteService();
+    }
+  }, []);
 
   // Fetch artist data if editing an existing artist
-  useEffect(() => {
-    if (!artistId) return;
-  
-    const fetchArtist = async () => {
-      setIsLoading(true);
-      try {
-        const artistData = await getArtistById(artistId);
-        if (artistData) {
-          setArtist(artistData);
-          if (artistData.location) {
-            setLocationQuery(artistData.location);
-          }
-        } else {
-          toast({
-            title: "Artist not found",
-            description: "The requested artist does not exist.",
-            variant: "destructive",
-          });
-          router.push("/admin");
+  const fetchArtist = useCallback(async () => {
+    if (!artistId || fetchingRef.current || dataFetched) return;
+    
+    fetchingRef.current = true;
+    setIsLoading(true);
+    
+    try {
+      console.log("Fetching artist with ID:", artistId);
+      const artistData = await getArtistById(artistId);
+      
+      if (artistData) {
+        console.log("Artist data received:", artistData);
+        setArtist(artistData);
+        if (artistData.location) {
+          setLocationQuery(artistData.location);
         }
-      } catch (error) {
-        console.error("Error fetching artist:", error);
+        setDataFetched(true);
+      } else {
+        console.error("Artist not found");
         toast({
-          title: "Error",
-          description: "Failed to fetch artist data.",
+          title: "Artist not found",
+          description: "The requested artist does not exist.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
+        router.push("/admin");
       }
-    };
-  
+    } catch (error) {
+      console.error("Error fetching artist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch artist data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      fetchingRef.current = false;
+    }
+  }, [artistId, toast, router, dataFetched]);
+
+  useEffect(() => {
     fetchArtist();
-  }, [artistId, router, toast]);
+  }, [fetchArtist]);
   
   // Filter locations based on input (fallback if Google Maps fails)
   useEffect(() => {
-    if (googleMapsError && locationQuery.trim() !== "") {
+    if ((googleMapsError || !googleMapsLoaded) && locationQuery.trim() !== "") {
       const query = locationQuery.toLowerCase();
       const filtered = UK_CITIES.filter(city => 
         city.toLowerCase().includes(query)
       );
+      console.log("Filtered UK cities:", filtered.length);
       setFilteredLocations(filtered);
       setShowLocationDropdown(filtered.length > 0);
     }
-  }, [locationQuery, googleMapsError]);
+  }, [locationQuery, googleMapsError, googleMapsLoaded]);
 
   // Google Places Autocomplete for location
   useEffect(() => {
@@ -156,13 +181,31 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
         setLocationPredictions([]);
         setShowLocationDropdown(false);
       }
+      
+      // If there's a query but Google Maps isn't working, use the fallback UK cities filter
+      if (locationQuery.length >= 2 && (googleMapsError || !googleMapsLoaded)) {
+        const query = locationQuery.toLowerCase();
+        const filtered = UK_CITIES.filter(city => 
+          city.toLowerCase().includes(query)
+        );
+        setFilteredLocations(filtered);
+        setShowLocationDropdown(filtered.length > 0);
+      }
+      
       return;
     }
     
     const autocompletePlaces = () => {
       if (!placesServiceRef.current) {
         try {
-          placesServiceRef.current = new window.google.maps.places.AutocompleteService();
+          if (window.google && window.google.maps && window.google.maps.places) {
+            console.log("Creating AutocompleteService in query effect");
+            placesServiceRef.current = new window.google.maps.places.AutocompleteService();
+          } else {
+            console.warn("Google Maps Places library not available in query effect");
+            setGoogleMapsError(true);
+            return;
+          }
         } catch (error) {
           console.error("Error creating AutocompleteService:", error);
           setGoogleMapsError(true);
@@ -170,22 +213,36 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
         }
       }
       
+      console.log("Querying Places API with:", locationQuery);
+      
       placesServiceRef.current.getPlacePredictions({
         input: locationQuery,
         types: ['(cities)'],
         componentRestrictions: { country: 'gb' }
       }, (results, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+        console.log("Places API response status:", status);
+        
+        if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+          console.log("Places API returned results:", results.length);
           setLocationPredictions(results);
           setShowLocationDropdown(true);
         } else {
           setLocationPredictions([]);
           if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+            console.log("Places API returned zero results");
             setShowLocationDropdown(false);
           } else {
             console.warn("Google Places API issue:", status);
             // If there's an issue with Places API, fall back to local filtering
             setGoogleMapsError(true);
+            
+            // Apply fallback filter
+            const query = locationQuery.toLowerCase();
+            const filtered = UK_CITIES.filter(city => 
+              city.toLowerCase().includes(query)
+            );
+            setFilteredLocations(filtered);
+            setShowLocationDropdown(filtered.length > 0);
           }
         }
       });
@@ -215,35 +272,35 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
 
   // Handle form field changes
   const handleInputChange = (field: keyof Artist, value: string | string[] | object) => {
-    setArtist({ ...artist, [field]: value });
+    setArtist(prev => ({ ...prev, [field]: value }));
   };
 
   // Handle location input
   const handleLocationChange = (value: string) => {
     setLocationQuery(value);
     setShowLocationDropdown(true);
-    setArtist({ ...artist, location: value });
+    setArtist(prev => ({ ...prev, location: value }));
   };
 
   // Select a location from dropdown (Google Places prediction)
   const selectPrediction = (prediction: google.maps.places.AutocompletePrediction) => {
     setLocationQuery(prediction.description);
-    setArtist({ ...artist, location: prediction.description });
+    setArtist(prev => ({ ...prev, location: prediction.description }));
     setShowLocationDropdown(false);
   };
 
   // Select a location from dropdown (fallback list)
   const selectLocation = (location: string) => {
     setLocationQuery(location);
-    setArtist({ ...artist, location });
+    setArtist(prev => ({ ...prev, location }));
     setShowLocationDropdown(false);
   };
 
   // Handle social media URL changes
   const handleSocialMediaChange = (index: number, field: keyof SocialMediaURL, value: string) => {
-    const updatedSocialMedia = [...artist.socialMediaURLs || []];
+    const updatedSocialMedia = [...(artist.socialMediaURLs || [])];
     updatedSocialMedia[index] = { ...updatedSocialMedia[index], [field]: value };
-    setArtist({ ...artist, socialMediaURLs: updatedSocialMedia });
+    setArtist(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Handle genre selection checkbox
@@ -263,16 +320,16 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
 
   // Add a new social media URL
   const addSocialMedia = () => {
-    const updatedSocialMedia = [...artist.socialMediaURLs || []];
+    const updatedSocialMedia = [...(artist.socialMediaURLs || [])];
     updatedSocialMedia.push({ platform: "facebook", url: "" });
-    setArtist({ ...artist, socialMediaURLs: updatedSocialMedia });
+    setArtist(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Remove a social media URL
   const removeSocialMedia = (index: number) => {
-    const updatedSocialMedia = [...artist.socialMediaURLs || []];
+    const updatedSocialMedia = [...(artist.socialMediaURLs || [])];
     updatedSocialMedia.splice(index, 1);
-    setArtist({ ...artist, socialMediaURLs: updatedSocialMedia });
+    setArtist(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Save artist data
@@ -351,6 +408,7 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
         onLoad={handleGoogleMapsLoad}
         onError={handleGoogleMapsError}
+        strategy="beforeInteractive"
       />
       
       <div className="flex items-center mb-6">
@@ -366,12 +424,17 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
       </div>
 
       <Card>
+      <ScrollArea className="h-[calc(100vh-15rem)] px-6">
         <CardHeader>
           <CardTitle>Artist Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        
+        <CardContent className="space-y-6 pr-6">
           {isLoading ? (
-            <div className="py-10 text-center">Loading artist data...</div>
+            <div className="py-10 text-center flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p>Loading artist data...</p>
+            </div>
           ) : (
             <>
               {/* Basic Information */}
@@ -408,49 +471,55 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
                       />
                     </div>
                     
-                    {/* Location dropdown - Google Places predictions */}
+                    {/* Location dropdown */}
                     {showLocationDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-background rounded-md shadow-lg border border-border">
-                        {googleMapsError ? (
-                          // Show local filtered list if Google Maps failed
-                          filteredLocations.length > 0 ? (
-                            <ScrollArea className="max-h-60">
-                              {filteredLocations.map((location, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 border-b border-border hover:bg-accent cursor-pointer"
-                                  onClick={() => selectLocation(location)}
-                                >
-                                  {location}
-                                </div>
-                              ))}
-                            </ScrollArea>
-                          ) : (
-                            <div className="p-3 text-center text-muted-foreground">
-                              No locations found
-                            </div>
-                          )
-                        ) : (
-                          // Show Google Places predictions if available
-                          locationPredictions.length > 0 ? (
-                            <ScrollArea className="max-h-60">
-                              {locationPredictions.map((prediction) => (
-                                <div
-                                  key={prediction.place_id}
-                                  className="p-3 border-b border-border hover:bg-accent cursor-pointer"
-                                  onClick={() => selectPrediction(prediction)}
-                                >
-                                  {prediction.description}
-                                </div>
-                              ))}
-                            </ScrollArea>
-                          ) : (
-                            <div className="p-3 text-center text-muted-foreground">
-                              {locationQuery.length < 2 
-                                ? "Type at least 2 characters" 
-                                : "No locations found"}
-                            </div>
-                          )
+                        {/* Show fallback UK cities if Google Maps failed or if there are filtered locations */}
+                        {(googleMapsError || filteredLocations.length > 0) && (
+                          <>
+                            {filteredLocations.length > 0 ? (
+                              <ScrollArea className="max-h-60">
+                                {filteredLocations.map((location, index) => (
+                                  <div
+                                    key={index}
+                                    className="p-3 border-b border-border hover:bg-accent cursor-pointer"
+                                    onClick={() => selectLocation(location)}
+                                  >
+                                    {location}
+                                  </div>
+                                ))}
+                              </ScrollArea>
+                            ) : (
+                              <div className="p-3 text-center text-muted-foreground">
+                                No locations found
+                              </div>
+                            )}
+                          </>
+                        )}
+                        
+                        {/* Show Google Places predictions if available */}
+                        {!googleMapsError && (
+                          <>
+                            {locationPredictions.length > 0 ? (
+                              <ScrollArea className="max-h-60">
+                                {locationPredictions.map((prediction) => (
+                                  <div
+                                    key={prediction.place_id}
+                                    className="p-3 border-b border-border hover:bg-accent cursor-pointer"
+                                    onClick={() => selectPrediction(prediction)}
+                                  >
+                                    {prediction.description}
+                                  </div>
+                                ))}
+                              </ScrollArea>
+                            ) : (
+                              <div className="p-3 text-center text-muted-foreground">
+                                {locationQuery.length < 2 
+                                  ? "Type at least 2 characters" 
+                                  : "No locations found"}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
@@ -560,15 +629,24 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
             </>
           )}
         </CardContent>
+        
         <CardFooter className="flex justify-end">
           <Button 
             onClick={handleSave} 
             disabled={isLoading || !artist.name}
           >
-            {artistId ? "Update Artist" : "Create Artist"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              artistId ? "Update Artist" : "Create Artist"
+            )}
           </Button>
         </CardFooter>
+        </ScrollArea>
       </Card>
     </div>
   );
-}
+} 

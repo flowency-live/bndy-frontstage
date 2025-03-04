@@ -1,18 +1,14 @@
 // /app/admin/artists/[artistid]/page.tsx
 "use client";
 
-import { use } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { ArtistEdit } from "@/components/admin/edit/ArtistEdit";
 
-// Define the props for the page component
-interface ArtistEditPageProps {
-  params: Promise<{
-    artistid: string;
-  }>;
-}
+export default function ArtistEditPage() {
+  // Use the useParams hook to get the artistid parameter
+  const params = useParams();
+  const artistId = params?.artistid as string;
 
-export default function ArtistEditPage({ params }: ArtistEditPageProps) {
-  // Properly unwrap the params using React.use()
-  const resolvedParams = use(params);
-  return <ArtistEdit artistId={resolvedParams.artistid} />;
+  return <ArtistEdit artistId={artistId} />;
 }

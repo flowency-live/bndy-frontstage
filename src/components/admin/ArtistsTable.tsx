@@ -23,7 +23,7 @@ import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
@@ -164,7 +164,7 @@ export function ArtistsTable() {
       
       <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
               <TableHead>
                 <Checkbox
@@ -201,7 +201,7 @@ export function ArtistsTable() {
                 return (
                   <TableRow
                     key={artist.id || `artist-${index}`}
-                    className={isDuplicate ? "bg-yellow-50" : ""}
+                    className={isDuplicate ? "bg-yellow-50 dark:bg-yellow-900/20" : ""}
                   >
                     <TableCell>
                       <Checkbox
@@ -210,16 +210,31 @@ export function ArtistsTable() {
                       />
                     </TableCell>
                     <TableCell>
-                      {artist.name} {isDuplicate && <span className="text-xs text-red-600">(Duplicate)</span>}
+                      {artist.name} {isDuplicate && <span className="text-xs text-red-600 dark:text-red-400">(Duplicate)</span>}
                     </TableCell>
                     <TableCell>{artist.location || "Not set"}</TableCell>
                     <TableCell>{getSocialMediaUrl(artist, "facebook")}</TableCell>
                     <TableCell>
-                      <Link href={`/admin/artists/${artist.id}`}>
-                        <Button variant="outline" size="sm">
-                          Edit
+                      <div className="flex items-center space-x-2">
+                        <Link href={`/admin/artists/${artist.id}`} passHref>
+                          <Button variant="outline" size="sm" className="hover:bg-primary/10">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setSelectedArtists(new Set([artist.id]));
+                            setConfirmDelete(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
                         </Button>
-                      </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

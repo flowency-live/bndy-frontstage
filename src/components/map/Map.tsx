@@ -1,4 +1,4 @@
-// src/components/Map/Map.tsx - Updated with EventInfoOverlay
+// src/components/Map/Map.tsx - With TypeScript fixes
 "use client";
 
 import { useRef, useEffect, useState } from "react";
@@ -72,230 +72,244 @@ export default function Map({
     }
   }, [contextUserLocation]);
 
- // Handle markers, clustering, and info windows
- useEffect(() => {
-  if (!mapInstance || eventsLoading) return;
+  // Handle markers, clustering, and info windows
+  useEffect(() => {
+    if (!mapInstance || eventsLoading) return;
 
-  // Important: Clean up previous markers and overlays first
-  if (clustererRef.current) {
-    clustererRef.current.clearMarkers();
-    clustererRef.current = null;
-  }
-  
-  // Remove all markers from the map
-  markersRef.current.forEach(marker => {
-    marker.setMap(null);
-  });
-  markersRef.current = [];
-  
-  // Clean up overlays
-  overlaysRef.current.forEach(overlay => {
-    overlay.setMap(null);
-  });
-  overlaysRef.current = [];
-  
-  // Clean up user marker if it exists
-  if (userMarkerRef.current) {
-    userMarkerRef.current.setMap(null);
-    userMarkerRef.current = null;
-  }
-
-  // Add user location marker if available
-  if (contextUserLocation) {
-    userMarkerRef.current = new google.maps.Marker({
-      position: contextUserLocation,
-      map: mapInstance,
-      title: "Your Location",
-      icon: createUserLocationMarker(),
-      zIndex: 1000
-    });
-  }
-
-  // Use allEvents instead of filteredEvents to show all on map regardless of distance
-  if (!allEvents.length) {
-    return;
-  }
-
-  // Updated filtering logic for Map.tsx to correctly handle text-based search
-  const dateFilteredEvents = allEvents.filter(event => {
-    const eventDate = new Date(event.date);
-    
-    // Apply date filtering first
-    const passesDateFilter = isDateInRange(eventDate, dateRange as DateRangeFilter);
-    if (!passesDateFilter) return false;
-    
-    // Special case: If filterType is 'nomatch', return empty results
-    if (filterType === 'nomatch') {
-      return false;
-    }
-    
-    // Apply artist/venue filter if provided
-    if ((filterType === 'artist' || filterType === 'venue') && filterId && filterId.trim() !== '' && filterId !== 'null') {
-      const searchTerm = filterId.toLowerCase();
-      
-      if (filterType === 'artist') {
-        // Check if event name contains the search term (case insensitive)
-        const isMatch = event.name.toLowerCase().includes(searchTerm);
-        return isMatch;
-      } else if (filterType === 'venue') {
-        // Check if venue name contains the search term (case insensitive)
-        const isMatch = event.venueName.toLowerCase().includes(searchTerm);
-        return isMatch;
+    // Important: Clean up previous markers and overlays first
+    const cleanupExistingMarkers = () => {
+      if (clustererRef.current) {
+        clustererRef.current.clearMarkers();
+        clustererRef.current = null;
       }
+      
+      markersRef.current.forEach(marker => {
+        marker.setMap(null);
+        google.maps.event.clearInstanceListeners(marker);
+      });
+      markersRef.current = [];
+      
+      overlaysRef.current.forEach(overlay => {
+        overlay.setMap(null);
+      });
+      overlaysRef.current = [];
+      
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
+        google.maps.event.clearInstanceListeners(userMarkerRef.current);
+        userMarkerRef.current = null;
+      }
+    };
+
+    cleanupExistingMarkers();
+
+    // Add user location marker if available
+    if (contextUserLocation) {
+      userMarkerRef.current = new google.maps.Marker({
+        position: contextUserLocation,
+        map: mapInstance,
+        title: "Your Location",
+        icon: createUserLocationMarker(),
+        zIndex: 1000
+      });
     }
-    
-    // If no filter specified, include all events that pass date filter
-    return filterType === null;
-  });
 
-  // Check if we need to center on a venue
-  let shouldCenterOnVenue = false;
-  let venueToCenter = null;
-
-  if (filterType === 'venue' && filterId && dateFilteredEvents.length > 0) {
-    shouldCenterOnVenue = true;
-    // Find the first matching venue to center on
-    venueToCenter = dateFilteredEvents.find(event => 
-      event.venueName.toLowerCase().includes(filterId.toLowerCase())
-    );
-  }
-  
-  const markers: google.maps.Marker[] = [];
-  const overlays: CustomInfoOverlay[] = [];
-
-  // Create markers for each event
-  dateFilteredEvents.forEach((event) => {
-    // Skip events with no location
-    if (!event.location || !event.location.lat || !event.location.lng) {
+    // Use allEvents instead of filteredEvents to show all on map regardless of distance
+    if (!allEvents.length) {
       return;
     }
 
-    const marker = new google.maps.Marker({
-      position: event.location,
-      map: mapInstance,
-      title: event.name,
-      icon: createEnhancedEventMarker()
-    });
-
-    markers.push(marker);
-
-    // Add click event handler to show the modern EventInfoOverlay instead of the old overlay
-    marker.addListener("click", () => {
-      // Center the map on the marker with offset
-      if (mapInstance) {
-        // Save original center for animation
-        const markerPosition = marker.getPosition();
+    // Updated filtering logic for Map.tsx to correctly handle text-based search
+    const dateFilteredEvents = allEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      
+      // Apply date filtering first
+      const passesDateFilter = isDateInRange(eventDate, dateRange as DateRangeFilter);
+      if (!passesDateFilter) return false;
+      
+      // Special case: If filterType is 'nomatch', return empty results
+      if (filterType === 'nomatch') {
+        return false;
+      }
+      
+      // Apply artist/venue filter if provided
+      if ((filterType === 'artist' || filterType === 'venue') && filterId && filterId.trim() !== '' && filterId !== 'null') {
+        const searchTerm = filterId.toLowerCase();
         
-        // Apply vertical offset (adjust this value as needed)
-        const verticalOffset = 150; 
-        
-        // Use the projection to adjust the center point
-        const projection = mapInstance.getProjection();
-        if (projection && markerPosition) {
-          const point = projection.fromLatLngToPoint(markerPosition);
-          if (point) {
-            // Adjust point with offset (moving down in pixels means we need to decrease latitude)
-            point.y += verticalOffset / Math.pow(2, mapInstance.getZoom() || 0);
-            
-            // Convert back to LatLng
-            const offsetLatLng = projection.fromPointToLatLng(point);
-            if (offsetLatLng) {
-              // Pan to the adjusted position
-              mapInstance.panTo(offsetLatLng);
-            }
-          }
-        } else {
-          // Fallback if projection isn't ready
-          if (markerPosition) {
-            mapInstance.panTo(markerPosition);
-          }
+        if (filterType === 'artist') {
+          // Check if event name contains the search term (case insensitive)
+          const isMatch = event.name.toLowerCase().includes(searchTerm);
+          return isMatch;
+        } else if (filterType === 'venue') {
+          // Check if venue name contains the search term (case insensitive)
+          const isMatch = event.venueName.toLowerCase().includes(searchTerm);
+          return isMatch;
         }
       }
       
-      // Then show the event overlay
-      setSelectedEvent(event);
-      setShowEventOverlay(true);
+      // If no filter specified, include all events that pass date filter
+      return filterType === null;
     });
-  });
 
-  // Save references to the current markers
-  markersRef.current = markers;
+    // Check if we need to center on a venue
+    let shouldCenterOnVenue = false;
+    let venueToCenter = null;
 
-  // Create clusterer AFTER creating all markers
-  if (markers.length > 0) {
-    const clusterer = new MarkerClusterer({
-      map: mapInstance,
-      markers: markers,
-      algorithm: new GridAlgorithm({
-        maxZoom: 15,
-        gridSize: 60
-      }),
-      renderer: {
-        render: ({ count, position }) => {
-          return new google.maps.Marker({
-            position,
-            label: {
-              text: String(count),
-              color: "white",
-              fontSize: "12px",
-              fontWeight: "bold"
-            },
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              fillColor: "#F97316",
-              fillOpacity: 0.9,
-              strokeColor: "#FFFFFF",
-              strokeWeight: 2,
-              scale: 22
-            },
-            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
-            map: mapInstance
-          });
-        }
+    if (filterType === 'venue' && filterId && dateFilteredEvents.length > 0) {
+      shouldCenterOnVenue = true;
+      // Find the first matching venue to center on
+      venueToCenter = dateFilteredEvents.find(event => 
+        event.venueName.toLowerCase().includes(filterId.toLowerCase())
+      );
+    }
+    
+    const markers: google.maps.Marker[] = [];
+
+    // Create markers for each event
+    dateFilteredEvents.forEach((event) => {
+      // Skip events with no location
+      if (!event.location || !event.location.lat || !event.location.lng) {
+        return;
       }
-    });
-    
-    // Save reference to clusterer
-    clustererRef.current = clusterer;
-  }
 
-  // If we should center on a venue, do it now
-  if (shouldCenterOnVenue && venueToCenter && venueToCenter.location) {
-    mapInstance.setCenter(venueToCenter.location);
-    mapInstance.setZoom(15); // Zoom in closer to the venue
-  }
+      const marker = new google.maps.Marker({
+        position: event.location,
+        map: mapInstance,
+        title: event.name,
+        icon: createEnhancedEventMarker()
+      });
 
-  // Close overlays when clicking elsewhere on the map
-  mapInstance.addListener("click", () => {
-    setShowEventOverlay(false);
-    setSelectedEvent(null);
-  });
+      markers.push(marker);
 
-  // Cleanup function for when component unmounts
-  return () => {
-    if (clustererRef.current) {
-      clustererRef.current.clearMarkers();
-    }
-    
-    markersRef.current.forEach(marker => {
-      marker.setMap(null);
-      google.maps.event.clearInstanceListeners(marker);
+      // Add click event handler to show the modern EventInfoOverlay instead of the old overlay
+      marker.addListener("click", () => {
+        // Center the map on the marker with offset
+        if (mapInstance) {
+          // Save original center for animation
+          const markerPosition = marker.getPosition();
+          
+          // Apply vertical offset (adjust this value as needed)
+          const verticalOffset = 150; 
+          
+          // Use the projection to adjust the center point
+          const projection = mapInstance.getProjection();
+          if (projection && markerPosition) {
+            const point = projection.fromLatLngToPoint(markerPosition);
+            if (point) {
+              // Adjust point with offset (moving down in pixels means we need to decrease latitude)
+              point.y += verticalOffset / Math.pow(2, mapInstance.getZoom() || 0);
+              
+              // Convert back to LatLng
+              const offsetLatLng = projection.fromPointToLatLng(point);
+              if (offsetLatLng) {
+                // Pan to the adjusted position
+                mapInstance.panTo(offsetLatLng);
+              }
+            }
+          } else {
+            // Fallback if projection isn't ready
+            if (markerPosition) {
+              mapInstance.panTo(markerPosition);
+            }
+          }
+        }
+        
+        // Then show the event overlay
+        setSelectedEvent(event);
+        setShowEventOverlay(true);
+      });
     });
-    
-    overlaysRef.current.forEach(overlay => {
-      overlay.setMap(null);
+
+    // Save references to the current markers
+    markersRef.current = markers;
+
+    // Create clusterer AFTER creating all markers
+    if (markers.length > 0) {
+      // Create a custom clusterer renderer
+      const clusterer = new MarkerClusterer({
+        map: mapInstance,
+        markers: markers,
+        algorithm: new GridAlgorithm({
+          maxZoom: 15,
+          gridSize: 60
+        }),
+        renderer: {
+          render: ({ count, position }) => {
+            return new google.maps.Marker({
+              position,
+              label: {
+                text: String(count),
+                color: "white",
+                fontSize: "12px",
+                fontWeight: "bold"
+              },
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: "#F97316",
+                fillOpacity: 0.9,
+                strokeColor: "#FFFFFF",
+                strokeWeight: 2,
+                scale: 22
+              },
+              zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
+              map: mapInstance
+            });
+          }
+        }
+      });
+      
+      // Add custom cluster click handler to fix the double-click issue
+      // Type the cluster parameter properly
+      google.maps.event.addListener(clusterer, 'clusterclick', (cluster: { getMarkers: () => google.maps.Marker[], getCenter: () => google.maps.LatLng }) => {
+        // Get the map
+        const map = mapInstance;
+        
+        // Get the markers in this cluster
+        const clusterMarkers = cluster.getMarkers();
+        
+        // Create a bounds object to contain all markers
+        const bounds = new google.maps.LatLngBounds();
+        
+        // Add each marker's position to the bounds - with proper typing
+        clusterMarkers.forEach((marker: google.maps.Marker) => {
+          const position = marker.getPosition();
+          if (position) {  // Check if position is not null
+            bounds.extend(position);
+          }
+        });
+        
+        // Fit the map to these bounds
+        map.fitBounds(bounds);
+        
+        // Optional: Set a slightly higher zoom level for a better view
+        google.maps.event.addListenerOnce(map, 'idle', () => {
+          const zoom = map.getZoom();
+          if (zoom !== undefined && zoom > 16) map.setZoom(16);
+        });
+        
+        // Prevent the default cluster click behavior
+        return false;
+      });
+      
+      // Save reference to clusterer
+      clustererRef.current = clusterer;
+    }
+
+    // If we should center on a venue, do it now
+    if (shouldCenterOnVenue && venueToCenter && venueToCenter.location) {
+      mapInstance.setCenter(venueToCenter.location);
+      mapInstance.setZoom(15); // Zoom in closer to the venue
+    }
+
+    // Close overlays when clicking elsewhere on the map
+    mapInstance.addListener("click", () => {
+      setShowEventOverlay(false);
+      setSelectedEvent(null);
     });
-    
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setMap(null);
-      google.maps.event.clearInstanceListeners(userMarkerRef.current);
-    }
-    
-    if (mapInstance) {
-      google.maps.event.clearInstanceListeners(mapInstance);
-    }
-  };
-}, [mapInstance, isDarkMode, allEvents, eventsLoading, contextUserLocation, dateRange, filterType, filterId]);
+
+    // Cleanup function for when component unmounts
+    return cleanupExistingMarkers;
+  }, [mapInstance, isDarkMode, allEvents, eventsLoading, contextUserLocation, dateRange, filterType, filterId]);
 
   return (
     <>

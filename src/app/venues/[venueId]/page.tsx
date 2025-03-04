@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VenueAddEventButton } from "@/components/events/VenueAddEventButton";
 
+
 function VenueProfileContent() {
   const params = useParams();
   const venueId = params.venueId as string;

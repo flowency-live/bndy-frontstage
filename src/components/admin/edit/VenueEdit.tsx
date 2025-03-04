@@ -1,9 +1,15 @@
 // /components/admin/edit/VenueEdit.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+// TypeScript declaration to extend Window interface
+declare global {
+  interface Window {
+    initGoogleMaps?: () => void;
+  }
+}
+
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +55,9 @@ export function VenueEdit({ venueId }: VenueEditProps) {
   const [searchResults, setSearchResults] = useState<Venue[]>([]);
   const [allVenues, setAllVenues] = useState<Venue[]>([]);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const googleScriptLoadedRef = useRef(false);
+  const venueDataLoaded = useRef(false);
   
   const [venue, setVenue] = useState<Partial<Venue>>({
     name: "",
@@ -60,12 +69,44 @@ export function VenueEdit({ venueId }: VenueEditProps) {
     location: { lat: 0, lng: 0 }
   });
 
-  // Check if Google Maps is already loaded
+  // Initialize Google Maps API - only if creating a new venue
   useEffect(() => {
-    if (window.google && window.google.maps) {
-      setGoogleMapsLoaded(true);
+    // Only load the script if it's not already loaded and we're in create mode
+    if (!venueId && !googleScriptLoadedRef.current) {
+      if (window.google && window.google.maps) {
+        console.log("Google Maps already loaded");
+        setGoogleMapsLoaded(true);
+        return;
+      }
+
+      console.log("Loading Google Maps script");
+      
+      // Set up the callback function that will be called when the script loads
+      window.initGoogleMaps = () => {
+        console.log("Google Maps initialized");
+        setGoogleMapsLoaded(true);
+      };
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = () => {
+        console.error("Failed to load Google Maps API");
+      };
+      
+      document.head.appendChild(script);
+      googleScriptLoadedRef.current = true;
+      setGoogleScriptLoaded(true);
     }
-  }, []);
+
+    // Cleanup
+    return () => {
+      if (window.initGoogleMaps) {
+        delete window.initGoogleMaps;
+      }
+    };
+  }, [venueId]);
 
   // Fetch venue data if editing an existing venue
   useEffect(() => {
@@ -75,12 +116,19 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       return;
     }
 
+    // Prevent refetching if we already have data
+    if (venueDataLoaded.current) {
+      return;
+    }
+
     const fetchVenue = async () => {
       setIsLoading(true);
       try {
         const venueData = await getVenueById(venueId);
         if (venueData) {
+          console.log("Venue data loaded:", venueData);
           setVenue(venueData);
+          venueDataLoaded.current = true;
         } else {
           toast({
             title: "Venue not found",
@@ -113,7 +161,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
 
     const search = async () => {
       try {
-        // Use the new searchGooglePlaces function
+        // Use the searchGooglePlaces function
         const results = await searchGooglePlaces(searchTerm);
         setSearchResults(results);
       } catch (error) {
@@ -121,69 +169,80 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       }
     };
 
-    search();
+    // Use debounce to avoid excessive API calls
+    const timeoutId = setTimeout(() => {
+      search();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [searchTerm, googleMapsLoaded]);
 
   // Handle venue selection
-// Handle venue selection
-const handleVenueSelect = (selectedVenue: Venue) => {
-  // Check if this venue already exists in the database
-  const existingVenue = allVenues.find(v => 
-    (v.googlePlaceId && v.googlePlaceId === selectedVenue.googlePlaceId) ||
-    (v.location && selectedVenue.location && 
-     Math.abs(v.location.lat - selectedVenue.location.lat) < 0.0001 &&
-     Math.abs(v.location.lng - selectedVenue.location.lng) < 0.0001)
-  );
+  const handleVenueSelect = (selectedVenue: Venue) => {
+    // Check if this venue already exists in the database
+    const existingVenue = allVenues.find(v => 
+      (v.googlePlaceId && v.googlePlaceId === selectedVenue.googlePlaceId) ||
+      (v.location && selectedVenue.location && 
+       Math.abs(v.location.lat - selectedVenue.location.lat) < 0.0001 &&
+       Math.abs(v.location.lng - selectedVenue.location.lng) < 0.0001)
+    );
 
-  if (existingVenue) {
-    toast({
-      title: "Venue already exists in bndy.live",
-      description: "This venue is already registered. Duplicate venues cannot be created.",
-      variant: "destructive",
+    if (existingVenue) {
+      toast({
+        title: "Venue already exists",
+        description: "This venue is already registered. Would you like to edit it instead?",
+        action: (
+          <Button 
+            onClick={() => router.push(`/admin/venues/${existingVenue.id}`)}
+            variant="outline"
+            size="sm"
+          >
+            Edit Existing
+          </Button>
+        )
+      });
+      return;
+    }
+
+    // Update venue state with selected venue data
+    setVenue({
+      ...venue,
+      name: selectedVenue.name,
+      address: selectedVenue.address,
+      googlePlaceId: selectedVenue.googlePlaceId,
+      location: selectedVenue.location,
+      validated: false
     });
-    // Prevent duplicate creation by not updating the venue state
-    return;
-  }
-
-  // If it's a new venue, update the venue state with selected data
-  setVenue({
-    ...venue,
-    name: selectedVenue.name,
-    address: selectedVenue.address,
-    googlePlaceId: selectedVenue.googlePlaceId,
-    location: selectedVenue.location,
-    validated: false,
-  });
-
-  // Clear search inputs
-  setSearchTerm("");
-  setSearchResults([]);
-};
+    
+    // Clear search
+    setSearchTerm("");
+    setSearchResults([]);
+  };
 
   // Handle form field changes
   const handleInputChange = (field: keyof Venue, value: string | number | object) => {
-    setVenue({ ...venue, [field]: value });
+    setVenue(prev => ({ ...prev, [field]: value }));
   };
 
   // Handle social media URL changes
   const handleSocialMediaChange = (index: number, field: keyof SocialMediaURL, value: string) => {
-    const updatedSocialMedia = [...venue.socialMediaURLs || []];
+    const updatedSocialMedia = [...(venue.socialMediaURLs || [])];
     updatedSocialMedia[index] = { ...updatedSocialMedia[index], [field]: value };
-    setVenue({ ...venue, socialMediaURLs: updatedSocialMedia });
+    setVenue(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Add a new social media URL
   const addSocialMedia = () => {
-    const updatedSocialMedia = [...venue.socialMediaURLs || []];
+    const updatedSocialMedia = [...(venue.socialMediaURLs || [])];
     updatedSocialMedia.push({ platform: "facebook", url: "" });
-    setVenue({ ...venue, socialMediaURLs: updatedSocialMedia });
+    setVenue(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Remove a social media URL
   const removeSocialMedia = (index: number) => {
-    const updatedSocialMedia = [...venue.socialMediaURLs || []];
+    const updatedSocialMedia = [...(venue.socialMediaURLs || [])];
     updatedSocialMedia.splice(index, 1);
-    setVenue({ ...venue, socialMediaURLs: updatedSocialMedia });
+    setVenue(prev => ({ ...prev, socialMediaURLs: updatedSocialMedia }));
   };
 
   // Save venue data
@@ -223,7 +282,7 @@ const handleVenueSelect = (selectedVenue: Venue) => {
       } else {
         // Create new venue - OMIT the ID field completely
         const { id, ...venueWithoutId } = venue;
-        const newVenue = await createVenue(venueWithoutId as Omit<Venue, "id" | "createdAt" | "updatedAt">);
+        await createVenue(venueWithoutId as Omit<Venue, "id" | "createdAt" | "updatedAt">);
         
         toast({
           title: "Success",
@@ -257,14 +316,6 @@ const handleVenueSelect = (selectedVenue: Venue) => {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Load Google Maps script if not already loaded */}
-      {!googleMapsLoaded && (
-        <Script
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
-          onLoad={() => setGoogleMapsLoaded(true)}
-        />
-      )}
-      
       <div className="flex items-center mb-6">
         <Link href="/admin">
           <Button variant="outline" size="sm" className="mr-4">
@@ -305,15 +356,15 @@ const handleVenueSelect = (selectedVenue: Venue) => {
                     </div>
                     
                     {searchResults.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border max-h-60 overflow-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border max-h-60 overflow-auto">
                         {searchResults.map((result, index) => (
                           <div
                             key={result.id || `new-${index}`}
-                            className="p-4 border-b hover:bg-gray-50 cursor-pointer"
+                            className="p-4 border-b hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                             onClick={() => handleVenueSelect(result)}
                           >
                             <div className="font-medium">{result.name}</div>
-                            <div className="text-sm text-gray-500">{result.address}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{result.address}</div>
                           </div>
                         ))}
                       </div>
@@ -321,7 +372,7 @@ const handleVenueSelect = (selectedVenue: Venue) => {
                   </div>
                   
                   {venue.googlePlaceId && (
-                    <div className="p-3 bg-green-50 text-green-800 rounded-md">
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 rounded-md">
                       <p className="font-medium">Selected Venue:</p>
                       <p>{venue.name}</p>
                       <p>{venue.address}</p>

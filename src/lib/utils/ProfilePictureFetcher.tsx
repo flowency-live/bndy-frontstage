@@ -16,6 +16,9 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
       let profilePicUrl: string = "";
 
       if (facebookUrl) {
+        // Log the Facebook URL for debugging
+        console.log("Processing Facebook URL:", facebookUrl);
+        
         // 1) Try to match a numeric ID in URLs like:
         //    https://www.facebook.com/people/Danny-Brab-Music/61551738096172/
         //    capturing "61551738096172" as the ID.
@@ -23,27 +26,18 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
         if (match && match[1]) {
           const numericId = match[1];
           profilePicUrl = `https://graph.facebook.com/${numericId}/picture?type=large`;
+          console.log("Extracted numeric ID:", numericId);
         } else {
-          // 2) Fallback to capturing the segment after facebook.com/ if there's no numeric ID
-          //    e.g. "https://www.facebook.com/username"
-          match = facebookUrl.match(/facebook\.com\/([^/?]+)/);
+          // 2) Try to match page name - be more specific with the regex
+          // Look for patterns like facebook.com/pagename
+          // Avoid matching single letters like 't'
+          match = facebookUrl.match(/facebook\.com\/([a-zA-Z0-9.]{2,}[^/?]*)/);
           if (match && match[1]) {
             const username = match[1];
+            console.log("Extracted username:", username);
             profilePicUrl = `https://graph.facebook.com/${username}/picture?type=large`;
-          }
-        }
-      } else if (instagramUrl) {
-        // Extract the username from the Instagram URL (e.g. "https://www.instagram.com/username")
-        const match = instagramUrl.match(/instagram\.com\/([^/?]+)/);
-        if (match && match[1]) {
-          const username = match[1];
-          try {
-            // Note: Instagram's public endpoint may require adjustments or access tokens.
-            const res = await fetch(`https://www.instagram.com/${username}/?__a=1`);
-            const data = await res.json();
-            profilePicUrl = data?.graphql?.user?.profile_pic_url_hd;
-          } catch (error) {
-            console.error("Error fetching Instagram profile picture", error);
+          } else {
+            console.log("Could not extract Facebook ID or username from URL:", facebookUrl);
           }
         }
       }

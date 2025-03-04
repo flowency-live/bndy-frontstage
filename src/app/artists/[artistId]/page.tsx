@@ -1,3 +1,4 @@
+// page.tsx - Artist Profile Page with fixed edit mode
 "use client";
 
 import { useState, useEffect } from "react";
@@ -78,7 +79,7 @@ export default function ArtistProfilePage() {
         // Initialize genres
         setGenres(artistData.genres || []);
         
-        // Initialize social links with existing values
+        // Initialize social links
         const links = {
           website: "",
           facebook: "",
@@ -91,7 +92,7 @@ export default function ArtistProfilePage() {
         if (artistData.socialMediaURLs && artistData.socialMediaURLs.length > 0) {
           artistData.socialMediaURLs.forEach(social => {
             if (social.platform in links) {
-              links[social.platform] = social.url;
+              links[social.platform as keyof typeof links] = social.url;
             }
           });
         }
@@ -111,6 +112,41 @@ export default function ArtistProfilePage() {
 
     fetchData();
   }, [artistId]);
+
+  // Toggle edit mode
+  const handleEditModeChange = (editing: boolean) => {
+    setIsEditing(editing);
+    
+    // When entering edit mode, reinitialize edit data from current artist data
+    if (editing && artist) {
+      setEditFormData({
+        name: artist.name,
+        description: artist.description || "",
+      });
+      
+      setGenres(artist.genres || []);
+      
+      // Reset social links
+      const links = {
+        website: "",
+        facebook: "",
+        instagram: "",
+        spotify: "",
+        youtube: "",
+        x: ""
+      };
+      
+      if (artist.socialMediaURLs && artist.socialMediaURLs.length > 0) {
+        artist.socialMediaURLs.forEach(social => {
+          if (social.platform in links) {
+            links[social.platform as keyof typeof links] = social.url;
+          }
+        });
+      }
+      
+      setSocialLinks(links);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -175,11 +211,16 @@ export default function ArtistProfilePage() {
       updatedAt: new Date().toISOString()
     };
     
-    // Save to the database
-    await updateArtist(updatedArtist);
-    
-    // Update the local state
-    setArtist(updatedArtist);
+    try {
+      // Save to the database
+      await updateArtist(updatedArtist);
+      
+      // Update the local state
+      setArtist(updatedArtist);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving artist changes:", error);
+    }
   };
 
   if (loading) {
@@ -245,6 +286,22 @@ export default function ArtistProfilePage() {
             <p className="text-[var(--foreground)]/80">
               {artist.description}
             </p>
+          </div>
+        )}
+        
+        {/* Genre tags (only when not editing) */}
+        {!isEditing && artist.genres && artist.genres.length > 0 && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2">
+              {artist.genres.map((genre, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
           </div>
         )}
         
@@ -410,7 +467,7 @@ export default function ArtistProfilePage() {
           type="artist"
           id={artistId as string}
           isEditing={isEditing}
-          onEditModeChange={setIsEditing}
+          onEditModeChange={handleEditModeChange}
           onSave={handleSaveChanges}
         />
 

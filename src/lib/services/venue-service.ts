@@ -410,3 +410,4 @@ export async function searchGooglePlaces(query: string): Promise<Venue[]> {
     return [];
   }
 }
+

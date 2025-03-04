@@ -123,9 +123,41 @@ export default function VADetailHeader({
   // Get artist genres if applicable
   const artistGenres = isArtist && 'genres' in item ? item.genres : null;
 
+//DEBUG BASK
+useEffect(() => {
+  if (item.id === 'AfEtyU0MUaasfdcXrkxU') { // Bask venue ID
+    console.log("BASK VENUE FULL DATA:", JSON.stringify(item, null, 2));
+    console.log("BASK SOCIAL URLS:", JSON.stringify(socialMediaURLs, null, 2));
+    
+    // Check the specific Facebook URL that's causing problems
+    const fbURL = socialMediaURLs.find(s => s.platform === 'facebook')?.url;
+    console.log("BASK FB URL:", fbURL);
+    
+    // If using a URL constructor, let's see what we get
+    try {
+      if (fbURL) {
+        const url = new URL(fbURL);
+        console.log("BASK FB URL PARTS:", {
+          protocol: url.protocol,
+          hostname: url.hostname,
+          pathname: url.pathname,
+          search: url.search,
+          hash: url.hash
+        });
+      }
+    } catch (e) {
+      console.error("BASK FB URL parsing error:", e);
+    }
+  }
+}, [item, socialMediaURLs]);
+
+
+
   useEffect(() => {
+    console.log("Item updated:", item);
     setName(item.name);
     if ("profileImageUrl" in item) {
+      console.log("Setting profile image:", item.profileImageUrl);
       setProfileImageUrl(item.profileImageUrl || "");
     }
   }, [item]);
