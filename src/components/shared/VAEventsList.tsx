@@ -149,16 +149,16 @@ export default function VAEventsList({
             )}
           </div>
           
-          {/* Price Column */}
+          {/* Ticket Column */}
           <div className="col-span-2 flex justify-end items-center">
-            {event.ticketPrice ? (
+            {event.ticketed ? (
               <div className="flex items-center text-xs">
                 <Ticket className="w-3 h-3 mr-1 text-[var(--primary)]" />
-                <span>{event.ticketPrice}</span>
+                <span>{event.ticketinformation || "Ticketed"}</span>
               </div>
             ) : (
               <span className="text-xs font-medium text-[var(--secondary)]">
-                Free
+                £ree
               </span>
             )}
           </div>

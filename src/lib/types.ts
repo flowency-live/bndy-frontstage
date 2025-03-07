@@ -23,7 +23,9 @@ export interface BaseVenue {
   facilities?: string[];
   standardStartTime?: string;
   standardEndTime?: string;
-  standardTicketPrice?: string;
+  standardTicketed?: boolean; // Default should be false
+  standardTicketUrl?: string; // Venue's standard ticket website
+  standardTicketInformation?: string; // Venue's standard ticket details
 }
 
 export interface Venue extends BaseVenue {
@@ -89,8 +91,10 @@ export interface Event {
       lng: number;
   };
   description?: string;
-  ticketPrice?: string;
-  ticketUrl?: string;
+  //ticketPrice?: string;
+  ticketed?: boolean; // Whether the event is ticketed
+  ticketinformation?: string; // Free-text details about tickets
+  ticketUrl?: string; // URL to purchase tickets
   eventUrl?: string;
   source: EventSource;
   status: EventStatus;
@@ -146,7 +150,8 @@ export interface EventFormData {
   startTime: string;
   endTime?: string;
   description?: string;
-  ticketPrice?: string;
+  ticketed?: boolean;
+  ticketinformation?: string; // Ensure this is optional
   ticketUrl?: string;
   eventUrl?: string;
   isOpenMic?: boolean;

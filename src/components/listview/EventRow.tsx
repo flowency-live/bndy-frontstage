@@ -47,14 +47,16 @@ export function EventRow({
         </div>
       </td>
       <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-center border-b border-gray-200 dark:border-gray-700">
-        {event.ticketPrice ? (
-          <div className="flex items-center justify-center">
-            <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
-            <span className="text-xs text-[var(--foreground)]">{event.ticketPrice}</span>
-          </div>
-        ) : (
-          <span className="text-xs font-medium text-[var(--secondary)]">£ree</span>
-        )}
+      {event.ticketed ? (
+  <div className="flex items-center text-[var(--foreground)]">
+    <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
+    <span>{event.ticketinformation || "Ticketed"}</span>
+  </div>
+) : (
+  <div className="text-sm font-medium text-[var(--secondary)]">
+    £ree
+  </div>
+)}
       </td>
     </>
   );

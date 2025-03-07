@@ -8,6 +8,7 @@ import { searchArtists } from '@/lib/services/artist-service';
 import type { Artist, EventFormData } from '@/lib/types';
 import { ArtistCard } from './ArtistCard';
 import { NewArtistForm } from './NewArtistForm';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface ArtistStepProps {
     form: UseFormReturn<EventFormData>;
@@ -29,8 +30,8 @@ export function ArtistStep({
     const [searchResults, setSearchResults] = useState<Artist[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showNewArtistForm, setShowNewArtistForm] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [isNewArtistSheetOpen, setIsNewArtistSheetOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     
     // Initialize isOpenMic as false if it's undefined to prevent controlled/uncontrolled input error
@@ -134,12 +135,31 @@ export function ArtistStep({
             ) : hasSearched && searchTerm.length >= 2 ? (
                 <div className="text-center py-4 text-[var(--foreground-muted)]">
                     <p className="mb-4">No artists found</p>
-                    <Button
-                        variant="outline"
-                        onClick={() => setShowNewArtistForm(true)}
-                    >
-                        Add New Artist
-                    </Button>
+                    <Sheet open={isNewArtistSheetOpen} onOpenChange={setIsNewArtistSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button
+                                variant="outline"
+                            >
+                                Add New Artist
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="sm:max-w-[425px]">
+                            <SheetHeader>
+                                <SheetTitle>Add New Artist</SheetTitle>
+                            </SheetHeader>
+                            <div className="mt-4">
+                                <NewArtistForm
+                                    initialName={searchTerm}
+                                    onCancel={() => setIsNewArtistSheetOpen(false)}
+                                    onArtistCreated={(artist) => {
+                                        handleArtistSelect(artist);
+                                        setIsNewArtistSheetOpen(false);
+                                    }}
+                                    existingArtists={searchResults}
+                                />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             ) : (
                 <div className="text-center py-4 text-[var(--foreground-muted)]">
@@ -195,19 +215,6 @@ export function ArtistStep({
                     </label>
                 </div>
             </div>
-
-            {/* New artist form */}
-            {showNewArtistForm && (
-                <NewArtistForm
-                    initialName={searchTerm}
-                    onCancel={() => setShowNewArtistForm(false)}
-                    onArtistCreated={(artist) => {
-                        handleArtistSelect(artist);
-                        setShowNewArtistForm(false);
-                    }}
-                    existingArtists={searchResults}
-                />
-            )}
 
             {/* Selected artists list - only shown in multiple mode */}
             {multipleMode && form.watch('artists')?.length > 0 && (

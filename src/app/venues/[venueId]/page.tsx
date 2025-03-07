@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
 import { getVenueById, updateVenue } from "@/lib/services/venue-service";
 import { getEventsForVenue } from "@/lib/services/event-service";
 import { Venue, Event, SocialMediaURL } from "@/lib/types";
-import { MapIcon, ExternalLink, Globe, Facebook, Phone, Mail, XCircle, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox"
+import { MapIcon, ExternalLink, Globe, Facebook, Phone, Mail, XCircle, Plus, Ticket } from "lucide-react";
 import VADetailHeader from "@/components/shared/VADetailHeader";
 import VAEventsList from "@/components/shared/VAEventsList";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VenueAddEventButton } from "@/components/events/VenueAddEventButton";
 
+// Make sure to add the explicit React import
 
 function VenueProfileContent() {
   const params = useParams();
@@ -31,7 +33,7 @@ function VenueProfileContent() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventOverlay, setShowEventOverlay] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
-  
+
   // State for edit mode
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Partial<Venue>>({});
@@ -62,7 +64,7 @@ function VenueProfileContent() {
           return;
         }
         setVenue(venueData);
-        
+
         // Initialize edit form data
         setEditFormData({
           name: venueData.name,
@@ -70,18 +72,21 @@ function VenueProfileContent() {
           address: venueData.address || "",
           postcode: venueData.postcode || "",
           phone: venueData.phone || "",
-          email: venueData.email || ""
+          email: venueData.email || "",
+          standardTicketed: venueData.standardTicketed || false,
+          standardTicketInformation: venueData.standardTicketInformation || "",
+          standardTicketUrl: venueData.standardTicketUrl || ""
         });
-        
+
         // Initialize facilities
         setFacilities(venueData.facilities || []);
-        
+
         // Initialize social links with existing values
         const links = {
           website: "",
           facebook: ""
         };
-        
+
         if (venueData.socialMediaURLs && venueData.socialMediaURLs.length > 0) {
           venueData.socialMediaURLs.forEach(social => {
             if (social.platform === 'website' || social.platform === 'facebook') {
@@ -89,7 +94,7 @@ function VenueProfileContent() {
             }
           });
         }
-        
+
         setSocialLinks(links);
 
         const venueEvents = await getEventsForVenue(venueId);
@@ -121,6 +126,13 @@ function VenueProfileContent() {
     }));
   };
 
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: checked
+    }));
+  };
+
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks(prev => ({
       ...prev,
@@ -130,11 +142,11 @@ function VenueProfileContent() {
 
   const handleAddFacility = () => {
     if (!newFacility.trim()) return;
-    
+
     if (!facilities.includes(newFacility.trim())) {
       setFacilities(prev => [...prev, newFacility.trim()]);
     }
-    
+
     setNewFacility("");
   };
 
@@ -158,7 +170,7 @@ function VenueProfileContent() {
 
   const handleSaveChanges = async () => {
     if (!venue) return;
-    
+
     // Convert social links to the required format
     const socialMediaURLs: SocialMediaURL[] = Object.entries(socialLinks)
       .filter(([_, url]) => url.trim() !== "")
@@ -166,7 +178,7 @@ function VenueProfileContent() {
         platform: platform as any,
         url: url.trim()
       }));
-    
+
     // Prepare the updated venue data
     const updatedVenue: Venue = {
       ...venue,
@@ -175,12 +187,15 @@ function VenueProfileContent() {
       socialMediaURLs,
       updatedAt: new Date().toISOString()
     };
-    
+
     // Save to the database
     await updateVenue(updatedVenue);
-    
+
     // Update the local state
     setVenue(updatedVenue);
+    
+    // Exit edit mode
+    setIsEditing(false);
   };
 
   if (loading) {
@@ -230,16 +245,29 @@ function VenueProfileContent() {
   return (
     <>
       {/* Profile Header */}
-      <VADetailHeader 
-        item={venue} 
+      <VADetailHeader
+        item={venue}
         type="venue"
         isEditing={isEditing}
         onChange={handleHeaderChange}
         overrideSocialMediaURLs={isEditing ? headerSocialMediaURLs : undefined}
         onProfileImageUpdate={handleProfileImageUpdate}
       />
-      
-      <div className="container mx-auto pt-48 pb-20 px-4">
+
+      <div className="container mx-auto pt-48 pb-32 px-4 overflow-visible">
+        {/* Display "Ticketed Venue" if applicable, when not in edit mode */}
+        {!isEditing && venue.standardTicketed && (
+          <div className="mb-6 inline-flex items-center px-3 py-2 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-md">
+            <Ticket className="w-4 h-4 mr-2" />
+            <span className="font-medium">Ticketed Venue</span>
+            {venue.standardTicketInformation && (
+              <span className="ml-2 text-sm opacity-80">
+                ({venue.standardTicketInformation})
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Venue Info */}
         {venue.description && !isEditing && (
           <div className="mb-6">
@@ -248,10 +276,10 @@ function VenueProfileContent() {
             </p>
           </div>
         )}
-        
+
         {/* Edit Form */}
         {isEditing && (
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1 pb-8">
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Description
@@ -265,7 +293,7 @@ function VenueProfileContent() {
                 className="w-full"
               />
             </div>
-            
+
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Address
@@ -279,7 +307,7 @@ function VenueProfileContent() {
                 placeholder="Street address"
               />
             </div>
-            
+
             <div>
               <label htmlFor="postcode" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Postcode
@@ -293,7 +321,7 @@ function VenueProfileContent() {
                 placeholder="Postcode"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-[var(--foreground)] mb-1">
@@ -307,7 +335,7 @@ function VenueProfileContent() {
                   className="w-full"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                   Email
@@ -321,7 +349,66 @@ function VenueProfileContent() {
                 />
               </div>
             </div>
-            
+
+            {/* Ticketing Section - New addition */}
+            <div className="border p-4 rounded-md border-[var(--secondary)]/30 bg-[var(--secondary)]/5">
+              <h3 className="text-md font-medium mb-3 flex items-center">
+                <Ticket className="w-4 h-4 mr-2 text-[var(--secondary)]" />
+                Ticketing Information
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="standardTicketed" 
+                    checked={editFormData.standardTicketed || false}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange("standardTicketed", checked as boolean)
+                    }
+                  />
+                  <label 
+                    htmlFor="standardTicketed" 
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    This is a ticketed venue
+                  </label>
+                </div>
+                
+                {editFormData.standardTicketed && (
+                  <>
+                    <div>
+                      <label htmlFor="standardTicketInformation" className="block text-sm font-medium mb-1">
+                        Ticket Details
+                      </label>
+                      <Input
+                        id="standardTicketInformation"
+                        name="standardTicketInformation"
+                        value={editFormData.standardTicketInformation || ""}
+                        onChange={handleInputChange}
+                        className="w-full"
+                        placeholder="e.g. £10 advance, £12 on the door"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="standardTicketUrl" className="block text-sm font-medium mb-1">
+                        Ticket Website
+                      </label>
+                      <Input
+                        id="standardTicketUrl"
+                        name="standardTicketUrl"
+                        type="url"
+                        value={editFormData.standardTicketUrl || ""}
+                        onChange={handleInputChange}
+                        className="w-full"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Social Media
@@ -347,15 +434,15 @@ function VenueProfileContent() {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Facilities
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {facilities.map((facility, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="px-3 py-1 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full flex items-center gap-1"
                   >
                     <span>{facility}</span>
@@ -382,8 +469,8 @@ function VenueProfileContent() {
                     }
                   }}
                 />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleAddFacility}
                   className="px-4 py-2 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-md hover:bg-[var(--secondary)]/20"
                 >
@@ -393,7 +480,7 @@ function VenueProfileContent() {
             </div>
           </div>
         )}
-        
+
         {/* Contact Information (Only when not editing) */}
         {!isEditing && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -414,7 +501,7 @@ function VenueProfileContent() {
                 )}
               </div>
             )}
-            
+
             {/* Facilities */}
             {venue.facilities && venue.facilities.length > 0 && (
               <div>
@@ -433,91 +520,105 @@ function VenueProfileContent() {
             )}
           </div>
         )}
-        
-        {/* Tabs for Events and Map */}
-        <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-between items-center mb-4">
-            <TabsList>
-              <TabsTrigger value="events">Events</TabsTrigger>
-              <TabsTrigger value="map">Map</TabsTrigger>
-            </TabsList>
-            
-            {/* Create Event Button */}
-            {!isEditing && venue && (
-              <VenueAddEventButton
-                venue={venue}
-                className="px-4 py-2 rounded-md text-sm bg-[var(--secondary)] text-white hover:bg-[var(--secondary)]/90"
-              />
-            )}
+
+        {/* Tabs for Events and Map - Only visible when not editing */}
+        {!isEditing && (
+          <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex justify-between items-center mb-4">
+              <TabsList>
+                <TabsTrigger value="events">Events</TabsTrigger>
+                <TabsTrigger value="map">Map</TabsTrigger>
+              </TabsList>
+
+              {/* Create Event Button */}
+              {venue && (
+                <VenueAddEventButton
+                  venue={venue}
+                  className="px-4 py-2 rounded-md text-sm bg-[var(--secondary)] text-white hover:bg-[var(--secondary)]/90"
+                />
+              )}
+            </div>
+
+            {/* Events Tab */}
+            <TabsContent value="events" className="max-h-[60vh] overflow-y-auto pr-1">
+              {events.length > 0 ? (
+                <VAEventsList
+                  events={events}
+                  contextType="venue"
+                  onSelectEvent={(event) => {
+                    setSelectedEvent(event);
+                    setShowEventOverlay(true);
+                  }}
+                />
+              ) : (
+                <div className="py-6 text-center text-[var(--foreground)]/60">
+                  <p>No upcoming events scheduled at this venue.</p>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Map Tab */}
+            <TabsContent value="map" className="max-h-[60vh] overflow-y-auto pr-1">
+              <Card className="p-4">
+                <div className="aspect-video relative rounded-md overflow-hidden">
+                  {venue.location ? (
+                    <iframe
+                      title={`Map of ${venue.name}`}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      style={{ border: 0 }}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
+                        `${venue.name}, ${venue.address || ''} ${venue.postcode || ''}`.trim()
+                      )}`}
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800">
+                      <p className="text-[var(--foreground)]/70">No location data available</p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <a
+                    href={getGoogleMapsUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-sm text-[var(--secondary)] hover:underline"
+                  >
+                    <MapIcon className="w-4 h-4 mr-1" />
+                    Open in Google Maps
+                    <ExternalLink className="w-3 h-3 ml-1" />
+                  </a>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* When in edit mode and there are events, show a simple list */}
+        {isEditing && events.length > 0 && (
+          <div className="mt-4 mb-6">
+            <h3 className="text-lg font-medium mb-2">Upcoming Events</h3>
+            <p className="text-sm text-[var(--foreground)]/70 mb-4">
+              This venue has {events.length} upcoming events. Exit edit mode to view and manage events.
+            </p>
           </div>
+        )}
 
-          {/* Events Tab */}
-          <TabsContent value="events">
-            {events.length > 0 ? (
-              <VAEventsList
-                events={events}
-                contextType="venue"
-                onSelectEvent={(event) => {
-                  setSelectedEvent(event);
-                  setShowEventOverlay(true);
-                }}
-              />
-            ) : (
-              <div className="py-6 text-center text-[var(--foreground)]/60">
-                <p>No upcoming events scheduled at this venue.</p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Map Tab */}
-          <TabsContent value="map">
-            <Card className="p-4">
-              <div className="aspect-video relative rounded-md overflow-hidden">
-                {venue.location ? (
-                  <iframe
-                    title={`Map of ${venue.name}`}
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    style={{ border: 0 }}
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
-                      `${venue.name}, ${venue.address || ''} ${venue.postcode || ''}`.trim()
-                    )}`}
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800">
-                    <p className="text-[var(--foreground)]/70">No location data available</p>
-                  </div>
-                )}
-              </div>
-              <div className="mt-4 flex justify-end">
-                <a
-                  href={getGoogleMapsUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-[var(--secondary)] hover:underline"
-                >
-                  <MapIcon className="w-4 h-4 mr-1" />
-                  Open in Google Maps
-                  <ExternalLink className="w-3 h-3 ml-1" />
-                </a>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Claim this page button */}
-        <ClaimPageButton type="venue" id={venueId as string} />
-
-        {/* Edit Mode Toggle */}
-        <EditModeToggle
-          type="venue"
-          id={venueId as string}
-          isEditing={isEditing}
-          onEditModeChange={setIsEditing}
-          onSave={handleSaveChanges}
-        />
+        {/* Bottom Controls - always visible */}
+        <div className="mt-6 sticky bottom-4 bg-[var(--background)] bg-opacity-95 p-4 rounded-lg border border-[var(--border)] shadow-md z-10">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
+            <ClaimPageButton type="venue" id={venueId as string} />
+            <EditModeToggle
+              type="venue"
+              id={venueId as string}
+              isEditing={isEditing}
+              onEditModeChange={setIsEditing}
+              onSave={handleSaveChanges}
+            />
+          </div>
+        </div>
 
         {/* Event Info Overlay */}
         {selectedEvent && (
@@ -536,14 +637,15 @@ function VenueProfileContent() {
   );
 }
 
+// The Page component
 export default function VenueProfilePage() {
   return (
-    <Suspense fallback={
+    <React.Suspense fallback={
       <div className="container mx-auto py-12 px-4">
         <div className="animate-pulse text-center">Loading venue profile...</div>
       </div>
     }>
       <VenueProfileContent />
-    </Suspense>
+    </React.Suspense>
   );
 }

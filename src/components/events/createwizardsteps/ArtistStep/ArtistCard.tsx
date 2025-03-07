@@ -1,4 +1,4 @@
-// Refined update to ArtistCard component
+// Updated ArtistCard.tsx
 import { Music } from 'lucide-react';
 import type { Artist } from '@/lib/types';
 
@@ -15,7 +15,21 @@ export function ArtistCard({ artist, onSelect }: ArtistCardProps) {
         >
             <div className="flex items-start">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary-translucent)] flex items-center justify-center mr-3">
-                    <Music className="w-5 h-5 text-[var(--primary)]" />
+                    {artist.profileImageUrl ? (
+                        <img 
+                            src={artist.profileImageUrl} 
+                            alt={artist.name} 
+                            className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                                // Fallback to icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = '<div class="w-10 h-10 flex items-center justify-center"><Music class="w-5 h-5 text-[var(--primary)]" /></div>';
+                            }}
+                        />
+                    ) : (
+                        <Music className="w-5 h-5 text-[var(--primary)]" />
+                    )}
                 </div>
                 
                 <div className="flex-1 min-w-0 text-left">

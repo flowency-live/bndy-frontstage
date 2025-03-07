@@ -2,7 +2,8 @@ import { ChevronDown } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PriceInput } from "@/components/ui/price-input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import type { EventFormData } from '@/lib/types';
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,8 @@ interface TicketSectionProps {
 }
 
 export function TicketSection({ form, isExpanded, onToggle }: TicketSectionProps) {
+  const ticketed = form.watch("ticketed");
+  
   return (
     <div className="border border-[var(--primary)] rounded-lg p-6 space-y-4">
       <div
@@ -34,36 +37,57 @@ export function TicketSection({ form, isExpanded, onToggle }: TicketSectionProps
         <div className="space-y-4">
           <FormField
             control={form.control}
-            name="ticketPrice"
+            name="ticketed"
             render={({ field }) => (
-              <FormItem className="w-full">
+              <FormItem className="flex items-center space-x-2">
                 <FormControl>
-                  <PriceInput
-                    {...field}
-                    value={field.value || ''}
-                    className="bg-transparent border rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                  <Checkbox
+                    checked={field.value || false}
+                    onCheckedChange={field.onChange}
                   />
                 </FormControl>
+                <Label htmlFor="ticketed" className="cursor-pointer">This is a ticketed event</Label>
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="ticketUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="url"
-                    {...field}
-                    className="bg-transparent border rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
-                    placeholder="Ticket Website (optional)"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {ticketed && (
+            <>
+              <FormField
+                control={form.control}
+                name="ticketinformation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        className="bg-transparent border rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                        placeholder="Ticket details (e.g. £10 advance, £12 door)"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="ticketUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        {...field}
+                        className="bg-transparent border rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                        placeholder="Ticket Website (optional)"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
         </div>
       )}
     </div>

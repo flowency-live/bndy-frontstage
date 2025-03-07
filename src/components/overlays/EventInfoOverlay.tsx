@@ -68,14 +68,6 @@ export default function EventInfoOverlay({
   const formattedTime = event.startTime ? formatTime(event.startTime) : "Time TBA";
   const endTime = event.endTime ? formatTime(event.endTime) : undefined;
 
-  // Ticket price.
-  const ticketPrice =
-    event.ticketPrice &&
-    event.ticketPrice.trim() !== "" &&
-    parseFloat(event.ticketPrice) !== 0
-      ? `£${event.ticketPrice}`
-      : "£ree Entry";
-
   // Check if event is today.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -207,18 +199,27 @@ export default function EventInfoOverlay({
                   )}
                 </div>
 
+                {/* Ticket Information - Only show if event is ticketed */}
                 <div className="flex items-center gap-2">
                   <Ticket className="w-4 h-4 text-yellow-500" />
-                  <span className="text-[var(--foreground)]">{ticketPrice}</span>
-                  {event.ticketUrl && (
-                    <a
-                      href={event.ticketUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-auto text-[var(--primary)] text-xs hover:underline"
-                    >
-                      Buy Tickets
-                    </a>
+                  {event.ticketed ? (
+                    <>
+                      <span className="text-[var(--foreground)]">
+                        {event.ticketinformation || "Ticketed"}
+                      </span>
+                      {event.ticketUrl && (
+                        <a
+                          href={event.ticketUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-auto text-[var(--primary)] text-xs hover:underline"
+                        >
+                          Buy Tickets
+                        </a>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[var(--foreground)]">£ree entry</span>
                   )}
                 </div>
 

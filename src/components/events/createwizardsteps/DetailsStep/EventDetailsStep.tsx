@@ -4,6 +4,8 @@ import { UseFormReturn } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Artist, Venue } from '@/lib/types';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import {
   AlertDialog,
@@ -15,7 +17,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { DateSelect } from "@/components/ui/date-select";
-import { PriceInput } from "@/components/ui/price-input";
 import { TimeSelect } from "@/components/ui/time-select";
 import type { EventFormData } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
@@ -37,8 +38,7 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
   const startTime = form.watch('startTime');
   const venue = form.watch('venue');
   const artists = form.watch('artists');
-
-
+  const ticketed = form.watch('ticketed');
 
   const handleSubmit = async (data: EventFormData) => {
     if (conflicts.length > 0) {
@@ -59,7 +59,6 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-
         
         {/* Event Name */}
         <FormField
@@ -71,7 +70,6 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
               <FormControl>
                 <Input
                   {...field}
-                  // Remove defaultValue prop
                   placeholder={`${form.watch('artists')[0]?.name} @ ${form.watch('venue').name}`}
                 />
               </FormControl>
@@ -80,7 +78,7 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
           )}
         />
 
-        {/* Date and Price Row */}
+        {/* Date and Ticket Row */}
         <div className="flex gap-4">
           <FormField
             control={form.control}
@@ -99,21 +97,64 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
             )}
           />
 
-
           <FormField
             control={form.control}
-            name="ticketPrice"
+            name="ticketed"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Ticket Price</FormLabel>
-                <FormControl>
-                  <PriceInput {...field} value={field.value || ''} />
-                </FormControl>
+                <div className="flex flex-col h-full justify-end pb-2">
+                  <div className="flex items-center space-x-2 mt-6">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value || false}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <Label htmlFor="ticketed">Ticketed Event</Label>
+                  </div>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+
+        {/* Ticket Details (only shown if ticketed) */}
+        {ticketed && (
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="ticketinformation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ticket Details</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ''}
+                      placeholder="e.g. £10 advance, £12 on the door"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="ticketUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ticket Website (optional)</FormLabel>
+                  <FormControl>
+                    <Input type="url" {...field} placeholder="https://..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         {/* Time Row */}
         <div className="flex gap-4">
@@ -178,21 +219,7 @@ export function EventDetailsStep({ form, loading, onSubmit, onBack }: EventDetai
           </div>
         )}
 
-        {/* URLs */}
-        <FormField
-          control={form.control}
-          name="ticketUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ticket Website (optional)</FormLabel>
-              <FormControl>
-                <Input type="url" {...field} placeholder="https://..." />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+        {/* Event URL */}
         <FormField
           control={form.control}
           name="eventUrl"

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Building, Music, MapPin, Globe } from "lucide-react";
+import { ArrowLeft, Building, Music, MapPin, Globe, Ticket } from "lucide-react";
 import { FaFacebook, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa";
 import { XIcon } from "@/components/ui/icons/XIcon";
 import { Input } from "@/components/ui/input";
@@ -40,12 +40,12 @@ const containerVariants = {
 };
 
 const avatarVariants = {
-  hidden: { 
-    scale: 0.8, 
-    opacity: 0 
+  hidden: {
+    scale: 0.8,
+    opacity: 0
   },
-  visible: { 
-    scale: 1, 
+  visible: {
+    scale: 1,
     opacity: 1,
     transition: {
       type: "spring",
@@ -56,11 +56,11 @@ const avatarVariants = {
 };
 
 const itemVariants = {
-  hidden: { 
+  hidden: {
     opacity: 0,
     y: 20
   },
-  visible: { 
+  visible: {
     opacity: 1,
     y: 0,
     transition: {
@@ -123,33 +123,33 @@ export default function VADetailHeader({
   // Get artist genres if applicable
   const artistGenres = isArtist && 'genres' in item ? item.genres : null;
 
-//DEBUG BASK
-useEffect(() => {
-  if (item.id === 'AfEtyU0MUaasfdcXrkxU') { // Bask venue ID
-    console.log("BASK VENUE FULL DATA:", JSON.stringify(item, null, 2));
-    console.log("BASK SOCIAL URLS:", JSON.stringify(socialMediaURLs, null, 2));
-    
-    // Check the specific Facebook URL that's causing problems
-    const fbURL = socialMediaURLs.find(s => s.platform === 'facebook')?.url;
-    console.log("BASK FB URL:", fbURL);
-    
-    // If using a URL constructor, let's see what we get
-    try {
-      if (fbURL) {
-        const url = new URL(fbURL);
-        console.log("BASK FB URL PARTS:", {
-          protocol: url.protocol,
-          hostname: url.hostname,
-          pathname: url.pathname,
-          search: url.search,
-          hash: url.hash
-        });
+  //DEBUG BASK
+  useEffect(() => {
+    if (item.id === 'AfEtyU0MUaasfdcXrkxU') { // Bask venue ID
+      console.log("BASK VENUE FULL DATA:", JSON.stringify(item, null, 2));
+      console.log("BASK SOCIAL URLS:", JSON.stringify(socialMediaURLs, null, 2));
+
+      // Check the specific Facebook URL that's causing problems
+      const fbURL = socialMediaURLs.find(s => s.platform === 'facebook')?.url;
+      console.log("BASK FB URL:", fbURL);
+
+      // If using a URL constructor, let's see what we get
+      try {
+        if (fbURL) {
+          const url = new URL(fbURL);
+          console.log("BASK FB URL PARTS:", {
+            protocol: url.protocol,
+            hostname: url.hostname,
+            pathname: url.pathname,
+            search: url.search,
+            hash: url.hash
+          });
+        }
+      } catch (e) {
+        console.error("BASK FB URL parsing error:", e);
       }
-    } catch (e) {
-      console.error("BASK FB URL parsing error:", e);
     }
-  }
-}, [item, socialMediaURLs]);
+  }, [item, socialMediaURLs]);
 
 
 
@@ -171,7 +171,7 @@ useEffect(() => {
     console.log("Profile picture fetched:", url);
     setProfileImageUrl(url);
     setHasFetched(true);
-    
+
     // Update the parent component if callback is provided
     if (onProfileImageUpdate) {
       onProfileImageUpdate(url);
@@ -212,7 +212,7 @@ useEffect(() => {
       </div>
 
       {/* Main Content Container with animations */}
-      <motion.div 
+      <motion.div
         className="container max-w-5xl mx-auto px-4 py-6 pt-14"
         variants={containerVariants}
         initial="hidden"
@@ -223,7 +223,7 @@ useEffect(() => {
           <motion.div
             variants={avatarVariants}
             className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-xl"
-            style={{ 
+            style={{
               backgroundColor: isVenue ? "var(--secondary-translucent)" : "var(--primary-translucent)",
               boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)"
             }}
@@ -294,6 +294,14 @@ useEffect(() => {
                   ))}
                 </div>
               ) : null}
+              {isVenue && !isEditing && 'standardTicketed' in item && item.standardTicketed && (
+                <div className="flex items-center mt-2">
+                  <Ticket className="w-4 h-4 mr-1 text-[var(--secondary)]" />
+                  <span className="text-sm font-medium text-[var(--secondary)]">
+                    Ticketed Venue
+                  </span>
+                </div>
+              )}
             </motion.div>
 
             {/* Social Media Icons with animation */}

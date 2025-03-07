@@ -26,15 +26,16 @@ export function EventCard({ event }: { event: Event }) {
       </div>
       <div className="mt-2 flex justify-between items-center">
         <div className="text-sm font-medium text-[var(--foreground)]">{formatTime(event.startTime)}</div>
-        {event.ticketPrice ? (
-          <div className="flex items-center text-sm text-[var(--foreground)]">
-            <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
-            {event.ticketPrice}
-          </div>
-        ) : (
-          <div className="text-sm font-medium text-[var(--secondary)]">
-            £ree
-          </div>
+        {event.ticketed ? (
+  <div className="flex items-center text-[var(--foreground)]">
+    <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
+    <span>{event.ticketinformation || "Ticketed"}</span>
+  </div>
+) : (
+  <div className="text-sm font-medium text-[var(--secondary)]">
+    £ree
+  </div>
+
         )}
       </div>
     </div>

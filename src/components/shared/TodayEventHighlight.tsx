@@ -93,16 +93,16 @@ export default function TodayEventHighlight({
 
           {/* Price column */}
           <div className="sm:col-span-2 flex justify-start sm:justify-end items-center">
-            {event.ticketPrice ? (
-              <div className="flex items-center text-[var(--foreground)]">
-                <Ticket className="w-5 h-5 mr-1 text-[var(--primary)]" />
-                <span className="font-medium">{event.ticketPrice}</span>
-              </div>
-            ) : (
-              <div className="px-3 py-1 rounded-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm">
-                Free Entry
-              </div>
-            )}
+          {event.ticketed ? (
+  <div className="flex items-center text-[var(--foreground)]">
+    <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
+    <span>{event.ticketinformation || "Ticketed"}</span>
+  </div>
+) : (
+  <div className="text-sm font-medium text-[var(--secondary)]">
+    £ree
+  </div>
+)}
           </div>
         </div>
       </div>

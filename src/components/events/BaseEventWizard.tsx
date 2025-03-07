@@ -70,14 +70,16 @@ export function BaseEventWizard({
 
     const form = useForm<EventFormData>({
         defaultValues: {
-            artists: initialArtist ? [initialArtist] : [],
-            venue: initialVenue || ({} as Venue),
-            name: '',
-            eventUrl: '',
-            ticketUrl: '',
-            description: ''
+          artists: initialArtist ? [initialArtist] : [],
+          venue: initialVenue || ({} as Venue),
+          name: '',
+          eventUrl: '',
+          ticketed: false,
+          ticketinformation: '',
+          ticketUrl: '',
+          description: ''
         }
-    });
+      });
 
     // Set initial values for form if provided
     React.useEffect(() => {
@@ -143,12 +145,18 @@ export function BaseEventWizard({
                 await Promise.all(dates.map(async (date) => {
                     const eventData = {
                         ...data,
-                        date,
                         venueId,
                         venueName: data.venue.name,
                         artistIds: data.artists.map(a => a.id),
                         location: data.venue.location,
-                        status: 'approved' as const, // Admin created events are auto-approved
+                        ticketed: data.ticketed || false,
+                        ...(data.ticketed && data.ticketinformation && data.ticketinformation.trim() !== '' 
+                            ? { ticketinformation: data.ticketinformation } 
+                            : {}),
+                        ...(data.ticketed && data.ticketUrl && data.ticketUrl.trim() !== '' 
+                            ? { ticketUrl: data.ticketUrl } 
+                            : {}),
+                        status: 'approved' as const,
                         source: 'bndy.live' as const,
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
@@ -165,7 +173,14 @@ export function BaseEventWizard({
                     venueName: data.venue.name,
                     artistIds: data.artists.map(a => a.id),
                     location: data.venue.location,
-                    status: 'approved' as const, // Admin created events are auto-approved
+                    ticketed: data.ticketed || false,
+                    ...(data.ticketed && data.ticketinformation && data.ticketinformation.trim() !== '' 
+                        ? { ticketinformation: data.ticketinformation } 
+                        : {}),
+                    ...(data.ticketed && data.ticketUrl && data.ticketUrl.trim() !== '' 
+                        ? { ticketUrl: data.ticketUrl } 
+                        : {}),
+                    status: 'approved' as const,
                     source: 'bndy.live' as const,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -199,7 +214,6 @@ export function BaseEventWizard({
             setLoading(false);
         }
     };
-    
 
     // Dynamic title based on form state
     const title = useMemo(() => {
@@ -316,16 +330,23 @@ export function BaseEventWizard({
                             onVenueSelect={(venue: Venue) => {
                                 form.setValue('venue', venue);
 
-                                // If it's a verified venue with standard times, populate those
-                                if (venue.id && venue.standardStartTime) {
-                                    form.setValue('startTime', venue.standardStartTime);
-                                }
-                                if (venue.id && venue.standardEndTime) {
-                                    form.setValue('endTime', venue.standardEndTime);
-                                }
-                                if (venue.id && venue.standardTicketPrice) {
-                                    form.setValue('ticketPrice', venue.standardTicketPrice);
-                                }
+                                if (venue.id) {
+                                    if (venue.standardStartTime) {
+                                      form.setValue('startTime', venue.standardStartTime);
+                                    }
+                                    if (venue.standardEndTime) {
+                                      form.setValue('endTime', venue.standardEndTime);
+                                    }
+                                    if (venue.standardTicketed !== undefined) {
+                                      form.setValue('ticketed', venue.standardTicketed);
+                                    }
+                                    if (venue.standardTicketInformation) {
+                                      form.setValue('ticketinformation', venue.standardTicketInformation);
+                                    }
+                                    if (venue.standardTicketUrl) {
+                                      form.setValue('ticketUrl', venue.standardTicketUrl);
+                                    }
+                                  }
 
                                 handleStepComplete('venue');
                             }}

@@ -279,7 +279,7 @@ export default function ArtistProfilePage() {
         onProfileImageUpdate={handleProfileImageUpdate}
       />
       
-      <div className="container mx-auto pt-28 pb-20 px-4">
+      <div className="container mx-auto pt-28 pb-20 px-4 overflow-visible">
         {/* Artist Bio */}
         {artist.description && !isEditing && (
           <div className="mb-6">
@@ -307,7 +307,7 @@ export default function ArtistProfilePage() {
         
         {/* Edit Form */}
         {isEditing && (
-          <div className="space-y-4 mb-6">
+  <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1">
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Description

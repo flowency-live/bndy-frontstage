@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
 import type { Artist } from '@/lib/types';
 import { stringSimilarity } from '@/lib/utils/string-similarity';
@@ -61,70 +60,66 @@ export function NewArtistForm({
     };
 
     return (
-        <Card className="border-primary">
-            <CardContent className="p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-semibold">Add New Artist</h3>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onCancel}
-                    >
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-                
-                <Input
-                    placeholder="Artist Name *"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mb-2"
-                    autoFocus
-                />
+        <div className="space-y-4">
+            <Input
+                placeholder="Artist Name *"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="mb-2"
+                autoFocus
+            />
 
-                {similarArtists.length > 0 && (
-                    <div className="p-2 bg-yellow-500/10 rounded-md border border-yellow-500/50">
-                        <div className="flex items-start gap-2">
-                            <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-sm text-yellow-500 font-medium">Similar artists found:</p>
-                                <ul className="mt-1 text-sm text-muted-foreground">
-                                    {similarArtists.map(artist => (
-                                        <li key={artist.id}>{artist.name}</li>
-                                    ))}
-                                </ul>
-                            </div>
+            {similarArtists.length > 0 && (
+                <div className="p-3 bg-yellow-500/10 rounded-md border border-yellow-500/50">
+                    <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm text-yellow-500 font-medium">Similar artists found:</p>
+                            <ul className="mt-1 text-sm text-muted-foreground">
+                                {similarArtists.map(artist => (
+                                    <li key={artist.id}>{artist.name}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
-                <Input
-                    placeholder="Facebook URL"
-                    value={formData.facebookUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
-                    className="mb-2"
-                />
-                <Input
-                    placeholder="Instagram URL"
-                    value={formData.instagramUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
-                    className="mb-2"
-                />
-                <Input
-                    placeholder="Website URL"
-                    value={formData.websiteUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                    className="mb-2"
-                />
-                
+            <Input
+                placeholder="Facebook URL"
+                value={formData.facebookUrl || ''}
+                onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
+                className="mb-2"
+            />
+            <Input
+                placeholder="Instagram URL"
+                value={formData.instagramUrl || ''}
+                onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
+                className="mb-2"
+            />
+            <Input
+                placeholder="Website URL"
+                value={formData.websiteUrl || ''}
+                onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
+                className="mb-2"
+            />
+            
+            <div className="flex gap-2 pt-4">
+                <Button
+                    variant="outline"
+                    onClick={onCancel}
+                    className="flex-1"
+                >
+                    Cancel
+                </Button>
                 <Button
                     onClick={handleSubmit}
                     disabled={!formData.name || loading}
-                    className="w-full"
+                    className="flex-1 bg-[var(--primary)] text-white"
                 >
                     {loading ? 'Creating...' : 'Save New Artist'}
                 </Button>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

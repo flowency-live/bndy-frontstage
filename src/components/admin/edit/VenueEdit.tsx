@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@radix-ui/react-checkbox";
 import {
   Card,
   CardContent,
@@ -25,12 +26,12 @@ import { Venue, SocialMediaURL, SocialPlatform } from "@/lib/types";
 import Link from "next/link";
 import { ArrowLeft, Plus, Trash2, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  getVenueById, 
-  createVenue, 
-  updateVenue, 
-  getAllVenues, 
-  searchGooglePlaces 
+import {
+  getVenueById,
+  createVenue,
+  updateVenue,
+  getAllVenues,
+  searchGooglePlaces
 } from "@/lib/services/venue-service";
 
 // Social media platforms supported
@@ -58,13 +59,15 @@ export function VenueEdit({ venueId }: VenueEditProps) {
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
   const googleScriptLoadedRef = useRef(false);
   const venueDataLoaded = useRef(false);
-  
+
   const [venue, setVenue] = useState<Partial<Venue>>({
     name: "",
     address: "",
     standardStartTime: "",
     standardEndTime: "",
-    standardTicketPrice: "",
+    standardTicketed: false,
+    standardTicketUrl: "",
+    standardTicketInformation: "",
     socialMediaURLs: [],
     location: { lat: 0, lng: 0 }
   });
@@ -80,7 +83,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       }
 
       console.log("Loading Google Maps script");
-      
+
       // Set up the callback function that will be called when the script loads
       window.initGoogleMaps = () => {
         console.log("Google Maps initialized");
@@ -94,7 +97,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       script.onerror = () => {
         console.error("Failed to load Google Maps API");
       };
-      
+
       document.head.appendChild(script);
       googleScriptLoadedRef.current = true;
       setGoogleScriptLoaded(true);
@@ -180,11 +183,11 @@ export function VenueEdit({ venueId }: VenueEditProps) {
   // Handle venue selection
   const handleVenueSelect = (selectedVenue: Venue) => {
     // Check if this venue already exists in the database
-    const existingVenue = allVenues.find(v => 
+    const existingVenue = allVenues.find(v =>
       (v.googlePlaceId && v.googlePlaceId === selectedVenue.googlePlaceId) ||
-      (v.location && selectedVenue.location && 
-       Math.abs(v.location.lat - selectedVenue.location.lat) < 0.0001 &&
-       Math.abs(v.location.lng - selectedVenue.location.lng) < 0.0001)
+      (v.location && selectedVenue.location &&
+        Math.abs(v.location.lat - selectedVenue.location.lat) < 0.0001 &&
+        Math.abs(v.location.lng - selectedVenue.location.lng) < 0.0001)
     );
 
     if (existingVenue) {
@@ -192,7 +195,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
         title: "Venue already exists",
         description: "This venue is already registered. Would you like to edit it instead?",
         action: (
-          <Button 
+          <Button
             onClick={() => router.push(`/admin/venues/${existingVenue.id}`)}
             variant="outline"
             size="sm"
@@ -213,14 +216,14 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       location: selectedVenue.location,
       validated: false
     });
-    
+
     // Clear search
     setSearchTerm("");
     setSearchResults([]);
   };
 
   // Handle form field changes
-  const handleInputChange = (field: keyof Venue, value: string | number | object) => {
+  const handleInputChange = (field: keyof Venue, value: string | number | boolean | object) => {
     setVenue(prev => ({ ...prev, [field]: value }));
   };
 
@@ -274,7 +277,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
           ...venue as Venue,
           id: venueId
         });
-        
+
         toast({
           title: "Success",
           description: "Venue updated successfully.",
@@ -283,7 +286,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
         // Create new venue - OMIT the ID field completely
         const { id, ...venueWithoutId } = venue;
         await createVenue(venueWithoutId as Omit<Venue, "id" | "createdAt" | "updatedAt">);
-        
+
         toast({
           title: "Success",
           description: "Venue created successfully.",
@@ -354,7 +357,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
                         className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
-                    
+
                     {searchResults.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border max-h-60 overflow-auto">
                         {searchResults.map((result, index) => (
@@ -370,7 +373,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
                       </div>
                     )}
                   </div>
-                  
+
                   {venue.googlePlaceId && (
                     <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 rounded-md">
                       <p className="font-medium">Selected Venue:</p>
@@ -431,17 +434,40 @@ export function VenueEdit({ venueId }: VenueEditProps) {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="standardTicketPrice">Usual Ticket Price (£)</Label>
-                    <Input
-                      id="standardTicketPrice"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={venue.standardTicketPrice || ""}
-                      onChange={(e) => handleInputChange("standardTicketPrice", e.target.value)}
-                      placeholder="0.00"
-                    />
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="standardTicketed"
+                        checked={venue.standardTicketed || false}
+                        onCheckedChange={(checked) => handleInputChange("standardTicketed", checked)}
+                      />
+                      <Label htmlFor="standardTicketed">This is a ticketed venue</Label>
+                    </div>
+
+                    {venue.standardTicketed && (
+                      <>
+                        <div className="mt-4">
+                          <Label htmlFor="standardTicketInformation">Standard Ticket Details</Label>
+                          <Input
+                            id="standardTicketInformation"
+                            value={venue.standardTicketInformation || ""}
+                            onChange={(e) => handleInputChange("standardTicketInformation", e.target.value)}
+                            placeholder="e.g. £10 advance, £12 on the door"
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          <Label htmlFor="standardTicketUrl">Standard Ticket Website</Label>
+                          <Input
+                            id="standardTicketUrl"
+                            type="url"
+                            value={venue.standardTicketUrl || ""}
+                            onChange={(e) => handleInputChange("standardTicketUrl", e.target.value)}
+                            placeholder="https://..."
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -450,7 +476,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <Label>Social Media Links</Label>
-                  <Button 
+                  <Button
                     type="button"
                     variant="outline"
                     size="sm"
@@ -516,11 +542,11 @@ export function VenueEdit({ venueId }: VenueEditProps) {
           )}
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={
-              isLoading || 
-              !venue.name || 
+              isLoading ||
+              !venue.name ||
               (!venueId && (!venue.googlePlaceId || !venue.location))
             }
           >

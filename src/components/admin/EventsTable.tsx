@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
+import { Ticket } from "lucide-react";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
 import { getArtistById } from "@/lib/services/artist-service";
 import { getVenueById } from "@/lib/services/venue-service";
@@ -35,7 +36,9 @@ interface Event {
   name?: string;
   date: string;
   startTime: string;
-  ticketPrice?: number;
+  ticketed?: boolean;
+  ticketinformation?: string;
+  ticketUrl?: string;
   artistIds: string[];
   venueId: string;
   // any additional fields...
@@ -154,7 +157,7 @@ export function EventsTable() {
             <TableHead>Venue</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Time</TableHead>
-            <TableHead>Ticket Price</TableHead>
+            <TableHead>Ticketed</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -174,7 +177,14 @@ export function EventsTable() {
                 {event.startTime ? formatTime(event.startTime) : "-"}
               </TableCell>
               <TableCell>
-                £{event.ticketPrice ? Number(event.ticketPrice).toFixed(2) : "0.00"}
+                {event.ticketed ? (
+                  <div className="flex items-center">
+                    <Ticket className="w-4 h-4 mr-1 text-primary" />
+                    <span>{event.ticketinformation || "Ticketed"}</span>
+                  </div>
+                ) : (
+                  "£ree"
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -10,12 +10,30 @@ interface TimeStepProps {
   onBack?: () => void;
 }
 
-export function TimeStep({ form, onComplete }: TimeStepProps) {
+export function TimeStep({ form, onComplete, onBack }: TimeStepProps) {
   const [showEndTime, setShowEndTime] = useState(!!form.getValues('endTime'));
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isSelectingEndTime, setIsSelectingEndTime] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const timePickerRef = useRef<HTMLDivElement>(null);
   const timeOptionsRef = useRef<HTMLDivElement>(null);
+
+  // Detect if user is on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+
+      // Also check if the device supports time input
+      const input = document.createElement('input');
+      input.type = 'time';
+      const supported = input.type === 'time';
+      // Only use native if mobile AND it properly supports time input
+      setIsMobile(isMobileDevice && supported);
+    };
+    
+    checkMobile();
+  }, []);
 
   // Get the venue's standard times
   const venue = form.watch('venue');
@@ -65,6 +83,8 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
 
   // Show the picker, scroll to the current selection
   const openTimePicker = (forEndTime: boolean) => {
+    if (isMobile) return; // Don't open custom picker on mobile
+    
     setIsSelectingEndTime(forEndTime);
     const current = forEndTime ? form.getValues('endTime') : form.getValues('startTime');
     const idx = findTimeIndex(current);
@@ -96,6 +116,25 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
       }
     }
     setShowTimePicker(false);
+  };
+
+  // Handle native time input change
+  const handleNativeTimeChange = (e: React.ChangeEvent<HTMLInputElement>, isEnd = false) => {
+    const newTime = e.target.value;
+    
+    if (isEnd) {
+      form.setValue('endTime', newTime);
+    } else {
+      form.setValue('startTime', newTime);
+      
+      // If end time is enabled, default to +3h
+      if (showEndTime) {
+        const [h, m] = newTime.split(':').map(Number);
+        const endHours = (h + 3) % 24;
+        const endTime = `${String(endHours).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        form.setValue('endTime', endTime);
+      }
+    }
   };
 
   // Outside click closes the picker
@@ -136,7 +175,6 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
     setTouchStartY(touchY);
   };
 
-  // Basic container styles to match your date/venue steps
   return (
     <div className="space-y-6 px-6 py-6">
       {/* Start Time */}
@@ -144,19 +182,37 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
         <label className="block mb-2 text-sm text-[var(--foreground-muted)]">
           Start Time
         </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Clock className="w-5 h-5 text-[var(--primary)]" />
+        
+        {isMobile ? (
+          // Native time input for mobile
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Clock className="w-5 h-5 text-[var(--primary)]" />
+            </div>
+            <input
+              type="time"
+              value={form.watch('startTime') || ''}
+              onChange={(e) => handleNativeTimeChange(e, false)}
+              className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+              style={{ borderColor: 'var(--primary)' }}
+            />
           </div>
-          <button
-            type="button"
-            className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
-            style={{ borderColor: 'var(--primary)' }}
-            onClick={() => openTimePicker(false)}
-          >
-            {formatTime12h(form.watch('startTime'))}
-          </button>
-        </div>
+        ) : (
+          // Custom time picker for desktop
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Clock className="w-5 h-5 text-[var(--primary)]" />
+            </div>
+            <button
+              type="button"
+              className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+              style={{ borderColor: 'var(--primary)' }}
+              onClick={() => openTimePicker(false)}
+            >
+              {formatTime12h(form.watch('startTime'))}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Add End Time Toggle */}
@@ -197,24 +253,42 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
           <label className="block mb-2 text-sm text-[var(--foreground-muted)]">
             End Time
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Clock className="w-5 h-5 text-[var(--primary)]" />
+          
+          {isMobile ? (
+            // Native time input for mobile
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Clock className="w-5 h-5 text-[var(--primary)]" />
+              </div>
+              <input
+                type="time"
+                value={form.watch('endTime') || ''}
+                onChange={(e) => handleNativeTimeChange(e, true)}
+                className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                style={{ borderColor: 'var(--primary)' }}
+              />
             </div>
-            <button
-              type="button"
-              className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
-              style={{ borderColor: 'var(--primary)' }}
-              onClick={() => openTimePicker(true)}
-            >
-              {formatTime12h(form.watch('endTime'))}
-            </button>
-          </div>
+          ) : (
+            // Custom time picker for desktop
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Clock className="w-5 h-5 text-[var(--primary)]" />
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-3 pl-12 bg-transparent border rounded-full text-base text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-translucent)]"
+                style={{ borderColor: 'var(--primary)' }}
+                onClick={() => openTimePicker(true)}
+              >
+                {formatTime12h(form.watch('endTime'))}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Time Picker Dropdown */}
-      {showTimePicker && (
+      {/* Time Picker Dropdown - only shown on desktop */}
+      {!isMobile && showTimePicker && (
         <div
           ref={timePickerRef}
           className="absolute z-20 mt-1 w-[calc(100%-3rem)] bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg px-2"
@@ -234,7 +308,7 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
           {/* Time Options */}
           <div
             ref={timeOptionsRef}
-            className="time-options"
+            className="time-options max-h-[300px] overflow-y-auto"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
@@ -248,8 +322,8 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
                   key={time.value}
                   type="button"
                   className={`time-option w-full text-left px-4 py-2 ${
-                    isSelected ? 'time-option-selected' : ''
-                  }`}
+                    isSelected ? 'bg-[var(--primary)]/10 text-[var(--primary)] font-medium' : ''
+                  } hover:bg-[var(--accent)]`}
                   onClick={() => handleTimeSelect(time.value)}
                 >
                   <div className="flex items-center justify-between">
@@ -274,7 +348,7 @@ export function TimeStep({ form, onComplete }: TimeStepProps) {
         </div>
       )}
 
-      {/* Next Button Only */}
+      {/* Next Button */}
       <div className="flex justify-end mt-6">
         <Button
           className="bg-[var(--primary)] text-white rounded-full px-6 py-3"
