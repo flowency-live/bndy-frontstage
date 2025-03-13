@@ -1,4 +1,4 @@
-// src/components/ListView.tsx - Update to include AddEventButton
+// src/components/ListView.tsx - Updated to wrap selectedEvent in an array for the overlay
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -427,10 +427,10 @@ export default function ListView() {
       {/* Add Event Button */}
       <AddEventButton />
 
-      {/* Event Info Overlay */}
+      {/* Event Info Overlay - wrap the single selected event in an array */}
       {selectedEvent && (
         <EventInfoOverlay
-          event={selectedEvent}
+          events={[selectedEvent]}
           isOpen={showEventOverlay}
           onClose={() => {
             setShowEventOverlay(false);

@@ -1,20 +1,27 @@
-// src/components/Header.tsx
+// src/components/Header.tsx - Updated with venue/events toggle
 "use client";
 
 import { usePathname } from "next/navigation";
 import BndyLogo from "@/components/ui/bndylogo";
-import { Sun, Moon, Map as MapIcon, List as ListIcon } from "lucide-react";
+import { Sun, Moon, Map as MapIcon, List as ListIcon, Building, Calendar } from "lucide-react";
 import { useViewToggle } from "@/context/ViewToggleContext";
 
 export default function Header() {
   const pathname = usePathname();
-  const { activeView, setActiveView, isDarkMode, toggleTheme } = useViewToggle();
+  const { activeView, setActiveView, mapMode, setMapMode, isDarkMode, toggleTheme } = useViewToggle();
 
   // Only show the map/list toggle if we are on the home page ("/")
   const showViewToggle = pathname === "/";
+  
+  // Only show the map mode toggle when in map view and on home page
+  const showMapModeToggle = showViewToggle && activeView === "map";
 
   const handleViewToggle = () => {
     setActiveView((prev) => (prev === "map" ? "list" : "map"));
+  };
+  
+  const handleMapModeToggle = () => {
+    setMapMode((prev) => (prev === "events" ? "venues" : "events"));
   };
 
   return (
@@ -33,6 +40,7 @@ export default function Header() {
           <button
             onClick={toggleTheme}
             className="flex items-center focus:outline-none"
+            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             {isDarkMode ? (
               <Sun className="w-5 h-5 text-[var(--foreground)]" />
@@ -40,9 +48,29 @@ export default function Header() {
               <Moon className="w-5 h-5 text-[var(--foreground)]" />
             )}
           </button>
-          {/* Conditionally render the Map/List toggle */}
+          
+          {/* Map Mode Toggle (only visible in map view) */}
+          {showMapModeToggle && (
+            <button 
+              onClick={handleMapModeToggle} 
+              className="flex items-center focus:outline-none"
+              aria-label={mapMode === "events" ? "Switch to venues view" : "Switch to events view"}
+            >
+              {mapMode === "events" ? (
+                <Building className="w-5 h-5 text-[var(--foreground)]" />
+              ) : (
+                <Calendar className="w-5 h-5 text-[var(--foreground)]" />
+              )}
+            </button>
+          )}
+          
+          {/* Map/List Toggle */}
           {showViewToggle && (
-            <button onClick={handleViewToggle} className="flex items-center focus:outline-none">
+            <button 
+              onClick={handleViewToggle} 
+              className="flex items-center focus:outline-none"
+              aria-label={activeView === "map" ? "Switch to list view" : "Switch to map view"}
+            >
               {activeView === "map" ? (
                 <ListIcon className="w-5 h-5 text-[var(--foreground)]" />
               ) : (
@@ -51,6 +79,7 @@ export default function Header() {
             </button>
           )}
         </div>
+        
         {/* Centered logo and tagline */}
         <div className="text-center">
           <div className="flex justify-center">

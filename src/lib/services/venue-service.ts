@@ -102,6 +102,22 @@ export async function getAllVenues(): Promise<Venue[]> {
 }
 
 /**
+ * Get all venues for map display
+ */
+export async function getAllVenuesForMap(): Promise<Venue[]> {
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Venue));
+  } catch (error) {
+    console.error("Error fetching venues for map:", error);
+    throw error;
+  }
+}
+
+/**
  * Search for venues in Firestore and Google Places
  */
 // In venue-service.ts

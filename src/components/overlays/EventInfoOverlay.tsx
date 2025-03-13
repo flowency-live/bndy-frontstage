@@ -20,7 +20,7 @@ import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface EventInfoOverlayProps {
-  event: Event;
+  events: Event[];
   isOpen: boolean;
   onClose: () => void;
   position?: "map" | "list";
@@ -28,34 +28,38 @@ interface EventInfoOverlayProps {
 }
 
 export default function EventInfoOverlay({
-  event,
+  events,
   isOpen,
   onClose,
   position = "map",
   verticalOffset = 50,
 }: EventInfoOverlayProps) {
+  // Track which event in the list is being shown.
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentEvent = events[currentIndex];
+
   const [artist, setArtist] = useState<Artist | null>(null);
   const [venue, setVenue] = useState<VenueData | null>(null);
   // Flag to avoid repeated fetch attempts in overlay.
   const [hasFetched, setHasFetched] = useState(false);
 
-  // Fetch artist data from the first artist ID.
+  // When the current event changes, fetch associated artist data.
   useEffect(() => {
-    if (event.artistIds && event.artistIds.length > 0) {
-      getArtistById(event.artistIds[0])
+    if (currentEvent.artistIds && currentEvent.artistIds.length > 0) {
+      getArtistById(currentEvent.artistIds[0])
         .then((artistData) => setArtist(artistData))
         .catch((err) => console.error("Error fetching artist:", err));
     }
-  }, [event.artistIds]);
+  }, [currentEvent.artistIds]);
 
-  // Fetch venue data using event.venueId.
+  // When the current event changes, fetch venue data.
   useEffect(() => {
-    if (event.venueId) {
-      getVenueById(event.venueId)
+    if (currentEvent.venueId) {
+      getVenueById(currentEvent.venueId)
         .then((venueData) => setVenue(venueData))
         .catch((err) => console.error("Error fetching venue:", err));
     }
-  }, [event.venueId]);
+  }, [currentEvent.venueId]);
 
   // Extract artist social URLs to possibly fetch a profile picture.
   const socialMediaURLs = artist ? getSocialMediaURLs(artist) : [];
@@ -63,10 +67,10 @@ export default function EventInfoOverlay({
   const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
 
   // Format date/time.
-  const eventDate = new Date(event.date);
+  const eventDate = new Date(currentEvent.date);
   const formattedDate = formatEventDate(eventDate);
-  const formattedTime = event.startTime ? formatTime(event.startTime) : "Time TBA";
-  const endTime = event.endTime ? formatTime(event.endTime) : undefined;
+  const formattedTime = currentEvent.startTime ? formatTime(currentEvent.startTime) : "Time TBA";
+  const endTime = currentEvent.endTime ? formatTime(currentEvent.endTime) : undefined;
 
   // Check if event is today.
   const today = new Date();
@@ -87,8 +91,8 @@ export default function EventInfoOverlay({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: event.name,
-          text: `Check out this event: ${event.name} on ${formattedDate} at ${formattedTime} at ${event.venueName}`,
+          title: currentEvent.name,
+          text: `Check out this event: ${currentEvent.name} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
           url: window.location.href,
         });
       } catch (err) {
@@ -97,6 +101,15 @@ export default function EventInfoOverlay({
     } else {
       console.log("Web Share API not supported.");
     }
+  };
+
+  // Handlers for cycling events.
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % events.length);
   };
 
   return (
@@ -114,9 +127,9 @@ export default function EventInfoOverlay({
             <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
             <div className="p-4 pl-6">
-              {event.artistIds && event.artistIds.length > 0 && artist && (
+              {currentEvent.artistIds && currentEvent.artistIds.length > 0 && artist && (
                 <Link
-                  href={`/artists/${event.artistIds[0]}`}
+                  href={`/artists/${currentEvent.artistIds[0]}`}
                   className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
                 >
                   <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
@@ -175,17 +188,18 @@ export default function EventInfoOverlay({
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[var(--foreground)]/70" />
                   <span className="text-[var(--foreground)]">
-                    {formattedTime}{endTime && ` - ${endTime}`}
+                    {formattedTime}
+                    {endTime && ` - ${endTime}`}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[var(--secondary)]/70" />
                   <Link
-                    href={`/venues/${event.venueId}`}
+                    href={`/venues/${currentEvent.venueId}`}
                     className="group text-[var(--secondary)] font-medium transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
                   >
-                    {venue ? venue.name : event.venueName || "Unknown Venue"}
+                    {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
                   </Link>
                   {directionsUrl && (
                     <a
@@ -202,14 +216,14 @@ export default function EventInfoOverlay({
                 {/* Ticket Information - Only show if event is ticketed */}
                 <div className="flex items-center gap-2">
                   <Ticket className="w-4 h-4 text-yellow-500" />
-                  {event.ticketed ? (
+                  {currentEvent.ticketed ? (
                     <>
                       <span className="text-[var(--foreground)]">
-                        {event.ticketinformation || "Ticketed"}
+                        {currentEvent.ticketinformation || "Ticketed"}
                       </span>
-                      {event.ticketUrl && (
+                      {currentEvent.ticketUrl && (
                         <a
-                          href={event.ticketUrl}
+                          href={currentEvent.ticketUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="ml-auto text-[var(--primary)] text-xs hover:underline"
@@ -223,11 +237,11 @@ export default function EventInfoOverlay({
                   )}
                 </div>
 
-                {event.eventUrl && (
+                {currentEvent.eventUrl && (
                   <div className="flex items-center gap-2">
                     <ExternalLink className="w-4 h-4 text-[var(--foreground)]/70" />
                     <a
-                      href={event.eventUrl}
+                      href={currentEvent.eventUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[var(--primary)] text-xs hover:underline"
@@ -237,24 +251,49 @@ export default function EventInfoOverlay({
                   </div>
                 )}
 
-                {event.description && (
+                {currentEvent.description && (
                   <p className="mt-2 text-[var(--foreground)]/80 text-sm leading-snug">
-                    {event.description}
+                    {currentEvent.description}
                   </p>
                 )}
               </div>
             </div>
 
+            {/* Move the share icon to the top-right to avoid interfering with navigation buttons. */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleShare();
               }}
-              className="absolute bottom-2 right-2 p-2 rounded-full hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
+              className="absolute top-2 right-2 p-2 rounded-full hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
               aria-label="Share Event"
             >
               <Share2 className="w-5 h-5 text-[var(--foreground)]" />
             </button>
+
+            {/* Navigation controls if there is more than one event */}
+            {events.length > 1 && (
+              <div className="flex justify-between p-4 border-t border-[var(--border)]">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrev();
+                  }}
+                  className="px-3 py-1 text-sm font-medium bg-[var(--primary)] text-white rounded"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                  className="px-3 py-1 text-sm font-medium bg-[var(--primary)] text-white rounded"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </motion.div>
         </div>
       )}

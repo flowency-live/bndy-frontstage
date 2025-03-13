@@ -1,4 +1,4 @@
-// src/components/MapView.tsx - Updated to include AddEventButton
+// src/components/MapView.tsx - Updated to pass mapMode
 "use client";
 
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
@@ -7,6 +7,7 @@ import EventFilter from "./filters/EventFilter";
 import { MapViewEventsFilter } from "./filters/MapViewEventsFilter";
 import { useState, useRef } from "react";
 import { AddEventButton } from "./events/AddEventButton";
+import { useViewToggle } from "@/context/ViewToggleContext";
 
 const renderStatus = (status: Status): React.ReactElement => {
   switch (status) {
@@ -20,6 +21,7 @@ const renderStatus = (status: Status): React.ReactElement => {
 };
 
 export default function MapView() {
+  const { mapMode } = useViewToggle();
   const [filterType, setFilterType] = useState<'artist' | 'venue' | 'nomatch' | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -35,10 +37,12 @@ export default function MapView() {
 
   return (
     <div className="map-container relative">
-      {/* Search filter above the map */}
-      <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2">
-        <EventFilter onFilterChange={handleFilterChange} showRadiusFilter={false} />
-      </div>
+      {/* Search filter above the map - only show in events mode */}
+      {mapMode === 'events' && (
+        <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2">
+          <EventFilter onFilterChange={handleFilterChange} showRadiusFilter={false} />
+        </div>
+      )}
 
       <Wrapper
         apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
@@ -51,8 +55,8 @@ export default function MapView() {
         />
       </Wrapper>
 
-      {/* Quick filter button in the bottom left */}
-      <MapViewEventsFilter />
+      {/* Quick filter button in the bottom left - only show in events mode */}
+      {mapMode === 'events' && <MapViewEventsFilter />}
       
       {/* Add Event button in the bottom right - conditionally rendered based on permissions */}
       <AddEventButton map={mapRef.current} />
