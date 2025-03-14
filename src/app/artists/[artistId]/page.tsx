@@ -473,13 +473,13 @@ export default function ArtistProfilePage() {
 
         {/* Event Info Overlay */}
         {selectedEvent && (
-          <EventInfoOverlay
-            event={selectedEvent}
-            isOpen={showEventOverlay}
-            onClose={() => {
-              setShowEventOverlay(false);
-              setSelectedEvent(null);
-            }}
+        <EventInfoOverlay
+                 events={[selectedEvent]}
+                 isOpen={showEventOverlay}
+                 onClose={() => {
+                   setShowEventOverlay(false);
+                   setSelectedEvent(null);
+                 }}
             position="list"
           />
         )}
