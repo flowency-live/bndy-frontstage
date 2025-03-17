@@ -1,10 +1,12 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Other config options here...
-  eslint: {
-    ignoreDuringBuilds: true,
+  reactStrictMode: true,
+  images: {
+    domains: ['graph.facebook.com'],
   },
+  // ...other Next.js configuration settings as needed
 };
 
 export default nextConfig;

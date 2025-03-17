@@ -26,25 +26,18 @@ export function getDirectionsUrl(venue: VenueData): string {
   if (!venue) return "";
   
   if (isIOS()) {
-    // Apple Maps: Use location if available, else address.
+    // Apple Maps: include the venue name for display.
     if (venue.location) {
       const { lat, lng } = venue.location;
-      return `http://maps.apple.com/?daddr=${lat},${lng}`;
+      return `http://maps.apple.com/?q=${encodeURIComponent(venue.name || '')}&daddr=${lat},${lng}`;
     } else if (venue.address) {
-      return `http://maps.apple.com/?daddr=${encodeURIComponent(venue.address)}`;
+      return `http://maps.apple.com/?q=${encodeURIComponent(venue.name || '')}&daddr=${encodeURIComponent(venue.address || '')}`;
     }
     return "http://maps.apple.com/";
   } else {
-    // Google Maps: If googlePlaceId exists, use it with query_place_id.
-    if (venue.googlePlaceId) {
-      // Use the correct parameter for a Place ID lookup.
-      return `https://www.google.com/maps/search/?api=1&query_place_id=${venue.googlePlaceId}`;
-    } else if (venue.location) {
-      const { lat, lng } = venue.location;
-      return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    } else if (venue.address) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.address)}`;
-    }
-    return "";
+    // For Android (Google Maps): use the venue name similar to EventRow.
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.name || '')}`;
   }
 }
+
+

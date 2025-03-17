@@ -10,6 +10,8 @@ import {
   Music,
   CalendarDays,
   Share2,
+  Mic,
+  Map
 } from "lucide-react";
 import Link from "next/link";
 import { Event, Artist, getSocialMediaURLs } from "@/lib/types";
@@ -18,6 +20,7 @@ import { getArtistById } from "@/lib/services/artist-service";
 import { getVenueById } from "@/lib/services/venue-service";
 import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
+import Image from "next/image";
 
 interface EventInfoOverlayProps {
   events: Event[];
@@ -43,23 +46,35 @@ export default function EventInfoOverlay({
   // Flag to avoid repeated fetch attempts in overlay.
   const [hasFetched, setHasFetched] = useState(false);
 
+  const isOpenMic = currentEvent?.isOpenMic || false;
+
   // When the current event changes, fetch associated artist data.
   useEffect(() => {
+    if (!currentEvent) return;
+
+    // For open mic events without a host, skip artist fetching
+    if (isOpenMic && (!currentEvent.artistIds || currentEvent.artistIds.length === 0)) {
+      setArtist(null);
+      return;
+    }
+
     if (currentEvent.artistIds && currentEvent.artistIds.length > 0) {
       getArtistById(currentEvent.artistIds[0])
         .then((artistData) => setArtist(artistData))
         .catch((err) => console.error("Error fetching artist:", err));
+    } else {
+      setArtist(null);
     }
-  }, [currentEvent.artistIds]);
+  }, [currentEvent, isOpenMic]);
 
   // When the current event changes, fetch venue data.
   useEffect(() => {
-    if (currentEvent.venueId) {
+    if (currentEvent?.venueId) {
       getVenueById(currentEvent.venueId)
         .then((venueData) => setVenue(venueData))
         .catch((err) => console.error("Error fetching venue:", err));
     }
-  }, [currentEvent.venueId]);
+  }, [currentEvent?.venueId]);
 
   // Extract artist social URLs to possibly fetch a profile picture.
   const socialMediaURLs = artist ? getSocialMediaURLs(artist) : [];
@@ -67,10 +82,10 @@ export default function EventInfoOverlay({
   const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
 
   // Format date/time.
-  const eventDate = new Date(currentEvent.date);
+  const eventDate = currentEvent ? new Date(currentEvent.date) : new Date();
   const formattedDate = formatEventDate(eventDate);
-  const formattedTime = currentEvent.startTime ? formatTime(currentEvent.startTime) : "Time TBA";
-  const endTime = currentEvent.endTime ? formatTime(currentEvent.endTime) : undefined;
+  const formattedTime = currentEvent?.startTime ? formatTime(currentEvent.startTime) : "Time TBA";
+  const endTime = currentEvent?.endTime ? formatTime(currentEvent.endTime) : undefined;
 
   // Check if event is today.
   const today = new Date();
@@ -88,11 +103,19 @@ export default function EventInfoOverlay({
 
   // Placeholder share function.
   const handleShare = async () => {
+    if (!currentEvent) return;
+
     if (navigator.share) {
       try {
+        const eventTitle = isOpenMic && artist
+          ? `Open Mic with ${artist.name}`
+          : isOpenMic
+            ? "Open Mic"
+            : currentEvent.name;
+
         await navigator.share({
-          title: currentEvent.name,
-          text: `Check out this event: ${currentEvent.name} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
+          title: eventTitle,
+          text: `Check out this event: ${eventTitle} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
           url: window.location.href,
         });
       } catch (err) {
@@ -112,6 +135,8 @@ export default function EventInfoOverlay({
     setCurrentIndex((prev) => (prev + 1) % events.length);
   };
 
+  if (!currentEvent) return null;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -127,29 +152,41 @@ export default function EventInfoOverlay({
             <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
             <div className="p-4 pl-6">
-              {currentEvent.artistIds && currentEvent.artistIds.length > 0 && artist && (
-                <Link
-                  href={`/artists/${currentEvent.artistIds[0]}`}
-                  className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
-                >
+              {isOpenMic ? (
+                // Open Mic Header
+                <div className="group flex items-center gap-3 mb-3">
                   <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                    {artist.profileImageUrl ? (
-                      <img
-                        src={artist.profileImageUrl}
-                        alt=""
-                        className="object-cover w-full h-full"
-                        onError={() => {
-                          console.log("Overlay: Profile image failed; reverting to icon.");
-                          setArtist({ ...artist, profileImageUrl: "" });
-                          setHasFetched(true);
-                        }}
-                      />
+                    {artist && artist.profileImageUrl ? (
+                      // Show host artist image if available
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={artist.profileImageUrl}
+                          alt=""
+                          className="object-cover"
+                          fill
+                          onError={() => {
+                            console.log("Overlay: Host artist image failed; reverting to Open Mic icon.");
+                            setArtist({ ...artist, profileImageUrl: "" });
+                            setHasFetched(true);
+                          }}
+                        />
+                        <div className="absolute bottom-0 right-0 bg-[var(--primary)] rounded-full p-1">
+                          <Mic className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
-                        <Music className="w-5 h-5 text-[var(--primary)]" />
+                      // Use generic Open Mic image
+                      <div className="relative w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
+                        <Image
+                          src="/openmic.png"
+                          alt="Open Mic"
+                          width={50}
+                          height={50}
+                          className="object-contain p-1"
+                        />
                       </div>
                     )}
-                    {!artist.profileImageUrl && !hasFetched && (
+                    {!artist?.profileImageUrl && artist && !hasFetched && (
                       <ProfilePictureFetcher
                         facebookUrl={fbURL}
                         instagramUrl={igURL}
@@ -162,14 +199,68 @@ export default function EventInfoOverlay({
                     )}
                   </div>
                   <div className="flex flex-col">
-                    {artist.name && (
-                      <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                        {artist.name}
-                      </h2>
+                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                      Open Mic{artist ? ` with ${artist.name}` : ''}
+                    </h2>
+                    {artist && (
+                      <Link
+                        href={`/artists/${artist.id}`}
+                        className="text-xs text-[var(--primary)] hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View host artist
+                      </Link>
                     )}
-                    <span className="text-xs text-[var(--primary)]">(view artist)</span>
                   </div>
-                </Link>
+                </div>
+              ) : (
+                // Regular Artist Header
+                currentEvent.artistIds && currentEvent.artistIds.length > 0 && artist && (
+                  <Link
+                    href={`/artists/${currentEvent.artistIds[0]}`}
+                    className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
+                  >
+                    <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
+                      {artist.profileImageUrl ? (
+                        <Image
+                          src={artist.profileImageUrl}
+                          alt=""
+                          className="object-cover w-full h-full"
+                          width={50}
+                          height={50}
+                          onError={() => {
+                            console.log("Overlay: Profile image failed; reverting to icon.");
+                            setArtist({ ...artist, profileImageUrl: "" });
+                            setHasFetched(true);
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
+                          <Music className="w-5 h-5 text-[var(--primary)]" />
+                        </div>
+                      )}
+                      {!artist.profileImageUrl && !hasFetched && (
+                        <ProfilePictureFetcher
+                          facebookUrl={fbURL}
+                          instagramUrl={igURL}
+                          onPictureFetched={(url) => {
+                            console.log("Overlay: Fetched profile picture URL:", url);
+                            setArtist({ ...artist, profileImageUrl: url });
+                            setHasFetched(true);
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      {artist.name && (
+                        <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                          {artist.name}
+                        </h2>
+                      )}
+                      <span className="text-xs text-[var(--primary)]">(view artist)</span>
+                    </div>
+                  </Link>
+                )
               )}
 
               <div className="h-px bg-[var(--border)] mb-3" />
@@ -206,11 +297,14 @@ export default function EventInfoOverlay({
                       href={directionsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-auto text-[var(--foreground)]/70 text-xs hover:text-[var(--secondary)]"
+                      className="ml-2 text-[var(--secondary)] hover:opacity-80"
+                      aria-label="Open in Maps"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Directions
+                      <Map className="w-4 h-4" />
                     </a>
                   )}
+
                 </div>
 
                 {/* Ticket Information - Only show if event is ticketed */}
