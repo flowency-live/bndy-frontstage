@@ -52,38 +52,8 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         maxZoom: 19,
       }).addTo(map);
 
-      // Add custom location control
-      const addLocationControl = () => {
-        const locationButton = new L.Control({ position: "bottomright" });
-        locationButton.onAdd = () => {
-          const div = L.DomUtil.create("div", "custom-location-control");
-          div.innerHTML = `
-            <button 
-              class="locate-button" 
-              title="Center on my location"
-              aria-label="Center on my location">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="22" y1="12" x2="18" y2="12"></line>
-                <line x1="6" y1="12" x2="2" y2="12"></line>
-                <line x1="12" y1="6" x2="12" y2="2"></line>
-                <line x1="12" y1="22" x2="12" y2="18"></line>
-              </svg>
-            </button>
-          `;
-          div.querySelector(".locate-button")?.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (userLocation) {
-              map.setView([userLocation.lat, userLocation.lng], 14);
-            }
-          });
-          return div;
-        };
-        locationButton.addTo(map);
-      };
-
-      addLocationControl();
+      // NOTE: We're not adding location controls here anymore
+      // This is now handled by MapControls.tsx using React portals
 
       // Save the map instance
       mapRef.current = map;

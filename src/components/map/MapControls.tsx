@@ -1,5 +1,6 @@
 // src/components/Map/MapControls.tsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 
 interface MapControlsProps {
@@ -8,96 +9,70 @@ interface MapControlsProps {
 }
 
 export const MapControls = ({ map, userLocation }: MapControlsProps) => {
-  // Add custom controls to the map
+  // Use a ref to track the container element
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  
+  // This approach handles the control in the DOM directly
+  // rather than using Leaflet's Control API which is causing the duplication issue
   useEffect(() => {
     if (!map) return;
-
-    // Add location control
-    const locationButton = new L.Control({ position: 'bottomright' });
-    locationButton.onAdd = () => {
-      const div = L.DomUtil.create('div', 'custom-location-control');
-      div.innerHTML = `
-        <button 
-          class="locate-button" 
-          title="Center on my location"
-          aria-label="Center on my location">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="22" y1="12" x2="18" y2="12"></line>
-            <line x1="6" y1="12" x2="2" y2="12"></line>
-            <line x1="12" y1="6" x2="12" y2="2"></line>
-            <line x1="12" y1="22" x2="12" y2="18"></line>
-          </svg>
-        </button>
-      `;
+    
+    // Only create the container once
+    if (!containerRef.current) {
+      // Create a container for our control
+      const controlContainer = document.createElement('div');
+      controlContainer.className = 'leaflet-bottom leaflet-right';
+      controlContainer.id = 'custom-map-controls-container';
       
-      // Handle click event
-      div.querySelector('.locate-button')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (userLocation) {
-          map.setView([userLocation.lat, userLocation.lng], 14);
-        }
-      });
+      // Ensure we don't have an existing container
+      const existingContainer = document.getElementById('custom-map-controls-container');
+      if (existingContainer) {
+        existingContainer.remove();
+      }
       
-      return div;
-    };
-    locationButton.addTo(map);
-
-    // Add CSS for the location button
-    if (!document.getElementById('map-controls-style')) {
-      const style = document.createElement('style');
-      style.id = 'map-controls-style';
-      style.textContent = `
-        .custom-location-control {
-          margin-bottom: 10px;
-        }
-        .locate-button {
-          background: white;
-          border: none;
-          border-radius: 4px;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.25);
-          color: #666;
-        }
-        .locate-button:hover {
-          background: #f4f4f4;
-          color: #333;
-        }
-        .dark .locate-button {
-          background: #333;
-          color: #ccc;
-        }
-        .dark .locate-button:hover {
-          background: #444;
-          color: white;
-        }
-        .pulsing-marker {
-          animation: markerPulse 1.5s ease-in-out infinite;
-        }
-        @keyframes markerPulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
+      // Add our container to the map container
+      map.getContainer().appendChild(controlContainer);
+      containerRef.current = controlContainer;
     }
-
+    
+    // When the component unmounts or map changes
     return () => {
-      // Clean up control if component unmounts
-      const styleElement = document.getElementById('map-controls-style');
-      if (styleElement) {
-        styleElement.remove();
+      if (containerRef.current) {
+        try {
+          containerRef.current.remove();
+          containerRef.current = null;
+        } catch (e) {
+          console.error("Error removing control container:", e);
+        }
       }
     };
-  }, [map, userLocation]);
-
-  // This is a functional component, so no markup is returned
-  return null;
+  }, [map]);
+  
+  // Return null if no map or container
+  if (!map || !containerRef.current) return null;
+  
+  // Render the control using a portal directly into our container
+  return createPortal(
+    <div className="leaflet-control custom-location-control">
+      <button 
+        className="locate-button" 
+        title="Center on my location"
+        aria-label="Center on my location"
+        onClick={() => {
+          if (userLocation) {
+            map.setView([userLocation.lat, userLocation.lng], 14);
+          }
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="22" y1="12" x2="18" y2="12"></line>
+          <line x1="6" y1="12" x2="2" y2="12"></line>
+          <line x1="12" y1="6" x2="12" y2="2"></line>
+          <line x1="12" y1="22" x2="12" y2="18"></line>
+        </svg>
+      </button>
+    </div>,
+    containerRef.current
+  );
 };

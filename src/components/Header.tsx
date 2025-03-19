@@ -1,4 +1,4 @@
-// src/components/Header.tsx - Updated with venue/events toggle
+// src/components/Header.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -59,7 +59,7 @@ export default function Header() {
               {mapMode === "events" ? (
                 <Building className="w-5 h-5 text-[var(--foreground)]" />
               ) : (
-                <Calendar className="w-5 h-5 text-[var(--foreground)]" />
+                <Calendar className="w-5 h-5 calendar-icon-pulse" />
               )}
             </button>
           )}

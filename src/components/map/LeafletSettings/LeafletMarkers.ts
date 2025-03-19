@@ -73,48 +73,19 @@ export function createVenueMarkerIcon(eventCount: number): L.DivIcon {
 
 /**
  * Creates a custom marker icon for the user location.
+ * Updated to use simpler HTML/CSS that's more cross-browser compatible
  */
 export function createUserLocationMarkerIcon(): L.DivIcon {
-  // This matches the Google Maps blue dot for user location
+  // Using class-based styling instead of inline styles for better Edge compatibility
   const userMarkerHtml = `
-    <div style="position: relative;">
-      <!-- Outer pulsing circle -->
-      <div style="
-        position: absolute;
-        top: -12px;
-        left: -12px;
-        background-color: rgba(66, 133, 244, 0.2);
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        animation: pulse 2s infinite;
-      "></div>
-      
-      <!-- Inner blue dot -->
-      <div style="
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        background-color: rgb(66, 133, 244);
-        border: 2px solid white;
-        border-radius: 50%;
-        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-        width: 16px;
-        height: 16px;
-      "></div>
+    <div class="user-location-marker">
+      <div class="user-location-pulse"></div>
+      <div class="user-location-dot"></div>
     </div>
-    
-    <style>
-      @keyframes pulse {
-        0% { transform: scale(0.7); opacity: 1; }
-        70% { transform: scale(3); opacity: 0; }
-        100% { transform: scale(0.7); opacity: 0; }
-      }
-    </style>
   `;
   
   return L.divIcon({
-    className: 'user-location-marker',
+    className: 'user-location-marker-container',
     html: userMarkerHtml,
     iconSize: [1, 1], // Small size since we position with absolute
     iconAnchor: [0, 0]
@@ -134,27 +105,14 @@ export function createEventClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
     return "#C2410C"; // Orange-700 for large clusters
   };
 
-  // Create cluster HTML
+  // Create cluster HTML - using class-based styling for better cross-browser compatibility
   const html = `
-    <div style="
-      background-color: ${getClusterColor(count)};
-      color: white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: bold;
-      font-size: 14px;
-      border: 2px solid white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    ">${count}</div>
+    <div class="event-cluster-icon" style="background-color: ${getClusterColor(count)};">${count}</div>
   `;
 
   return L.divIcon({
     html: html,
-    className: 'leaflet-cluster-icon',
+    className: 'leaflet-cluster-icon-container',
     iconSize: L.point(40, 40)
   });
 }
@@ -172,27 +130,14 @@ export function createVenueClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
     return "#C71585"; // Magenta for large clusters
   };
 
-  // Create cluster HTML - match the size to event clusters (40x40)
+  // Create cluster HTML with class-based styling
   const html = `
-    <div style="
-      background-color: ${getVenueClusterColor(count)};
-      color: white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: bold;
-      font-size: 14px;
-      border: 2px solid white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    ">${count}</div>
+    <div class="venue-cluster-icon" style="background-color: ${getVenueClusterColor(count)};">${count}</div>
   `;
 
   return L.divIcon({
     html: html,
-    className: 'leaflet-cluster-icon',
+    className: 'leaflet-cluster-icon-container',
     iconSize: L.point(40, 40)
   });
 }

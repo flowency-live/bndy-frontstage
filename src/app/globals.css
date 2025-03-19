@@ -595,7 +595,6 @@ main {
 .calendar-month {
   width: 100%;
 }
-
 /* Dark Mode Adjustments for Calendar */
 .dark .event-calendar {
   background-color: var(--background);
@@ -672,6 +671,384 @@ main {
   background-color: var(--accent);
 }
 
+/* ======================================================
+   10. Leaflet Map Styles
+   ====================================================== */
+
+  /* Map Controls Styles */
+.custom-location-control {
+  margin-bottom: 10px;
+}
+
+.locate-button {
+  background: white;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+  color: #666;
+  transition: background-color 0.2s ease;
+}
+
+.locate-button:hover {
+  background: #f4f4f4;
+  color: #333;
+}
+
+.dark .locate-button {
+  background: #333;
+  color: #ccc;
+}
+
+.dark .locate-button:hover {
+  background: #444;
+  color: white;
+}
+
+.pulsing-marker {
+  animation: markerPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes markerPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Map View Events Filter Styles */
+.map-filter-button {
+  background-color: var(--primary, #3b82f6);
+  color: white;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.map-filter-button:hover {
+  opacity: 0.9;
+}
+
+.map-filter-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.map-filter-option {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border, #e5e7eb);
+  width: 100%;
+  text-align: left;
+}
+
+/* User location marker specific styles */
+.user-location-marker {
+  z-index: 1000;
+}
+
+.user-location-pulse {
+  background-color: rgba(66, 133, 244, 0.2);
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+.user-location-dot {
+  background-color: rgb(66, 133, 244);
+  border: 2px solid white;
+  border-radius: 50%;
+  height: 16px;
+  width: 16px;
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  z-index: 2;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+} 
+
+
+/* Cluster icon styles */
+.leaflet-cluster-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.event-cluster-icon,
+.venue-cluster-icon {
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Map control buttons styling */
+.map-filter-button {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  z-index: 50;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.map-filter-button:hover {
+  background-color: var(--primary-dark, #e86307);
+}
+
+.add-event-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 50;
+  pointer-events: auto !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Ensure proper stacking in all browsers */
+.leaflet-control {
+  z-index: 40 !important;
+}
+
+.leaflet-control .locate-button {
+  z-index: 40;
+  pointer-events: auto !important;
+}
+
+/* Ensure our UI controls appear above map elements */
+.map-container .z-50 {
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+
+/* Fixed Venue Mode Indicator styles */
+.venue-mode-indicator {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: auto;
+  max-width: 90vw;
+  z-index: 30;
+}
+
+.venue-indicator-button {
+  width: auto;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+  touch-action: manipulation;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.venue-indicator-button:hover,
+.venue-indicator-button:active {
+  transform: scale(1.03);
+}
+
+.venue-info-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  width: 280px;
+  max-width: 90vw;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 31;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseOrange {
+  0% { 
+    color: var(--primary); 
+    transform: scale(1.2);
+    text-shadow: 0 0 8px var(--primary);
+    opacity: 1; 
+  }
+  50% { 
+    color: var(--primary); 
+    transform: scale(1);
+    text-shadow: 0 0 0 var(--primary);
+    opacity: 0.5; 
+  }
+  100% { 
+    color: var(--primary); 
+    transform: scale(1.2);
+    text-shadow: 0 0 8px var(--primary);
+    opacity: 1; 
+  }
+}
+
+/* Pulsing orange calendar icon in header */
+.calendar-icon-pulse {
+  color: var(--primary);
+  animation: pulseOrange 1.5s infinite;
+  display: inline-flex;
+}
+
+/* Improved user location marker styles */
+.user-location-marker-container {
+  z-index: 1000 !important;
+}
+
+.user-location-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.user-location-pulse {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: -5px;
+  top: -5px;
+  border-radius: 50%;
+  background-color: rgba(66, 133, 244, 0.3);
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+.user-location-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 4px;
+  top: 4px;
+  border-radius: 50%;
+  background-color: #4285F4;
+  border: 2px solid white;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+
+/* ======================================================
+   11. Search filter container styles
+   ====================================================== */
+
+.events-filter-container {
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Map search filter container */
+.map-container .events-filter-container {
+  background-color: var(--background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .map-container .events-filter-container {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Search input field styles */
+.search-input-field {
+  border-color: var(--border);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.search-input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-translucent);
+}
+
+.dark .search-input-field {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(75, 85, 99, 0.7);
+  color: white;
+}
+
+/* Map notification message styles */
+.map-notification-message {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  z-index: 20;
+  text-align: center;
+  max-width: calc(100% - 2rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* ======================================================
    End of Global Styles
    ====================================================== */

@@ -1,39 +1,86 @@
 // src/components/filters/EventFilter.tsx
-// Update to better support venue mode filtering
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Search, X } from 'lucide-react';
 import { useEvents } from '@/context/EventsContext';
 import { useViewToggle } from '@/context/ViewToggleContext';
 
-// Update the interface to include the 'nomatch' type
+// Update the interface to include the search term and found status
 interface EventFilterProps {
-  onFilterChange?: (type: 'artist' | 'venue' | 'nomatch' | null, searchText: string | null) => void;
+  onFilterChange?: (type: 'artist' | 'venue' | 'nomatch' | null, searchText: string | null, artistVenueFound?: boolean) => void;
   showRadiusFilter?: boolean;
 }
 
-export default function EventFilter({
+// Define the ref interface
+export interface EventFilterRef {
+  clear: () => void;
+}
+
+const EventFilter = forwardRef<EventFilterRef, EventFilterProps>(({
   onFilterChange,
   showRadiusFilter = true
-}: EventFilterProps) {
+}, ref) => {
   const { radius, setRadius, allEvents } = useEvents();
   const { mapMode } = useViewToggle();
   const [searchTerm, setSearchTerm] = useState('');
   const [tempRadius, setTempRadius] = useState(radius);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Minimum search length and debounce delay
+  const MIN_SEARCH_LENGTH = 3;
+  const DEBOUNCE_DELAY = 500; // 500ms delay
+
+  // Complete clear function to reset all state
+  const clearSearchState = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    if (onFilterChange) onFilterChange(null, null);
+
+    // Cancel any pending debounce timers
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Expose the clear method to parent components via ref
+  useImperativeHandle(ref, () => ({
+    clear: clearSearchState
+  }));
 
   // Sync tempRadius with radius when radius changes from context
   useEffect(() => {
     setTempRadius(radius);
   }, [radius]);
 
+  // Debounce search term updates
+  useEffect(() => {
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    
+    // Set a new timer to update the debounced search term
+    timerRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
+    
+    // Cleanup on unmount
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [searchTerm]);
+
   // Search logic - handle both venue and artist searches
   useEffect(() => {
-    if (!searchTerm || searchTerm.length < 2) {
+    if (!debouncedSearchTerm || debouncedSearchTerm.length < MIN_SEARCH_LENGTH) {
       if (onFilterChange) onFilterChange(null, null);
       return;
     }
 
-    const term = searchTerm.toLowerCase();
+    const term = debouncedSearchTerm.toLowerCase();
 
     // In venue mode, only search venues
     if (mapMode === 'venues') {
@@ -52,18 +99,31 @@ export default function EventFilter({
       event.venueName.toLowerCase().includes(term)
     );
 
+    // Check if the artist/venue exists in the system regardless of date filter
+    const artistExistsInSystem = allEvents.some(event => 
+      event.name.toLowerCase().includes(term)
+    );
+    
+    const venueExistsInSystem = allEvents.some(event => 
+      event.venueName.toLowerCase().includes(term)
+    );
+
     // Prioritize artist matches over venue matches
     if (artistMatches.length > 0) {
       // Pass the search term instead of the ID
-      if (onFilterChange) onFilterChange('artist', term);
+      if (onFilterChange) onFilterChange('artist', term, true);
     } else if (venueMatches.length > 0) {
       // Pass the search term instead of the ID
-      if (onFilterChange) onFilterChange('venue', term);
+      if (onFilterChange) onFilterChange('venue', term, true);
     } else {
-      // If no matches, set filter type to "nomatch" to indicate empty results should be shown
-      if (onFilterChange) onFilterChange('nomatch', term);
+      // Pass information about whether the artist/venue exists but has no events in current date range
+      if (onFilterChange) onFilterChange(
+        'nomatch', 
+        term, 
+        artistExistsInSystem || venueExistsInSystem
+      );
     }
-  }, [searchTerm, onFilterChange, allEvents, mapMode]);
+  }, [debouncedSearchTerm, onFilterChange, allEvents, mapMode]);
 
   // Apply radius when slider interaction ends
   const applyRadius = () => {
@@ -94,10 +154,8 @@ export default function EventFilter({
         {searchTerm && (
           <button
             className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => {
-              setSearchTerm('');
-              if (onFilterChange) onFilterChange(null, null);
-            }}
+            onClick={clearSearchState}
+            aria-label="Clear search"
           >
             <X className="w-4 h-4" />
           </button>
@@ -123,4 +181,8 @@ export default function EventFilter({
       )}
     </div>
   );
-}
+});
+
+EventFilter.displayName = 'EventFilter';
+
+export default EventFilter;

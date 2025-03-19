@@ -66,9 +66,12 @@ type FilterType = "artist" | "venue" | "nomatch" | null;
 interface MapProps {
   filterType?: FilterType;
   filterId?: string | null;
+  entityExists?: boolean;
+  onClearSearch?: () => void;
 }
 
-const Map = ({ filterType, filterId }: MapProps) => {
+const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapProps) => {
+
   const {
     userLocation,
     allEvents,
@@ -99,6 +102,22 @@ const Map = ({ filterType, filterId }: MapProps) => {
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const [eventLocationGroups, setEventLocationGroups] = useState<Record<string, Event[]>>({});
+  // No Filter match message
+  const getNoMatchMessage = () => {
+    if (!filterType || !filterId) return "";
+
+    if (filterType === "nomatch") {
+      // Entity exists but no events in the current date range
+      if (entityExists && dateRange) {
+        const dateRangeLabel = dateRangeLabels[dateRange as string] || "selected date range";
+        return `No events for "${filterId}" in ${dateRangeLabel}`;
+      }
+      // No matches at all
+      return `No matches found for "${filterId}"`;
+    }
+
+    return "";
+  };
 
   // Initialize Leaflet on client side only
   useEffect(() => {
@@ -121,17 +140,26 @@ const Map = ({ filterType, filterId }: MapProps) => {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
     const handleMapClick = () => {
+      // Close overlays without checking their previous state
       setShowEventOverlay(false);
       setSelectedEvents([]);
       setShowVenueOverlay(false);
       setSelectedVenue(null);
+
+      // Always clear search on map click - this simpler approach is more reliable
+      if (onClearSearch) {
+        onClearSearch();
+      }
     };
+
     map.on("click", handleMapClick);
+
     return () => {
       map.off("click", handleMapClick);
     };
-  }, []);
+  }, [onClearSearch]);
 
   // Load venues in venue mode
   useEffect(() => {
@@ -222,45 +250,56 @@ const Map = ({ filterType, filterId }: MapProps) => {
   useEffect(() => {
     if (!filterType || !filterId || filterType === "nomatch") return;
     if (!leafletInitialized) return;
-    if (mapMode === "events") {
-      const activeData = filteredEvents;
-      if (activeData.length === 1) {
-        const eventItem = activeData[0];
-        if (eventItem.location) {
-          const latLng: [number, number] = [eventItem.location.lat, eventItem.location.lng];
-          if (mapRef.current && typeof mapRef.current.flyTo === "function") {
-            mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
-          } else if (mapRef.current) {
-            mapRef.current.setView(latLng, 15);
+
+    // Only highlight and reposition for searches with 3+ characters
+    if (filterId.length < 3) return;
+
+    // Create a debounced function for repositioning
+    const repositionTimeout = setTimeout(() => {
+      if (mapMode === "events") {
+        const activeData = filteredEvents;
+        if (activeData.length === 1) {
+          const eventItem = activeData[0];
+          if (eventItem.location) {
+            const latLng: [number, number] = [eventItem.location.lat, eventItem.location.lng];
+            if (mapRef.current && typeof mapRef.current.flyTo === "function") {
+              mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
+            } else if (mapRef.current) {
+              mapRef.current.setView(latLng, 15);
+            }
+            const key = `${eventItem.location.lat},${eventItem.location.lng}`;
+            const group =
+              eventLocationGroups[key] && eventLocationGroups[key].length > 1
+                ? eventLocationGroups[key]
+                : [eventItem];
+            setTimeout(() => {
+              handleEventClick(group);
+            }, 600);
           }
-          const key = `${eventItem.location.lat},${eventItem.location.lng}`;
-          const group =
-            eventLocationGroups[key] && eventLocationGroups[key].length > 1
-              ? eventLocationGroups[key]
-              : [eventItem];
-          setTimeout(() => {
-            handleEventClick(group);
-          }, 600);
+        }
+      } else if (mapMode === "venues") {
+        const activeData = filteredVenues;
+        if (activeData.length === 1) {
+          const venueItem = activeData[0];
+          if (venueItem.location) {
+            const latLng: [number, number] = [venueItem.location.lat, venueItem.location.lng];
+            if (mapRef.current && typeof mapRef.current.flyTo === "function") {
+              mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
+            } else if (mapRef.current) {
+              mapRef.current.setView(latLng, 15);
+            }
+            setTimeout(() => {
+              handleVenueClick(venueItem);
+            }, 600);
+          }
         }
       }
-    } else if (mapMode === "venues") {
-      const activeData = filteredVenues;
-      if (activeData.length === 1) {
-        const venueItem = activeData[0];
-        if (venueItem.location) {
-          const latLng: [number, number] = [venueItem.location.lat, venueItem.location.lng];
-          if (mapRef.current && typeof mapRef.current.flyTo === "function") {
-            mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
-          } else if (mapRef.current) {
-            mapRef.current.setView(latLng, 15);
-          }
-          setTimeout(() => {
-            handleVenueClick(venueItem);
-          }, 600);
-        }
-      }
-    }
+    }, 300); // Small delay to prevent immediate repositioning
+
+    // Clean up timeout
+    return () => clearTimeout(repositionTimeout);
   }, [filterType, filterId, mapMode, filteredEvents, filteredVenues, eventLocationGroups, leafletInitialized]);
+
 
   // Handle event marker click: sort events and open overlay
   const handleEventClick = (events: Event[]) => {
@@ -288,11 +327,6 @@ const Map = ({ filterType, filterId }: MapProps) => {
     setShowEventOverlay(false);
     setSelectedEvents([]);
   };
-
-  const noMatchMessage =
-    filterType === "nomatch" && filterId
-      ? `No matches found for &quot;${filterId}&quot;`
-      : "";
 
   const renderMapComponents = leafletInitialized && typeof window !== "undefined";
 
@@ -338,23 +372,27 @@ const Map = ({ filterType, filterId }: MapProps) => {
         </div>
       )}
 
+
+
       {filterType === "nomatch" && filterId && (
-        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
-          {noMatchMessage}
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20 whitespace-nowrap">
+          {getNoMatchMessage()}
         </div>
       )}
 
       {mapMode === "events" && !eventsLoading && filteredEvents.length === 0 && filterType !== "nomatch" && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20 whitespace-nowrap">
           {`No events in bndy.live ${dateRangeLabels[dateRange as string] || "current filters"}`}
         </div>
       )}
 
       {mapMode === "venues" && !venuesLoading && filteredVenues.length === 0 && filterType !== "nomatch" && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20 whitespace-nowrap">
           No matching venues
         </div>
       )}
+
+
 
       {!renderMapComponents && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded z-20">
@@ -367,8 +405,14 @@ const Map = ({ filterType, filterId }: MapProps) => {
           events={selectedEvents}
           isOpen={showEventOverlay}
           onClose={() => {
+            // Close the overlay
             setShowEventOverlay(false);
             setSelectedEvents([]);
+
+            // Clear search filters
+            if (onClearSearch) {
+              onClearSearch();
+            }
           }}
           position="map"
         />
@@ -379,8 +423,14 @@ const Map = ({ filterType, filterId }: MapProps) => {
           venue={selectedVenue}
           isOpen={showVenueOverlay}
           onClose={() => {
+            // Close the overlay
             setShowVenueOverlay(false);
             setSelectedVenue(null);
+
+            // Clear search filters
+            if (onClearSearch) {
+              onClearSearch();
+            }
           }}
           position="map"
         />

@@ -20,7 +20,7 @@ const ViewToggleContext = createContext<ViewToggleContextType | undefined>(undef
 export function ViewToggleProvider({ children }: { children: ReactNode }) {
   // View state - Default to map
   const [activeView, setActiveView] = useState<View>("map");
-  // Map mode state - Default to events
+  // Map mode state - Always default to events
   const [mapMode, setMapMode] = useState<MapMode>("events");
   // Theme state - Default to dark theme
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
@@ -33,10 +33,16 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
       setActiveView(savedView);
     }
 
-    // Load map mode preference
+    // Load map mode preference - MODIFIED to always prioritize events mode
     const savedMapMode = localStorage.getItem("bndy-map-mode-preference");
-    if (savedMapMode === "events" || savedMapMode === "venues") {
-      setMapMode(savedMapMode);
+    // Only use saved preference if it's explicitly "events" - otherwise default to events mode
+    if (savedMapMode === "events") {
+      setMapMode("events");
+    } else {
+      // Force events mode
+      setMapMode("events");
+      // Update localStorage
+      localStorage.setItem("bndy-map-mode-preference", "events");
     }
 
     // Load theme preference

@@ -23,23 +23,29 @@ export function AddEventButton({ map }: AddEventButtonProps) {
   const { isGodMode } = useAuth();
 
   // Only show the button if the user is an admin
-
   if (!isGodMode) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-      <Button
-  className="fixed bottom-10 right-4 z-10 bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-6 py-3 shadow-lg"
->
-  <Plus className="w-4 h-4 mr-2" />
-  Add Event
-</Button>
+        <Button
+          className="add-event-button bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-6 py-3 shadow-lg flex items-center"
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            right: '10px',
+            zIndex: 50,
+            pointerEvents: 'auto'
+          }}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Event
+        </Button>
       </SheetTrigger>
       <SheetContent 
-  side="left" 
-  className="w-[400px] sm:w-[540px] bg-background border-r border-border safari-modal"
->
+        side="left" 
+        className="w-[400px] sm:w-[540px] bg-background border-r border-border safari-modal"
+      >
         <VisuallyHidden>
           <SheetHeader>
             <SheetTitle>Create New Event</SheetTitle>

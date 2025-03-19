@@ -1,7 +1,6 @@
 // src/components/Map/UserLocationMarker.tsx
 import { useEffect, useRef } from "react";
 import L from "leaflet";
-import { createUserLocationMarkerIcon } from "@/components/map/LeafletSettings/LeafletMarkers";
 
 interface UserLocationMarkerProps {
   map: L.Map | null;
@@ -10,51 +9,88 @@ interface UserLocationMarkerProps {
 
 export const UserLocationMarker = ({ map, userLocation }: UserLocationMarkerProps) => {
   const markerRef = useRef<L.Marker | null>(null);
+  const initialRenderRef = useRef<boolean>(true);
 
   // Handle user location marker
   useEffect(() => {
-    if (!map || !userLocation) {
-      // Remove marker if map or location is not available
-      if (markerRef.current) {
-        markerRef.current.remove();
-        markerRef.current = null;
+    if (!map) return;
+    
+    // Function to create or update marker
+    const createOrUpdateMarker = () => {
+      // If no user location yet, don't show a marker
+      if (!userLocation) {
+        cleanupMarker();
+        return;
       }
-      return;
-    }
 
-    // Remove existing marker
-    if (markerRef.current) {
-      markerRef.current.remove();
-      markerRef.current = null;
-    }
+      // Create HTML for a more visible marker
+      const userMarkerHtml = `
+        <div class="user-location-marker">
+          <div class="user-location-pulse"></div>
+          <div class="user-location-dot"></div>
+        </div>
+      `;
 
-    // Create new marker
-    const userMarker = L.marker([userLocation.lat, userLocation.lng], {
-      icon: createUserLocationMarkerIcon(),
-      zIndexOffset: 1000 // Ensure user marker is on top
-    });
+      // Determine marker position
+      const position: L.LatLngExpression = [userLocation.lat, userLocation.lng];
+      
+      // Create or update marker
+      if (!markerRef.current) {
+        // Find and remove any duplicate user location markers
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Marker) {
+            const el = layer.getElement();
+            if (el && el.querySelector('.user-location-marker')) {
+              layer.remove();
+            }
+          }
+        });
 
-    // Create a custom popup
-    const popup = L.popup({
-      className: 'user-location-popup',
-      offset: [0, -15],
-      closeButton: true,
-      autoClose: true,
-      closeOnClick: true
-    }).setContent('Your Location');
+        const icon = L.divIcon({
+          className: 'user-location-marker-container',
+          html: userMarkerHtml,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10] // Center of the icon
+        });
 
-    userMarker.bindPopup(popup);
-    userMarker.addTo(map);
-    markerRef.current = userMarker;
-
-    return () => {
+        const marker = L.marker(position, {
+          icon,
+          zIndexOffset: 1000, // Ensure it's on top
+          interactive: true, // Make it clickable
+          bubblingMouseEvents: false // Don't let clicks bubble to map
+        });
+        
+        marker.bindPopup('Your Location')
+              .on('click', () => marker.openPopup());
+        
+        marker.addTo(map);
+        markerRef.current = marker;
+      } else {
+        // Update existing marker position
+        markerRef.current.setLatLng(position);
+      }
+    };
+    
+    // Function to remove marker and circle
+    const cleanupMarker = () => {
       if (markerRef.current) {
         markerRef.current.remove();
         markerRef.current = null;
       }
     };
+    
+    // If this is the first render and we have location data, create marker immediately
+    if (initialRenderRef.current && map && userLocation) {
+      initialRenderRef.current = false;
+      setTimeout(() => createOrUpdateMarker(), 100); // Short delay to ensure map is ready
+    } else {
+      // Otherwise create/update the marker when userLocation changes
+      createOrUpdateMarker();
+    }
+    
+    // Cleanup on unmount or when dependencies change
+    return cleanupMarker;
   }, [map, userLocation]);
 
-  // This is a functional component, so no markup is returned
-  return null;
+  return null; // This component doesn't render anything
 };

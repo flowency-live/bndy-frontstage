@@ -1,3 +1,4 @@
+// src/components/filters/MapViewEventsFilter.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Filter } from "lucide-react";
 import { useEvents } from "@/context/EventsContext";
@@ -36,7 +37,7 @@ export function MapViewEventsFilter() {
   // Wrap handleFilterSelect in useCallback.
   const handleFilterSelect = useCallback((filter: string) => {
     setSelectedFilter(filter);
-    getDateRangeForFilter(filter); // (Optional side effect)
+    getDateRangeForFilter(filter);
     handleFilterChange(filter);
     setIsExpanded(false);
   }, [handleFilterChange]);
@@ -47,15 +48,15 @@ export function MapViewEventsFilter() {
   }, [handleFilterSelect]);
 
   return (
-    <div className="fixed bottom-10 left-4 z-50 flex flex-col items-center" style={{ pointerEvents: 'auto' }}>
+    <div className="fixed bottom-10 left-4 z-50 flex flex-col items-center">
       {isExpanded && (
-        <div className="flex flex-col space-y-2 mb-2 transition-all duration-300">
+        <div className="map-filter-dropdown">
           {filters
             .filter(f => f.value !== selectedFilter)
             .map(filter => (
               <button
                 key={filter.value}
-                className="w-full px-4 py-2 rounded-md shadow-md bg-[var(--background)] text-[var(--foreground)] border border-gray-200 dark:border-gray-700"
+                className="map-filter-option"
                 onClick={() => handleFilterSelect(filter.value)}
               >
                 {filter.label}
@@ -64,7 +65,7 @@ export function MapViewEventsFilter() {
         </div>
       )}
       <button
-        className="bg-[var(--primary)] hover:opacity-90 text-white rounded-full px-6 py-3 shadow-lg flex items-center"
+        className="map-filter-button"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <Filter className="w-4 h-4 mr-2" />

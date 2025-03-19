@@ -41,13 +41,14 @@ export const VenueMarkerLayer = ({
     markersRef.current = {};
 
     // Create a cluster group for venues
+    // ONLY changing maxClusterRadius for less aggressive clustering
     const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 60,
+      maxClusterRadius: 30, // Reduced from 60 - ONLY change to make clustering less aggressive
       iconCreateFunction: createVenueClusterIcon,
       zoomToBoundsOnClick: true,
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
-      disableClusteringAtZoom: 16,
+      showCoverageOnHover: false, // Keep this as in your original code
+      spiderfyOnMaxZoom: false,
+      disableClusteringAtZoom: 12, // Keep your original value
     });
 
     // First, create a map of venue IDs to associated events

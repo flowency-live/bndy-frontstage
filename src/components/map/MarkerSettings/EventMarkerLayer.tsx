@@ -42,12 +42,12 @@ export const EventMarkerLayer = ({
 
     // Create a cluster group for events
     const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 60,
+      maxClusterRadius: 40,
       iconCreateFunction: createEventClusterIcon,
       zoomToBoundsOnClick: true,
       showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
-      disableClusteringAtZoom: 16
+      spiderfyOnMaxZoom: false,
+      disableClusteringAtZoom: 12
     });
     
     // Use provided eventGroups if available, otherwise group events by location

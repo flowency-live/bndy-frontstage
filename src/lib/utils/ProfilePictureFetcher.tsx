@@ -13,39 +13,28 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
 }) => {
   useEffect(() => {
     const fetchProfilePicture = async () => {
-      let profilePicUrl: string = "";
+      // Exit early if no URLs provided
+      if (!facebookUrl && !instagramUrl) return;
 
-      if (facebookUrl) {
-
-        
-        // 1) Try to match a numeric ID in URLs like:
-        //    https://www.facebook.com/people/Danny-Brab-Music/61551738096172/
-        //    capturing "61551738096172" as the ID.
-        let match = facebookUrl.match(/facebook\.com\/people\/[^/]+\/(\d+)/);
-        if (match && match[1]) {
-          const numericId = match[1];
-          profilePicUrl = `https://graph.facebook.com/${numericId}/picture?type=large`;
-
-        } else {
-          // 2) Try to match page name - be more specific with the regex
-          // Look for patterns like facebook.com/pagename
-          // Avoid matching single letters like 't'
-          match = facebookUrl.match(/facebook\.com\/([a-zA-Z0-9.]{2,}[^/?]*)/);
+      try {
+        if (facebookUrl) {
+          // Only handle the simple facebook.com/username format
+          // This is fast and reliable for properly configured pages
+          const match = facebookUrl.match(/facebook\.com\/([a-zA-Z0-9.]{2,}[^/?]*)/);
+          
           if (match && match[1]) {
             const username = match[1];
-
-            profilePicUrl = `https://graph.facebook.com/${username}/picture?type=large`;
-          } else {
-
+            // Skip common paths that aren't usernames
+            const commonPaths = ['profile.php', 'people', 'pages', 'groups', 'events', 'photos', 'videos', 'p'];
+            
+            if (!commonPaths.includes(username)) {
+              const profilePicUrl = `https://graph.facebook.com/${username}/picture?type=large`;
+              onPictureFetched(profilePicUrl);
+            }
           }
         }
-      }
-
-      if (profilePicUrl) {
-
-        onPictureFetched(profilePicUrl);
-      } else {
- 
+      } catch (error) {
+        console.error("Error fetching profile picture:", error);
       }
     };
 
