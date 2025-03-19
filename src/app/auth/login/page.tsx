@@ -28,18 +28,14 @@ function LoginContent() {
   useEffect(() => {
     if (user) {
       // If the user has a pending claim, handle it after login
+      // Inline the handleClaim logic here
       if (claimType && claimId) {
-        handleClaim();
+        router.push(redirectPath);
       } else {
         router.push(redirectPath);
       }
     }
   }, [user, router, redirectPath, claimType, claimId]);
-
-  const handleClaim = async () => {
-    // This will be implemented in the next step
-    router.push(redirectPath);
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +66,7 @@ function LoginContent() {
 
       {claimType && (
         <div className="bg-[var(--primary)]/10 border border-[var(--primary)] text-[var(--foreground)] px-4 py-2 rounded-lg mb-6">
-          <p>You're about to claim a {claimType === 'artist' ? 'artist' : 'venue'} page. After logging in, you'll be able to manage its content.</p>
+          <p>You&apos;re about to claim a {claimType === 'artist' ? 'artist' : 'venue'} page. After logging in, you&apos;ll be able to manage its content.</p>
         </div>
       )}
 
@@ -143,7 +139,7 @@ function LoginContent() {
       </form>
 
       <p className="mt-4 text-center text-sm text-[var(--foreground)]/70">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link 
           href={`/auth/register${searchParamsString}`} 
           className="text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors"

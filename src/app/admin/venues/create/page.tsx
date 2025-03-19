@@ -2,7 +2,12 @@
 "use client";
 
 import { VenueEdit } from "@/components/admin/edit/VenueEdit";
+import { GoogleMapsProvider } from '@/components/providers/GoogleMapsProvider';
 
 export default function CreateVenuePage() {
-  return <VenueEdit />;
+  return (
+    <GoogleMapsProvider autoLoad={true}>
+      <VenueEdit />
+    </GoogleMapsProvider>
+  );
 }

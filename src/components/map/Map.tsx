@@ -1,449 +1,379 @@
-// src/components/Map/Map.tsx - Updated with venue support, clustering removed in venue mode
+// src/components/Map/Map.tsx
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { MarkerClusterer, GridAlgorithm } from "@googlemaps/markerclusterer";
+import { useEffect, useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
-import { mapStyles } from "./MapStyles";
-import { CustomInfoOverlay } from './CustomInfoOverlay';
-import { 
-  createEnhancedEventMarker, 
-  createUserLocationMarker,
-  createVenueMarker,
-  getClusterColor,
-  getVenueClusterColor
-} from "./markerUtils";
-import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
-import { isDateInRange, DateRangeFilter } from '@/lib/utils/date-filter-utils';
-import { DEFAULT_CENTER } from "./sampleData";
-import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
-import VenueInfoOverlay from "@/components/overlays/VenueInfoOverlay";
-import { Event, Venue } from "@/lib/types";
 import { getAllVenuesForMap } from "@/lib/services/venue-service";
+import type { Event, Venue } from "@/lib/types";
+import { isDateInRange, DateRangeFilter } from "@/lib/utils/date-filter-utils";
+import EventInfoOverlay from "../overlays/EventInfoOverlay";
+import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 
-export default function Map({
-  filterType,
-  filterId  // Search text
-}: {
-  filterType?: 'artist' | 'venue' | 'nomatch' | null;
+// Dynamically import Leaflet‑based components with SSR disabled
+const MapContainer = dynamic(
+  () => import("./MapContainer").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const UserLocationMarker = dynamic(
+  () =>
+    import("./MarkerSettings/UserLocationMarker").then(
+      (mod) => mod.UserLocationMarker
+    ),
+  { ssr: false }
+);
+const EventMarkerLayer = dynamic(
+  () =>
+    import("./MarkerSettings/EventMarkerLayer").then(
+      (mod) => mod.EventMarkerLayer
+    ),
+  { ssr: false }
+);
+const VenueMarkerLayer = dynamic(
+  () =>
+    import("./MarkerSettings/VenueMarkerLayer").then(
+      (mod) => mod.VenueMarkerLayer
+    ),
+  { ssr: false }
+);
+const MapControls = dynamic(
+  () => import("./MapControls").then((mod) => mod.MapControls),
+  { ssr: false }
+);
+
+// Dynamically import Leaflet CSS and configuration using ESM imports
+const initLeaflet = async () => {
+  await import("leaflet/dist/leaflet.css");
+  await import("leaflet.markercluster/dist/MarkerCluster.css");
+  await import("leaflet.markercluster/dist/MarkerCluster.Default.css");
+  await import("./LeafletSettings/LeafletConfig");
+};
+
+import L, { Map as LMap, Marker as LMarker } from "leaflet";
+
+// Map date range filter labels
+const dateRangeLabels: Record<string, string> = {
+  today: "Today",
+  thisWeek: "This Week",
+  thisWeekend: "This Weekend",
+  nextWeek: "Next Week",
+  nextWeekend: "Next Weekend",
+};
+
+type FilterType = "artist" | "venue" | "nomatch" | null;
+
+interface MapProps {
+  filterType?: FilterType;
   filterId?: string | null;
-}) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [locationError] = useState<string | null>(null);
-  
-  // Add these refs to track markers and overlays between renders
-  const markersRef = useRef<google.maps.Marker[]>([]);
-  const overlaysRef = useRef<CustomInfoOverlay[]>([]);
-  const clustererRef = useRef<MarkerClusterer | null>(null);
-  const userMarkerRef = useRef<google.maps.Marker | null>(null);
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(false);
+}
 
-  // Add state for the selected event and modern overlay
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+const Map = ({ filterType, filterId }: MapProps) => {
+  const {
+    userLocation,
+    allEvents,
+    loading: eventsLoading,
+    dateRange,
+  } = useEvents();
+  const { isDarkMode, mapMode } = useViewToggle();
+
+  const [leafletInitialized, setLeafletInitialized] = useState(false);
+  const leafletRef = useRef<typeof L | null>(null);
+
+  // Map and marker refs (using Leaflet types)
+  const mapRef = useRef<LMap | null>(null);
+  const eventMarkersRef = useRef<Record<string, LMarker>>({});
+  const venueMarkersRef = useRef<Record<string, LMarker>>({});
+  const eventClusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const venueClusterRef = useRef<L.MarkerClusterGroup | null>(null);
+
+  // UI state for overlays
+  const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showEventOverlay, setShowEventOverlay] = useState(false);
   const [showVenueOverlay, setShowVenueOverlay] = useState(false);
 
-  const { isDarkMode, mapMode } = useViewToggle();
-  const {
-    allEvents,
-    userLocation: contextUserLocation,
-    loading: eventsLoading,
-    dateRange
-  } = useEvents();
+  // Venues and filtered data
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [venuesLoading, setVenuesLoading] = useState(false);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
+  const [eventLocationGroups, setEventLocationGroups] = useState<Record<string, Event[]>>({});
 
-  // Initialize map
+  // Initialize Leaflet on client side only
   useEffect(() => {
-    if (!mapRef.current) return;
-
-    try {
-      const map = new google.maps.Map(mapRef.current, {
-        center: contextUserLocation || DEFAULT_CENTER,
-        zoom: 12,
-        gestureHandling: 'greedy',
-        clickableIcons: false,
-        maxZoom: 18,
-        minZoom: 3,
-        zoomControl: false,
-        mapTypeControl: false,
-        scaleControl: false,
-        streetViewControl: false,
-        rotateControl: false,
-        fullscreenControl: false,
-        tilt: 0,
-        styles: mapStyles,
-        cameraControl: false
-      });
-
-      setMapInstance(map);
-    } catch (error) {
-      console.error("Error initializing map:", error);
+    if (typeof window !== "undefined" && !leafletInitialized) {
+      initLeaflet()
+        .then(() => {
+          import("leaflet").then((L) => {
+            leafletRef.current = L;
+            import("leaflet.markercluster");
+            setLeafletInitialized(true);
+          });
+        })
+        .catch((error) => {
+          console.error("Error initializing Leaflet:", error);
+        });
     }
-  }, [contextUserLocation]);
+  }, [leafletInitialized]); // <-- Added 'leafletInitialized' to the dependency array
 
-  // Load venues when in venue mode
+  // Set up map click listener using Leaflet's API
   useEffect(() => {
-    if (mapMode === 'venues' && !venues.length) {
+    const map = mapRef.current;
+    if (!map) return;
+    const handleMapClick = () => {
+      setShowEventOverlay(false);
+      setSelectedEvents([]);
+      setShowVenueOverlay(false);
+      setSelectedVenue(null);
+    };
+    map.on("click", handleMapClick);
+    return () => {
+      map.off("click", handleMapClick);
+    };
+  }, []);
+
+  // Load venues in venue mode
+  useEffect(() => {
+    if (mapMode === "venues" && venues.length === 0 && !venuesLoading) {
       const fetchVenues = async () => {
-        setLoading(true);
+        setVenuesLoading(true);
         try {
           const venueData = await getAllVenuesForMap();
           setVenues(venueData);
+          setFilteredVenues(venueData);
         } catch (error) {
           console.error("Error fetching venues:", error);
         } finally {
-          setLoading(false);
+          setVenuesLoading(false);
         }
       };
-      
       fetchVenues();
     }
-  }, [mapMode, venues.length]);
+  }, [mapMode, venues.length, venuesLoading]);
 
-  // Handle markers, clustering, and info windows
+  // Apply filters to events
   useEffect(() => {
-    if (!mapInstance) return;
-    if (mapMode === 'events' && eventsLoading) return;
-    if (mapMode === 'venues' && loading) return;
-
-    // Important: Clean up previous markers and overlays first
-    const cleanupExistingMarkers = () => {
-      if (clustererRef.current) {
-        clustererRef.current.clearMarkers();
-        clustererRef.current = null;
-      }
-      
-      markersRef.current.forEach(marker => {
-        marker.setMap(null);
-        google.maps.event.clearInstanceListeners(marker);
-      });
-      markersRef.current = [];
-      
-      overlaysRef.current.forEach(overlay => {
-        overlay.setMap(null);
-      });
-      overlaysRef.current = [];
-      
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-        google.maps.event.clearInstanceListeners(userMarkerRef.current);
-        userMarkerRef.current = null;
-      }
-    };
-
-    cleanupExistingMarkers();
-
-    // Add user location marker if available
-    if (contextUserLocation) {
-      userMarkerRef.current = new google.maps.Marker({
-        position: contextUserLocation,
-        map: mapInstance,
-        title: "Your Location",
-        icon: createUserLocationMarker(),
-        zIndex: 1000
-      });
-    }
-
-    const markers: google.maps.Marker[] = [];
-
-    if (mapMode === 'events') {
-      // Handle events mode
-      if (!allEvents.length) return;
-
-      // Updated filtering logic for Map.tsx to correctly handle text-based search
-      const dateFilteredEvents = allEvents.filter(event => {
+    if (!allEvents || allEvents.length === 0) return;
+    const eventsOnly = allEvents.filter(
+      (e): e is Event => (e as Event).date !== undefined
+    );
+    let dateFiltered = eventsOnly;
+    if (dateRange) {
+      dateFiltered = eventsOnly.filter((event) => {
         const eventDate = new Date(event.date);
-        
-        // Apply date filtering first
-        const passesDateFilter = isDateInRange(eventDate, dateRange as DateRangeFilter);
-        if (!passesDateFilter) return false;
-        
-        // Special case: If filterType is 'nomatch', return empty results
-        if (filterType === 'nomatch') {
-          return false;
-        }
-        
-        // Apply artist/venue filter if provided
-        if ((filterType === 'artist' || filterType === 'venue') && filterId && filterId.trim() !== '' && filterId !== 'null') {
-          const searchTerm = filterId.toLowerCase();
-          
-          if (filterType === 'artist') {
-            // Check if event name contains the search term (case insensitive)
-            const isMatch = event.name.toLowerCase().includes(searchTerm);
-            return isMatch;
-          } else if (filterType === 'venue') {
-            // Check if venue name contains the search term (case insensitive)
-            const isMatch = event.venueName.toLowerCase().includes(searchTerm);
-            return isMatch;
-          }
-        }
-        
-        // If no filter specified, include all events that pass date filter
-        return filterType === null;
+        return isDateInRange(eventDate, dateRange as DateRangeFilter);
       });
-
-      // Check if we need to center on a venue
-      let shouldCenterOnVenue = false;
-      let venueToCenter = null;
-
-      if (filterType === 'venue' && filterId && dateFilteredEvents.length > 0) {
-        shouldCenterOnVenue = true;
-        // Find the first matching venue to center on
-        venueToCenter = dateFilteredEvents.find(event => 
-          event.venueName.toLowerCase().includes(filterId.toLowerCase())
-        );
-      }
-      
-      // Create markers for each event
-      dateFilteredEvents.forEach((event) => {
-        // Skip events with no location
-        if (!event.location || !event.location.lat || !event.location.lng) {
-          return;
-        }
-
-        const marker = new google.maps.Marker({
-          position: event.location,
-          map: mapInstance,
-          title: event.name,
-          icon: createEnhancedEventMarker()
-        });
-
-        markers.push(marker);
-
-        // Add click event handler to show the modern EventInfoOverlay
-        marker.addListener("click", () => {
-          // Center the map on the marker with offset
-          if (mapInstance) {
-            const markerPosition = marker.getPosition();
-            
-            // Apply vertical offset (adjust this value as needed)
-            const verticalOffset = 150; 
-            
-            // Use the projection to adjust the center point
-            const projection = mapInstance.getProjection();
-            if (projection && markerPosition) {
-              const point = projection.fromLatLngToPoint(markerPosition);
-              if (point) {
-                point.y += verticalOffset / Math.pow(2, mapInstance.getZoom() || 0);
-                const offsetLatLng = projection.fromPointToLatLng(point);
-                if (offsetLatLng) {
-                  mapInstance.panTo(offsetLatLng);
-                }
-              }
-            } else {
-              // Fallback if projection isn't ready
-              if (markerPosition) {
-                mapInstance.panTo(markerPosition);
-              }
-            }
-          }
-          
-          // Close any open overlays first
-          setShowVenueOverlay(false);
-          setSelectedVenue(null);
-          
-          // Then show the event overlay
-          setSelectedEvent(event);
-          setShowEventOverlay(true);
-        });
-      });
-
-      // Save references to the current markers
-      markersRef.current = markers;
-
-      // Create clusterer for events
-      if (markers.length > 0) {
-        const clusterer = new MarkerClusterer({
-          map: mapInstance,
-          markers: markers,
-          algorithm: new GridAlgorithm({
-            maxZoom: 15,
-            gridSize: 60
-          }),
-          renderer: {
-            render: ({ count, position }) => {
-              return new google.maps.Marker({
-                position,
-                label: {
-                  text: String(count),
-                  color: "white",
-                  fontSize: "12px",
-                  fontWeight: "bold"
-                },
-                icon: {
-                  path: google.maps.SymbolPath.CIRCLE,
-                  fillColor: getClusterColor(count),
-                  fillOpacity: 0.9,
-                  strokeColor: "#FFFFFF",
-                  strokeWeight: 2,
-                  scale: 22
-                },
-                zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
-                map: mapInstance
-              });
-            }
-          }
-        });
-        
-        google.maps.event.addListener(clusterer, 'clusterclick', (cluster: { getMarkers: () => google.maps.Marker[], getCenter: () => google.maps.LatLng }) => {
-          const map = mapInstance;
-          const clusterMarkers = cluster.getMarkers();
-          const bounds = new google.maps.LatLngBounds();
-          clusterMarkers.forEach((marker: google.maps.Marker) => {
-            const position = marker.getPosition();
-            if (position) {
-              bounds.extend(position);
-            }
-          });
-          map.fitBounds(bounds);
-          google.maps.event.addListenerOnce(map, 'idle', () => {
-            const zoom = map.getZoom();
-            if (zoom !== undefined && zoom > 16) map.setZoom(16);
-          });
-          return false;
-        });
-        
-        clustererRef.current = clusterer;
-      }
-
-      // If we should center on a venue, do it now
-      if (shouldCenterOnVenue && venueToCenter && venueToCenter.location) {
-        mapInstance.setCenter(venueToCenter.location);
-        mapInstance.setZoom(15);
-      }
-    } else if (mapMode === 'venues') {
-      // Handle venues mode
-      if (!venues.length) return;
-      
-      // Create markers for each venue
-      venues.forEach((venue) => {
-        if (!venue.location || !venue.location.lat || !venue.location.lng) {
-          return;
-        }
-
-        const marker = new google.maps.Marker({
-          position: venue.location,
-          map: mapInstance,
-          title: venue.name,
-          icon: createVenueMarker()
-        });
-
-        markers.push(marker);
-
-        marker.addListener("click", () => {
-          // Center the map on the marker with offset
-          if (mapInstance) {
-            const markerPosition = marker.getPosition();
-            const verticalOffset = 150; 
-            const projection = mapInstance.getProjection();
-            if (projection && markerPosition) {
-              const point = projection.fromLatLngToPoint(markerPosition);
-              if (point) {
-                point.y += verticalOffset / Math.pow(2, mapInstance.getZoom() || 0);
-                const offsetLatLng = projection.fromPointToLatLng(point);
-                if (offsetLatLng) {
-                  mapInstance.panTo(offsetLatLng);
-                }
-              }
-            } else if (markerPosition) {
-              mapInstance.panTo(markerPosition);
-            }
-          }
-          
-          // Close any open overlays first
-          setShowEventOverlay(false);
-          setSelectedEvent(null);
-          
-          // Then show the venue overlay
-          setSelectedVenue(venue);
-          setShowVenueOverlay(true);
-        });
-      });
-
-      // Save references to the current markers
-      markersRef.current = markers;
-
-      // NOTE: Clustering is intentionally removed for venue mode.
-      // If you see a block like this, remove or comment it out:
-      /*
-      if (markers.length > 0) {
-        const clusterer = new MarkerClusterer({
-          ...
-        });
-        ...
-        clustererRef.current = clusterer;
-      }
-      */
     }
-
-    // Close overlays when clicking elsewhere on the map
-    mapInstance.addListener("click", () => {
-      setShowEventOverlay(false);
-      setSelectedEvent(null);
-      setShowVenueOverlay(false);
-      setSelectedVenue(null);
+    let searchFiltered = dateFiltered;
+    if (filterType && filterId && filterId.trim() !== "") {
+      if (filterType === "nomatch") {
+        searchFiltered = [];
+      } else {
+        const searchTerm = filterId.toLowerCase();
+        if (filterType === "artist") {
+          searchFiltered = dateFiltered.filter((event) =>
+            event.name.toLowerCase().includes(searchTerm)
+          );
+        } else if (filterType === "venue") {
+          searchFiltered = dateFiltered.filter((event) =>
+            event.venueName.toLowerCase().includes(searchTerm)
+          );
+        }
+      }
+    }
+    const locationGroups: Record<string, Event[]> = {};
+    searchFiltered.forEach((event) => {
+      if (!event.location) return;
+      const locationKey = `${event.location.lat},${event.location.lng}`;
+      if (!locationGroups[locationKey]) {
+        locationGroups[locationKey] = [];
+      }
+      locationGroups[locationKey].push(event);
     });
+    setEventLocationGroups(locationGroups);
+    const representativeEvents = Object.values(locationGroups).map(
+      (group) => group[0]
+    );
+    setFilteredEvents(representativeEvents);
+  }, [allEvents, dateRange, filterType, filterId]);
 
-    return cleanupExistingMarkers;
-  }, [
-    mapInstance,
-    isDarkMode,
-    allEvents,
-    eventsLoading,
-    contextUserLocation,
-    dateRange,
-    filterType,
-    filterId,
-    mapMode,
-    venues,
-    loading
-  ]);
+  // Apply filters to venues
+  useEffect(() => {
+    if (!venues || venues.length === 0) return;
+    if (filterType && filterId && filterId.trim() !== "") {
+      if (filterType === "nomatch") {
+        setFilteredVenues([]);
+      } else if (filterType === "venue") {
+        const searchTerm = filterId.toLowerCase();
+        const filtered = venues.filter((venue) =>
+          venue.name.toLowerCase().includes(searchTerm)
+        );
+        setFilteredVenues(filtered);
+      } else {
+        setFilteredVenues(venues);
+      }
+    } else {
+      setFilteredVenues(venues);
+    }
+  }, [venues, filterType, filterId]);
+
+  // Highlight single search result: reposition map and simulate marker click.
+  useEffect(() => {
+    if (!filterType || !filterId || filterType === "nomatch") return;
+    if (!leafletInitialized) return;
+    if (mapMode === "events") {
+      const activeData = filteredEvents;
+      if (activeData.length === 1) {
+        const eventItem = activeData[0];
+        if (eventItem.location) {
+          const latLng: [number, number] = [eventItem.location.lat, eventItem.location.lng];
+          if (mapRef.current && typeof mapRef.current.flyTo === "function") {
+            mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
+          } else if (mapRef.current) {
+            mapRef.current.setView(latLng, 15);
+          }
+          const key = `${eventItem.location.lat},${eventItem.location.lng}`;
+          const group =
+            eventLocationGroups[key] && eventLocationGroups[key].length > 1
+              ? eventLocationGroups[key]
+              : [eventItem];
+          setTimeout(() => {
+            handleEventClick(group);
+          }, 600);
+        }
+      }
+    } else if (mapMode === "venues") {
+      const activeData = filteredVenues;
+      if (activeData.length === 1) {
+        const venueItem = activeData[0];
+        if (venueItem.location) {
+          const latLng: [number, number] = [venueItem.location.lat, venueItem.location.lng];
+          if (mapRef.current && typeof mapRef.current.flyTo === "function") {
+            mapRef.current.flyTo(latLng, 15, { animate: true, duration: 0.5 });
+          } else if (mapRef.current) {
+            mapRef.current.setView(latLng, 15);
+          }
+          setTimeout(() => {
+            handleVenueClick(venueItem);
+          }, 600);
+        }
+      }
+    }
+  }, [filterType, filterId, mapMode, filteredEvents, filteredVenues, eventLocationGroups, leafletInitialized]);
+
+  // Handle event marker click: sort events and open overlay
+  const handleEventClick = (events: Event[]) => {
+    const sortedEvents = [...events].sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA.getTime() - dateB.getTime();
+      }
+      if (a.startTime && b.startTime) {
+        return a.startTime.localeCompare(b.startTime);
+      }
+      return 0;
+    });
+    setSelectedEvents(sortedEvents);
+    setShowEventOverlay(true);
+    setShowVenueOverlay(false);
+    setSelectedVenue(null);
+  };
+
+  // Handle venue marker click: open overlay
+  const handleVenueClick = (venue: Venue) => {
+    setSelectedVenue(venue);
+    setShowVenueOverlay(true);
+    setShowEventOverlay(false);
+    setSelectedEvents([]);
+  };
+
+  const noMatchMessage =
+    filterType === "nomatch" && filterId
+      ? `No matches found for &quot;${filterId}&quot;`
+      : "";
+
+  const renderMapComponents = leafletInitialized && typeof window !== "undefined";
 
   return (
-    <>
-      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
-      
-      {locationError && (
-        <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white p-2 rounded text-sm text-center">
-          Location unavailable: Using default map view
-        </div>
+    <div className="w-full h-full relative">
+      {renderMapComponents && (
+        <>
+          <MapContainer ref={mapRef} userLocation={userLocation} isDarkMode={isDarkMode} />
+          <UserLocationMarker map={mapRef.current} userLocation={userLocation} />
+          <MapControls map={mapRef.current} userLocation={userLocation} />
+          {mapMode === "events" && (
+            <EventMarkerLayer
+              map={mapRef.current}
+              events={filteredEvents}
+              eventGroups={eventLocationGroups}
+              onEventClick={handleEventClick}
+              markersRef={eventMarkersRef}
+              clusterRef={eventClusterRef}
+            />
+          )}
+          {mapMode === "venues" && (
+            <VenueMarkerLayer
+              map={mapRef.current}
+              venues={filteredVenues}
+              events={allEvents}
+              onVenueClick={handleVenueClick}
+              markersRef={venueMarkersRef}
+              clusterRef={venueClusterRef}
+            />
+          )}
+        </>
       )}
-      
-      {eventsLoading && mapMode === 'events' && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded">
+
+      {(eventsLoading && mapMode === "events") && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded z-20">
           Loading events...
         </div>
       )}
-      
-      {loading && mapMode === 'venues' && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded">
+
+      {(venuesLoading && mapMode === "venues") && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded z-20">
           Loading venues...
         </div>
       )}
-      
-      {filterType === 'nomatch' && filterId && (
-        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm">
-          No matches found for "{filterId}"
+
+      {filterType === "nomatch" && filterId && (
+        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+          {noMatchMessage}
         </div>
       )}
-      
-      {/* Event Info Overlay */}
-      {selectedEvent && (
+
+      {mapMode === "events" && !eventsLoading && filteredEvents.length === 0 && filterType !== "nomatch" && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+          {`No events in bndy.live ${dateRangeLabels[dateRange as string] || "current filters"}`}
+        </div>
+      )}
+
+      {mapMode === "venues" && !venuesLoading && filteredVenues.length === 0 && filterType !== "nomatch" && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+          No matching venues
+        </div>
+      )}
+
+      {!renderMapComponents && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white p-4 rounded z-20">
+          Loading map...
+        </div>
+      )}
+
+      {selectedEvents.length > 0 && (
         <EventInfoOverlay
-          events={[selectedEvent]}
+          events={selectedEvents}
           isOpen={showEventOverlay}
           onClose={() => {
             setShowEventOverlay(false);
-            setSelectedEvent(null);
+            setSelectedEvents([]);
           }}
           position="map"
         />
       )}
-      
-      {/* Venue Info Overlay */}
+
       {selectedVenue && (
         <VenueInfoOverlay
           venue={selectedVenue}
@@ -455,6 +385,8 @@ export default function Map({
           position="map"
         />
       )}
-    </>
+    </div>
   );
-}
+};
+
+export default Map;

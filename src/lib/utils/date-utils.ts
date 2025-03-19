@@ -58,6 +58,7 @@ export function formatTime(time24: string): string {
    */
   export function convertTo24Hour(time12: string): string {
     const [time, period] = time12.split(/\s*(AM|PM)/i);
+    // eslint-disable-next-line prefer-const
     let [hours, minutes] = time.split(':').map(Number);
     
     if (period.toUpperCase() === 'PM' && hours !== 12) {
@@ -100,6 +101,7 @@ export function formatTime(time24: string): string {
       const ukFormat = /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/;
       const ukMatch = dateText.match(ukFormat);
       if (ukMatch) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_, day, month, year] = ukMatch;
         const fullYear = year.length === 2 ? '20' + year : year;
         const date = new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);

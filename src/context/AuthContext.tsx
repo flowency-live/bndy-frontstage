@@ -18,7 +18,6 @@ import {
   setDoc,
   collection,
   query,
-  where,
   getDocs
 } from "firebase/firestore";
 import { COLLECTIONS } from "@/lib/constants";

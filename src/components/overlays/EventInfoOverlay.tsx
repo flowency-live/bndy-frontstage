@@ -11,7 +11,7 @@ import {
   CalendarDays,
   Share2,
   Mic,
-  Map
+  Map,
 } from "lucide-react";
 import Link from "next/link";
 import { Event, Artist, getSocialMediaURLs } from "@/lib/types";
@@ -35,7 +35,6 @@ export default function EventInfoOverlay({
   isOpen,
   onClose,
   position = "map",
-  verticalOffset = 50,
 }: EventInfoOverlayProps) {
   // Track which event in the list is being shown.
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,6 +46,14 @@ export default function EventInfoOverlay({
   const [hasFetched, setHasFetched] = useState(false);
 
   const isOpenMic = currentEvent?.isOpenMic || false;
+
+  // Reset artist and hasFetched state when currentIndex or currentEvent changes
+  useEffect(() => {
+    if (!currentEvent) return;
+    // Reset artist data and fetch state when navigating to a different event
+    setArtist(null);
+    setHasFetched(false);
+  }, [currentIndex, currentEvent]);
 
   // When the current event changes, fetch associated artist data.
   useEffect(() => {
@@ -122,7 +129,7 @@ export default function EventInfoOverlay({
         console.error("Error sharing", err);
       }
     } else {
-      console.log("Web Share API not supported.");
+
     }
   };
 
@@ -165,7 +172,6 @@ export default function EventInfoOverlay({
                           className="object-cover"
                           fill
                           onError={() => {
-                            console.log("Overlay: Host artist image failed; reverting to Open Mic icon.");
                             setArtist({ ...artist, profileImageUrl: "" });
                             setHasFetched(true);
                           }}
@@ -191,7 +197,6 @@ export default function EventInfoOverlay({
                         facebookUrl={fbURL}
                         instagramUrl={igURL}
                         onPictureFetched={(url) => {
-                          console.log("Overlay: Fetched profile picture URL:", url);
                           setArtist({ ...artist, profileImageUrl: url });
                           setHasFetched(true);
                         }}
@@ -200,7 +205,7 @@ export default function EventInfoOverlay({
                   </div>
                   <div className="flex flex-col">
                     <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                      Open Mic{artist ? ` with ${artist.name}` : ''}
+                      Open Mic{artist ? ` with ${artist.name}` : ""}
                     </h2>
                     {artist && (
                       <Link
@@ -229,7 +234,6 @@ export default function EventInfoOverlay({
                           width={50}
                           height={50}
                           onError={() => {
-                            console.log("Overlay: Profile image failed; reverting to icon.");
                             setArtist({ ...artist, profileImageUrl: "" });
                             setHasFetched(true);
                           }}
@@ -244,7 +248,6 @@ export default function EventInfoOverlay({
                           facebookUrl={fbURL}
                           instagramUrl={igURL}
                           onPictureFetched={(url) => {
-                            console.log("Overlay: Fetched profile picture URL:", url);
                             setArtist({ ...artist, profileImageUrl: url });
                             setHasFetched(true);
                           }}
@@ -304,7 +307,6 @@ export default function EventInfoOverlay({
                       <Map className="w-4 h-4" />
                     </a>
                   )}
-
                 </div>
 
                 {/* Ticket Information - Only show if event is ticketed */}

@@ -1,8 +1,7 @@
 // src/components/ui/time-select.tsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
-import { formatTime } from '@/lib/utils/date-utils';
 import { Clock, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Popover,
@@ -31,19 +30,21 @@ export function TimeSelect({
   onChange,
   className,
   defaultStartIndex = 38,
-  placeholder = "Select time"  // Add default
+  placeholder = "Select time"
 }: TimeSelectProps) {
   const [open, setOpen] = useState(false);
   const [startIndex, setStartIndex] = useState(defaultStartIndex);
   const listRef = useRef<HTMLDivElement>(null);
   const [touchStartY, setTouchStartY] = useState(0);
 
-  // Generate all times (24 hours in 30 min increments)
-  const allTimes = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? '00' : '30';
-    return `${hour.toString().padStart(2, '0')}:${minute}`;
-  });
+  // Memoize the allTimes array so it's stable between renders.
+  const allTimes = useMemo(() => {
+    return Array.from({ length: 48 }, (_, i) => {
+      const hour = Math.floor(i / 2);
+      const minute = i % 2 === 0 ? '00' : '30';
+      return `${hour.toString().padStart(2, '0')}:${minute}`;
+    });
+  }, []);
 
   // Scroll to selected time when the dropdown opens
   useEffect(() => {
@@ -53,7 +54,7 @@ export function TimeSelect({
         setStartIndex(selectedIndex);
       }
     }
-  }, [value, open]);
+  }, [value, open, allTimes]);
 
   // Get current visible window of times
   const visibleTimes = allTimes.slice(startIndex, startIndex + 6);

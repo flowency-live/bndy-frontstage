@@ -1,12 +1,18 @@
-// src/context/EventsContext.tsx - Fixed initial load issue
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { 
+  createContext, 
+  useContext, 
+  useState, 
+  useEffect, 
+  ReactNode, 
+  useCallback 
+} from "react";
 import { getEvents, getAllEvents } from "@/lib/services/event-service";
 import type { Event } from "@/lib/types";
 import { CITY_LOCATIONS } from "@/lib/constants";
+import { getMoreAccuratePosition } from "@/lib/utils/geo";
 
-// Use default from constants
 const DEFAULT_LOCATION = CITY_LOCATIONS.STOKE_ON_TRENT;
 const DEFAULT_RADIUS = 5; // Default to 5 miles radius
 
@@ -40,74 +46,18 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   const [dateRange, setDateRange] = useState<string>("today");
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [initialLocationSet, setInitialLocationSet] = useState(false);
-  
-  // Get user location - only once when component mounts
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLoc = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            name: "Current Location"
-          };
-          setUserLocation(userLoc);
-          
-          // Only set selected location if we haven't done it yet
-          if (!initialLocationSet) {
-            setSelectedLocation(userLoc);
-            setInitialLocationSet(true);
-            // Load events with the user's location
-            loadEvents(userLoc, radius);
-          }
-        },
-        (error) => {
-          // Default to Stoke-on-Trent if location permission denied
-          // If we haven't set location yet, use the default
-          if (!initialLocationSet) {
-            setInitialLocationSet(true);
-            // Keep using the default location that was set in useState
-            loadEvents(DEFAULT_LOCATION, radius);
-          }
-        }
-      );
-    } else {
-      // Fallback for browsers without geolocation
-      if (!initialLocationSet) {
-        setInitialLocationSet(true);
-        loadEvents(DEFAULT_LOCATION, radius);
-      }
-    }
-  }, []);
-  
-  // Function to manually set selected location and load events
-  const handleSetSelectedLocation = (location: google.maps.LatLngLiteral & { name?: string }) => {
-    setSelectedLocation(location);
-    loadEvents(location, radius);
-  };
-  
-  // Function to manually set radius and load events
-  const handleSetRadius = (newRadius: number) => {
-    setRadius(newRadius);
-    // Make sure we're actually loading events with the new radius
-    loadEvents(selectedLocation, newRadius);
-  };
-  
-  // Function to load events
-  const loadEvents = async (
+
+  // Wrap loadEvents in useCallback so its dependencies are tracked.
+  const loadEvents = useCallback(async (
     location: google.maps.LatLngLiteral & { name?: string } = selectedLocation, 
     rad: number = radius
   ) => {
-  
     setLoading(true);
     try {
       const [filteredEventsData, allEventsData] = await Promise.all([
-        // Get events filtered by location for list view
         getEvents(location, rad),
-        // Get all events for map view (no radius filtering)
         getAllEvents()
       ]);
-      
       setEvents(filteredEventsData);
       setAllEvents(allEventsData);
       setError(null);
@@ -117,20 +67,61 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
+  }, [selectedLocation, radius]);
+
+  // Get user location - only once when component mounts (and when dependencies change)
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      const fetchAccuratePosition = async () => {
+        try {
+          const position = await getMoreAccuratePosition();
+          const userLoc = {
+            lat: (position as GeolocationPosition).coords.latitude,
+            lng: (position as GeolocationPosition).coords.longitude,
+            name: "Current Location"
+          };
+          setUserLocation(userLoc);
+          if (!initialLocationSet) {
+            setSelectedLocation(userLoc);
+            setInitialLocationSet(true);
+            loadEvents(userLoc, radius);
+          }
+        } catch (error) {
+          console.error("Geolocation error:", error);
+          if (!initialLocationSet) {
+            setInitialLocationSet(true);
+            loadEvents(DEFAULT_LOCATION, radius);
+          }
+        }
+      };
+      fetchAccuratePosition();
+    } else {
+      if (!initialLocationSet) {
+        setInitialLocationSet(true);
+        loadEvents(DEFAULT_LOCATION, radius);
+      }
+    }
+  }, [initialLocationSet, loadEvents, radius]);
+
+  // Function to manually set selected location and load events
+  const handleSetSelectedLocation = (location: google.maps.LatLngLiteral & { name?: string }) => {
+    setSelectedLocation(location);
+    loadEvents(location, radius);
   };
-  
+
+  // Function to manually set radius and load events
+  const handleSetRadius = (newRadius: number) => {
+    setRadius(newRadius);
+    loadEvents(selectedLocation, newRadius);
+  };
+
   // Function to reload events (can be called externally)
   const refreshEvents = async () => {
     return loadEvents(selectedLocation, radius);
   };
-  
-  // Filter events when events list or date range changes
-  useEffect(() => {
-    filterEventsByDate();
-  }, [events, dateRange]);
-  
-  // Filter events by date range
-  const filterEventsByDate = () => {
+
+  // Wrap filterEventsByDate in useCallback so it can be used as an effect dependency.
+  const filterEventsByDate = useCallback(() => {
     if (!events.length) {
       setFilteredEvents([]);
       return;
@@ -142,7 +133,6 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     const filtered = events.filter(event => {
-      // Convert string date to Date object
       const eventDate = new Date(event.date);
       
       switch (dateRange) {
@@ -150,12 +140,12 @@ export function EventsProvider({ children }: { children: ReactNode }) {
           return eventDate >= today && eventDate < tomorrow;
         case "tomorrow": {
           const dayAfterTomorrow = new Date(tomorrow);
-          dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+          dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
           return eventDate >= tomorrow && eventDate < dayAfterTomorrow;
         }
         case "thisWeek": {
           const endOfWeek = new Date(today);
-          endOfWeek.setDate(endOfWeek.getDate() + (6 - today.getDay())); // Sunday is 0
+          endOfWeek.setDate(endOfWeek.getDate() + (6 - today.getDay()));
           return eventDate >= today && eventDate <= endOfWeek;
         }
         case "thisWeekend": {
@@ -173,25 +163,23 @@ export function EventsProvider({ children }: { children: ReactNode }) {
           return eventDate >= startNextWeek && eventDate <= endNextWeek;
         }
         case "nextWeekend": {
-          const todayDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+          const todayDay = now.getDay();
           let daysUntilNextFriday;
-        
-          if (todayDay === 0) { // Today is Sunday
-            daysUntilNextFriday = 5; // Next Friday is 5 days away
-          } else if (todayDay === 1) { // Monday
+          if (todayDay === 0) {
+            daysUntilNextFriday = 5;
+          } else if (todayDay === 1) {
             daysUntilNextFriday = 11;
-          } else if (todayDay === 2) { // Tuesday
+          } else if (todayDay === 2) {
             daysUntilNextFriday = 10;
-          } else if (todayDay === 3) { // Wednesday
+          } else if (todayDay === 3) {
             daysUntilNextFriday = 9;
-          } else if (todayDay === 4) { // Thursday
+          } else if (todayDay === 4) {
             daysUntilNextFriday = 8;
-          } else if (todayDay === 5) { // Friday
+          } else if (todayDay === 5) {
             daysUntilNextFriday = 7;
-          } else { // Saturday
+          } else {
             daysUntilNextFriday = 6;
           }
-        
           const nextFriday = new Date(today);
           nextFriday.setDate(now.getDate() + daysUntilNextFriday);
           
@@ -203,14 +191,17 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         case "future":
           return eventDate >= today;
         default:
-          return true; // "all" case
+          return true;
       }
     });
     
     setFilteredEvents(filtered);
-  };
-  
-  // Available locations for selection (including user's location if available)
+  }, [events, dateRange]);
+
+  useEffect(() => {
+    filterEventsByDate();
+  }, [filterEventsByDate]);
+
   const availableLocations = [
     ...(userLocation ? [userLocation] : []),
     CITY_LOCATIONS.STOKE_ON_TRENT,

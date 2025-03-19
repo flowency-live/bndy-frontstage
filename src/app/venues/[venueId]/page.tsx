@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getVenueById, updateVenue } from "@/lib/services/venue-service";
 import { getEventsForVenue } from "@/lib/services/event-service";
 import { Venue, Event, SocialMediaURL } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
 import { MapIcon, ExternalLink, Globe, Facebook, Phone, Mail, XCircle, Plus, Ticket } from "lucide-react";
 import VADetailHeader from "@/components/shared/VADetailHeader";
 import VAEventsList from "@/components/shared/VAEventsList";
@@ -18,8 +18,6 @@ import ClaimPageButton from "@/components/shared/ClaimPageButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VenueAddEventButton } from "@/components/events/VenueAddEventButton";
-
-// Make sure to add the explicit React import
 
 function VenueProfileContent() {
   const params = useParams();
@@ -173,9 +171,9 @@ function VenueProfileContent() {
 
     // Convert social links to the required format
     const socialMediaURLs: SocialMediaURL[] = Object.entries(socialLinks)
-      .filter(([_, url]) => url.trim() !== "")
+      .filter(([, url]) => url.trim() !== "")
       .map(([platform, url]) => ({
-        platform: platform as any,
+        platform: platform as "website" | "facebook",
         url: url.trim()
       }));
 
@@ -225,7 +223,7 @@ function VenueProfileContent() {
       <div className="container mx-auto py-12 px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Venue Not Found</h1>
-          <p className="mt-4">The venue you're looking for doesn't exist or has been removed.</p>
+          <p className="mt-4">The venue you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Link href="/" className="text-[var(--secondary)] hover:underline mt-4 inline-block">
             Return Home
           </Link>
@@ -236,9 +234,9 @@ function VenueProfileContent() {
 
   // Create social media URLs array for the header
   const headerSocialMediaURLs = Object.entries(socialLinks)
-    .filter(([_, url]) => url.trim() !== "")
+    .filter(([, url]) => url.trim() !== "")
     .map(([platform, url]) => ({
-      platform: platform as any,
+      platform: platform as "website" | "facebook",
       url
     }));
 
@@ -622,13 +620,13 @@ function VenueProfileContent() {
 
         {/* Event Info Overlay */}
         {selectedEvent && (
-        <EventInfoOverlay
-                 events={[selectedEvent]}
-                 isOpen={showEventOverlay}
-                 onClose={() => {
-                   setShowEventOverlay(false);
-                   setSelectedEvent(null);
-                 }}
+          <EventInfoOverlay
+            events={[selectedEvent]}
+            isOpen={showEventOverlay}
+            onClose={() => {
+              setShowEventOverlay(false);
+              setSelectedEvent(null);
+            }}
             position="list"
           />
         )}

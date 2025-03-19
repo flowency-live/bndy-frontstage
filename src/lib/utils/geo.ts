@@ -40,3 +40,32 @@ export async function getPostcodeLocation(postcode: string): Promise<{ lat: numb
     return null;
   }
 }
+
+export function getMoreAccuratePosition(options = {}) {
+  return new Promise((resolve, reject) => {
+    // Set high accuracy to true by default
+    const geolocationOptions = {
+      enableHighAccuracy: true,
+      timeout: 10000,  // 10 seconds
+      maximumAge: 0,   // Don't use cached position
+      ...options
+    };
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position),
+      (error) => {
+        // If high accuracy fails, try again with low accuracy
+        if (geolocationOptions.enableHighAccuracy) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => resolve(position),
+            (err) => reject(err),
+            { ...geolocationOptions, enableHighAccuracy: false }
+          );
+        } else {
+          reject(error);
+        }
+      },
+      geolocationOptions
+    );
+  });
+}

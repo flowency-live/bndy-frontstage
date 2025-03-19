@@ -1,7 +1,6 @@
 // /app/admin/artists/[artistid]/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArtistEdit } from "@/components/admin/edit/ArtistEdit";
 

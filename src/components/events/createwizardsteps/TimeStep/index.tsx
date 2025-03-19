@@ -10,7 +10,7 @@ interface TimeStepProps {
   onBack?: () => void;
 }
 
-export function TimeStep({ form, onComplete, onBack }: TimeStepProps) {
+export function TimeStep({ form, onComplete }: TimeStepProps) {
   const [showEndTime, setShowEndTime] = useState(!!form.getValues('endTime'));
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isSelectingEndTime, setIsSelectingEndTime] = useState(false);

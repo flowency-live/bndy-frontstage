@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Clock, Ticket, Map } from "lucide-react";
+import { Ticket } from "lucide-react";
 import { formatTime, formatEventDate } from "@/lib/utils/date-utils";
 import { Event } from "@/lib/types";
 import TodayEventHighlight from "./TodayEventHighlight";
@@ -22,34 +22,34 @@ export default function VAEventsList({
 }: VAEventsListProps) {
   const [selectedTab, setSelectedTab] = useState("upcoming");
 
-  // Get today's date at midnight for comparison
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
+  // Memoize today's date at midnight
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
+
   // Get current day of week (0 = Sunday, 1 = Monday, etc.)
   const dayOfWeek = today.getDay();
 
-  // Calculate dates for weekend filtering
-  const getWeekendDates = () => {
-    // Start with Friday (if today is before Friday)
+  // Memoize weekend dates calculations based on today and dayOfWeek
+  const { fridayDate, saturdayDate, sundayDate } = useMemo(() => {
     let startDay = 5 - dayOfWeek; // Days until Friday
     if (startDay <= 0) startDay = 0; // Today or past Friday
-    
+
     const fridayDate = new Date(today);
     fridayDate.setDate(today.getDate() + startDay);
-    
+
     const saturdayDate = new Date(fridayDate);
     saturdayDate.setDate(fridayDate.getDate() + 1);
-    
+
     const sundayDate = new Date(fridayDate);
     sundayDate.setDate(fridayDate.getDate() + 2);
-    
+
     return { fridayDate, saturdayDate, sundayDate };
-  };
+  }, [today, dayOfWeek]);
 
-  const { fridayDate, saturdayDate, sundayDate } = getWeekendDates();
-
-  // Filter events for each category
+  // Filter events for today
   const todayEvents = useMemo(() => {
     return events.filter(event => {
       const eventDate = new Date(event.date);
@@ -61,13 +61,11 @@ export default function VAEventsList({
   // For this weekend tab (remaining days of current weekend)
   const weekendEvents = useMemo(() => {
     return events.filter(event => {
-      // Skip if today is already Sunday (no more weekend days)
       if (dayOfWeek === 0) return false;
       
       const eventDate = new Date(event.date);
       eventDate.setHours(0, 0, 0, 0);
       
-      // Include only upcoming weekend days (not today if it's a weekend day)
       if (eventDate.getTime() === today.getTime()) return false;
       
       return (
@@ -85,9 +83,9 @@ export default function VAEventsList({
         ))
       );
     });
-  }, [events, dayOfWeek, fridayDate, saturdayDate, sundayDate]);
+  }, [events, dayOfWeek, fridayDate, saturdayDate, sundayDate, today]);
 
-  // For upcoming tab (all future events except today)
+  // For upcoming events (all future events except today)
   const upcomingEvents = useMemo(() => {
     return events.filter(event => {
       const eventDate = new Date(event.date);
@@ -96,14 +94,8 @@ export default function VAEventsList({
     });
   }, [events, today]);
 
-  // Define EventRow component within the VAEventsList to keep context
+  // Define an EventRow component to render an event row.
   const EventRow = ({ event }: { event: Event }) => {
-    // Create Google Maps URL with just venue name
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      event.venueName
-    )}`;
-
-    // Format the date
     const eventDate = new Date(event.date);
     const formattedDate = formatEventDate(eventDate);
 
@@ -122,8 +114,6 @@ export default function VAEventsList({
           {/* Event Name Column */}
           <div className="col-span-7 sm:col-span-8">
             <div className="font-semibold text-[var(--primary)]">{event.name}</div>
-            
-            {/* Display context-appropriate link */}
             {contextType === 'artist' ? (
               <div className="text-xs text-[var(--foreground)]/70">
                 <Link 
@@ -177,8 +167,6 @@ export default function VAEventsList({
             contextType={contextType}
             onSelectEvent={onSelectEvent} 
           />
-          
-          {/* If there are multiple events today, show a note */}
           {todayEvents.length > 1 && (
             <div className="mt-2 text-sm text-[var(--foreground)]/70 text-center">
               +{todayEvents.length - 1} more event{todayEvents.length > 2 ? 's' : ''} today

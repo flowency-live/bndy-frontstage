@@ -1,5 +1,4 @@
 // src/components/shared/TodayEventHighlight.tsx
-import { useState } from 'react';
 import { Event } from "@/lib/types";
 import { Ticket, Map, Calendar, Clock, Sparkles } from "lucide-react";
 import { formatTime } from "@/lib/utils/date-utils";
@@ -18,9 +17,9 @@ export default function TodayEventHighlight({
   onSelectEvent 
 }: TodayEventHighlightProps) {
   // Create Google Maps URL with just venue name
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    event.venueName
-  )}`;
+  // const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  //   event.venueName
+  // )}`;
 
   return (
     <Card 

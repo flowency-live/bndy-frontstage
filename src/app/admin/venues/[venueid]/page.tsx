@@ -1,18 +1,24 @@
-// /app/admin/venues/[venueid]/page.tsx
+// src/app/admin/venues/[venueid]/page.tsx
 "use client";
 
-import { use } from "react";
 import { VenueEdit } from "@/components/admin/edit/VenueEdit";
+import { GoogleMapsProvider } from '@/components/providers/GoogleMapsProvider';
+import { useParams } from "next/navigation";
 
-// Define the props for the page component
-interface VenueEditPageProps {
-  params: Promise<{
-    venueid: string;
-  }>;
-}
+export default function VenueEditPage() {
+  // Use the useParams hook to get the venueid parameter
+  const params = useParams();
+  const venueid = params?.venueid as string;
 
-export default function VenueEditPage({ params }: VenueEditPageProps) {
-  // Properly unwrap the params using React.use()
-  const resolvedParams = use(params);
-  return <VenueEdit venueId={resolvedParams.venueid} />;
+  // If creating a new venue (no venueid), wrap with GoogleMapsProvider
+  if (venueid === "new") {
+    return (
+      <GoogleMapsProvider autoLoad={true}>
+        <VenueEdit />
+      </GoogleMapsProvider>
+    );
+  }
+
+  // Otherwise, editing existing venue
+  return <VenueEdit venueId={venueid} />;
 }

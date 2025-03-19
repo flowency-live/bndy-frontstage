@@ -196,9 +196,9 @@ export default function ArtistProfilePage() {
     
     // Convert social links to the required format
     const socialMediaURLs: SocialMediaURL[] = Object.entries(socialLinks)
-      .filter(([_, url]) => url.trim() !== "")
+      .filter(([, url]) => url.trim() !== "")
       .map(([platform, url]) => ({
-        platform: platform as any,
+        platform: platform as "website" | "facebook" | "instagram" | "spotify" | "youtube" | "x",
         url: url.trim()
       }));
     
@@ -250,7 +250,7 @@ export default function ArtistProfilePage() {
       <div className="container mx-auto py-12 px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Artist Not Found</h1>
-          <p className="mt-4">The artist you're looking for doesn't exist or has been removed.</p>
+          <p className="mt-4">The artist you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Link href="/" className="text-[var(--primary)] hover:underline mt-4 inline-block">
             Return Home
           </Link>
@@ -261,9 +261,9 @@ export default function ArtistProfilePage() {
 
   // Create social media URLs array for the header
   const headerSocialMediaURLs = Object.entries(socialLinks)
-    .filter(([_, url]) => url.trim() !== "")
+    .filter(([, url]) => url.trim() !== "")
     .map(([platform, url]) => ({
-      platform: platform as any,
+      platform: platform as "website" | "facebook" | "instagram" | "spotify" | "youtube" | "x",
       url
     }));
 
@@ -307,7 +307,7 @@ export default function ArtistProfilePage() {
         
         {/* Edit Form */}
         {isEditing && (
-  <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1">
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-[var(--foreground)] mb-1">
                 Description
@@ -473,13 +473,13 @@ export default function ArtistProfilePage() {
 
         {/* Event Info Overlay */}
         {selectedEvent && (
-        <EventInfoOverlay
-                 events={[selectedEvent]}
-                 isOpen={showEventOverlay}
-                 onClose={() => {
-                   setShowEventOverlay(false);
-                   setSelectedEvent(null);
-                 }}
+          <EventInfoOverlay
+            events={[selectedEvent]}
+            isOpen={showEventOverlay}
+            onClose={() => {
+              setShowEventOverlay(false);
+              setSelectedEvent(null);
+            }}
             position="list"
           />
         )}

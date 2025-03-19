@@ -1,13 +1,12 @@
 // src/components/overlays/VenueInfoOverlay.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react"; // removed { useState }
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
   Building,
   Globe,
-  ExternalLink,
   Share2,
   Phone,
   Mail,
@@ -15,6 +14,7 @@ import {
   Instagram,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Venue, SocialMediaURL } from "@/lib/types";
 import { getDirectionsUrl } from "@/lib/utils/mapLinks";
 
@@ -31,8 +31,6 @@ export default function VenueInfoOverlay({
   onClose,
   position = "map",
 }: VenueInfoOverlayProps) {
-  const [error, setError] = useState<string | null>(null);
-
   // Get directions URL
   const directionsUrl = getDirectionsUrl(venue);
 
@@ -49,7 +47,7 @@ export default function VenueInfoOverlay({
         console.error("Error sharing", err);
       }
     } else {
-      console.log("Web Share API not supported.");
+
     }
   };
 
@@ -88,13 +86,11 @@ export default function VenueInfoOverlay({
               >
                 <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
                   {venue.imageUrl ? (
-                    <img
+                    <Image
                       src={venue.imageUrl}
                       alt=""
                       className="object-cover w-full h-full"
-                      onError={() => {
-                        setError("Could not load venue image");
-                      }}
+                      fill
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--secondary-translucent)]">

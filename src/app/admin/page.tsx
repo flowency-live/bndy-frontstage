@@ -1,20 +1,13 @@
 // /app/admin/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/context/AuthContext";
 import { VenuesTable } from "@/components/admin/VenuesTable";
 import { ArtistsTable } from "@/components/admin/ArtistsTable";
 import { EventsTable } from "@/components/admin/EventsTable";
-import EventImporter from "@/components/admin/EventImporter";
+//import EventImporter from "@/components/admin/EventImporter";
 
 export default function AdminPage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <div className="container mx-auto p-4">
@@ -41,7 +34,7 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="importer">
-  <EventImporter />
+ 
 </TabsContent>
 
       </Tabs>

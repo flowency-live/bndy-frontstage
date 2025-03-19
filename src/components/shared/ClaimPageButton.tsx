@@ -1,10 +1,8 @@
-// src/components/shared/ClaimPageButton.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
 
 interface ClaimPageButtonProps {
   type: 'artist' | 'venue';
@@ -83,7 +81,7 @@ export default function ClaimPageButton({ type, id }: ClaimPageButtonProps) {
     <div className="mt-8 border-t border-[var(--foreground)]/10 pt-4 text-center text-sm">
       {claimSuccess ? (
         <div className="text-green-500 py-2">
-          Congratulations! You've successfully claimed this {type} page. You can now edit its content.
+          Congratulations! You&apos;ve successfully claimed this {type} page. You can now edit its content.
         </div>
       ) : (
         <>

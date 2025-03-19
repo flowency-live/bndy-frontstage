@@ -1,11 +1,8 @@
-// src/components/filters/EventQuickFilterButton.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Filter } from "lucide-react";
 import { useEvents } from "@/context/EventsContext";
 import { getFormattedDateRange, DateRangeFilter } from '@/lib/utils/date-filter-utils';
 
-
-// Define filter options
 const filters = [
   { label: "Today", value: "today" },
   { label: "This Week", value: "thisWeek" },
@@ -14,13 +11,7 @@ const filters = [
   { label: "Next Weekend", value: "nextWeekend" },
 ];
 
-// Date range calculation function
-// Updated getDateRangeForFilter function
-
 function getDateRangeForFilter(filter: string) {
-  // For debugging, uncomment this line
-  // debugDateFilters();
-  
   return getFormattedDateRange(filter as DateRangeFilter);
 }
 
@@ -29,28 +20,8 @@ export function MapViewEventsFilter() {
   const [selectedFilter, setSelectedFilter] = useState("today"); // Default to today
   const { setDateRange } = useEvents();
 
-  // Add detailed debugging
-  useEffect(() => {
-    handleFilterSelect(selectedFilter);
-  }, []);
-  
-  const handleFilterSelect = (filter: string) => {
-    // Update the state first
-    setSelectedFilter(filter);
-    
-    // Get date range
-    const { startDate, endDate } = getDateRangeForFilter(filter);
-    
-    // IMPORTANT: Use the filter parameter here, not the selectedFilter state
-    // as state updates are asynchronous
-    handleFilterChange(filter, startDate, endDate);
-    setIsExpanded(false);
-  };
-  
-  // Convert date range to context's expected format
-  const handleFilterChange = (filter: string, startDate: string, endDate: string) => {
-
-    // Map the filter values to the format expected by EventsContext
+  // Wrap the filter change logic in useCallback so it's stable.
+  const handleFilterChange = useCallback((filter: string) => {
     const filterMap: Record<string, string> = {
       "today": "today",
       "thisWeek": "thisWeek",
@@ -58,15 +29,25 @@ export function MapViewEventsFilter() {
       "nextWeek": "nextWeek",
       "nextWeekend": "nextWeekend"
     };
-    
     const mappedFilter = filterMap[filter] || "today";
-    
-    // Set the date range in the context
     setDateRange(mappedFilter);
-  };
+  }, [setDateRange]);
+
+  // Wrap handleFilterSelect in useCallback.
+  const handleFilterSelect = useCallback((filter: string) => {
+    setSelectedFilter(filter);
+    getDateRangeForFilter(filter); // (Optional side effect)
+    handleFilterChange(filter);
+    setIsExpanded(false);
+  }, [handleFilterChange]);
+
+  // Call once on mount with the default filter "today"
+  useEffect(() => {
+    handleFilterSelect("today");
+  }, [handleFilterSelect]);
 
   return (
-    <div className="fixed bottom-10 left-4 z-50 flex flex-col items-center">
+    <div className="fixed bottom-10 left-4 z-50 flex flex-col items-center" style={{ pointerEvents: 'auto' }}>
       {isExpanded && (
         <div className="flex flex-col space-y-2 mb-2 transition-all duration-300">
           {filters
@@ -82,7 +63,6 @@ export function MapViewEventsFilter() {
             ))}
         </div>
       )}
-
       <button
         className="bg-[var(--primary)] hover:opacity-90 text-white rounded-full px-6 py-3 shadow-lg flex items-center"
         onClick={() => setIsExpanded(!isExpanded)}

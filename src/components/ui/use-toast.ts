@@ -46,10 +46,11 @@ export function useToast() {
 
   // Clean up timeouts on unmount
   useEffect(() => {
+    const currentToastTimeouts = toastTimeoutsRef.current;
+  
     return () => {
-      toastTimeoutsRef.current.forEach((timeout) => {
-        clearTimeout(timeout);
-      });
+      currentToastTimeouts.forEach(clearTimeout);
+      currentToastTimeouts.clear();
     };
   }, []);
 

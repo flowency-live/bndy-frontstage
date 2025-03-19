@@ -6,7 +6,6 @@ import { ArrowLeft, Building, Music, MapPin, Globe, Ticket } from "lucide-react"
 import { FaFacebook, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa";
 import { XIcon } from "@/components/ui/icons/XIcon";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Artist,
   Venue,
@@ -14,9 +13,10 @@ import {
   SocialPlatform,
   getSocialMediaURLs,
 } from "@/lib/types";
-import { useViewToggle } from "@/context/ViewToggleContext";
+// Removed unused import: useViewToggle
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 // Social media brand colors for hover effects
 const SOCIAL_COLORS: Record<SocialPlatform, string> = {
@@ -34,15 +34,15 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const avatarVariants = {
   hidden: {
     scale: 0.8,
-    opacity: 0
+    opacity: 0,
   },
   visible: {
     scale: 1,
@@ -50,15 +50,15 @@ const avatarVariants = {
     transition: {
       type: "spring",
       stiffness: 200,
-      damping: 20
-    }
-  }
+      damping: 20,
+    },
+  },
 };
 
 const itemVariants = {
   hidden: {
     opacity: 0,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
@@ -66,9 +66,9 @@ const itemVariants = {
     transition: {
       type: "spring",
       stiffness: 100,
-      damping: 15
-    }
-  }
+      damping: 15,
+    },
+  },
 };
 
 interface VADetailHeaderProps {
@@ -89,7 +89,6 @@ export default function VADetailHeader({
   onProfileImageUpdate,
 }: VADetailHeaderProps) {
   const router = useRouter();
-  const { isDarkMode } = useViewToggle();
   const isVenue = type === "venue";
   const isArtist = type === "artist";
 
@@ -102,7 +101,8 @@ export default function VADetailHeader({
 
   // Get social media URLs using the shared helper function.
   // Use override URLs if provided (for edit mode)
-  const socialMediaURLs: SocialMediaURL[] = overrideSocialMediaURLs || getSocialMediaURLs(item);
+  const socialMediaURLs: SocialMediaURL[] =
+    overrideSocialMediaURLs || getSocialMediaURLs(item);
 
   // Look for Facebook and Instagram URLs.
   const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
@@ -113,66 +113,43 @@ export default function VADetailHeader({
   const primaryColorClass = isVenue ? "text-cyan-500" : "text-[var(--primary)]";
   const primaryBgClass = isVenue ? "bg-cyan-500/10" : "bg-[var(--primary)]/10";
 
-  // For edit mode, maintain local state for name and description.
+  // For edit mode, maintain local state for name.
   const [name, setName] = useState(item.name);
 
   // Get venue address if applicable
-  const venueAddress = isVenue && 'address' in item ? item.address : null;
-  const venuePostcode = isVenue && 'postcode' in item ? item.postcode : null;
+  const venueAddress = isVenue && "address" in item ? item.address : null;
+  const venuePostcode = isVenue && "postcode" in item ? item.postcode : null;
 
   // Get artist genres if applicable
-  const artistGenres = isArtist && 'genres' in item ? item.genres : null;
+  const artistGenres = isArtist && "genres" in item ? item.genres : null;
 
-  //DEBUG BASK
-  useEffect(() => {
-    if (item.id === 'AfEtyU0MUaasfdcXrkxU') { // Bask venue ID
-      console.log("BASK VENUE FULL DATA:", JSON.stringify(item, null, 2));
-      console.log("BASK SOCIAL URLS:", JSON.stringify(socialMediaURLs, null, 2));
+  // Determine if the item is ticketed.
+  const isTicketed =
+    isVenue && "standardTicketed" in item && Boolean(item.standardTicketed);
 
-      // Check the specific Facebook URL that's causing problems
-      const fbURL = socialMediaURLs.find(s => s.platform === 'facebook')?.url;
-      console.log("BASK FB URL:", fbURL);
-
-      // If using a URL constructor, let's see what we get
-      try {
-        if (fbURL) {
-          const url = new URL(fbURL);
-          console.log("BASK FB URL PARTS:", {
-            protocol: url.protocol,
-            hostname: url.hostname,
-            pathname: url.pathname,
-            search: url.search,
-            hash: url.hash
-          });
-        }
-      } catch (e) {
-        console.error("BASK FB URL parsing error:", e);
-      }
-    }
-  }, [item, socialMediaURLs]);
-
+  // DEBUG BASK
 
 
   useEffect(() => {
-    console.log("Item updated:", item);
+
     setName(item.name);
     if ("profileImageUrl" in item) {
-      console.log("Setting profile image:", item.profileImageUrl);
+
       setProfileImageUrl(item.profileImageUrl || "");
     }
   }, [item]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
-    onChange && onChange("name", e.target.value);
+    if (onChange) {
+      onChange("name", e.target.value);
+    }
   };
 
   const handleProfilePictureFetched = (url: string) => {
-    console.log("Profile picture fetched:", url);
+
     setProfileImageUrl(url);
     setHasFetched(true);
-
-    // Update the parent component if callback is provided
     if (onProfileImageUpdate) {
       onProfileImageUpdate(url);
     }
@@ -222,19 +199,23 @@ export default function VADetailHeader({
           {/* Avatar with animation */}
           <motion.div
             variants={avatarVariants}
-            className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-xl"
+            className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-xl relative"
             style={{
-              backgroundColor: isVenue ? "var(--secondary-translucent)" : "var(--primary-translucent)",
-              boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)"
+              backgroundColor: isVenue
+                ? "var(--secondary-translucent)"
+                : "var(--primary-translucent)",
+              boxShadow:
+                "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             }}
           >
             {profileImageUrl ? (
-              <img
+              <Image
                 src={profileImageUrl}
                 alt=""
-                className="object-cover w-full h-full"
+                fill
+                className="object-cover"
                 onError={() => {
-                  console.log("Profile image failed to load; reverting to icon.");
+    
                   setProfileImageUrl("");
                   setHasFetched(true);
                 }}
@@ -248,7 +229,6 @@ export default function VADetailHeader({
                 )}
               </div>
             )}
-            {/* Mount the fetcher only once if no image is set */}
             {!profileImageUrl && !hasFetched && (
               <ProfilePictureFetcher
                 facebookUrl={fbURL}
@@ -279,7 +259,8 @@ export default function VADetailHeader({
                 <div className="flex items-center mt-2">
                   <MapPin className="w-4 h-4 mr-1 text-[var(--secondary)]" />
                   <span className="text-sm text-[var(--foreground)]/70">
-                    {venueAddress}{venuePostcode ? `, ${venuePostcode}` : ""}
+                    {venueAddress}
+                    {venuePostcode ? `, ${venuePostcode}` : ""}
                   </span>
                 </div>
               ) : isArtist && artistGenres && artistGenres.length > 0 ? (
@@ -294,7 +275,7 @@ export default function VADetailHeader({
                   ))}
                 </div>
               ) : null}
-              {isVenue && !isEditing && 'standardTicketed' in item && item.standardTicketed && (
+              {isTicketed && !isEditing && (
                 <div className="flex items-center mt-2">
                   <Ticket className="w-4 h-4 mr-1 text-[var(--secondary)]" />
                   <span className="text-sm font-medium text-[var(--secondary)]">

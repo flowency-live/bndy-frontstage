@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getArtistById, createArtist, updateArtist } from "@/lib/services/artist-service";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GENRES } from "@/lib/constants";
-import Script from "next/script";
+import { GoogleMapsProvider, useGoogleMaps } from "@/components/providers/GoogleMapsProvider";
 
 // Fallback genres if GENRES is not defined in constants
 const FALLBACK_GENRES = [
@@ -58,7 +58,7 @@ const UK_CITIES = [
   "Stoke-on-Trent", "Stockport", "Bath", "York", "Aberdeen"
 ];
 
-export function ArtistEdit({ artistId }: ArtistEditProps) {
+function ArtistEditContent({ artistId }: ArtistEditProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -67,8 +67,9 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
   const [locationPredictions, setLocationPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
-  const [googleMapsError, setGoogleMapsError] = useState(false);
+  
+  // Use the GoogleMapsProvider hook
+  const { isLoaded: googleMapsLoaded, isError: googleMapsError, loadGoogleMaps } = useGoogleMaps();
   
   const locationRef = useRef<HTMLDivElement>(null);
   const placesServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
@@ -83,40 +84,6 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
     socialMediaURLs: [],
   });
 
-  // Handle Google Maps API load
-  const handleGoogleMapsLoad = () => {
-    console.log("Google Maps API loaded");
-    setGoogleMapsLoaded(true);
-    try {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        console.log("Creating AutocompleteService");
-        placesServiceRef.current = new window.google.maps.places.AutocompleteService();
-      } else {
-        console.warn("Google Maps Places library not available");
-        setGoogleMapsError(true);
-      }
-    } catch (error) {
-      console.error("Error initializing Google Maps:", error);
-      setGoogleMapsError(true);
-    }
-  };
-
-  // Handle Google Maps API error
-  const handleGoogleMapsError = () => {
-    console.error("Failed to load Google Maps API");
-    setGoogleMapsError(true);
-    setGoogleMapsLoaded(false);
-  };
-  
-  // Check if Google Maps is already loaded
-  useEffect(() => {
-    if (window.google && window.google.maps && window.google.maps.places) {
-      console.log("Google Maps already loaded");
-      setGoogleMapsLoaded(true);
-      placesServiceRef.current = new window.google.maps.places.AutocompleteService();
-    }
-  }, []);
-
   // Fetch artist data if editing an existing artist
   const fetchArtist = useCallback(async () => {
     if (!artistId || fetchingRef.current || dataFetched) return;
@@ -125,11 +92,11 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
     setIsLoading(true);
     
     try {
-      console.log("Fetching artist with ID:", artistId);
+  
       const artistData = await getArtistById(artistId);
       
       if (artistData) {
-        console.log("Artist data received:", artistData);
+
         setArtist(artistData);
         if (artistData.location) {
           setLocationQuery(artistData.location);
@@ -160,6 +127,27 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
   useEffect(() => {
     fetchArtist();
   }, [fetchArtist]);
+
+  // Initialize Google Places Service when Google Maps is loaded
+  useEffect(() => {
+    if (googleMapsLoaded && !placesServiceRef.current) {
+      try {
+  
+        placesServiceRef.current = new google.maps.places.AutocompleteService();
+      } catch (error) {
+        console.error("Error initializing Google Maps Places service:", error);
+      }
+    }
+  }, [googleMapsLoaded]);
+  
+  // Load Google Maps if needed for location search
+  useEffect(() => {
+    if (locationQuery.trim().length >= 2 && !googleMapsLoaded && !googleMapsError) {
+      loadGoogleMaps().catch(error => {
+        console.error("Error loading Google Maps:", error);
+      });
+    }
+  }, [locationQuery, googleMapsLoaded, googleMapsError, loadGoogleMaps]);
   
   // Filter locations based on input (fallback if Google Maps fails)
   useEffect(() => {
@@ -168,7 +156,7 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
       const filtered = UK_CITIES.filter(city => 
         city.toLowerCase().includes(query)
       );
-      console.log("Filtered UK cities:", filtered.length);
+    
       setFilteredLocations(filtered);
       setShowLocationDropdown(filtered.length > 0);
     }
@@ -199,42 +187,36 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
       if (!placesServiceRef.current) {
         try {
           if (window.google && window.google.maps && window.google.maps.places) {
-            console.log("Creating AutocompleteService in query effect");
+       
             placesServiceRef.current = new window.google.maps.places.AutocompleteService();
           } else {
             console.warn("Google Maps Places library not available in query effect");
-            setGoogleMapsError(true);
             return;
           }
         } catch (error) {
           console.error("Error creating AutocompleteService:", error);
-          setGoogleMapsError(true);
           return;
         }
       }
       
-      console.log("Querying Places API with:", locationQuery);
       
       placesServiceRef.current.getPlacePredictions({
         input: locationQuery,
         types: ['(cities)'],
         componentRestrictions: { country: 'gb' }
       }, (results, status) => {
-        console.log("Places API response status:", status);
+
         
         if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-          console.log("Places API returned results:", results.length);
           setLocationPredictions(results);
           setShowLocationDropdown(true);
         } else {
           setLocationPredictions([]);
           if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-            console.log("Places API returned zero results");
             setShowLocationDropdown(false);
           } else {
             console.warn("Google Places API issue:", status);
             // If there's an issue with Places API, fall back to local filtering
-            setGoogleMapsError(true);
             
             // Apply fallback filter
             const query = locationQuery.toLowerCase();
@@ -402,15 +384,6 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Load Google Maps API script */}
-      <Script
-        id="google-maps-script"
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
-        onLoad={handleGoogleMapsLoad}
-        onError={handleGoogleMapsError}
-        strategy="beforeInteractive"
-      />
-      
       <div className="flex items-center mb-6">
         <Link href="/admin">
           <Button variant="outline" size="sm" className="mr-4">
@@ -475,30 +448,22 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
                     {showLocationDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-background rounded-md shadow-lg border border-border">
                         {/* Show fallback UK cities if Google Maps failed or if there are filtered locations */}
-                        {(googleMapsError || filteredLocations.length > 0) && (
-                          <>
-                            {filteredLocations.length > 0 ? (
-                              <ScrollArea className="max-h-60">
-                                {filteredLocations.map((location, index) => (
-                                  <div
-                                    key={index}
-                                    className="p-3 border-b border-border hover:bg-accent cursor-pointer"
-                                    onClick={() => selectLocation(location)}
-                                  >
-                                    {location}
-                                  </div>
-                                ))}
-                              </ScrollArea>
-                            ) : (
-                              <div className="p-3 text-center text-muted-foreground">
-                                No locations found
+                        {(googleMapsError || !googleMapsLoaded) && filteredLocations.length > 0 && (
+                          <ScrollArea className="max-h-60">
+                            {filteredLocations.map((location, index) => (
+                              <div
+                                key={index}
+                                className="p-3 border-b border-border hover:bg-accent cursor-pointer"
+                                onClick={() => selectLocation(location)}
+                              >
+                                {location}
                               </div>
-                            )}
-                          </>
+                            ))}
+                          </ScrollArea>
                         )}
                         
                         {/* Show Google Places predictions if available */}
-                        {!googleMapsError && (
+                        {googleMapsLoaded && !googleMapsError && (
                           <>
                             {locationPredictions.length > 0 ? (
                               <ScrollArea className="max-h-60">
@@ -649,4 +614,13 @@ export function ArtistEdit({ artistId }: ArtistEditProps) {
       </Card>
     </div>
   );
-} 
+}
+
+// Main export that wraps the content with the GoogleMapsProvider
+export function ArtistEdit(props: ArtistEditProps) {
+  return (
+    <GoogleMapsProvider>
+      <ArtistEditContent {...props} />
+    </GoogleMapsProvider>
+  );
+}

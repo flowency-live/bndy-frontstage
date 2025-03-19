@@ -103,7 +103,11 @@ const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttribu
 TableCaption.displayName = "TableCaption";
 
 // Filtering and Sorting logic
-export function DataTable<T extends Record<string, any>>({ data, columns, className, ...props }: { data: T[], columns: { key: keyof T, label: string, sortable?: boolean }[], className?: string }) {
+export function DataTable<T extends object>({ data, columns, className, ...props }: { 
+  data: T[], 
+  columns: { key: keyof T, label: string, sortable?: boolean }[], 
+  className?: string 
+}) {
   const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: "asc" | "desc" } | null>(null);
   const [filterQuery, setFilterQuery] = useState("");
 
@@ -144,7 +148,7 @@ export function DataTable<T extends Record<string, any>>({ data, columns, classN
           {sortedAndFilteredData.map((item, index) => (
             <TableRow key={index}>
               {columns.map((col) => (
-                <TableCell key={col.key as string}>{item[col.key]}</TableCell>
+                <TableCell key={col.key as string}>{String(item[col.key])}</TableCell>
               ))}
             </TableRow>
           ))}

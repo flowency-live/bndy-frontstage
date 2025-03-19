@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ChevronLeft } from 'lucide-react';
 import { EventSection } from './EventSection';
 import { TicketSection } from './TicketSection';

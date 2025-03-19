@@ -54,7 +54,6 @@ export function DateStep({ form, onComplete }: DateStepProps) {
             : (conflict.type === 'venue' ? 'venue' : 'artist')
         }));
 
-        console.log("Typed Conflicts:", typedConflicts);
         setConflicts(typedConflicts);
         setHasBlockingConflict(fullMatchConflict);
         form.setValue('dateConflicts', typedConflicts);

@@ -1,15 +1,15 @@
-// src/components/ListView.tsx - Updated to wrap selectedEvent in an array for the overlay
+// src/components/ListView.tsx - Updated to resolve lint errors
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useEvents } from "@/context/EventsContext";
-import { ChevronDown, ChevronRight, Search, X, MapPin } from "lucide-react";
+import { Search, X, MapPin } from "lucide-react";
 import { EventCard } from "./listview/EventCard";
 import { EventRow } from "./listview/EventRow";
 import LocationSelector from "./filters/LocationSelector";
 import EventInfoOverlay from "./overlays/EventInfoOverlay";
 import { EventSectionHeader } from "./listview/EventSectionHeader";
-import { Event } from "@/lib/types";
+import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
@@ -24,7 +24,7 @@ export default function ListView() {
   } = useEvents();
 
   const [expandedSections, setExpandedSections] = useState<string[]>(['today']);
-  const [groupedEvents, setGroupedEvents] = useState<Record<string, any[]>>({});
+  const [groupedEvents, setGroupedEvents] = useState<Record<string, Event[]>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [tempRadius, setTempRadius] = useState(radius);
   const [searchResults, setSearchResults] = useState<{
@@ -102,9 +102,9 @@ export default function ListView() {
 
     return events.filter(event => {
       if (searchResults.type === 'artist') {
-        return event.name.toLowerCase().includes(searchResults.name?.toLowerCase() || '');
+        return searchResults.name && event.name.toLowerCase().includes(searchResults.name.toLowerCase());
       } else if (searchResults.type === 'venue') {
-        return event.venueName.toLowerCase().includes(searchResults.name?.toLowerCase() || '');
+        return searchResults.name && event.venueName.toLowerCase().includes(searchResults.name.toLowerCase());
       }
       return false;
     });
@@ -112,7 +112,6 @@ export default function ListView() {
 
   // Group events by date category
   useEffect(() => {
-
     if (!filteredEvents.length) {
       setGroupedEvents({
         'today': [],
@@ -125,7 +124,7 @@ export default function ListView() {
       return;
     }
 
-    const grouped: Record<string, any[]> = {
+    const grouped: Record<string, Event[]> = {
       'today': [],
       'tomorrow': [],
       'thisWeek': [],
@@ -293,7 +292,6 @@ export default function ListView() {
           {/* Location selector and radius on same line */}
           <div className="flex flex-row items-center gap-2">
             <LocationSelector />
-
             <div className="flex flex-1 items-center space-x-2">
               <span className="text-sm whitespace-nowrap">Radius: {tempRadius} miles</span>
               <input
@@ -316,7 +314,7 @@ export default function ListView() {
       <div className="flex-1 overflow-y-auto px-2 sm:px-4 pb-20">
         {noSearchResults ? (
           <div className="text-center py-10">
-            <p className="text-lg text-[var(--foreground)]">No matches found for "{searchTerm}"</p>
+            <p className="text-lg text-[var(--foreground)]">No matches found for &quot;{searchTerm}&quot;</p>
             <button
               onClick={() => setSearchTerm('')}
               className="mt-4 px-4 py-2 bg-[var(--primary)] text-white rounded hover:opacity-90"
@@ -389,7 +387,7 @@ export default function ListView() {
                           <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
                               <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Date & Time
+                                Date &amp; Time
                               </th>
                               <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Event

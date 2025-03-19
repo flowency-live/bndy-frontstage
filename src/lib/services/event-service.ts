@@ -344,7 +344,9 @@ export async function checkEventConflicts({
   date, 
   isOpenMic 
 }: { 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   venue: any, 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   artists: any[], 
   date: Date, 
   isOpenMic: boolean 
@@ -363,8 +365,7 @@ export async function checkEventConflicts({
       ...doc.data()
     })) as Event[];
 
-    console.log(`Found ${existingEvents.length} events on ${dateStr}`);
-    
+   // eslint-disable-next-line prefer-const
     let conflicts: { type: string; name: string; existingEvent: Event }[] = [];
     let fullMatchConflict = false;
     
@@ -374,10 +375,9 @@ export async function checkEventConflicts({
         id => artists.some(a => a.id === id)
       );
 
-      console.log(`Checking event ${existingEvent.id}: venueMatch=${venueMatch}, artistMatch=${artistMatch}, isOpenMic=${isOpenMic}`);
-      
+     
       if (venueMatch) {
-        console.log(`Pushing venue conflict for event ${existingEvent.id}`);
+
         conflicts.push({
           type: "venue",
           name: venue.name,
@@ -389,7 +389,7 @@ export async function checkEventConflicts({
         const conflictingArtist = artists.find(
           a => existingEvent.artistIds.includes(a.id)
         );
-        console.log(`Pushing artist conflict for event ${existingEvent.id}: ${conflictingArtist?.name}`);
+   
         conflicts.push({
           type: "artist",
           name: conflictingArtist?.name || "Unknown Artist",
@@ -400,7 +400,7 @@ export async function checkEventConflicts({
       if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
           (!isOpenMic && venueMatch && artistMatch)) {
         fullMatchConflict = true;
-        console.log(`Exact duplicate found for event ${existingEvent.id}`);
+
         conflicts.push({
           type: "exact_duplicate",
           name: "This event already exists!",
@@ -409,7 +409,7 @@ export async function checkEventConflicts({
       }
     });
     
-    console.log("Final conflicts array:", conflicts);
+
     return { conflicts, fullMatchConflict };
   } catch (error) {
     console.error("Error checking for conflicts:", error);

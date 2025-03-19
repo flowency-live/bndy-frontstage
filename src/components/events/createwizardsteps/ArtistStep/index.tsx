@@ -25,8 +25,7 @@ export function ArtistStep({
     multipleMode,
     onToggleMultipleMode,
     onArtistSelect,
-    onNext,
-    onBack
+    onNext
 }: ArtistStepProps) {
     const [searchResults, setSearchResults] = useState<Artist[]>([]);
     const [loading, setLoading] = useState(false);

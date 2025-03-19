@@ -1,5 +1,5 @@
 // src/lib/services/artist-service.ts - Combined implementation
-import { collection, doc, getDoc, getDocs, query, where, updateDoc, addDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
 import { Artist, ArtistMember } from "@/lib/types";

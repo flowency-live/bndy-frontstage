@@ -95,7 +95,7 @@ function RegisterContent() {
 
       {claimType && (
         <div className="bg-[var(--primary)]/10 border border-[var(--primary)] text-[var(--foreground)] px-4 py-2 rounded-lg mb-6">
-          <p>By registering, you'll be able to claim and manage this {claimType === 'artist' ? 'artist' : 'venue'} page.</p>
+          <p>By registering, you&apos;ll be able to claim and manage this {claimType === 'artist' ? 'artist' : 'venue'} page.</p>
         </div>
       )}
 

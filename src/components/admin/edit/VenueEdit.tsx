@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import { Venue, SocialMediaURL, SocialPlatform } from "@/lib/types";
 import Link from "next/link";
 import { ArrowLeft, Plus, Trash2, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useGoogleMaps } from '@/components/providers/GoogleMapsProvider';
 import {
   getVenueById,
   createVenue,
@@ -51,14 +52,14 @@ type VenueEditProps = {
 export function VenueEdit({ venueId }: VenueEditProps) {
   const router = useRouter();
   const { toast } = useToast();
+
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Venue[]>([]);
   const [allVenues, setAllVenues] = useState<Venue[]>([]);
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
-  const googleScriptLoadedRef = useRef(false);
-  const venueDataLoaded = useRef(false);
+
+  // Use Google Maps hook at top-level
+  const { isLoaded: googleMapsLoaded, loadGoogleMaps } = useGoogleMaps();
 
   const [venue, setVenue] = useState<Partial<Venue>>({
     name: "",
@@ -74,42 +75,12 @@ export function VenueEdit({ venueId }: VenueEditProps) {
 
   // Initialize Google Maps API - only if creating a new venue
   useEffect(() => {
-    // Only load the script if it's not already loaded and we're in create mode
-    if (!venueId && !googleScriptLoadedRef.current) {
-      if (window.google && window.google.maps) {
-        console.log("Google Maps already loaded");
-        setGoogleMapsLoaded(true);
-        return;
-      }
-
-      console.log("Loading Google Maps script");
-
-      // Set up the callback function that will be called when the script loads
-      window.initGoogleMaps = () => {
-        console.log("Google Maps initialized");
-        setGoogleMapsLoaded(true);
-      };
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`;
-      script.async = true;
-      script.defer = true;
-      script.onerror = () => {
-        console.error("Failed to load Google Maps API");
-      };
-
-      document.head.appendChild(script);
-      googleScriptLoadedRef.current = true;
-      setGoogleScriptLoaded(true);
+    if (!venueId && !googleMapsLoaded) {
+      loadGoogleMaps().catch(error => {
+        console.error("Error loading Google Maps:", error);
+      });
     }
-
-    // Cleanup
-    return () => {
-      if (window.initGoogleMaps) {
-        delete window.initGoogleMaps;
-      }
-    };
-  }, [venueId]);
+  }, [venueId, googleMapsLoaded, loadGoogleMaps]);
 
   // Fetch venue data if editing an existing venue
   useEffect(() => {
@@ -120,7 +91,8 @@ export function VenueEdit({ venueId }: VenueEditProps) {
     }
 
     // Prevent refetching if we already have data
-    if (venueDataLoaded.current) {
+    let venueDataLoaded = false;
+    if (venueDataLoaded) {
       return;
     }
 
@@ -129,9 +101,8 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       try {
         const venueData = await getVenueById(venueId);
         if (venueData) {
-          console.log("Venue data loaded:", venueData);
           setVenue(venueData);
-          venueDataLoaded.current = true;
+          venueDataLoaded = true;
         } else {
           toast({
             title: "Venue not found",
@@ -285,6 +256,7 @@ export function VenueEdit({ venueId }: VenueEditProps) {
       } else {
         // Create new venue - OMIT the ID field completely
         const { id, ...venueWithoutId } = venue;
+        void id; // Mark 'id' as used to avoid an unused variable warning
         await createVenue(venueWithoutId as Omit<Venue, "id" | "createdAt" | "updatedAt">);
 
         toast({

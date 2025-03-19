@@ -15,6 +15,7 @@ export interface VenueData {
  */
 export function isIOS(): boolean {
   if (typeof navigator === "undefined") return false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 

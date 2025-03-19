@@ -91,7 +91,7 @@ export function DateSelect({ date, onSelect, className, conflicts }: DateSelectP
                 <ul className="mt-1 text-sm text-muted-foreground">
                   {conflicts.map((conflict, index) => (
                     <li key={index}>
-                      {conflict.type === 'venue' ? 'Venue' : 'Artist'} {conflict.name} has event "{conflict.existingEvent.name}" at {conflict.existingEvent.startTime}
+                      {conflict.type === 'venue' ? 'Venue' : 'Artist'} {conflict.name} has event &quot;{conflict.existingEvent.name}&quot; at {conflict.existingEvent.startTime}
                     </li>
                   ))}
                 </ul>
