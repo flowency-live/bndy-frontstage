@@ -107,14 +107,26 @@ export async function getAllVenues(): Promise<Venue[]> {
  */
 export async function getAllVenuesForMap(): Promise<Venue[]> {
   try {
-    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Venue));
+    const response = await fetch('https://icjzboi3c7.execute-api.eu-west-2.amazonaws.com/prod/api/venues');
+    if (!response.ok) {
+      throw new Error(`API responded with ${response.status}: ${response.statusText}`);
+    }
+    const venues = await response.json();
+    return venues as Venue[];
   } catch (error) {
-    console.error("Error fetching venues for map:", error);
-    throw error;
+    console.error("Error fetching venues for map from API:", error);
+    // Fallback to Firestore if API fails
+    try {
+      console.log("Falling back to Firestore for map venues...");
+      const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      } as Venue));
+    } catch (firestoreError) {
+      console.error("Firestore fallback also failed for map venues:", firestoreError);
+      throw error;
+    }
   }
 }
 
