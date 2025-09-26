@@ -16,6 +16,7 @@ export async function getEvents(
 ): Promise<Event[]> {
   if (!db) return [];
 
+  const firestore = db;
   try {
 
     if (!userLocation) {
@@ -23,8 +24,6 @@ export async function getEvents(
       return [];
     }
 
-    const firestore = db;
-    // Create query - order by date, filter to future events
     const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
 
@@ -36,7 +35,7 @@ export async function getEvents(
     );
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     let events = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -44,40 +43,32 @@ export async function getEvents(
         ...data,
       } as Event;
     });
-    
 
-    // Apply distance filter if we have user location
+
     if (userLocation) {
-     
-      // First, calculate distances for all events
+
       const eventsWithDistance = events.map(event => {
         if (!event.location || !event.location.lat || !event.location.lng) {
           return { ...event, distance: null };
         }
-        
+
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lng,
           event.location.lat,
           event.location.lng
         );
-        
+
         return { ...event, distance };
       });
-      
-       
-      // Apply radius filter
+
+
       events = eventsWithDistance.filter(event => {
-        // Skip events with no location
         if (!event.location) return false;
-        
-        // Skip events with invalid location
         if (!event.distance) return false;
-        
-        // Include only events within radius
         return event.distance <= radius;
       });
-      
+
     }
 
     return events;
@@ -91,9 +82,11 @@ export async function getEvents(
  * Get all events without distance filtering
  */
 export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[]> {
+  if (!db) return [];
+
+  const firestore = db;
   try {
-    // Create query - order by date, filter to future events
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
 
     const eventsQuery = query(
@@ -103,7 +96,7 @@ export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[
     );
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     const events = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -123,18 +116,20 @@ export async function getAllEvents(dateStart: Date = new Date()): Promise<Event[
  * Get events for a specific artist
  */
 export async function getEventsForArtist(
-  artistId: string, 
+  artistId: string,
   includeWhereNotMainArtist: boolean = false,
   dateStart: Date = new Date()
 ): Promise<Event[]> {
+  if (!db) return [];
+
+  const firestore = db;
   try {
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
-    
+
     let eventsQuery;
 
     if (includeWhereNotMainArtist) {
-      // Get events where artist is anywhere in the artistIds array
       eventsQuery = query(
         eventsRef,
         where('artistIds', 'array-contains', artistId),
@@ -142,8 +137,6 @@ export async function getEventsForArtist(
         orderBy('date', 'asc')
       );
     } else {
-      // Get events where this is the main artist (first in the array or single artist)
-      // For this simplified version, we'll just get all events and filter in JS
       eventsQuery = query(
         eventsRef,
         where('date', '>=', dateFilter),
@@ -152,17 +145,16 @@ export async function getEventsForArtist(
     }
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     let events = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     } as Event));
 
-    // If not including where not main artist, filter for events where this is the first artist
     if (!includeWhereNotMainArtist) {
-      events = events.filter(event => 
-        event.artistIds && 
-        event.artistIds.length > 0 && 
+      events = events.filter(event =>
+        event.artistIds &&
+        event.artistIds.length > 0 &&
         event.artistIds[0] === artistId
       );
     }
@@ -181,10 +173,13 @@ export async function getEventsForVenue(
   venueId: string,
   dateStart: Date = new Date()
 ): Promise<Event[]> {
+  if (!db) return [];
+
+  const firestore = db;
   try {
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
-    
+
     const eventsQuery = query(
       eventsRef,
       where('venueId', '==', venueId),
@@ -193,7 +188,7 @@ export async function getEventsForVenue(
     );
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -208,13 +203,16 @@ export async function getEventsForVenue(
  * Get a single event by ID
  */
 export async function getEventById(eventId: string): Promise<Event | null> {
+  if (!db) return null;
+
+  const firestore = db;
   try {
-    const eventDoc = await getDoc(doc(db, COLLECTIONS.EVENTS, eventId));
-    
+    const eventDoc = await getDoc(doc(firestore, COLLECTIONS.EVENTS, eventId));
+
     if (!eventDoc.exists()) {
       return null;
     }
-    
+
     return {
       id: eventDoc.id,
       ...eventDoc.data(),
@@ -229,17 +227,20 @@ export async function getEventById(eventId: string): Promise<Event | null> {
  * Create a new event
  */
 export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
+  if (!db) throw new Error("Firestore not configured");
+
+  const firestore = db;
   try {
     const now = new Date().toISOString();
-    
+
     const newEvent = {
       ...event,
       createdAt: now,
       updatedAt: now
     };
-    
-    const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), newEvent);
-    
+
+    const docRef = await addDoc(collection(firestore, COLLECTIONS.EVENTS), newEvent);
+
     return {
       id: docRef.id,
       ...newEvent,
@@ -254,10 +255,13 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
  * Update an event
  */
 export async function updateEvent(event: Event): Promise<void> {
+  if (!db) throw new Error("Firestore not configured");
+
+  const firestore = db;
   try {
     const { id, ...eventData } = event;
-    
-    await updateDoc(doc(db, COLLECTIONS.EVENTS, id), {
+
+    await updateDoc(doc(firestore, COLLECTIONS.EVENTS, id), {
       ...eventData,
       updatedAt: new Date().toISOString()
     });
@@ -271,8 +275,11 @@ export async function updateEvent(event: Event): Promise<void> {
  * Delete an event
  */
 export async function deleteEvent(eventId: string): Promise<void> {
+  if (!db) throw new Error("Firestore not configured");
+
+  const firestore = db;
   try {
-    await deleteDoc(doc(db, COLLECTIONS.EVENTS, eventId));
+    await deleteDoc(doc(firestore, COLLECTIONS.EVENTS, eventId));
   } catch (error) {
     console.error(`Error deleting event ${eventId}:`, error);
     throw error;
@@ -286,11 +293,14 @@ export async function getEventsForDateRange(
   startDate: Date,
   endDate: Date
 ): Promise<Event[]> {
+  if (!db) return [];
+
+  const firestore = db;
   try {
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
-    
+
     const eventsQuery = query(
       eventsRef,
       where('date', '>=', startDateStr),
@@ -299,7 +309,7 @@ export async function getEventsForDateRange(
     );
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -314,10 +324,13 @@ export async function getEventsForDateRange(
  * Get events for a specific date
  */
 export async function getEventsForDate(date: Date): Promise<Event[]> {
+  if (!db) return [];
+
+  const firestore = db;
   try {
     const dateStr = date.toISOString().split('T')[0];
-    
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const eventsQuery = query(
       eventsRef,
       where('date', '==', dateStr),
@@ -325,7 +338,7 @@ export async function getEventsForDate(date: Date): Promise<Event[]> {
     );
 
     const snapshot = await getDocs(eventsQuery);
-    
+
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -338,26 +351,27 @@ export async function getEventsForDate(date: Date): Promise<Event[]> {
 
 /**
  * Checks for event conflicts based on venue, artist, and date.
- * @param {Object} params - Object containing venue, artists, and date.
- * @returns {Promise<{ conflicts: Array, fullMatchConflict: boolean }>} - The detected conflicts and a boolean indicating a full conflict.
  */
-export async function checkEventConflicts({ 
-  venue, 
-  artists, 
-  date, 
-  isOpenMic 
-}: { 
+export async function checkEventConflicts({
+  venue,
+  artists,
+  date,
+  isOpenMic
+}: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  venue: any, 
+  venue: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  artists: any[], 
-  date: Date, 
-  isOpenMic: boolean 
+  artists: any[],
+  date: Date,
+  isOpenMic: boolean
 }) {
+  if (!db) return { conflicts: [], fullMatchConflict: false };
+
+  const firestore = db;
   const dateStr = date.toISOString().split('T')[0];
-  
+
   try {
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const q = query(
       eventsRef,
       where('date', '==', dateStr)
@@ -371,14 +385,14 @@ export async function checkEventConflicts({
    // eslint-disable-next-line prefer-const
     let conflicts: { type: string; name: string; existingEvent: Event }[] = [];
     let fullMatchConflict = false;
-    
+
     existingEvents.forEach(existingEvent => {
       const venueMatch = existingEvent.venueId === venue?.id;
       const artistMatch = !isOpenMic && existingEvent.artistIds?.some(
         id => artists.some(a => a.id === id)
       );
 
-     
+
       if (venueMatch) {
 
         conflicts.push({
@@ -387,20 +401,20 @@ export async function checkEventConflicts({
           existingEvent
         });
       }
-      
+
       if (!isOpenMic && artistMatch) {
         const conflictingArtist = artists.find(
           a => existingEvent.artistIds.includes(a.id)
         );
-   
+
         conflicts.push({
           type: "artist",
           name: conflictingArtist?.name || "Unknown Artist",
           existingEvent
         });
       }
-      
-      if ((isOpenMic && venueMatch && existingEvent.isOpenMic) || 
+
+      if ((isOpenMic && venueMatch && existingEvent.isOpenMic) ||
           (!isOpenMic && venueMatch && artistMatch)) {
         fullMatchConflict = true;
 
@@ -411,7 +425,7 @@ export async function checkEventConflicts({
         });
       }
     });
-    
+
 
     return { conflicts, fullMatchConflict };
   } catch (error) {
