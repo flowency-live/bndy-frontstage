@@ -53,17 +53,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isGodMode, setIsGodMode] = useState(false);
 
+  // If Firebase is not configured, mark as not loading and return early
+  if (!auth || !db) {
+    if (isLoading) {
+      setTimeout(() => setIsLoading(false), 0);
+    }
+  }
+
   // Sign in a user with email and password
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<void> => {
+    if (!auth || !db) {
+      throw new Error("Authentication is not available - Firebase not configured");
+    }
+
     try {
       // Set persistence based on rememberMe preference
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-      
+
       // Perform the sign in
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const loggedInUser = userCredential.user;
       setUser(loggedInUser);
-      
+
       // Load user profile
       const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, loggedInUser.uid));
       if (userDoc.exists()) {
@@ -79,6 +90,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out the current user
   const logout = async (): Promise<void> => {
+    if (!auth) {
+      throw new Error("Authentication is not available - Firebase not configured");
+    }
+
     try {
       await auth.signOut();
       setUser(null);
@@ -92,11 +107,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user can edit an artist
   const canEditArtist = async (artistId: string): Promise<boolean> => {
-    if (!user) return false;
-    
+    if (!user || !db) return false;
+
     // God mode users can edit all artists
     if (isGodMode) return true;
-    
+
     // Check if user is a member of this artist
     try {
       const memberDoc = await getDoc(doc(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid));
@@ -109,11 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user can edit a venue
   const canEditVenue = async (venueId: string): Promise<boolean> => {
-    if (!user) return false;
-    
+    if (!user || !db) return false;
+
     // God mode users can edit all venues
     if (isGodMode) return true;
-    
+
     // Check if user is a member of this venue
     try {
       const memberDoc = await getDoc(doc(db, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid));
@@ -127,19 +142,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Claim an artist page (become a member)
   const claimArtist = async (artistId: string): Promise<void> => {
     if (!user) throw new Error("You must be logged in to claim an artist");
-    
+    if (!db) throw new Error("Authentication is not available - Firebase not configured");
+
     try {
       // Check if the artist already has members
       const membersQuery = query(
         collection(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`)
       );
       const membersSnapshot = await getDocs(membersQuery);
-      
+
       // If artist already has members, throw an error or handle accordingly
       if (!membersSnapshot.empty) {
         throw new Error("This artist has already been claimed");
       }
-      
+
       // Add the user as an admin member of the artist
       await setDoc(doc(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid), {
         userId: user.uid,
@@ -156,19 +172,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Claim a venue page (become a member)
   const claimVenue = async (venueId: string): Promise<void> => {
     if (!user) throw new Error("You must be logged in to claim a venue");
-    
+    if (!db) throw new Error("Authentication is not available - Firebase not configured");
+
     try {
       // Check if the venue already has members
       const membersQuery = query(
         collection(db, `${COLLECTIONS.VENUES}/${venueId}/members`)
       );
       const membersSnapshot = await getDocs(membersQuery);
-      
+
       // If venue already has members, throw an error or handle accordingly
       if (!membersSnapshot.empty) {
         throw new Error("This venue has already been claimed");
       }
-      
+
       // Add the user as an admin member of the venue
       await setDoc(doc(db, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid), {
         userId: user.uid,
@@ -184,13 +201,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Effect to handle auth state changes
   useEffect(() => {
+    if (!auth || !db) {
+      setIsLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setIsLoading(true);
-      
+
       try {
         if (authUser) {
           setUser(authUser);
-          
+
           // Load user profile
           const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, authUser.uid));
           if (userDoc.exists()) {
@@ -206,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             };
-            
+
             await setDoc(doc(db, COLLECTIONS.USERS, authUser.uid), newProfile);
             setProfile(newProfile);
             setIsGodMode(false);
