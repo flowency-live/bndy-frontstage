@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Authentication is not available - Firebase not configured");
     }
 
+    const firestore = db;
     try {
       // Set persistence based on rememberMe preference
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(loggedInUser);
 
       // Load user profile
-      const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, loggedInUser.uid));
+      const userDoc = await getDoc(doc(firestore, COLLECTIONS.USERS, loggedInUser.uid));
       if (userDoc.exists()) {
         const userProfile = userDoc.data() as UserProfile;
         setProfile(userProfile);
@@ -112,9 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // God mode users can edit all artists
     if (isGodMode) return true;
 
+    const firestore = db;
     // Check if user is a member of this artist
     try {
-      const memberDoc = await getDoc(doc(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid));
+      const memberDoc = await getDoc(doc(firestore, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid));
       return memberDoc.exists();
     } catch (error) {
       console.error("Error checking artist membership:", error);
@@ -129,9 +131,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // God mode users can edit all venues
     if (isGodMode) return true;
 
+    const firestore = db;
     // Check if user is a member of this venue
     try {
-      const memberDoc = await getDoc(doc(db, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid));
+      const memberDoc = await getDoc(doc(firestore, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid));
       return memberDoc.exists();
     } catch (error) {
       console.error("Error checking venue membership:", error);
@@ -144,10 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("You must be logged in to claim an artist");
     if (!db) throw new Error("Authentication is not available - Firebase not configured");
 
+    const firestore = db;
     try {
       // Check if the artist already has members
       const membersQuery = query(
-        collection(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`)
+        collection(firestore, `${COLLECTIONS.ARTISTS}/${artistId}/members`)
       );
       const membersSnapshot = await getDocs(membersQuery);
 
@@ -157,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Add the user as an admin member of the artist
-      await setDoc(doc(db, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid), {
+      await setDoc(doc(firestore, `${COLLECTIONS.ARTISTS}/${artistId}/members`, user.uid), {
         userId: user.uid,
         email: user.email,
         role: "admin",
@@ -174,10 +178,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("You must be logged in to claim a venue");
     if (!db) throw new Error("Authentication is not available - Firebase not configured");
 
+    const firestore = db;
     try {
       // Check if the venue already has members
       const membersQuery = query(
-        collection(db, `${COLLECTIONS.VENUES}/${venueId}/members`)
+        collection(firestore, `${COLLECTIONS.VENUES}/${venueId}/members`)
       );
       const membersSnapshot = await getDocs(membersQuery);
 
@@ -187,7 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Add the user as an admin member of the venue
-      await setDoc(doc(db, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid), {
+      await setDoc(doc(firestore, `${COLLECTIONS.VENUES}/${venueId}/members`, user.uid), {
         userId: user.uid,
         email: user.email,
         role: "admin",
@@ -206,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const firestore = db;
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setIsLoading(true);
 
@@ -214,7 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(authUser);
 
           // Load user profile
-          const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, authUser.uid));
+          const userDoc = await getDoc(doc(firestore, COLLECTIONS.USERS, authUser.uid));
           if (userDoc.exists()) {
             const userProfile = userDoc.data() as UserProfile;
             setProfile(userProfile);
@@ -229,7 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               updatedAt: new Date().toISOString(),
             };
 
-            await setDoc(doc(db, COLLECTIONS.USERS, authUser.uid), newProfile);
+            await setDoc(doc(firestore, COLLECTIONS.USERS, authUser.uid), newProfile);
             setProfile(newProfile);
             setIsGodMode(false);
           }

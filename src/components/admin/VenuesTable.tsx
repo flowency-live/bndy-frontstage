@@ -49,9 +49,15 @@ export function VenuesTable() {
   }, []);
 
   const fetchVenues = async () => {
+    if (!db) {
+      setLoading(false);
+      return;
+    }
+
+    const firestore = db;
     try {
       setLoading(true);
-      const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
+      const snapshot = await getDocs(collection(firestore, COLLECTIONS.VENUES));
       const venueData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -114,9 +120,12 @@ export function VenuesTable() {
   };
 
   const handleBatchDelete = async () => {
+    if (!db) return;
+
+    const firestore = db;
     try {
       await Promise.all(
-        [...selectedVenues].map((id) => deleteDoc(doc(db, COLLECTIONS.VENUES, id)))
+        [...selectedVenues].map((id) => deleteDoc(doc(firestore, COLLECTIONS.VENUES, id)))
       );
       setSelectedVenues(new Set());
       setConfirmDelete(false);

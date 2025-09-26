@@ -49,9 +49,15 @@ export function ArtistsTable() {
   }, []);
 
   const fetchArtists = async () => {
+    if (!db) {
+      setLoading(false);
+      return;
+    }
+
+    const firestore = db;
     try {
       setLoading(true);
-      const snapshot = await getDocs(collection(db, COLLECTIONS.ARTISTS));
+      const snapshot = await getDocs(collection(firestore, COLLECTIONS.ARTISTS));
       const artistData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -112,9 +118,12 @@ export function ArtistsTable() {
   };
 
   const handleBatchDelete = async () => {
+    if (!db) return;
+
+    const firestore = db;
     try {
       await Promise.all(
-        [...selectedArtists].map((id) => deleteDoc(doc(db, COLLECTIONS.ARTISTS, id)))
+        [...selectedArtists].map((id) => deleteDoc(doc(firestore, COLLECTIONS.ARTISTS, id)))
       );
       setSelectedArtists(new Set());
       setConfirmDelete(false);

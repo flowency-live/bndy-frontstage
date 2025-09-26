@@ -60,8 +60,11 @@ export function EventsTable() {
   }, []);
 
   const loadEvents = async () => {
+    if (!db) return;
+
+    const firestore = db;
     try {
-      const snapshot = await getDocs(collection(db, COLLECTIONS.EVENTS));
+      const snapshot = await getDocs(collection(firestore, COLLECTIONS.EVENTS));
       const eventData = await Promise.all(
         snapshot.docs.map(async (docSnap) => {
           const event = { id: docSnap.id, ...docSnap.data() } as Event;
@@ -101,9 +104,12 @@ export function EventsTable() {
   };
 
   const handleBatchDelete = async () => {
+    if (!db) return;
+
+    const firestore = db;
     try {
       await Promise.all(
-        [...selectedEvents].map((id) => deleteDoc(doc(db, COLLECTIONS.EVENTS, id)))
+        [...selectedEvents].map((id) => deleteDoc(doc(firestore, COLLECTIONS.EVENTS, id)))
       );
       setSelectedEvents(new Set());
       setConfirmDelete(false);

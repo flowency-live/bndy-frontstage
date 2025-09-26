@@ -8,8 +8,8 @@ import { Artist, ArtistMember } from "@/lib/types";
  * Get an artist by ID
  */
 export async function getArtistById(artistId: string): Promise<Artist | null> {
-  if (!artistId) return null;
-  
+  if (!artistId || !db) return null;
+
   try {
     const artistDoc = await getDoc(doc(db, COLLECTIONS.ARTISTS, artistId));
     
@@ -32,9 +32,10 @@ export async function getArtistById(artistId: string): Promise<Artist | null> {
  */
 export async function updateArtist(artist: Artist): Promise<void> {
   if (!artist.id) throw new Error("Artist ID is required");
-  
+  if (!db) throw new Error("Firestore not configured");
+
   const { id, ...artistData } = artist;
-  
+
   try {
     await updateDoc(doc(db, COLLECTIONS.ARTISTS, id), {
       ...artistData,
@@ -50,6 +51,8 @@ export async function updateArtist(artist: Artist): Promise<void> {
  * Create a new artist
  */
 export async function createArtist(artist: Omit<Artist, "id" | "createdAt" | "updatedAt">): Promise<Artist> {
+  if (!db) throw new Error("Firestore not configured");
+
   try {
     const now = new Date().toISOString();
     
@@ -76,6 +79,8 @@ export async function createArtist(artist: Omit<Artist, "id" | "createdAt" | "up
  * Delete an artist
  */
 export async function deleteArtist(artistId: string): Promise<void> {
+  if (!db) throw new Error("Firestore not configured");
+
   try {
     await deleteDoc(doc(db, COLLECTIONS.ARTISTS, artistId));
   } catch (error) {
@@ -88,6 +93,8 @@ export async function deleteArtist(artistId: string): Promise<void> {
  * Get all artists
  */
 export async function getAllArtists(): Promise<Artist[]> {
+  if (!db) return [];
+
   try {
     const snapshot = await getDocs(collection(db, COLLECTIONS.ARTISTS));
     return snapshot.docs.map(doc => ({
@@ -104,7 +111,7 @@ export async function getAllArtists(): Promise<Artist[]> {
  * Search for artists in Firestore
  */
 export async function searchArtists(searchTerm: string): Promise<Artist[]> {
-  if (!searchTerm || searchTerm.length < 2) return [];
+  if (!searchTerm || searchTerm.length < 2 || !db) return [];
 
   try {
     const artistsRef = collection(db, COLLECTIONS.ARTISTS);
@@ -132,6 +139,8 @@ export async function searchArtists(searchTerm: string): Promise<Artist[]> {
  * Get artist members
  */
 export async function getArtistMembers(artistId: string): Promise<ArtistMember[]> {
+  if (!db) return [];
+
   try {
     const membersRef = collection(db, COLLECTIONS.ARTISTS, artistId, 'members');
     const snapshot = await getDocs(membersRef);
@@ -150,10 +159,12 @@ export async function getArtistMembers(artistId: string): Promise<ArtistMember[]
  * Add a member to an artist
  */
 export async function addArtistMember(
-  artistId: string, 
-  userId: string, 
+  artistId: string,
+  userId: string,
   memberData: Omit<ArtistMember, "id" | "userId" | "joinedAt">
 ): Promise<ArtistMember> {
+  if (!db) throw new Error("Firestore not configured");
+
   try {
     const membersRef = collection(db, COLLECTIONS.ARTISTS, artistId, 'members');
     
@@ -192,6 +203,8 @@ export async function updateArtistMember(
   memberId: string,
   memberData: Partial<Omit<ArtistMember, "id" | "userId" | "joinedAt">>
 ): Promise<void> {
+  if (!db) throw new Error("Firestore not configured");
+
   try {
     const memberRef = doc(db, COLLECTIONS.ARTISTS, artistId, 'members', memberId);
     await updateDoc(memberRef, memberData);
@@ -205,6 +218,8 @@ export async function updateArtistMember(
  * Remove a member from an artist
  */
 export async function removeArtistMember(artistId: string, memberId: string): Promise<void> {
+  if (!db) throw new Error("Firestore not configured");
+
   try {
     await deleteDoc(doc(db, COLLECTIONS.ARTISTS, artistId, 'members', memberId));
   } catch (error) {
@@ -217,6 +232,8 @@ export async function removeArtistMember(artistId: string, memberId: string): Pr
  * Check if user is admin of an artist
  */
 export async function isUserArtistAdmin(userId: string, artistId: string): Promise<boolean> {
+  if (!db) return false;
+
   try {
     const membersRef = collection(db, COLLECTIONS.ARTISTS, artistId, 'members');
     const q = query(membersRef, where('userId', '==', userId), where('isAdmin', '==', true));
@@ -233,6 +250,8 @@ export async function isUserArtistAdmin(userId: string, artistId: string): Promi
  * Check if user is a member of an artist
  */
 export async function isUserArtistMember(userId: string, artistId: string): Promise<boolean> {
+  if (!db) return false;
+
   try {
     const membersRef = collection(db, COLLECTIONS.ARTISTS, artistId, 'members');
     const q = query(membersRef, where('userId', '==', userId));
@@ -249,6 +268,8 @@ export async function isUserArtistMember(userId: string, artistId: string): Prom
  * Get an artist by user ID - if the user is an admin of any artist
  */
 export async function getArtistByAdminUserId(userId: string): Promise<Artist | null> {
+  if (!db) return null;
+
   try {
     // First, get all artists
     const artistsSnapshot = await getDocs(collection(db, COLLECTIONS.ARTISTS));

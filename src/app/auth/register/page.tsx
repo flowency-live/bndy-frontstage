@@ -44,6 +44,7 @@ function RegisterContent() {
 
     setIsLoading(true);
 
+    const firestore = db;
     try {
       // Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -53,7 +54,7 @@ function RegisterContent() {
       await sendEmailVerification(user);
 
       // Create user profile document
-      await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
+      await setDoc(doc(firestore, COLLECTIONS.USERS, user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: email.split('@')[0],

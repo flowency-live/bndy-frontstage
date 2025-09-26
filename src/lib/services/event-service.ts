@@ -14,15 +14,18 @@ export async function getEvents(
   dateStart: Date = new Date(),
   maxEvents: number = 100
 ): Promise<Event[]> {
+  if (!db) return [];
+
   try {
-    
+
     if (!userLocation) {
       console.warn("No location provided for radius filtering, using default");
       return [];
     }
-    
+
+    const firestore = db;
     // Create query - order by date, filter to future events
-    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
     const dateFilter = dateStart.toISOString().split('T')[0];
 
     const eventsQuery = query(
