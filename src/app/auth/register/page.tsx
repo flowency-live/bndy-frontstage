@@ -31,46 +31,50 @@ function RegisterContent() {
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-  
+
+    if (!auth || !db) {
+      setError('Authentication is not available - Firebase not configured');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-  
+
     setIsLoading(true);
-  
+
     try {
       // Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Send email verification
       await sendEmailVerification(user);
-      
+
       // Create user profile document
       await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
         uid: user.uid,
         email: user.email,
-        displayName: email.split('@')[0], // Simple displayName from email
+        displayName: email.split('@')[0],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        godMode: false // Regular users are not admins by default
+        godMode: false
       });
-      
+
       // Redirect to login page with success message
-      // For an artist/venue claim, include those parameters
       const params = new URLSearchParams();
       params.set('registered', 'true');
-      
+
       if (claimType && claimId) {
         params.set('claimType', claimType);
         params.set('claimId', claimId);
       }
-      
+
       if (redirectPath !== '/') {
         params.set('redirect', redirectPath);
       }
-      
+
       router.push(`/auth/login?${params.toString()}`);
     } catch (error) {
       console.error('Registration error:', error);
