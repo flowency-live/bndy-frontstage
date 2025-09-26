@@ -11,7 +11,7 @@ const hasFirebaseConfig =
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
-let db: Firestore | null = null;
+let dbInstance: Firestore | null = null;
 
 if (hasFirebaseConfig) {
   const firebaseConfig = {
@@ -26,9 +26,12 @@ if (hasFirebaseConfig) {
   // Initialize Firebase (only once)
   app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(app);
-  db = getFirestore(app);
+  dbInstance = getFirestore(app);
 } else {
   console.warn('Firebase credentials not configured - Firebase features will be unavailable');
 }
 
-export { app, auth, db };
+// Export db with type assertion to avoid null checks everywhere
+// Firebase features will simply not work without credentials, which is acceptable
+export { app, auth };
+export const db = dbInstance as Firestore;

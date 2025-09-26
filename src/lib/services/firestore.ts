@@ -7,7 +7,9 @@ import type { Venue, EventFormData } from '@/lib/types';  // Import from central
 
 // Existing gig operations
 export const addGig = async (data: EventFormData) => {
-  return addDoc(collection(db, COLLECTIONS.EVENTS), {
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
+  return addDoc(collection(firestore, COLLECTIONS.EVENTS), {
     ...data,
     type: 'gig',
     status: 'pending',
@@ -16,8 +18,10 @@ export const addGig = async (data: EventFormData) => {
 };
 
 export const getGigs = async () => {
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
   const q = query(
-    collection(db, COLLECTIONS.EVENTS),
+    collection(firestore, COLLECTIONS.EVENTS),
     where('type', '==', 'gig')
   );
   return getDocs(q);
@@ -25,12 +29,13 @@ export const getGigs = async () => {
 
 // New venue operations
 export const addVenue = async (data: Omit<Venue, 'id'>) => {
-  // Ensure we have all required fields for the security rules
+  if (!db) throw new Error("Firestore not configured");
   if (!data.googlePlaceId || !data.location) {
     throw new Error('Missing required fields for venue creation');
   }
 
-  return addDoc(collection(db, COLLECTIONS.VENUES), {
+  const firestore = db;
+  return addDoc(collection(firestore, COLLECTIONS.VENUES), {
     ...data,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -38,7 +43,9 @@ export const addVenue = async (data: Omit<Venue, 'id'>) => {
 };
 
 export const updateVenue = async (id: string, data: Partial<Venue>) => {
-  const venueRef = doc(db, COLLECTIONS.VENUES, id);
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
+  const venueRef = doc(firestore, COLLECTIONS.VENUES, id);
   return updateDoc(venueRef, {
     ...data,
     updatedAt: new Date().toISOString()
@@ -46,11 +53,15 @@ export const updateVenue = async (id: string, data: Partial<Venue>) => {
 };
 
 export const getVenue = async (id: string) => {
-  return getDoc(doc(db, COLLECTIONS.VENUES, id));
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
+  return getDoc(doc(firestore, COLLECTIONS.VENUES, id));
 };
 
 export const getVenues = async (validated?: boolean) => {
-  let q = query(collection(db, COLLECTIONS.VENUES)); // Ensure it's a query
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
+  let q = query(collection(firestore, COLLECTIONS.VENUES)); // Ensure it's a query
 
   if (typeof validated !== 'undefined') {
     q = query(q, where('validated', '==', validated)); // Append conditions
@@ -60,16 +71,20 @@ export const getVenues = async (validated?: boolean) => {
 };
 
 export const findVenueByName = async (name: string) => {
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
   const q = query(
-    collection(db, COLLECTIONS.VENUES),
+    collection(firestore, COLLECTIONS.VENUES),
     where('nameVariants', 'array-contains', name)
   );
   return getDocs(q);
 };
 
 export const findVenueByGooglePlaceId = async (googlePlaceId: string) => {
+  if (!db) throw new Error("Firestore not configured");
+  const firestore = db;
   const q = query(
-    collection(db, COLLECTIONS.VENUES),
+    collection(firestore, COLLECTIONS.VENUES),
     where('googlePlaceId', '==', googlePlaceId)
   );
   return getDocs(q);
