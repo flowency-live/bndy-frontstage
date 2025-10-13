@@ -30,14 +30,27 @@ export function useEventMap({ center, startDate, endDate, enabled = true }: UseE
   const geoQuery = useQuery({
     queryKey: ['/api/events/public/geo', { hashes: allHashes, startDate, endDate }],
     queryFn: async () => {
+      console.log('🔍 useEventMap: Geo query starting', {
+        center: { lat: center.lat, lng: center.lng },
+        centerHash,
+        allHashes,
+        dateRange: { startDate, endDate }
+      });
+
       // Query all 9 geohashes in parallel
       const promises = allHashes.map(async (geohash) => {
         const params = new URLSearchParams({ geohash });
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
 
-        const response = await apiRequest('GET', `/api/events/public/geo?${params.toString()}`);
+        const url = `/api/events/public/geo?${params.toString()}`;
+        console.log(`🔍 useEventMap: Querying ${url}`);
+
+        const response = await apiRequest('GET', url);
         const data = await response.json();
+
+        console.log(`✅ useEventMap: Response for ${geohash}:`, data.events?.length || 0, 'events');
+
         return data.events || [];
       });
 
@@ -51,7 +64,10 @@ export function useEventMap({ center, startDate, endDate, enabled = true }: UseE
         }
       });
 
-      return Array.from(eventMap.values());
+      const uniqueEvents = Array.from(eventMap.values());
+      console.log('🔍 useEventMap: Geo query complete -', uniqueEvents.length, 'unique events found');
+
+      return uniqueEvents;
     },
     staleTime: 5 * 60 * 1000,  // 5 min
     gcTime: 10 * 60 * 1000,
@@ -64,15 +80,30 @@ export function useEventMap({ center, startDate, endDate, enabled = true }: UseE
   const batchQuery = useQuery({
     queryKey: ['/api/events/batch', { eventIds }],
     queryFn: async () => {
-      if (!eventIds.length) return [];
+      if (!eventIds.length) {
+        console.log('⏭️ useEventMap: Skipping batch fetch - no event IDs');
+        return [];
+      }
+
+      console.log('📦 useEventMap: Batch fetching', eventIds.length, 'events');
 
       const response = await apiRequest('POST', '/api/events/batch', { eventIds });
       const data = await response.json();
+
+      console.log('✅ useEventMap: Batch fetch complete -', data.events?.length || 0, 'enriched events');
+      console.log('📦 useEventMap: Sample event:', data.events?.[0]);
+
       return data.events as Event[];
     },
     staleTime: 5 * 60 * 1000,  // 5 min (aggressive caching)
     gcTime: 10 * 60 * 1000,
     enabled: enabled && eventIds.length > 0,
+  });
+
+  console.log('🎯 useEventMap: Returning', {
+    eventCount: batchQuery.data?.length || 0,
+    isLoading: geoQuery.isLoading || batchQuery.isLoading,
+    isError: geoQuery.isError || batchQuery.isError,
   });
 
   return {
