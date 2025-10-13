@@ -48,26 +48,52 @@ export async function updateArtist(artist: Artist): Promise<void> {
 }
 
 /**
- * Create a new artist
+ * Create a new artist - Now calls DynamoDB API instead of Firebase
  */
-export async function createArtist(artist: Omit<Artist, "id" | "createdAt" | "updatedAt">): Promise<Artist> {
-  if (!db) throw new Error("Firestore not configured");
-
+export async function createArtist(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  artist: any
+): Promise<Artist> {
   try {
-    const now = new Date().toISOString();
-    
-    const newArtist = {
-      ...artist,
-      nameVariants: [artist.name],
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    const docRef = await addDoc(collection(db, COLLECTIONS.ARTISTS), newArtist);
-    
+    const response = await fetch('https://api.bndy.co.uk/api/artists/community', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: artist.name,
+        location: artist.location || '',
+        facebookUrl: artist.facebookUrl || '',
+        instagramUrl: artist.instagramUrl || '',
+        websiteUrl: artist.websiteUrl || '',
+        bio: artist.bio || artist.description || '',
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create artist');
+    }
+
+    const data = await response.json();
+
+    // Build socialMediaURLs array from individual URLs
+    const socialMediaURLs = [];
+    if (artist.websiteUrl) socialMediaURLs.push({ platform: 'website', url: artist.websiteUrl });
+    if (artist.facebookUrl) socialMediaURLs.push({ platform: 'facebook', url: artist.facebookUrl });
+    if (artist.instagramUrl) socialMediaURLs.push({ platform: 'instagram', url: artist.instagramUrl });
+
+    // Return artist in format expected by frontstage
     return {
-      id: docRef.id,
-      ...newArtist,
+      id: data.artist.id,
+      name: data.artist.name,
+      location: data.artist.location,
+      description: artist.bio || artist.description || undefined,
+      profileImageUrl: '',
+      genres: [],
+      socialMediaURLs: socialMediaURLs.length > 0 ? socialMediaURLs : [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     } as Artist;
   } catch (error) {
     console.error("Error creating artist:", error);
@@ -108,27 +134,41 @@ export async function getAllArtists(): Promise<Artist[]> {
 }
 
 /**
- * Search for artists in Firestore
+ * Search for artists - Now calls DynamoDB fuzzy search API
  */
-export async function searchArtists(searchTerm: string): Promise<Artist[]> {
-  if (!searchTerm || searchTerm.length < 2 || !db) return [];
+export async function searchArtists(searchTerm: string, location?: string): Promise<Artist[]> {
+  if (!searchTerm || searchTerm.length < 2) return [];
 
   try {
-    const artistsRef = collection(db, COLLECTIONS.ARTISTS);
-    const snapshot = await getDocs(artistsRef);
-    
-    const existingArtists = snapshot.docs
-      .filter(doc => {
-        const data = doc.data();
-        const name = data.name as string;
-        return name.toLowerCase().includes(searchTerm.toLowerCase());
-      })
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Artist[];
+    const params = new URLSearchParams({ name: searchTerm });
+    if (location) params.append('location', location);
 
-    return existingArtists;
+    const response = await fetch(
+      `https://api.bndy.co.uk/api/artists/search?${params.toString()}`
+    );
+
+    if (!response.ok) {
+      console.error('Error searching artists:', await response.text());
+      return [];
+    }
+
+    const data = await response.json();
+
+    // Transform matches to Artist format
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data.matches || []).map((match: any) => ({
+      id: match.id,
+      name: match.name,
+      location: match.location || '',
+      profileImageUrl: match.profileImageUrl || '',
+      isVerified: false,
+      genres: [],
+      socialMediaUrls: [],
+      followerCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      matchScore: match.matchScore, // Include for "Did you mean?" UI
+    })) as Artist[];
   } catch (error) {
     console.error('Error searching artists:', error);
     return [];

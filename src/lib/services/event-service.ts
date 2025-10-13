@@ -1,5 +1,5 @@
 // src/lib/services/event-service.ts - Combined implementation
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/config/firebase';
 import { COLLECTIONS } from '@/lib/constants';
 import { calculateDistance } from '@/lib/utils/geo';
@@ -224,26 +224,60 @@ export async function getEventById(eventId: string): Promise<Event | null> {
 }
 
 /**
- * Create a new event
+ * Create a new event - Now calls DynamoDB API instead of Firebase
  */
 export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
-  if (!db) throw new Error("Firestore not configured");
-
-  const firestore = db;
   try {
-    const now = new Date().toISOString();
+    // Extract first artist ID (required for community events)
+    const artistId = Array.isArray(event.artistIds) && event.artistIds.length > 0
+      ? event.artistIds[0]
+      : null;
 
-    const newEvent = {
-      ...event,
-      createdAt: now,
-      updatedAt: now
-    };
+    if (!artistId) {
+      throw new Error('Artist ID is required to create event');
+    }
 
-    const docRef = await addDoc(collection(firestore, COLLECTIONS.EVENTS), newEvent);
+    const response = await fetch('https://api.bndy.co.uk/api/events/community', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        artistId: artistId,
+        venueId: event.venueId,
+        date: event.date,
+        startTime: event.startTime,
+        endTime: event.endTime || '00:00',
+        title: event.name,
+        price: event.price || null,
+        ticketUrl: event.ticketUrl || null,
+        notes: event.notes || null,
+      }),
+    });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create event');
+    }
+
+    const data = await response.json();
+
+    // Return event in format expected by frontstage
     return {
-      id: docRef.id,
-      ...newEvent,
+      id: data.event.id,
+      name: data.event.title,
+      date: data.event.date,
+      startTime: data.event.startTime,
+      endTime: data.event.endTime,
+      venueId: data.event.venueId,
+      artistIds: [data.event.artistId],
+      price: event.price || null,
+      ticketUrl: event.ticketUrl || null,
+      notes: event.notes || null,
+      location: event.location || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      verifiedByArtist: false, // Community events start unverified
     } as Event;
   } catch (error) {
     console.error('Error creating event:', error);

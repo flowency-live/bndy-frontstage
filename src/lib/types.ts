@@ -92,6 +92,7 @@ export interface Event {
   };
   description?: string;
   //ticketPrice?: string;
+  price?: string | null; // Ticket price for community events
   ticketed?: boolean; // Whether the event is ticketed
   ticketinformation?: string; // Free-text details about tickets
   ticketUrl?: string; // URL to purchase tickets
@@ -102,6 +103,8 @@ export interface Event {
   updatedAt: string;
   isOpenMic?: boolean;
   postcode?: string; // For event location postcode
+  verifiedByArtist?: boolean; // Whether artist has verified this community event
+  notes?: string | null; // Additional notes for community events
 }
 
 // Filter Types

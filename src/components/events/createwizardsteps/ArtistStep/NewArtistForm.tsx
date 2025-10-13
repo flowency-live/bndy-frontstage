@@ -16,6 +16,7 @@ interface NewArtistFormProps {
 
 interface NewArtistData {
     name: string;
+    location: string;  // Required field to prevent duplicates
     facebookUrl?: string;
     instagramUrl?: string;
     websiteUrl?: string;
@@ -28,7 +29,8 @@ export function NewArtistForm({
     existingArtists 
 }: NewArtistFormProps) {
     const [formData, setFormData] = useState<NewArtistData>({
-        name: initialName
+        name: initialName,
+        location: ''
     });
     const [loading, setLoading] = useState(false);
 
@@ -37,7 +39,10 @@ export function NewArtistForm({
     );
 
     const handleSubmit = async () => {
-        if (!formData.name) return;
+        if (!formData.name || !formData.location) {
+            alert('Artist name and location are required');
+            return;
+        }
 
         const exactMatch = existingArtists.find(
             artist => artist.name.toLowerCase() === formData.name.toLowerCase()
@@ -68,6 +73,17 @@ export function NewArtistForm({
                 className="mb-2"
                 autoFocus
             />
+
+            <Input
+                placeholder="Location (e.g., Manchester, UK) *"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="mb-2"
+            />
+
+            <p className="text-xs text-muted-foreground mb-2">
+                Location is required to prevent duplicate artists
+            </p>
 
             {similarArtists.length > 0 && (
                 <div className="p-3 bg-yellow-500/10 rounded-md border border-yellow-500/50">
@@ -114,7 +130,7 @@ export function NewArtistForm({
                 </Button>
                 <Button
                     onClick={handleSubmit}
-                    disabled={!formData.name || loading}
+                    disabled={!formData.name || !formData.location || loading}
                     className="flex-1 bg-[var(--primary)] text-white"
                 >
                     {loading ? 'Creating...' : 'Save New Artist'}
