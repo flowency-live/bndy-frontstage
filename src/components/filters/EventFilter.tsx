@@ -19,7 +19,7 @@ const EventFilter = forwardRef<EventFilterRef, EventFilterProps>(({
   onFilterChange,
   showRadiusFilter = true
 }, ref) => {
-  const { radius, setRadius, allEvents } = useEvents();
+  const { radius, setRadius } = useEvents();
   const { mapMode } = useViewToggle();
   const [searchTerm, setSearchTerm] = useState('');
   const [tempRadius, setTempRadius] = useState(radius);
@@ -73,7 +73,7 @@ const EventFilter = forwardRef<EventFilterRef, EventFilterProps>(({
     };
   }, [searchTerm]);
 
-  // Search logic - handle both venue and artist searches
+  // Search logic - simplified for viewport-based searching
   useEffect(() => {
     if (!debouncedSearchTerm || debouncedSearchTerm.length < MIN_SEARCH_LENGTH) {
       if (onFilterChange) onFilterChange(null, null);
@@ -88,42 +88,10 @@ const EventFilter = forwardRef<EventFilterRef, EventFilterProps>(({
       return;
     }
 
-    // In events mode, search for both artists and venues
-    // Find matching artists
-    const artistMatches = allEvents.filter(event =>
-      event.name.toLowerCase().includes(term)
-    );
-
-    // Find matching venues
-    const venueMatches = allEvents.filter(event =>
-      event.venueName.toLowerCase().includes(term)
-    );
-
-    // Check if the artist/venue exists in the system regardless of date filter
-    const artistExistsInSystem = allEvents.some(event => 
-      event.name.toLowerCase().includes(term)
-    );
-    
-    const venueExistsInSystem = allEvents.some(event => 
-      event.venueName.toLowerCase().includes(term)
-    );
-
-    // Prioritize artist matches over venue matches
-    if (artistMatches.length > 0) {
-      // Pass the search term instead of the ID
-      if (onFilterChange) onFilterChange('artist', term, true);
-    } else if (venueMatches.length > 0) {
-      // Pass the search term instead of the ID
-      if (onFilterChange) onFilterChange('venue', term, true);
-    } else {
-      // Pass information about whether the artist/venue exists but has no events in current date range
-      if (onFilterChange) onFilterChange(
-        'nomatch', 
-        term, 
-        artistExistsInSystem || venueExistsInSystem
-      );
-    }
-  }, [debouncedSearchTerm, onFilterChange, allEvents, mapMode]);
+    // In events mode, pass search term as 'artist' by default
+    // The Map component will handle the actual filtering
+    if (onFilterChange) onFilterChange('artist', term, true);
+  }, [debouncedSearchTerm, onFilterChange, mapMode]);
 
   // Apply radius when slider interaction ends
   const applyRadius = () => {

@@ -13,15 +13,22 @@ import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
+  // TODO: Implement ListView with location+radius based queries
+  // ListView needs a different data fetching strategy than MapView
+  // MapView uses viewport-based geohash queries
+  // ListView needs location+radius queries OR a new /api/events/nearby endpoint
+
   const {
-    events,
-    loading,
-    error,
-    refreshEvents,
     radius,
     setRadius,
     selectedLocation
   } = useEvents();
+
+  // Temporary stub - events loading not yet implemented for ListView
+  const events: Event[] = [];
+  const loading = false;
+  const error = null;
+  const refreshEvents = async () => {};
 
   const [expandedSections, setExpandedSections] = useState<string[]>(['today']);
   const [groupedEvents, setGroupedEvents] = useState<Record<string, Event[]>>({});

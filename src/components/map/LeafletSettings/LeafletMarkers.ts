@@ -47,21 +47,15 @@ export function createEventMarkerIcon(count?: number): L.DivIcon {
 }
 
 /**
- * Creates a custom marker icon for venues with event count.
+ * Creates a custom marker icon for venues (simplified - no event count).
  */
-export function createVenueMarkerIcon(eventCount: number): L.DivIcon {
+export function createVenueMarkerIcon(): L.DivIcon {
   // Hot pink color for venue markers
   const color = '#FF1493';
-  
-  // Only show count if there are multiple events
-  const showCount = eventCount > 1;
-  
-  // Fade venues with no events
-  const faded = eventCount === 0;
-  
-  // Create the SVG for the marker
-  const markerSvg = createMapPinSVG(color, showCount ? eventCount : undefined, faded);
-  
+
+  // Create the SVG for the marker (no count, no fading)
+  const markerSvg = createMapPinSVG(color, undefined, false);
+
   return L.divIcon({
     className: 'venue-marker',
     html: markerSvg,

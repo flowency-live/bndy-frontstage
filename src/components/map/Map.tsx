@@ -1,11 +1,12 @@
 // src/components/Map/Map.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
-import { getAllVenuesForMap } from "@/lib/services/venue-service";
+import { useVenues } from "@/hooks/useVenues";
+import { useEventMap } from "@/hooks/useEventMap";
 import type { Event, Venue } from "@/lib/types";
 import { isDateInRange, DateRangeFilter } from "@/lib/utils/date-filter-utils";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
@@ -74,11 +75,69 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
 
   const {
     userLocation,
-    allEvents,
-    loading: eventsLoading,
     dateRange,
   } = useEvents();
   const { isDarkMode, mapMode } = useViewToggle();
+
+  // Map center tracking for event queries
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(
+    userLocation || { lat: 53.0, lng: -2.0 } // UK center as default
+  );
+
+  // Calculate date range for queries
+  const { startDate, endDate } = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    switch (dateRange) {
+      case "today": {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return { startDate: today.toISOString().split('T')[0], endDate: tomorrow.toISOString().split('T')[0] };
+      }
+      case "thisWeek": {
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(endOfWeek.getDate() + (6 - today.getDay()));
+        return { startDate: today.toISOString().split('T')[0], endDate: endOfWeek.toISOString().split('T')[0] };
+      }
+      case "thisWeekend": {
+        const saturday = new Date(today);
+        saturday.setDate(today.getDate() + (6 - today.getDay() || 7));
+        const monday = new Date(saturday);
+        monday.setDate(saturday.getDate() + 2);
+        return { startDate: saturday.toISOString().split('T')[0], endDate: monday.toISOString().split('T')[0] };
+      }
+      case "nextWeek": {
+        const startNextWeek = new Date(today);
+        startNextWeek.setDate(today.getDate() + (7 - today.getDay()));
+        const endNextWeek = new Date(startNextWeek);
+        endNextWeek.setDate(startNextWeek.getDate() + 6);
+        return { startDate: startNextWeek.toISOString().split('T')[0], endDate: endNextWeek.toISOString().split('T')[0] };
+      }
+      case "nextWeekend": {
+        const todayDay = now.getDay();
+        const daysUntilNextFriday = todayDay === 0 ? 5 : todayDay === 1 ? 11 : todayDay === 2 ? 10 : todayDay === 3 ? 9 : todayDay === 4 ? 8 : todayDay === 5 ? 7 : 6;
+        const nextFriday = new Date(today);
+        nextFriday.setDate(now.getDate() + daysUntilNextFriday);
+        const nextSunday = new Date(nextFriday);
+        nextSunday.setDate(nextFriday.getDate() + 2);
+        return { startDate: nextFriday.toISOString().split('T')[0], endDate: nextSunday.toISOString().split('T')[0] };
+      }
+      default:
+        return { startDate: undefined, endDate: undefined };
+    }
+  }, [dateRange]);
+
+  // Fetch events for current map viewport
+  const { events: allEvents, isLoading: eventsLoading } = useEventMap({
+    center: mapCenter || { lat: 53.0, lng: -2.0 },
+    startDate,
+    endDate,
+    enabled: mapMode === "events" && !!mapCenter,
+  });
+
+  // Fetch all venues (only when in venue mode)
+  const { data: venues = [], isLoading: venuesLoading } = useVenues();
 
   const [leafletInitialized, setLeafletInitialized] = useState(false);
   const leafletRef = useRef<typeof L | null>(null);
@@ -96,9 +155,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   const [showEventOverlay, setShowEventOverlay] = useState(false);
   const [showVenueOverlay, setShowVenueOverlay] = useState(false);
 
-  // Venues and filtered data
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [venuesLoading, setVenuesLoading] = useState(false);
+  // Filtered data
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const [eventLocationGroups, setEventLocationGroups] = useState<Record<string, Event[]>>({});
@@ -161,24 +218,12 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     };
   }, [onClearSearch]);
 
-  // Load venues in venue mode
+  // Update map center when user location changes
   useEffect(() => {
-    if (mapMode === "venues" && venues.length === 0 && !venuesLoading) {
-      const fetchVenues = async () => {
-        setVenuesLoading(true);
-        try {
-          const venueData = await getAllVenuesForMap();
-          setVenues(venueData);
-          setFilteredVenues(venueData);
-        } catch (error) {
-          console.error("Error fetching venues:", error);
-        } finally {
-          setVenuesLoading(false);
-        }
-      };
-      fetchVenues();
+    if (userLocation) {
+      setMapCenter(userLocation);
     }
-  }, [mapMode, venues.length, venuesLoading]);
+  }, [userLocation]);
 
   // Apply filters to events
   useEffect(() => {
@@ -351,7 +396,6 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
             <VenueMarkerLayer
               map={mapRef.current}
               venues={filteredVenues}
-              events={allEvents}
               onVenueClick={handleVenueClick}
               markersRef={venueMarkersRef}
               clusterRef={venueClusterRef}
