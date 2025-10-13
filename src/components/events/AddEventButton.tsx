@@ -1,4 +1,4 @@
-// src/components/events/AddEventButton.tsx
+// src/components/events/AddEventButton.tsx - Public community event creation
 import { Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/sheet";
 import { useState } from 'react';
 import { BaseEventWizard } from './BaseEventWizard';
-import { useAuth } from '@/context/AuthContext';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface AddEventButtonProps {
@@ -20,11 +19,8 @@ interface AddEventButtonProps {
 
 export function AddEventButton({ map }: AddEventButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isGodMode } = useAuth();
 
-  // Only show the button if the user is an admin
-  if (!isGodMode) return null;
-
+  // Public button - no auth required for community event creation
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -42,8 +38,8 @@ export function AddEventButton({ map }: AddEventButtonProps) {
           Add Event
         </Button>
       </SheetTrigger>
-      <SheetContent 
-        side="left" 
+      <SheetContent
+        side="left"
         className="w-[400px] sm:w-[540px] bg-background border-r border-border safari-modal"
       >
         <VisuallyHidden>
