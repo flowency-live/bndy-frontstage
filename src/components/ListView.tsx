@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useEvents } from "@/context/EventsContext";
+import { useEventsForList } from "@/hooks/useEventsForList";
 import { Search, X, MapPin } from "lucide-react";
 import { EventCard } from "./listview/EventCard";
 import { EventRow } from "./listview/EventRow";
@@ -13,22 +14,37 @@ import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
-  // TODO: Implement ListView with location+radius based queries
-  // ListView needs a different data fetching strategy than MapView
-  // MapView uses viewport-based geohash queries
-  // ListView needs location+radius queries OR a new /api/events/nearby endpoint
-
   const {
     radius,
     setRadius,
     selectedLocation
   } = useEvents();
 
-  // Temporary stub - events loading not yet implemented for ListView
-  const events: Event[] = [];
-  const loading = false;
-  const error = null;
-  const refreshEvents = async () => {};
+  // Calculate date range for query (same logic as Map.tsx)
+  const { startDate, endDate } = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // For ListView, we always fetch ALL future events (not filtered by dateRange)
+    // The dateRange from context is used for UI filtering only
+    return {
+      startDate: today.toISOString().split('T')[0],
+      endDate: undefined  // Fetch all future events
+    };
+  }, []);
+
+  // Fetch all public events with location+radius filtering
+  const { events, isLoading: loading, isError, error } = useEventsForList({
+    location: selectedLocation,
+    radius,
+    startDate,
+    endDate,
+    enabled: true
+  });
+
+  const refreshEvents = async () => {
+    // TanStack Query handles refetching automatically
+  };
 
   const [expandedSections, setExpandedSections] = useState<string[]>(['today']);
   const [groupedEvents, setGroupedEvents] = useState<Record<string, Event[]>>({});
@@ -246,10 +262,10 @@ export default function ListView() {
     );
   }
 
-  if (error) {
+  if (isError && error) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <div className="text-red-500">{error}</div>
+        <div className="text-red-500">{error instanceof Error ? error.message : 'Failed to load events'}</div>
         <button
           className="mt-4 px-4 py-2 bg-[var(--primary)] text-white rounded"
           onClick={() => refreshEvents()}
