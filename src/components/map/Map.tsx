@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
 import { useVenues } from "@/hooks/useVenues";
-import { useEventMap } from "@/hooks/useEventMap";
+import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
 import type { Event, Venue } from "@/lib/types";
 import { isDateInRange, DateRangeFilter } from "@/lib/utils/date-filter-utils";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
@@ -79,11 +79,6 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   } = useEvents();
   const { isDarkMode, mapMode } = useViewToggle();
 
-  // Map center tracking for event queries
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(
-    userLocation || { lat: 53.0, lng: -2.0 } // UK center as default
-  );
-
   // Calculate date range for queries
   const { startDate, endDate } = useMemo(() => {
     const now = new Date();
@@ -128,12 +123,11 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     }
   }, [dateRange]);
 
-  // Fetch events for current map viewport
-  const { events: allEvents, isLoading: eventsLoading } = useEventMap({
-    center: mapCenter || { lat: 53.0, lng: -2.0 },
+  // Fetch ALL public events in date range (matches venue pattern)
+  const { data: allEvents = [], isLoading: eventsLoading } = useAllPublicEvents({
     startDate,
     endDate,
-    enabled: mapMode === "events" && !!mapCenter,
+    enabled: mapMode === "events",
   });
 
   // Fetch all venues (only when in venue mode)
@@ -218,12 +212,6 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     };
   }, [onClearSearch]);
 
-  // Update map center when user location changes
-  useEffect(() => {
-    if (userLocation) {
-      setMapCenter(userLocation);
-    }
-  }, [userLocation]);
 
   // Apply filters to events
   useEffect(() => {
