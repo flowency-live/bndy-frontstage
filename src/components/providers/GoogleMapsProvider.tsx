@@ -32,6 +32,17 @@ export function GoogleMapsProvider({ children, autoLoad = false }: GoogleMapsPro
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get API key - must be done in component to ensure it's available at runtime
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+  useEffect(() => {
+    if (!apiKey) {
+      console.error('[GoogleMaps] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not defined');
+    } else {
+      console.log('[GoogleMaps] API key loaded:', apiKey.substring(0, 10) + '...');
+    }
+  }, [apiKey]);
+
   // Check if Google Maps is already available
   useEffect(() => {
     if (initGoogleMapsCheck()) {
@@ -119,10 +130,10 @@ export function GoogleMapsProvider({ children, autoLoad = false }: GoogleMapsPro
       {children}
       
       {/* Load Google Maps script if we're loading or script is already requested */}
-      {(isLoading || scriptLoaded) && !isLoaded && !isError && (
+      {(isLoading || scriptLoaded) && !isLoaded && !isError && apiKey && (
         <Script
           id="google-maps-script"
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+          src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`}
           onLoad={handleScriptLoad}
           onError={handleScriptError}
           strategy="lazyOnload"
