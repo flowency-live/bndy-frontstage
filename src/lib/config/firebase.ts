@@ -1,4 +1,8 @@
 // src/lib/config/firebase.ts
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// Firebase is intentionally unconfigured (no env vars set) and will NEVER be used again
+// Event data, artist data, and venue data are in DynamoDB via api.bndy.co.uk
+// DO NOT FIX, DO NOT EXTEND, DO NOT USE - This file exists only for legacy admin tool compatibility
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";

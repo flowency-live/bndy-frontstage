@@ -1,4 +1,8 @@
 //src\lib\services\firestore.ts
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// This file contains LEGACY admin tool functions only - DO NOT USE for new features
+// Use venue-service.ts (DynamoDB) for all venue operations
+// DO NOT FIX, DO NOT EXTEND - This file exists only for legacy compatibility
 import { db } from '@/lib/config/firebase';
 import { COLLECTIONS } from '@/lib/constants';
 import { collection, addDoc, getDocs, query, where, getDoc, doc, updateDoc } from 'firebase/firestore';

@@ -1,4 +1,8 @@
-// src/lib/services/artist-service.ts - Combined implementation
+// src/lib/services/artist-service.ts
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// This file contains LEGACY admin tool functions only - DO NOT USE for new features
+// createArtist() and searchArtists() already migrated to DynamoDB (api.bndy.co.uk/api/artists)
+// All other functions are deprecated admin tools - DO NOT FIX, DO NOT EXTEND
 import { collection, doc, getDoc, getDocs, query, where, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";

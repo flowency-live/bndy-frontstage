@@ -1,4 +1,9 @@
-// src/lib/services/event-service.ts - Combined implementation
+// src/lib/services/event-service.ts
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// This file contains LEGACY admin tool functions only - DO NOT USE for new features
+// Public event data uses DynamoDB API (see hooks/usePublicEvents.ts)
+// createEvent() already migrated to DynamoDB (api.bndy.co.uk/api/events/community)
+// All other functions are deprecated admin tools - DO NOT FIX, DO NOT EXTEND
 import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/config/firebase';
 import { COLLECTIONS } from '@/lib/constants';

@@ -1,14 +1,18 @@
 // src/context/AuthContext.tsx
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// This auth context is for LEGACY ADMIN TOOLS ONLY - DO NOT USE for new features
+// Firebase Auth is intentionally unconfigured and will NEVER be used again
+// DO NOT FIX, DO NOT EXTEND - This exists only for legacy admin tool compatibility
 'use client';
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { 
-  onAuthStateChanged, 
-  User, 
-  setPersistence, 
-  browserSessionPersistence, 
+import {
+  onAuthStateChanged,
+  User,
+  setPersistence,
+  browserSessionPersistence,
   signInWithEmailAndPassword,
-  browserLocalPersistence, 
+  browserLocalPersistence,
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/config/firebase";

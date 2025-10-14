@@ -1,4 +1,7 @@
 // /components/admin/EventsTable.tsx
+// ⚠️ NEVER USE FIREBASE AGAIN - ALL DATA IS IN DYNAMODB
+// This admin table is LEGACY and will be replaced - DO NOT USE or extend
+// DO NOT FIX Firebase errors - this is intentionally deprecated
 "use client";
 
 import { useState, useEffect } from "react";

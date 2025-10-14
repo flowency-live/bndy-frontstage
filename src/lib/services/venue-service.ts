@@ -31,9 +31,8 @@ export async function getVenueById(venueId: string): Promise<Venue | null> {
 /**
  * Update a venue (Backend endpoint not implemented yet)
  */
-export async function updateVenue(venue: Venue): Promise<void> {
-  if (!venue.id) throw new Error("Venue ID is required");
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function updateVenue(_venue: Venue): Promise<void> {
   // TODO: Implement PUT /api/venues/:id on backend
   throw new Error("Update venue not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
@@ -41,7 +40,8 @@ export async function updateVenue(venue: Venue): Promise<void> {
 /**
  * Create a new venue (Backend endpoint not implemented yet)
  */
-export async function createVenue(venue: Omit<Venue, "id" | "createdAt" | "updatedAt">): Promise<Venue> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function createVenue(_venue: Omit<Venue, "id" | "createdAt" | "updatedAt">): Promise<Venue> {
   // TODO: Implement POST /api/venues on backend
   throw new Error("Create venue not implemented - backend endpoint needed: POST /api/venues");
 }
@@ -49,7 +49,8 @@ export async function createVenue(venue: Omit<Venue, "id" | "createdAt" | "updat
 /**
  * Delete a venue (Backend endpoint not implemented yet)
  */
-export async function deleteVenue(venueId: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function deleteVenue(_venueId: string): Promise<void> {
   // TODO: Implement DELETE /api/venues/:id on backend
   throw new Error("Delete venue not implemented - backend endpoint needed: DELETE /api/venues/:id");
 }
@@ -214,37 +215,28 @@ export async function getFuzzyMatchedVenues(searchTerm: string): Promise<Venue[]
 
 
 /**
- * Get venues by admin user ID (client-side filtering from all venues)
+ * Get venues by admin user ID (Not implemented - requires backend support)
  */
-export async function getVenuesByAdminUserId(userId: string): Promise<Venue[]> {
-  try {
-    const allVenues = await getAllVenues();
-    return allVenues.filter(venue => venue.adminIds?.includes(userId));
-  } catch (error) {
-    console.error("Error fetching venues by admin:", error);
-    return [];
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getVenuesByAdminUserId(_userId: string): Promise<Venue[]> {
+  // TODO: Implement backend endpoint for venue admin management
+  throw new Error("Get venues by admin not implemented - backend endpoint needed");
 }
 
 /**
- * Check if user is admin of a venue
+ * Check if user is admin of a venue (Not implemented - requires backend support)
  */
-export async function isUserVenueAdmin(userId: string, venueId: string): Promise<boolean> {
-  try {
-    const venue = await getVenueById(venueId);
-    if (!venue) return false;
-
-    return venue.adminIds?.includes(userId) || false;
-  } catch (error) {
-    console.error("Error checking venue admin status:", error);
-    return false;
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function isUserVenueAdmin(_userId: string, _venueId: string): Promise<boolean> {
+  // TODO: Implement backend endpoint for venue admin management
+  return false;
 }
 
 /**
  * Add admin to venue (Backend endpoint not implemented yet)
  */
-export async function addVenueAdmin(venueId: string, userId: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function addVenueAdmin(_venueId: string, _userId: string): Promise<void> {
   // TODO: Implement PUT /api/venues/:id on backend
   throw new Error("Add venue admin not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
@@ -252,7 +244,8 @@ export async function addVenueAdmin(venueId: string, userId: string): Promise<vo
 /**
  * Remove admin from venue (Backend endpoint not implemented yet)
  */
-export async function removeVenueAdmin(venueId: string, userId: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function removeVenueAdmin(_venueId: string, _userId: string): Promise<void> {
   // TODO: Implement PUT /api/venues/:id on backend
   throw new Error("Remove venue admin not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
