@@ -211,11 +211,15 @@ export async function getFuzzyMatchedVenues(searchTerm: string): Promise<Venue[]
   }
 
   try {
-    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
-    const allVenues = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Venue[];
+    // Use DynamoDB API for venue search
+    const response = await fetch('https://api.bndy.co.uk/api/venues');
+
+    if (!response.ok) {
+      console.error('Error fetching venues:', await response.text());
+      return [];
+    }
+
+    const allVenues = await response.json() as Venue[];
 
     // Filter by nameVariants too, if desired:
     // For each token, check if it appears in nameVariants
