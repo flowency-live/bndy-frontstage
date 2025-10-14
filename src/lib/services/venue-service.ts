@@ -1,166 +1,145 @@
-// src/lib/services/venue-service.ts - Combined implementation
-import { collection, doc, getDoc, getDocs, query, where, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/config/firebase";
-import { COLLECTIONS } from "@/lib/constants";
+// src/lib/services/venue-service.ts - DynamoDB implementation
 import { Venue } from "@/lib/types";
 import { isGoogleMapsAvailable, searchVenueWithIncreasingRadius, searchPlacesAutocomplete, getPlaceDetails, placeResultToVenue } from './places-service';
 
+const API_BASE_URL = 'https://api.bndy.co.uk';
 
 /**
- * Get a venue by ID
+ * Get a venue by ID from DynamoDB
  */
 export async function getVenueById(venueId: string): Promise<Venue | null> {
   if (!venueId) return null;
-  
+
   try {
-    const venueDoc = await getDoc(doc(db, COLLECTIONS.VENUES, venueId));
-    
-    if (!venueDoc.exists()) {
+    // Fetch all venues and find the one with matching ID
+    // (Backend doesn't have GET /api/venues/:id endpoint yet)
+    const response = await fetch(`${API_BASE_URL}/api/venues`);
+
+    if (!response.ok) {
+      console.error('Error fetching venues:', await response.text());
       return null;
     }
-    
-    return {
-      id: venueDoc.id,
-      ...venueDoc.data(),
-    } as Venue;
+
+    const venues = await response.json() as Venue[];
+    return venues.find(v => v.id === venueId) || null;
   } catch (error) {
     console.error("Error fetching venue:", error);
-    throw error;
+    return null;
   }
 }
 
 /**
- * Update a venue
+ * Update a venue (Backend endpoint not implemented yet)
  */
 export async function updateVenue(venue: Venue): Promise<void> {
   if (!venue.id) throw new Error("Venue ID is required");
-  
-  const { id, ...venueData } = venue;
-  
-  try {
-    await updateDoc(doc(db, COLLECTIONS.VENUES, id), {
-      ...venueData,
-      updatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error("Error updating venue:", error);
-    throw error;
-  }
+
+  // TODO: Implement PUT /api/venues/:id on backend
+  throw new Error("Update venue not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
 
 /**
- * Create a new venue
+ * Create a new venue (Backend endpoint not implemented yet)
  */
 export async function createVenue(venue: Omit<Venue, "id" | "createdAt" | "updatedAt">): Promise<Venue> {
-  try {
-    const now = new Date().toISOString();
-    
-    const newVenue = {
-      ...venue,
-      validated: false, // New venues need validation
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    const docRef = await addDoc(collection(db, COLLECTIONS.VENUES), newVenue);
-    
-    return {
-      id: docRef.id,
-      ...newVenue,
-    } as Venue;
-  } catch (error) {
-    console.error("Error creating venue:", error);
-    throw error;
-  }
+  // TODO: Implement POST /api/venues on backend
+  throw new Error("Create venue not implemented - backend endpoint needed: POST /api/venues");
 }
 
 /**
- * Delete a venue
+ * Delete a venue (Backend endpoint not implemented yet)
  */
 export async function deleteVenue(venueId: string): Promise<void> {
-  try {
-    await deleteDoc(doc(db, COLLECTIONS.VENUES, venueId));
-  } catch (error) {
-    console.error("Error deleting venue:", error);
-    throw error;
-  }
+  // TODO: Implement DELETE /api/venues/:id on backend
+  throw new Error("Delete venue not implemented - backend endpoint needed: DELETE /api/venues/:id");
 }
 
 /**
- * Get all venues
+ * Get all venues from DynamoDB
  */
 export async function getAllVenues(): Promise<Venue[]> {
   try {
-    const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Venue));
+    const response = await fetch(`${API_BASE_URL}/api/venues`);
+
+    if (!response.ok) {
+      console.error('Error fetching all venues:', await response.text());
+      return [];
+    }
+
+    return await response.json() as Venue[];
   } catch (error) {
     console.error("Error fetching venues:", error);
-    throw error;
+    return [];
   }
 }
 
 /**
- * Get all venues for map display
+ * Get all venues for map display from DynamoDB
  */
 export async function getAllVenuesForMap(): Promise<Venue[]> {
   try {
-    const response = await fetch('https://icjzboi3c7.execute-api.eu-west-2.amazonaws.com/prod/api/venues');
+    const response = await fetch(`${API_BASE_URL}/api/venues`);
     if (!response.ok) {
       throw new Error(`API responded with ${response.status}: ${response.statusText}`);
     }
     const venues = await response.json();
     return venues as Venue[];
   } catch (error) {
-    console.error("Error fetching venues for map from API:", error);
-    // Fallback to Firestore if API fails
-    try {
-      console.log("Falling back to Firestore for map venues...");
-      const snapshot = await getDocs(collection(db, COLLECTIONS.VENUES));
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Venue));
-    } catch (firestoreError) {
-      console.error("Firestore fallback also failed for map venues:", firestoreError);
-      throw error;
-    }
+    console.error("Error fetching venues for map from DynamoDB API:", error);
+    return [];
   }
 }
 
 /**
- * Search for venues in Firestore and Google Places
+ * Search for venues in DynamoDB and Google Places
  */
-// In venue-service.ts
 export async function searchVenues(searchTerm: string): Promise<Venue[]> {
   if (!searchTerm || searchTerm.length < 3) return [];
 
-  // 1. Firestore fuzzy search
+  // 1. DynamoDB fuzzy search (this fetches ALL venues and filters client-side)
   const existingVenues = await getFuzzyMatchedVenues(searchTerm);
   if (existingVenues.length > 0) {
     return existingVenues.map(v => ({ ...v, validated: true }));
   }
 
-  // 2. If no Firestore match, try Google Places (if available)
+  // 2. If no DynamoDB match, try Google Places (if available)
   if (isGoogleMapsAvailable()) {
     try {
       const placesResults = await searchVenueWithIncreasingRadius(searchTerm);
-      
-      // 3. Cross-check each Place against your bf_venues
-      const allBfVenues = await getAllVenues(); // or you can store them in memory
+
+      // 3. For de-duplication, fetch ALL venues from DynamoDB
+      // (We can't reuse existingVenues because getFuzzyMatchedVenues already filtered them)
+      const response = await fetch(`${API_BASE_URL}/api/venues`);
+      if (!response.ok) {
+        console.error('Error fetching all venues for de-duplication:', await response.text());
+        // If we can't de-duplicate, just return Google results
+        const now = new Date().toISOString();
+        return placesResults.map(place => ({
+          name: place.name || '',
+          address: place.formatted_address || '',
+          location: place.geometry?.location?.toJSON() || { lat: 0, lng: 0 },
+          googlePlaceId: place.place_id || '',
+          validated: false,
+          id: '',
+          createdAt: now,
+          updatedAt: now,
+        }));
+      }
+
+      const allBfVenues = await response.json() as Venue[];
+
+      // 4. Filter out Google Places that already exist in DynamoDB
       const filteredPlaces = placesResults.filter(place => {
         // a) Check googlePlaceId
         const placeIdMatch = place.place_id && allBfVenues.some(
           v => v.googlePlaceId === place.place_id
         );
-        if (placeIdMatch) return false; // skip, already in Firestore
-    
+        if (placeIdMatch) return false; // skip, already in DynamoDB
+
         // b) Or do a name+address fuzzy check
         const placeName = (place.name || "").trim().toLowerCase();
         const placeAddr = (place.formatted_address || "").trim().toLowerCase();
-    
+
         return !allBfVenues.some(v => {
           const vName = (v.name || "").trim().toLowerCase();
           const vAddr = (v.address || "").trim().toLowerCase();
@@ -168,8 +147,8 @@ export async function searchVenues(searchTerm: string): Promise<Venue[]> {
           return vName === placeName && vAddr === placeAddr;
         });
       });
-    
-      // 4. Convert filtered places into your Venue objects
+
+      // 5. Convert filtered places into your Venue objects
       const now = new Date().toISOString();
       return filteredPlaces.map(place => ({
         name: place.name || '',
@@ -212,7 +191,7 @@ export async function getFuzzyMatchedVenues(searchTerm: string): Promise<Venue[]
 
   try {
     // Use DynamoDB API for venue search
-    const response = await fetch('https://api.bndy.co.uk/api/venues');
+    const response = await fetch(`${API_BASE_URL}/api/venues`);
 
     if (!response.ok) {
       console.error('Error fetching venues:', await response.text());
@@ -235,20 +214,12 @@ export async function getFuzzyMatchedVenues(searchTerm: string): Promise<Venue[]
 
 
 /**
- * Get venues by admin user ID
+ * Get venues by admin user ID (client-side filtering from all venues)
  */
 export async function getVenuesByAdminUserId(userId: string): Promise<Venue[]> {
   try {
-    // This is a basic implementation. In a more complex system, you'd have a specific
-    // subcollection or field to track venue admins.
-    const venuesRef = collection(db, COLLECTIONS.VENUES);
-    const q = query(venuesRef, where('adminIds', 'array-contains', userId));
-    const snapshot = await getDocs(q);
-    
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Venue));
+    const allVenues = await getAllVenues();
+    return allVenues.filter(venue => venue.adminIds?.includes(userId));
   } catch (error) {
     console.error("Error fetching venues by admin:", error);
     return [];
@@ -260,13 +231,9 @@ export async function getVenuesByAdminUserId(userId: string): Promise<Venue[]> {
  */
 export async function isUserVenueAdmin(userId: string, venueId: string): Promise<boolean> {
   try {
-    const venueDoc = await getDoc(doc(db, COLLECTIONS.VENUES, venueId));
-    
-    if (!venueDoc.exists()) {
-      return false;
-    }
-    
-    const venue = venueDoc.data();
+    const venue = await getVenueById(venueId);
+    if (!venue) return false;
+
     return venue.adminIds?.includes(userId) || false;
   } catch (error) {
     console.error("Error checking venue admin status:", error);
@@ -275,88 +242,39 @@ export async function isUserVenueAdmin(userId: string, venueId: string): Promise
 }
 
 /**
- * Add admin to venue
+ * Add admin to venue (Backend endpoint not implemented yet)
  */
 export async function addVenueAdmin(venueId: string, userId: string): Promise<void> {
-  try {
-    const venueRef = doc(db, COLLECTIONS.VENUES, venueId);
-    const venueDoc = await getDoc(venueRef);
-    
-    if (!venueDoc.exists()) {
-      throw new Error("Venue not found");
-    }
-    
-    const venue = venueDoc.data();
-    const adminIds = venue.adminIds || [];
-    
-    if (adminIds.includes(userId)) {
-      return; // User is already an admin
-    }
-    
-    await updateDoc(venueRef, {
-      adminIds: [...adminIds, userId],
-      updatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error("Error adding venue admin:", error);
-    throw error;
-  }
+  // TODO: Implement PUT /api/venues/:id on backend
+  throw new Error("Add venue admin not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
 
 /**
- * Remove admin from venue
+ * Remove admin from venue (Backend endpoint not implemented yet)
  */
 export async function removeVenueAdmin(venueId: string, userId: string): Promise<void> {
-  try {
-    const venueRef = doc(db, COLLECTIONS.VENUES, venueId);
-    const venueDoc = await getDoc(venueRef);
-    
-    if (!venueDoc.exists()) {
-      throw new Error("Venue not found");
-    }
-    
-    const venue = venueDoc.data();
-    const adminIds = venue.adminIds || [];
-    
-    if (!adminIds.includes(userId)) {
-      return; // User is not an admin
-    }
-    
-    await updateDoc(venueRef, {
-      adminIds: adminIds.filter((id: string) => id !== userId),
-      updatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error("Error removing venue admin:", error);
-    throw error;
-  }
+  // TODO: Implement PUT /api/venues/:id on backend
+  throw new Error("Remove venue admin not implemented - backend endpoint needed: PUT /api/venues/:id");
 }
 
 /**
- * Get venue by location
+ * Get venue by location (client-side search from all venues)
  */
 export async function getVenueByLocation(lat: number, lng: number, precision: number = 0.0001): Promise<Venue | null> {
   try {
-    const venuesRef = collection(db, COLLECTIONS.VENUES);
-    const snapshot = await getDocs(venuesRef);
-    
+    const allVenues = await getAllVenues();
+
     // Find the first venue that has a location matching the coordinates within the precision
-    const matchingVenue = snapshot.docs.find(doc => {
-      const data = doc.data();
-      if (!data.location || !data.location.lat || !data.location.lng) return false;
-      
+    const matchingVenue = allVenues.find(venue => {
+      if (!venue.location || !venue.location.lat || !venue.location.lng) return false;
+
       return (
-        Math.abs(data.location.lat - lat) < precision &&
-        Math.abs(data.location.lng - lng) < precision
+        Math.abs(venue.location.lat - lat) < precision &&
+        Math.abs(venue.location.lng - lng) < precision
       );
     });
-    
-    if (!matchingVenue) return null;
-    
-    return {
-      id: matchingVenue.id,
-      ...matchingVenue.data(),
-    } as Venue;
+
+    return matchingVenue || null;
   } catch (error) {
     console.error("Error finding venue by location:", error);
     return null;
