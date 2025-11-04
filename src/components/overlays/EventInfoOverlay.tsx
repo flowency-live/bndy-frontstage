@@ -16,8 +16,8 @@ import {
 import Link from "next/link";
 import { Event, Artist, getSocialMediaURLs } from "@/lib/types";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
-import { getArtistById } from "@/lib/services/artist-service";
 import { getVenueById } from "@/lib/services/venue-service";
+import { useArtist } from "@/hooks/useArtist";
 import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
@@ -40,91 +40,25 @@ export default function EventInfoOverlay({
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentEvent = events[currentIndex];
 
-  const [artist, setArtist] = useState<Artist | null>(null);
   const [venue, setVenue] = useState<VenueData | null>(null);
   // Flag to avoid repeated fetch attempts in overlay.
   const [hasFetched, setHasFetched] = useState(false);
+  
+  // Get artist ID from current event
+  const artistId = currentEvent?.artistIds?.[0];
+  
+  // Use the DynamoDB-based artist hook
+  const { data: artist, isLoading: artistLoading, error: artistError } = useArtist(artistId);
 
   const isOpenMic = currentEvent?.isOpenMic || false;
 
-  // Reset artist and hasFetched state when currentIndex or currentEvent changes
+  // Reset hasFetched state when currentIndex or currentEvent changes
   useEffect(() => {
     if (!currentEvent) return;
-    // Reset artist data and fetch state when navigating to a different event
-    setArtist(null);
     setHasFetched(false);
   }, [currentIndex, currentEvent]);
 
-  // When the current event changes, fetch associated artist data.
-  useEffect(() => {
-    console.log("🎵 EventInfoOverlay: Artist fetch effect triggered");
-    console.log("🎵 Current event:", currentEvent);
-    console.log("🎵 Is open mic:", isOpenMic);
-    
-    if (!currentEvent) {
-      console.log("🎵 No current event, returning");
-      return;
-    }
-
-    // Log all event properties to see what's available
-    console.log("🎵 Event properties:", Object.keys(currentEvent));
-    console.log("🎵 Event artistIds:", currentEvent.artistIds);
-    console.log("🎵 Event band field:", (currentEvent as any).band);
-    console.log("🎵 Event name:", currentEvent.name);
-    console.log("🎵 Event venueName:", currentEvent.venueName);
-
-    // For open mic events without a host, skip artist fetching
-    if (isOpenMic && (!currentEvent.artistIds || currentEvent.artistIds.length === 0)) {
-      console.log("🎵 Open mic without host, setting artist to null");
-      setArtist(null);
-      return;
-    }
-
-    // Check for artistIds first (new format)
-    if (currentEvent.artistIds && currentEvent.artistIds.length > 0) {
-      console.log("🎵 Found artistIds, fetching artist:", currentEvent.artistIds[0]);
-      getArtistById(currentEvent.artistIds[0])
-        .then((artistData) => {
-          console.log("🎵 Artist data fetched:", artistData);
-          setArtist(artistData);
-        })
-        .catch((err) => {
-          console.error("🎵 Error fetching artist:", err);
-          setArtist(null);
-        });
-    } 
-    // Check for legacy 'band' field or other potential artist fields
-    else if ((currentEvent as any).band) {
-      const bandName = (currentEvent as any).band;
-      console.log("🎵 Found legacy band field:", bandName);
-      // Handle legacy 'band' field - try to fetch by name or create a mock artist
-      const mockArtist = {
-        id: `legacy-${bandName.toLowerCase().replace(/\s+/g, '-')}`,
-        name: bandName,
-        createdAt: '',
-        updatedAt: ''
-      };
-      console.log("🎵 Created mock artist from band:", mockArtist);
-      setArtist(mockArtist);
-    }
-    // Check if the event name itself might be the artist name (for legacy events)
-    else if (currentEvent.name && currentEvent.name !== currentEvent.venueName) {
-      console.log("🎵 Using event name as artist name:", currentEvent.name);
-      // Create a mock artist from the event name
-      const mockArtist = {
-        id: `event-artist-${currentEvent.name.toLowerCase().replace(/\s+/g, '-')}`,
-        name: currentEvent.name,
-        createdAt: '',
-        updatedAt: ''
-      };
-      console.log("🎵 Created mock artist from event name:", mockArtist);
-      setArtist(mockArtist);
-    }
-    else {
-      console.log("🎵 No artist data found, setting to null");
-      setArtist(null);
-    }
-  }, [currentEvent, isOpenMic]);
+  // Artist data is now fetched via useArtist hook
 
   // When the current event changes, fetch venue data.
   useEffect(() => {
@@ -221,9 +155,10 @@ export default function EventInfoOverlay({
               {/* DEBUG: Visible debug info */}
               <div className="mb-2 p-2 bg-red-100 text-red-800 text-xs rounded">
                 <div>DEBUG - Event: {currentEvent?.name}</div>
-                <div>Artist IDs: {JSON.stringify(currentEvent?.artistIds)}</div>
-                <div>Band field: {JSON.stringify((currentEvent as any)?.band)}</div>
-                <div>Artist state: {artist ? artist.name : 'null'}</div>
+                <div>Artist ID: {artistId}</div>
+                <div>Artist Loading: {artistLoading ? 'yes' : 'no'}</div>
+                <div>Artist Error: {artistError ? 'yes' : 'no'}</div>
+                <div>Artist Data: {artist ? artist.name : 'null'}</div>
                 <div>Is Open Mic: {isOpenMic ? 'yes' : 'no'}</div>
               </div>
               
@@ -240,7 +175,6 @@ export default function EventInfoOverlay({
                           className="object-cover"
                           fill
                           onError={() => {
-                            setArtist({ ...artist, profileImageUrl: "" });
                             setHasFetched(true);
                           }}
                         />
@@ -265,7 +199,6 @@ export default function EventInfoOverlay({
                         facebookUrl={fbURL}
                         instagramUrl={igURL}
                         onPictureFetched={(url) => {
-                          setArtist({ ...artist, profileImageUrl: url });
                           setHasFetched(true);
                         }}
                       />
@@ -304,7 +237,6 @@ export default function EventInfoOverlay({
                           width={50}
                           height={50}
                           onError={() => {
-                            setArtist({ ...artist, profileImageUrl: "" });
                             setHasFetched(true);
                           }}
                         />
@@ -318,7 +250,6 @@ export default function EventInfoOverlay({
                           facebookUrl={fbURL}
                           instagramUrl={igURL}
                           onPictureFetched={(url) => {
-                            setArtist({ ...artist, profileImageUrl: url });
                             setHasFetched(true);
                           }}
                         />
