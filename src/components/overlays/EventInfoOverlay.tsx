@@ -218,6 +218,15 @@ export default function EventInfoOverlay({
             <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
             <div className="p-4 pl-6">
+              {/* DEBUG: Visible debug info */}
+              <div className="mb-2 p-2 bg-red-100 text-red-800 text-xs rounded">
+                <div>DEBUG - Event: {currentEvent?.name}</div>
+                <div>Artist IDs: {JSON.stringify(currentEvent?.artistIds)}</div>
+                <div>Band field: {JSON.stringify((currentEvent as any)?.band)}</div>
+                <div>Artist state: {artist ? artist.name : 'null'}</div>
+                <div>Is Open Mic: {isOpenMic ? 'yes' : 'no'}</div>
+              </div>
+              
               {isOpenMic ? (
                 // Open Mic Header
                 <div className="group flex items-center gap-3 mb-3">
