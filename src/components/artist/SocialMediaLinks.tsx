@@ -4,7 +4,7 @@ import { SocialMediaURL } from "@/lib/types";
 import { FaFacebook, FaInstagram, FaYoutube, FaSpotify, FaXTwitter, FaGlobe } from "react-icons/fa6";
 
 interface SocialMediaLinksProps {
-  socialMediaURLs: SocialMediaURL[];
+  socialMediaUrls: SocialMediaURL[];
   className?: string;
 }
 
@@ -48,14 +48,14 @@ const platformConfig = {
   }
 };
 
-export default function SocialMediaLinks({ socialMediaURLs, className = "" }: SocialMediaLinksProps) {
-  if (!socialMediaURLs || socialMediaURLs.length === 0) {
+export default function SocialMediaLinks({ socialMediaUrls, className = "" }: SocialMediaLinksProps) {
+  if (!socialMediaUrls || socialMediaUrls.length === 0) {
     return null;
   }
 
   return (
     <div className={`flex justify-center flex-wrap gap-3 sm:gap-4 pt-2 ${className}`}>
-      {socialMediaURLs.map((social, index) => {
+      {socialMediaUrls.map((social, index) => {
         const config = platformConfig[social.platform];
         if (!config) return null;
 

@@ -5,7 +5,10 @@
       "Bash(tee:*)",
       "Bash(tasklist:*)",
       "Bash(taskkill:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(for file in ./app/venues/[venueId]/page.tsx ./components/artist/ArtistHeader.tsx ./components/artist/ArtistMetaTags.tsx ./components/artist/ArtistProfileHeader.tsx ./components/artist/SocialMediaLinks.tsx ./components/overlays/EventInfoOverlay.tsx ./components/overlays/VenueInfoOverlay.tsx ./components/shared/VADetailHeader.tsx ./lib/services/artist-service-new.ts ./lib/services/artist-service.ts ./lib/services/places-service.ts ./lib/types.ts ./lib/utils/artist-debug-logger.ts)",
+      "Bash(do)",
+      "Bash(for file in ./lib/services/godmode-service.ts ./pages/godmode/artists/index.tsx ./pages/godmode/components/VenueAddModal.tsx ./pages/godmode/components/VenueEditModal.tsx ./pages/godmode/Dashboard.tsx ./pages/godmode/index.tsx ./pages/godmode/venues/enrichment.tsx ./pages/godmode/venues/index.tsx)"
     ],
     "deny": [],
     "ask": []

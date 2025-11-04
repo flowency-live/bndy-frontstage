@@ -168,7 +168,7 @@ export function placeResultToVenue(place: google.maps.places.PlaceResult): Venue
       lat: place.geometry?.location?.lat() || 0,
       lng: place.geometry?.location?.lng() || 0
     },
-    socialMediaURLs: [],
+    socialMediaUrls: [],
     validated: false,
     createdAt: now,
     updatedAt: now

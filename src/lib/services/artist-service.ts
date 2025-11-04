@@ -109,11 +109,11 @@ export async function createArtist(
 
     const data = await response.json();
 
-    // Build socialMediaURLs array from individual URLs
-    const socialMediaURLs = [];
-    if (artist.websiteUrl) socialMediaURLs.push({ platform: 'website', url: artist.websiteUrl });
-    if (artist.facebookUrl) socialMediaURLs.push({ platform: 'facebook', url: artist.facebookUrl });
-    if (artist.instagramUrl) socialMediaURLs.push({ platform: 'instagram', url: artist.instagramUrl });
+    // Build socialMediaUrls array from individual URLs
+    const socialMediaUrls = [];
+    if (artist.websiteUrl) socialMediaUrls.push({ platform: 'website', url: artist.websiteUrl });
+    if (artist.facebookUrl) socialMediaUrls.push({ platform: 'facebook', url: artist.facebookUrl });
+    if (artist.instagramUrl) socialMediaUrls.push({ platform: 'instagram', url: artist.instagramUrl });
 
     // Return artist in format expected by frontstage
     return {
@@ -123,7 +123,7 @@ export async function createArtist(
       description: artist.bio || artist.description || undefined,
       profileImageUrl: '',
       genres: [],
-      socialMediaURLs: socialMediaURLs.length > 0 ? socialMediaURLs : [],
+      socialMediaUrls: socialMediaUrls.length > 0 ? socialMediaUrls : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as Artist;

@@ -245,13 +245,13 @@ export function validateArtistData(artist: any): artist is Artist {
   }
 
   // Validate optional fields if present
-  if (artist.socialMediaURLs !== undefined) {
-    if (!Array.isArray(artist.socialMediaURLs)) {
-      console.error('🎵 Artist validation failed: socialMediaURLs must be an array');
+  if (artist.socialMediaUrls !== undefined) {
+    if (!Array.isArray(artist.socialMediaUrls)) {
+      console.error('🎵 Artist validation failed: socialMediaUrls must be an array');
       return false;
     }
     
-    for (const social of artist.socialMediaURLs) {
+    for (const social of artist.socialMediaUrls) {
       if (!social.platform || !social.url) {
         console.error('🎵 Artist validation failed: invalid social media URL structure');
         return false;
@@ -319,7 +319,7 @@ export function debugArtistData(artist: any): void {
     console.log('Description:', artist.description);
     console.log('Profile Image:', artist.profileImageUrl);
     console.log('Genres:', artist.genres);
-    console.log('Social Media URLs:', artist.socialMediaURLs);
+    console.log('Social Media URLs:', artist.socialMediaUrls);
     console.log('Location:', artist.location);
     console.log('Created At:', artist.createdAt);
     console.log('Updated At:', artist.updatedAt);

@@ -101,12 +101,12 @@ export default function VADetailHeader({
 
   // Get social media URLs using the shared helper function.
   // Use override URLs if provided (for edit mode)
-  const socialMediaURLs: SocialMediaURL[] =
+  const socialMediaUrls: SocialMediaURL[] =
     overrideSocialMediaURLs || getSocialMediaURLs(item);
 
   // Look for Facebook and Instagram URLs.
-  const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
-  const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
+  const fbURL = socialMediaUrls.find((s) => s.platform === "facebook")?.url;
+  const igURL = socialMediaUrls.find((s) => s.platform === "instagram")?.url;
 
   // Determine primary color based on type.
   const primaryColor = isVenue ? "var(--secondary)" : "var(--primary)";
@@ -287,8 +287,8 @@ export default function VADetailHeader({
 
             {/* Social Media Icons with animation */}
             <motion.div variants={itemVariants} className="flex gap-3 mt-3">
-              {socialMediaURLs.length > 0 ? (
-                socialMediaURLs.map((social, index) => {
+              {socialMediaUrls.length > 0 ? (
+                socialMediaUrls.map((social, index) => {
                   const icon = getSocialIcon(social.platform);
                   const color = SOCIAL_COLORS[social.platform] || primaryColor;
                   return (

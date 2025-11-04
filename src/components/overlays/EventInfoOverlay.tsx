@@ -83,9 +83,9 @@ export default function EventInfoOverlay({
   }, [currentEvent?.venueId]);
 
   // Extract artist social URLs to possibly fetch a profile picture.
-  const socialMediaURLs = artist ? getSocialMediaURLs(artist) : [];
-  const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
-  const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
+  const socialMediaUrls = artist ? getSocialMediaURLs(artist) : [];
+  const fbURL = socialMediaUrls.find((s) => s.platform === "facebook")?.url;
+  const igURL = socialMediaUrls.find((s) => s.platform === "instagram")?.url;
   
   // Use fetched profile picture if available, otherwise use artist's profileImageUrl
   const displayProfileImageUrl = fetchedProfilePicture || artist?.profileImageUrl;

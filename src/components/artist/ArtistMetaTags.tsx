@@ -16,7 +16,7 @@ interface ArtistMetaTagsProps {
   description?: string;
   profileImageUrl?: string;
   genres?: string[];
-  socialMediaURLs?: SocialMediaURL[];
+  socialMediaUrls?: SocialMediaURL[];
   upcomingEvents?: Event[];
 }
 
@@ -26,11 +26,11 @@ export default function ArtistMetaTags({
   description,
   profileImageUrl,
   genres,
-  socialMediaURLs,
+  socialMediaUrls,
   upcomingEvents
 }: ArtistMetaTagsProps) {
   // Generate social media URLs for sameAs property
-  const sameAsUrls = socialMediaURLs?.map(social => social.url) || [];
+  const sameAsUrls = socialMediaUrls?.map(social => social.url) || [];
 
   // Generate structured data for artist
   const artistStructuredData = {

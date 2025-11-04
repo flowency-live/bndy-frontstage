@@ -142,17 +142,17 @@ class ArtistDebugLogger {
     const legacyFields = ['websiteUrl', 'facebookUrl', 'instagramUrl', 'spotifyUrl'];
     legacyFields.forEach(field => {
       if (artist[field]) {
-        warnings.push(`Legacy field detected: ${field}. Should be migrated to socialMediaURLs array`);
+        warnings.push(`Legacy field detected: ${field}. Should be migrated to socialMediaUrls array`);
         this.logLegacyFieldDetected('artist', field, artist[field]);
       }
     });
 
     // Check social media URLs structure
-    if (artist.socialMediaURLs) {
-      if (!Array.isArray(artist.socialMediaURLs)) {
-        issues.push('socialMediaURLs must be an array');
+    if (artist.socialMediaUrls) {
+      if (!Array.isArray(artist.socialMediaUrls)) {
+        issues.push('socialMediaUrls must be an array');
       } else {
-        artist.socialMediaURLs.forEach((social: any, index: number) => {
+        artist.socialMediaUrls.forEach((social: any, index: number) => {
           if (!social.platform || !social.url) {
             issues.push(`Invalid social media URL at index ${index}: missing platform or url`);
           }

@@ -85,8 +85,8 @@ function VenueProfileContent() {
           facebook: ""
         };
 
-        if (venueData.socialMediaURLs && venueData.socialMediaURLs.length > 0) {
-          venueData.socialMediaURLs.forEach((social: any) => {
+        if (venueData.socialMediaUrls && venueData.socialMediaUrls.length > 0) {
+          venueData.socialMediaUrls.forEach((social: any) => {
             if (social.platform === 'website' || social.platform === 'facebook') {
               links[social.platform as 'website' | 'facebook'] = social.url;
             }
@@ -170,7 +170,7 @@ function VenueProfileContent() {
     if (!venue) return;
 
     // Convert social links to the required format
-    const socialMediaURLs: SocialMediaURL[] = Object.entries(socialLinks)
+    const socialMediaUrls: SocialMediaURL[] = Object.entries(socialLinks)
       .filter(([, url]) => url.trim() !== "")
       .map(([platform, url]) => ({
         platform: platform as "website" | "facebook",
@@ -182,7 +182,7 @@ function VenueProfileContent() {
       ...venue,
       ...editFormData,
       facilities,
-      socialMediaURLs,
+      socialMediaUrls,
       updatedAt: new Date().toISOString()
     };
 

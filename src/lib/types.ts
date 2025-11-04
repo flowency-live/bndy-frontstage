@@ -19,7 +19,7 @@ export interface BaseVenue {
   imageUrl?: string;
   phone?: string;
   email?: string;
-  socialMediaURLs?: any[];  // NOTE: Backend inconsistency - Venues use uppercase, Artists use lowercase
+  socialMediaUrls?: any[];  // NOTE: Backend inconsistency - Venues use uppercase, Artists use lowercase
   facilities?: string[];
   standardStartTime?: string;
   standardEndTime?: string;
@@ -36,7 +36,7 @@ export interface Venue extends BaseVenue {
 }
 
 // Artist Types
-// NOTE: Backend returns 'bio' not 'description', and 'socialMediaUrls' not 'socialMediaURLs'
+// NOTE: Backend returns 'bio' not 'description', and 'socialMediaUrls' not 'socialMediaUrls'
 export interface Artist {
   id: string;
   name: string;
@@ -217,10 +217,10 @@ export interface ImportMatch<T> {
 // Added helper functions to handle social media URLs for legacy properties
 export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   // Initialize an empty array
-  const socialMediaURLs: SocialMediaURL[] = [];
+  const socialMediaUrls: SocialMediaURL[] = [];
 
-  // Check for socialMediaURLs (uppercase - used by Venues backend)
-  const urls = ('socialMediaURLs' in item && (item as any).socialMediaURLs) ||
+  // Check for socialMediaUrls (uppercase - used by Venues backend)
+  const urls = ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
                ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
                [];
 
@@ -230,29 +230,29 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
 
   // Handle legacy venue social properties
   if ('websiteUrl' in item && typeof item.websiteUrl === 'string') {
-    socialMediaURLs.push({ platform: 'website', url: item.websiteUrl });
+    socialMediaUrls.push({ platform: 'website', url: item.websiteUrl });
   }
 
   if ('facebookUrl' in item && typeof item.facebookUrl === 'string') {
-    socialMediaURLs.push({ platform: 'facebook', url: item.facebookUrl });
+    socialMediaUrls.push({ platform: 'facebook', url: item.facebookUrl });
   }
 
   // Handle legacy artist social properties
   if ('instagramUrl' in item && typeof item.instagramUrl === 'string') {
-    socialMediaURLs.push({ platform: 'instagram', url: item.instagramUrl });
+    socialMediaUrls.push({ platform: 'instagram', url: item.instagramUrl });
   }
 
   if ('spotifyUrl' in item && typeof item.spotifyUrl === 'string') {
-    socialMediaURLs.push({ platform: 'spotify', url: item.spotifyUrl });
+    socialMediaUrls.push({ platform: 'spotify', url: item.spotifyUrl });
   }
 
-  return socialMediaURLs;
+  return socialMediaUrls;
 }
 
 // Function to check if an item has any social media URLs
 export function hasSocialMedia(item: Venue | Artist): boolean {
   // Check for either case variant
-  const urls = ('socialMediaURLs' in item && (item as any).socialMediaURLs) ||
+  const urls = ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
                ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
                [];
 
