@@ -71,10 +71,10 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
         {/* Social Share Section */}
         <section aria-label="Share Artist">
-          <SocialShareSection 
+          <SocialShareSection
             artistName={initialData.name}
             artistId={artistId || ''}
-            description={initialData.description}
+            description={initialData.bio}
           />
         </section>
 
