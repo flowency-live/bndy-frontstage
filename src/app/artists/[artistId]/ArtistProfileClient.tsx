@@ -107,7 +107,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         upcomingEvents={profileData.upcomingEvents}
       />
 
-      <div className="min-h-screen min-h-dvh bg-[var(--background)] mobile-optimized mobile-scroll-enhanced performance-critical page-enter">
+      <div className="min-h-screen bg-[var(--background)] mobile-optimized mobile-scroll-enhanced performance-critical page-enter" style={{ overflowY: 'auto', height: 'auto', minHeight: '100vh' }}>
         {/* Mobile-first responsive layout with proper spacing for header */}
         <div className="w-full pt-4 pb-8 safe-area-enhanced">
           {/* Profile Header - Mobile optimized with responsive design */}

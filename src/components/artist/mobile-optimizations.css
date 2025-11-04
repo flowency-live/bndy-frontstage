@@ -1,5 +1,14 @@
 /* Mobile-specific optimizations for artist profile */
 
+/* Ensure page is scrollable */
+.mobile-optimized {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  height: auto !important;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* Enhanced touch-friendly interactions */
 .touch-optimized {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);

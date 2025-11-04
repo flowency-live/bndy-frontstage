@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import { getEventsForArtist } from "@/lib/services/event-service";
 import { ArtistProfileData } from "@/lib/types/artist-profile";
-import { Artist } from "@/lib/types";
+import { Artist, Event } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
 
 // Fetch artist data from DynamoDB API
@@ -95,6 +94,40 @@ export async function generateMetadata({ params }: { params: Promise<{ artistId:
   }
 }
 
+// Fetch events for artist from DynamoDB API
+async function fetchEventsForArtist(artistId: string): Promise<Event[]> {
+  try {
+    // For now, we'll fetch all public events and filter by artistId
+    // This is a temporary solution until we have a dedicated artist events endpoint
+    const response = await fetch('https://api.bndy.co.uk/api/events/public', {
+      next: { revalidate: 300 } // Cache for 5 minutes
+    });
+    
+    if (!response.ok) {
+      console.error(`Failed to fetch events: ${response.status}`);
+      return [];
+    }
+    
+    const events = await response.json() as Event[];
+    
+    // Filter events for this artist
+    const artistEvents = events.filter(event => 
+      event.artistIds && event.artistIds.includes(artistId)
+    );
+    
+    // Filter for upcoming events only
+    const now = new Date();
+    const upcomingEvents = artistEvents.filter(event => 
+      new Date(event.date) >= now
+    );
+    
+    return upcomingEvents;
+  } catch (error) {
+    console.error("Error fetching events for artist:", error);
+    return [];
+  }
+}
+
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
   try {
     const { artistId } = await params;
@@ -105,8 +138,12 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       return <ArtistProfileClient initialData={null} error="The artist you're looking for doesn't exist or has been removed." artistId={artistId} />;
     }
 
-    // Fetch upcoming events
-    const upcomingEvents = await getEventsForArtist(artistId);
+    // Fetch upcoming events from DynamoDB API
+    const upcomingEvents = await fetchEventsForArtist(artistId);
+
+    // Debug logging to understand data structure
+    console.log("🎵 Artist Profile Page - Artist data:", artistData);
+    console.log("🎵 Artist Profile Page - Events found:", upcomingEvents.length);
 
     // Combine into profile data structure
     const profileData: ArtistProfileData = {
@@ -114,9 +151,9 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       name: artistData.name,
       description: artistData.description,
       profileImageUrl: artistData.profileImageUrl,
-      genres: artistData.genres,
-      socialMediaURLs: artistData.socialMediaURLs,
-      upcomingEvents: upcomingEvents || []
+      genres: artistData.genres || [],
+      socialMediaURLs: artistData.socialMediaURLs || [],
+      upcomingEvents: upcomingEvents
     };
 
     return <ArtistProfileClient initialData={profileData} artistId={artistId} />;

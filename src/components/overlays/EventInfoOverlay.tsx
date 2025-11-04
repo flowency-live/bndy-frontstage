@@ -51,6 +51,16 @@ export default function EventInfoOverlay({
   
   // Use the DynamoDB-based artist hook
   const { data: artist, isLoading: artistLoading, error: artistError } = useArtist(artistId);
+  
+  // Debug logging to understand loading issues
+  useEffect(() => {
+    if (artistId) {
+      console.log("🎵 EventInfoOverlay - Artist ID:", artistId);
+      console.log("🎵 EventInfoOverlay - Artist loading:", artistLoading);
+      console.log("🎵 EventInfoOverlay - Artist error:", artistError);
+      console.log("🎵 EventInfoOverlay - Artist data:", artist);
+    }
+  }, [artistId, artistLoading, artistError, artist]);
 
   const isOpenMic = currentEvent?.isOpenMic || false;
 

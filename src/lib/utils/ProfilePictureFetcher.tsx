@@ -29,7 +29,17 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
             
             if (!commonPaths.includes(username)) {
               const profilePicUrl = `https://graph.facebook.com/${username}/picture?type=large`;
-              onPictureFetched(profilePicUrl);
+              
+              // Test if the image loads successfully before calling onPictureFetched
+              const img = new Image();
+              img.onload = () => {
+                // Only call onPictureFetched if the image actually loads
+                onPictureFetched(profilePicUrl);
+              };
+              img.onerror = () => {
+                console.warn("Failed to load Facebook profile picture for:", username);
+              };
+              img.src = profilePicUrl;
             }
           }
         }
@@ -38,7 +48,10 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
       }
     };
 
-    fetchProfilePicture();
+    // Add a small delay to avoid blocking the main thread
+    const timeoutId = setTimeout(fetchProfilePicture, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [facebookUrl, instagramUrl, onPictureFetched]);
 
   return null;
