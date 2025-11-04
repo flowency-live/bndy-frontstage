@@ -1,14 +1,35 @@
 import { Metadata } from "next";
-import { getArtistById } from "@/lib/services/artist-service";
 import { getEventsForArtist } from "@/lib/services/event-service";
 import { ArtistProfileData } from "@/lib/types/artist-profile";
+import { Artist } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
+
+// Fetch artist data from DynamoDB API
+async function fetchArtistData(artistId: string): Promise<Artist | null> {
+  try {
+    const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
+      next: { revalidate: 300 } // Cache for 5 minutes
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Failed to fetch artist: ${response.status}`);
+    }
+    
+    return await response.json() as Artist;
+  } catch (error) {
+    console.error("Error fetching artist data:", error);
+    return null;
+  }
+}
 
 // Generate metadata for SEO and Open Graph
 export async function generateMetadata({ params }: { params: Promise<{ artistId: string }> }): Promise<Metadata> {
   try {
     const { artistId } = await params;
-    const artistData = await getArtistById(artistId);
+    const artistData = await fetchArtistData(artistId);
     
     if (!artistData) {
       return {
@@ -78,8 +99,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   try {
     const { artistId } = await params;
     
-    // Fetch artist data
-    const artistData = await getArtistById(artistId);
+    // Fetch artist data from DynamoDB API
+    const artistData = await fetchArtistData(artistId);
     if (!artistData) {
       return <ArtistProfileClient initialData={null} error="The artist you're looking for doesn't exist or has been removed." artistId={artistId} />;
     }

@@ -43,6 +43,8 @@ export default function EventInfoOverlay({
   const [venue, setVenue] = useState<VenueData | null>(null);
   // Flag to avoid repeated fetch attempts in overlay.
   const [hasFetched, setHasFetched] = useState(false);
+  // State to store fetched profile picture URL
+  const [fetchedProfilePicture, setFetchedProfilePicture] = useState<string | null>(null);
   
   // Get artist ID from current event
   const artistId = currentEvent?.artistIds?.[0];
@@ -56,6 +58,7 @@ export default function EventInfoOverlay({
   useEffect(() => {
     if (!currentEvent) return;
     setHasFetched(false);
+    setFetchedProfilePicture(null);
   }, [currentIndex, currentEvent]);
 
   // Artist data is now fetched via useArtist hook
@@ -73,6 +76,9 @@ export default function EventInfoOverlay({
   const socialMediaURLs = artist ? getSocialMediaURLs(artist) : [];
   const fbURL = socialMediaURLs.find((s) => s.platform === "facebook")?.url;
   const igURL = socialMediaURLs.find((s) => s.platform === "instagram")?.url;
+  
+  // Use fetched profile picture if available, otherwise use artist's profileImageUrl
+  const displayProfileImageUrl = fetchedProfilePicture || artist?.profileImageUrl;
 
   // Format date/time.
   const eventDate = currentEvent ? new Date(currentEvent.date) : new Date();
@@ -130,12 +136,7 @@ export default function EventInfoOverlay({
 
   if (!currentEvent) return null;
 
-  // Debug logging for render
-  console.log("🎵 EventInfoOverlay rendering:");
-  console.log("🎵 Current event:", currentEvent?.name);
-  console.log("🎵 Artist state:", artist);
-  console.log("🎵 Is open mic:", isOpenMic);
-  console.log("🎵 Has artistIds:", currentEvent?.artistIds);
+
 
   return (
     <AnimatePresence>
@@ -152,25 +153,16 @@ export default function EventInfoOverlay({
             <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
             <div className="p-4 pl-6">
-              {/* DEBUG: Visible debug info */}
-              <div className="mb-2 p-2 bg-red-100 text-red-800 text-xs rounded">
-                <div>DEBUG - Event: {currentEvent?.name}</div>
-                <div>Artist ID: {artistId}</div>
-                <div>Artist Loading: {artistLoading ? 'yes' : 'no'}</div>
-                <div>Artist Error: {artistError ? 'yes' : 'no'}</div>
-                <div>Artist Data: {artist ? artist.name : 'null'}</div>
-                <div>Is Open Mic: {isOpenMic ? 'yes' : 'no'}</div>
-              </div>
               
               {isOpenMic ? (
                 // Open Mic Header
                 <div className="group flex items-center gap-3 mb-3">
                   <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                    {artist && artist.profileImageUrl ? (
+                    {artist && displayProfileImageUrl ? (
                       // Show host artist image if available
                       <div className="relative w-full h-full">
                         <Image
-                          src={artist.profileImageUrl}
+                          src={displayProfileImageUrl}
                           alt=""
                           className="object-cover"
                           fill
@@ -194,11 +186,12 @@ export default function EventInfoOverlay({
                         />
                       </div>
                     )}
-                    {!artist?.profileImageUrl && artist && !hasFetched && (
+                    {!displayProfileImageUrl && artist && !hasFetched && (
                       <ProfilePictureFetcher
                         facebookUrl={fbURL}
                         instagramUrl={igURL}
                         onPictureFetched={(url) => {
+                          setFetchedProfilePicture(url);
                           setHasFetched(true);
                         }}
                       />
@@ -229,9 +222,9 @@ export default function EventInfoOverlay({
                       className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
                     >
                     <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                      {artist.profileImageUrl ? (
+                      {displayProfileImageUrl ? (
                         <Image
-                          src={artist.profileImageUrl}
+                          src={displayProfileImageUrl}
                           alt=""
                           className="object-cover w-full h-full"
                           width={50}
@@ -245,11 +238,12 @@ export default function EventInfoOverlay({
                           <Music className="w-5 h-5 text-[var(--primary)]" />
                         </div>
                       )}
-                      {!artist.profileImageUrl && !hasFetched && (
+                      {!displayProfileImageUrl && !hasFetched && (
                         <ProfilePictureFetcher
                           facebookUrl={fbURL}
                           instagramUrl={igURL}
                           onPictureFetched={(url) => {
+                            setFetchedProfilePicture(url);
                             setHasFetched(true);
                           }}
                         />
@@ -268,9 +262,9 @@ export default function EventInfoOverlay({
                     // Non-clickable artist display for legacy events without artistIds
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                        {artist.profileImageUrl ? (
+                        {displayProfileImageUrl ? (
                           <Image
-                            src={artist.profileImageUrl}
+                            src={displayProfileImageUrl}
                             alt=""
                             className="object-cover w-full h-full"
                             width={50}
