@@ -9,18 +9,18 @@ import {
   ExternalLink,
   Music,
   CalendarDays,
-  Share2,
   Mic,
   Map,
 } from "lucide-react";
 import Link from "next/link";
-import { Event, Artist, getSocialMediaURLs } from "@/lib/types";
+import { Event, getSocialMediaURLs } from "@/lib/types";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
 import { getVenueById } from "@/lib/services/venue-service";
 import { useArtist } from "@/hooks/useArtist";
 import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
+import SocialShareButton from "@/components/shared/SocialShareButton";
 
 interface EventInfoOverlayProps {
   events: Event[];
@@ -110,29 +110,20 @@ export default function EventInfoOverlay({
       ? "fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center backdrop-blur-sm"
       : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm";
 
-  // Placeholder share function.
-  const handleShare = async () => {
-    if (!currentEvent) return;
+  // Generate share data for the event
+  const getShareData = () => {
+    if (!currentEvent) return { title: '', text: '' };
 
-    if (navigator.share) {
-      try {
-        const eventTitle = isOpenMic && artist
-          ? `Open Mic with ${artist.name}`
-          : isOpenMic
-            ? "Open Mic"
-            : currentEvent.name;
+    const eventTitle = isOpenMic && artist
+      ? `Open Mic with ${artist.name}`
+      : isOpenMic
+        ? "Open Mic"
+        : currentEvent.name;
 
-        await navigator.share({
-          title: eventTitle,
-          text: `Check out this event: ${eventTitle} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("Error sharing", err);
-      }
-    } else {
-
-    }
+    return {
+      title: `${eventTitle} | bndy`,
+      text: `Check out this event: ${eventTitle} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
+    };
   };
 
   // Handlers for cycling events.
@@ -388,17 +379,15 @@ export default function EventInfoOverlay({
               </div>
             </div>
 
-            {/* Move the share icon to the top-right to avoid interfering with navigation buttons. */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleShare();
-              }}
-              className="absolute top-2 right-2 p-2 rounded-full hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
-              aria-label="Share Event"
-            >
-              <Share2 className="w-5 h-5 text-[var(--foreground)]" />
-            </button>
+            {/* Share button using reusable component */}
+            <div className="absolute top-2 right-2">
+              <SocialShareButton
+                {...getShareData()}
+                variant="icon"
+                size="sm"
+                className="hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
+              />
+            </div>
 
             {/* Navigation controls if there is more than one event */}
             {events.length > 1 && (

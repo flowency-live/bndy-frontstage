@@ -92,7 +92,8 @@
       "Bash(cp:*)",
       "Bash(timeout:*)",
       "Bash(git log:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(del *.zip)"
     ],
     "deny": [],
     "ask": []

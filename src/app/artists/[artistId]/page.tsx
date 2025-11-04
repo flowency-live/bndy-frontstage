@@ -2,22 +2,12 @@ import { Metadata } from "next";
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { Artist, Event } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
+import { getArtistById, getArtistEvents } from "@/lib/services/artist-service-new";
 
-// Fetch artist data from DynamoDB API
+// Fetch artist data using service layer
 async function fetchArtistData(artistId: string): Promise<Artist | null> {
   try {
-    const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
-      next: { revalidate: 300 } // Cache for 5 minutes
-    });
-    
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`Failed to fetch artist: ${response.status}`);
-    }
-    
-    return await response.json() as Artist;
+    return await getArtistById(artistId);
   } catch (error) {
     console.error("Error fetching artist data:", error);
     return null;
@@ -94,34 +84,10 @@ export async function generateMetadata({ params }: { params: Promise<{ artistId:
   }
 }
 
-// Fetch events for artist from DynamoDB API
+// Fetch events for artist using service layer
 async function fetchEventsForArtist(artistId: string): Promise<Event[]> {
   try {
-    // For now, we'll fetch all public events and filter by artistId
-    // This is a temporary solution until we have a dedicated artist events endpoint
-    const response = await fetch('https://api.bndy.co.uk/api/events/public', {
-      next: { revalidate: 300 } // Cache for 5 minutes
-    });
-    
-    if (!response.ok) {
-      console.error(`Failed to fetch events: ${response.status}`);
-      return [];
-    }
-    
-    const events = await response.json() as Event[];
-    
-    // Filter events for this artist
-    const artistEvents = events.filter(event => 
-      event.artistIds && event.artistIds.includes(artistId)
-    );
-    
-    // Filter for upcoming events only
-    const now = new Date();
-    const upcomingEvents = artistEvents.filter(event => 
-      new Date(event.date) >= now
-    );
-    
-    return upcomingEvents;
+    return await getArtistEvents(artistId);
   } catch (error) {
     console.error("Error fetching events for artist:", error);
     return [];
@@ -152,6 +118,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       description: artistData.description,
       profileImageUrl: artistData.profileImageUrl,
       genres: artistData.genres || [],
+      location: artistData.location,
       socialMediaURLs: artistData.socialMediaURLs || [],
       upcomingEvents: upcomingEvents
     };

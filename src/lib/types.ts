@@ -40,13 +40,14 @@ export interface Artist {
   id: string;
   name: string;
   nameVariants?: string[];
+  artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'collective'; // No "Band" entity - use artist_type field
   socialMediaURLs?: SocialMediaURL[];  // Unified social media URLs array
   genres?: string[];
   createdAt: string;
   updatedAt: string;
   profileImageUrl?: string;
   description?: string;
-  location?:string
+  location?: string;
 }
 
 // Artist and Venue Social Media URLs

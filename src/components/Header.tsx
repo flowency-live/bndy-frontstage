@@ -2,8 +2,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import BndyLogo from "@/components/ui/bndylogo";
-import { Sun, Moon, Map as MapIcon, List as ListIcon, Building, Calendar } from "lucide-react";
+import { Sun, Moon, Map as MapIcon, List as ListIcon, Building, Calendar, Users } from "lucide-react";
 import { useViewToggle } from "@/context/ViewToggleContext";
 
 export default function Header() {
@@ -15,6 +16,9 @@ export default function Header() {
   
   // Only show the map mode toggle when in map view and on home page
   const showMapModeToggle = showViewToggle && activeView === "map";
+  
+  // Check if we're on artists pages for active state
+  const isArtistsPage = pathname.startsWith("/artists");
 
   const handleViewToggle = () => {
     setActiveView((prev) => (prev === "map" ? "list" : "map"));
@@ -34,8 +38,21 @@ export default function Header() {
       }}
     >
       <div className="relative container mx-auto">
-        {/* Toggles in top-right corner */}
+        {/* Navigation and toggles in top-right corner */}
         <div className="absolute top-0 right-0 mt-2 mr-2 flex items-center space-x-4">
+          {/* Artists Navigation Link */}
+          <Link
+            href="/artists"
+            className={`flex items-center focus:outline-none transition-colors ${
+              isArtistsPage 
+                ? "text-[var(--primary)] font-medium" 
+                : "text-[var(--foreground)] hover:text-[var(--primary)]"
+            }`}
+            aria-label="Browse Artists"
+          >
+            <Users className="w-5 h-5 mr-1" />
+            <span className="text-sm">Artists</span>
+          </Link>
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}

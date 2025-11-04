@@ -7,12 +7,12 @@ import {
   MapPin,
   Building,
   Globe,
-  Share2,
   Phone,
   Mail,
   Facebook,
   Instagram,
 } from "lucide-react";
+import SocialShareButton from "@/components/shared/SocialShareButton";
 import Link from "next/link";
 import Image from "next/image";
 import { Venue, SocialMediaURL } from "@/lib/types";
@@ -34,22 +34,12 @@ export default function VenueInfoOverlay({
   // Get directions URL
   const directionsUrl = getDirectionsUrl(venue);
 
-  // Handle sharing
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: venue.name,
-          text: `Check out ${venue.name} on bndy.live`,
-          url: `${window.location.origin}/venues/${venue.id}`,
-        });
-      } catch (err) {
-        console.error("Error sharing", err);
-      }
-    } else {
-
-    }
-  };
+  // Generate share data for the venue
+  const getShareData = () => ({
+    title: `${venue.name} | bndy`,
+    text: `Check out ${venue.name} on bndy.live`,
+    url: `${typeof window !== 'undefined' ? window.location.origin : ''}/venues/${venue.id}`,
+  });
 
   // Get social media links
   const getSocialLink = (platform: string): string | undefined => {
@@ -207,16 +197,15 @@ export default function VenueInfoOverlay({
               </div>
             </div>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleShare();
-              }}
-              className="absolute bottom-2 right-2 p-2 rounded-full hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
-              aria-label="Share Venue"
-            >
-              <Share2 className="w-5 h-5 text-[var(--foreground)]" />
-            </button>
+            {/* Share button using reusable component */}
+            <div className="absolute bottom-2 right-2">
+              <SocialShareButton
+                {...getShareData()}
+                variant="icon"
+                size="sm"
+                className="hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
+              />
+            </div>
           </motion.div>
         </div>
       )}

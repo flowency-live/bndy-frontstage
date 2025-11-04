@@ -79,3 +79,13 @@ global.ResizeObserver = class ResizeObserver {
     return null
   }
 }
+
+// Mock lucide-react icons
+jest.mock('lucide-react', () => ({
+  Share2: () => <div data-testid="share2-icon" />,
+  Copy: () => <div data-testid="copy-icon" />,
+  Check: () => <div data-testid="check-icon" />,
+  MessageCircle: () => <div data-testid="message-circle-icon" />,
+  Search: () => <div data-testid="search-icon" />,
+  X: () => <div data-testid="x-icon" />,
+}))

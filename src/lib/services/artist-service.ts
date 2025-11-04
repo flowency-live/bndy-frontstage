@@ -6,27 +6,55 @@
 import { collection, doc, getDoc, getDocs, query, where, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/config/firebase";
 import { COLLECTIONS } from "@/lib/constants";
-import { Artist, ArtistMember } from "@/lib/types";
+import { Artist, ArtistMember, Event } from "@/lib/types";
 
 /**
- * Get an artist by ID
+ * Get an artist by ID from DynamoDB API - Service Layer Function
  */
 export async function getArtistById(artistId: string): Promise<Artist | null> {
-  if (!artistId || !db) return null;
+  if (!artistId) return null;
 
   try {
-    const artistDoc = await getDoc(doc(db, COLLECTIONS.ARTISTS, artistId));
+    const response = await fetch(`/api/artists/${artistId}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     
-    if (!artistDoc.exists()) {
-      return null;
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error(`Failed to fetch artist: ${response.status}`);
     }
     
-    return {
-      id: artistDoc.id,
-      ...artistDoc.data(),
-    } as Artist;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching artist:", error);
+    console.error('Error fetching artist:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get artist events from DynamoDB API - Service Layer Function
+ */
+export async function getArtistEvents(artistId: string): Promise<Event[]> {
+  if (!artistId) return [];
+
+  try {
+    const response = await fetch(`/api/artists/${artistId}/events`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch artist events: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching artist events:', error);
     throw error;
   }
 }

@@ -7,6 +7,7 @@ export interface ArtistProfileData {
   description?: string;
   profileImageUrl?: string;
   genres?: string[];
+  location?: string;
   socialMediaURLs?: SocialMediaURL[];
   upcomingEvents: Event[];
 }
