@@ -1,7 +1,7 @@
 "use client";
 
 import { ArtistProfileData } from "@/lib/types/artist-profile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import EventsList from "@/components/artist/EventsList";
@@ -16,15 +16,28 @@ interface ArtistProfileClientProps {
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
   const [isLoading] = useState(false);
 
+  // CLIENT-SIDE DEBUG LOGGING
+  useEffect(() => {
+    console.log("=== CLIENT: ArtistProfileClient mounted ===");
+    console.log("CLIENT: artistId prop:", artistId);
+    console.log("CLIENT: error prop:", error);
+    console.log("CLIENT: initialData prop:", initialData);
+    if (initialData) {
+      console.log("CLIENT: Artist name from initialData:", initialData.name);
+      console.log("CLIENT: Full initialData:", JSON.stringify(initialData, null, 2));
+    }
+  }, [artistId, error, initialData]);
+
   // Handle error state
   if (error) {
+    console.error("CLIENT: Rendering error state. Error message:", error);
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">Artist Not Found</h1>
           <p className="text-muted-foreground">{error}</p>
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             ← Back to Map
@@ -36,6 +49,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   // Handle loading state
   if (isLoading || !initialData) {
+    console.log("CLIENT: Rendering loading/no-data state. isLoading:", isLoading, "initialData:", initialData);
     return (
       <div className="min-h-screen bg-background">
         <div className="animate-pulse">
@@ -51,6 +65,8 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </div>
     );
   }
+
+  console.log("CLIENT: Rendering artist profile for:", initialData.name);
 
   return (
     <div className="min-h-screen bg-background">
