@@ -19,7 +19,7 @@ export interface BaseVenue {
   imageUrl?: string;
   phone?: string;
   email?: string;
-  socialMediaURLs?: SocialMediaURL[];  // Unified social media URLs array
+  socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
   facilities?: string[];
   standardStartTime?: string;
   standardEndTime?: string;
@@ -219,9 +219,9 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   // Initialize an empty array
   const socialMediaURLs: SocialMediaURL[] = [];
 
-  // Check if item already has the socialMediaURLs property
-  if (item.socialMediaURLs && item.socialMediaURLs.length > 0) {
-    return item.socialMediaURLs;
+  // Check if item already has the socialMediaUrls property (lowercase 'Urls')
+  if (item.socialMediaUrls && item.socialMediaUrls.length > 0) {
+    return item.socialMediaUrls;
   }
 
   // Handle legacy venue social properties
@@ -247,8 +247,8 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
 
 // Function to check if an item has any social media URLs
 export function hasSocialMedia(item: Venue | Artist): boolean {
-  // First check if it has socialMediaURLs
-  if (item.socialMediaURLs && item.socialMediaURLs.length > 0) {
+  // First check if it has socialMediaUrls (lowercase 'Urls')
+  if (item.socialMediaUrls && item.socialMediaUrls.length > 0) {
     return true;
   }
   
