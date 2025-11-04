@@ -57,43 +57,71 @@ export default function EventInfoOverlay({
 
   // When the current event changes, fetch associated artist data.
   useEffect(() => {
-    if (!currentEvent) return;
+    console.log("🎵 EventInfoOverlay: Artist fetch effect triggered");
+    console.log("🎵 Current event:", currentEvent);
+    console.log("🎵 Is open mic:", isOpenMic);
+    
+    if (!currentEvent) {
+      console.log("🎵 No current event, returning");
+      return;
+    }
+
+    // Log all event properties to see what's available
+    console.log("🎵 Event properties:", Object.keys(currentEvent));
+    console.log("🎵 Event artistIds:", currentEvent.artistIds);
+    console.log("🎵 Event band field:", (currentEvent as any).band);
+    console.log("🎵 Event name:", currentEvent.name);
+    console.log("🎵 Event venueName:", currentEvent.venueName);
 
     // For open mic events without a host, skip artist fetching
     if (isOpenMic && (!currentEvent.artistIds || currentEvent.artistIds.length === 0)) {
+      console.log("🎵 Open mic without host, setting artist to null");
       setArtist(null);
       return;
     }
 
     // Check for artistIds first (new format)
     if (currentEvent.artistIds && currentEvent.artistIds.length > 0) {
+      console.log("🎵 Found artistIds, fetching artist:", currentEvent.artistIds[0]);
       getArtistById(currentEvent.artistIds[0])
-        .then((artistData) => setArtist(artistData))
-        .catch((err) => console.error("Error fetching artist:", err));
+        .then((artistData) => {
+          console.log("🎵 Artist data fetched:", artistData);
+          setArtist(artistData);
+        })
+        .catch((err) => {
+          console.error("🎵 Error fetching artist:", err);
+          setArtist(null);
+        });
     } 
     // Check for legacy 'band' field or other potential artist fields
     else if ((currentEvent as any).band) {
-      // Handle legacy 'band' field - try to fetch by name or create a mock artist
       const bandName = (currentEvent as any).band;
-      // For now, create a mock artist object with the band name
-      setArtist({
+      console.log("🎵 Found legacy band field:", bandName);
+      // Handle legacy 'band' field - try to fetch by name or create a mock artist
+      const mockArtist = {
         id: `legacy-${bandName.toLowerCase().replace(/\s+/g, '-')}`,
         name: bandName,
         createdAt: '',
         updatedAt: ''
-      });
+      };
+      console.log("🎵 Created mock artist from band:", mockArtist);
+      setArtist(mockArtist);
     }
     // Check if the event name itself might be the artist name (for legacy events)
     else if (currentEvent.name && currentEvent.name !== currentEvent.venueName) {
+      console.log("🎵 Using event name as artist name:", currentEvent.name);
       // Create a mock artist from the event name
-      setArtist({
+      const mockArtist = {
         id: `event-artist-${currentEvent.name.toLowerCase().replace(/\s+/g, '-')}`,
         name: currentEvent.name,
         createdAt: '',
         updatedAt: ''
-      });
+      };
+      console.log("🎵 Created mock artist from event name:", mockArtist);
+      setArtist(mockArtist);
     }
     else {
+      console.log("🎵 No artist data found, setting to null");
       setArtist(null);
     }
   }, [currentEvent, isOpenMic]);
@@ -167,6 +195,13 @@ export default function EventInfoOverlay({
   };
 
   if (!currentEvent) return null;
+
+  // Debug logging for render
+  console.log("🎵 EventInfoOverlay rendering:");
+  console.log("🎵 Current event:", currentEvent?.name);
+  console.log("🎵 Artist state:", artist);
+  console.log("🎵 Is open mic:", isOpenMic);
+  console.log("🎵 Has artistIds:", currentEvent?.artistIds);
 
   return (
     <AnimatePresence>
