@@ -48,15 +48,19 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
 
       // Add tile layer based on the theme
       const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
-      L.tileLayer(tileLayer.url, {
+      const layer = L.tileLayer(tileLayer.url, {
         maxZoom: 19,
       }).addTo(map);
 
       // Apply blue filter class to tile pane for washed-out aesthetic
-      const tilePane = map.getPane('tilePane');
-      if (tilePane) {
-        tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
-      }
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        const tilePane = map.getPane('tilePane');
+        if (tilePane) {
+          tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
+          console.log('Map tile filter applied:', tileLayer.className);
+        }
+      });
 
       // NOTE: We're not adding location controls here anymore
       // This is now handled by MapControls.tsx using React portals
@@ -89,10 +93,14 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       }).addTo(mapRef.current);
 
       // Apply blue filter class to tile pane
-      const tilePane = mapRef.current.getPane('tilePane');
-      if (tilePane) {
-        tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
-      }
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        const tilePane = mapRef.current?.getPane('tilePane');
+        if (tilePane) {
+          tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
+          console.log('Map theme changed, filter applied:', tileLayer.className);
+        }
+      });
     }, [isDarkMode]);
 
     // Update map view when user location changes
