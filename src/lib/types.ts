@@ -19,7 +19,7 @@ export interface BaseVenue {
   imageUrl?: string;
   phone?: string;
   email?: string;
-  socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
+  socialMediaURLs?: any[];  // NOTE: Backend inconsistency - Venues use uppercase, Artists use lowercase
   facilities?: string[];
   standardStartTime?: string;
   standardEndTime?: string;
@@ -219,16 +219,20 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   // Initialize an empty array
   const socialMediaURLs: SocialMediaURL[] = [];
 
-  // Check if item already has the socialMediaUrls property (lowercase 'Urls')
-  if (item.socialMediaUrls && item.socialMediaUrls.length > 0) {
-    return item.socialMediaUrls;
+  // Check for socialMediaURLs (uppercase - used by Venues backend)
+  const urls = ('socialMediaURLs' in item && (item as any).socialMediaURLs) ||
+               ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
+               [];
+
+  if (urls && urls.length > 0) {
+    return urls;
   }
 
   // Handle legacy venue social properties
   if ('websiteUrl' in item && typeof item.websiteUrl === 'string') {
     socialMediaURLs.push({ platform: 'website', url: item.websiteUrl });
   }
-  
+
   if ('facebookUrl' in item && typeof item.facebookUrl === 'string') {
     socialMediaURLs.push({ platform: 'facebook', url: item.facebookUrl });
   }
@@ -237,7 +241,7 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   if ('instagramUrl' in item && typeof item.instagramUrl === 'string') {
     socialMediaURLs.push({ platform: 'instagram', url: item.instagramUrl });
   }
-  
+
   if ('spotifyUrl' in item && typeof item.spotifyUrl === 'string') {
     socialMediaURLs.push({ platform: 'spotify', url: item.spotifyUrl });
   }
@@ -247,11 +251,15 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
 
 // Function to check if an item has any social media URLs
 export function hasSocialMedia(item: Venue | Artist): boolean {
-  // First check if it has socialMediaUrls (lowercase 'Urls')
-  if (item.socialMediaUrls && item.socialMediaUrls.length > 0) {
+  // Check for either case variant
+  const urls = ('socialMediaURLs' in item && (item as any).socialMediaURLs) ||
+               ('socialMediaUrls' in item && (item as any).socialMediaUrls) ||
+               [];
+
+  if (urls && urls.length > 0) {
     return true;
   }
-  
+
   // Then check for legacy properties
   return !!(
     ('websiteUrl' in item && item.websiteUrl) ||

@@ -43,7 +43,7 @@ export default function VenueInfoOverlay({
 
   // Get social media links
   const getSocialLink = (platform: string): string | undefined => {
-    return venue.socialMediaUrls?.find(
+    return venue.socialMediaURLs?.find(
       (social: SocialMediaURL) => social.platform === platform
     )?.url;
   };
