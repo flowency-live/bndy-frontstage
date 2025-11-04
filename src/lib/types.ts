@@ -97,6 +97,7 @@ export interface Event {
   ticketinformation?: string; // Free-text details about tickets
   ticketUrl?: string; // URL to purchase tickets
   eventUrl?: string;
+  imageUrl?: string; // Optional event image for enhanced display
   source: EventSource;
   status: EventStatus;
   createdAt: string;

@@ -1050,5 +1050,191 @@ main {
   text-overflow: ellipsis;
 }
 /* ======================================================
+   12. Artist Profile Mobile-First Styles
+   ====================================================== */
+
+/* Artist profile specific mobile optimizations */
+.artist-profile-container {
+  /* Ensure proper spacing on mobile */
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .artist-profile-container {
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+/* Touch-friendly social media buttons */
+.social-media-button {
+  min-height: 44px; /* iOS recommended touch target */
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth transitions for mobile interactions */
+.mobile-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-card:active {
+  transform: scale(0.98);
+}
+
+/* Responsive text sizing for artist profiles */
+.artist-name-mobile {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .artist-name-mobile {
+    font-size: 1.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .artist-name-mobile {
+    font-size: 2.25rem;
+  }
+}
+
+/* Event card mobile optimizations */
+.event-card-mobile {
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .event-card-mobile {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Profile image loading states */
+.profile-image-loading {
+  background: linear-gradient(90deg, var(--foreground)/10 25%, var(--foreground)/5 50%, var(--foreground)/10 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Enhanced shimmer animation for image loading */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobile-specific genre tag styling */
+.genre-tag-mobile {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+/* Ensure proper scrolling on mobile */
+.artist-profile-content {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* ======================================================
+   13. Artist Profile Header Animations
+   ====================================================== */
+
+/* Fade in up animation for genre tags */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Smooth hover effects for profile elements */
+.profile-element-hover {
+  transition: all 0.2s ease;
+}
+
+.profile-element-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* ======================================================
    End of Global Styles
    ====================================================== */
+
+/* ======================================================
+   Mobile Touch Interactions for Event Cards
+   ====================================================== */
+
+/* Enhanced touch feedback for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile-specific touch interactions */
+  .event-card-touch {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+    touch-action: manipulation;
+  }
+  
+  /* Improve button touch targets on mobile */
+  .event-card-touch button,
+  .event-card-touch a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth transitions for mobile taps */
+  .event-card-touch:active {
+    transform: scale(0.98) translateY(1px);
+    transition: transform 0.1s ease-out;
+  }
+}
+
+/* Smooth scrolling for better mobile experience */
+@media (max-width: 768px) {
+  .upcoming-events-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Focus styles for accessibility */
+.event-card-focus:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .event-card-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

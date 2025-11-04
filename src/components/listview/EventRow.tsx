@@ -1,6 +1,7 @@
 // src/components/listview/EventRow.tsx
-import { Ticket, Map } from "lucide-react";
+import { Ticket, Map, User } from "lucide-react";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
+import Link from "next/link";
 import type { Event } from "@/lib/types";
 
 export function EventRow({ 
@@ -14,6 +15,9 @@ export function EventRow({
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     event.venueName
   )}`;
+
+  // Check if event has artist information
+  const hasArtist = event.artistIds && event.artistIds.length > 0;
 
   return (
     <>
@@ -29,11 +33,38 @@ export function EventRow({
       </td>
       <td className="px-2 sm:px-4 py-3 text-sm border-b border-gray-200 dark:border-gray-700">
         <div className="font-medium text-[var(--primary)]">{event.name}</div>
-        <div className="sm:hidden text-xs text-gray-500 dark:text-gray-400">{event.venueName}</div>
+        {/* Artist link if available */}
+        {hasArtist && (
+          <div className="text-xs text-[var(--foreground)]/70 flex items-center mt-1">
+            <User className="w-3 h-3 mr-1" />
+            <Link 
+              href={`/artists/${event.artistIds[0]}`}
+              className="text-[var(--primary)] hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View Artist
+            </Link>
+          </div>
+        )}
+        <div className="sm:hidden text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <Link 
+            href={`/venues/${event.venueId}`}
+            className="text-[var(--secondary)] hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {event.venueName}
+          </Link>
+        </div>
       </td>
       <td className="px-2 sm:px-4 py-3 text-sm text-[var(--foreground)] hidden sm:table-cell border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center">
-          <span>{event.venueName}</span>
+          <Link 
+            href={`/venues/${event.venueId}`}
+            className="text-[var(--secondary)] hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {event.venueName}
+          </Link>
           <a 
             href={mapUrl}
             target="_blank"
