@@ -78,9 +78,9 @@ export default function ArtistProfileHeader({ profileData }: ArtistProfileHeader
           )}
 
           {/* Social Media Links with platform-specific styling */}
-          {profileData.socialMediaURLs && profileData.socialMediaURLs.length > 0 && (
-            <SocialMediaLinks 
-              socialMediaURLs={profileData.socialMediaURLs}
+          {profileData.socialMediaUrls && profileData.socialMediaUrls.length > 0 && (
+            <SocialMediaLinks
+              socialMediaURLs={profileData.socialMediaUrls}
               className="animate-fade-in-up"
             />
           )}
