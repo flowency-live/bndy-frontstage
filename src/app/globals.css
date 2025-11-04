@@ -1254,7 +1254,8 @@ main {
     hue-rotate(180deg)            /* Shift to cool blue-gray */
     saturate(0.5)                 /* Desaturate for washed-out look */
     brightness(1.05)              /* Slightly brighter */
-    contrast(0.92);               /* Soften harsh contrasts */
+    contrast(0.92)                /* Soften harsh contrasts */
+    !important;
 }
 
 /* Dark Mode: Softer dark with blue-gray undertones
@@ -1267,5 +1268,6 @@ main {
     hue-rotate(190deg)            /* Blue-gray shift */
     saturate(0.6)                 /* Muted colors */
     brightness(0.88)              /* Softer than pure black */
-    contrast(1.08);               /* Maintain text readability */
+    contrast(1.08)                /* Maintain text readability */
+    !important;
 }
