@@ -65,11 +65,35 @@ export default function EventInfoOverlay({
       return;
     }
 
+    // Check for artistIds first (new format)
     if (currentEvent.artistIds && currentEvent.artistIds.length > 0) {
       getArtistById(currentEvent.artistIds[0])
         .then((artistData) => setArtist(artistData))
         .catch((err) => console.error("Error fetching artist:", err));
-    } else {
+    } 
+    // Check for legacy 'band' field or other potential artist fields
+    else if ((currentEvent as any).band) {
+      // Handle legacy 'band' field - try to fetch by name or create a mock artist
+      const bandName = (currentEvent as any).band;
+      // For now, create a mock artist object with the band name
+      setArtist({
+        id: `legacy-${bandName.toLowerCase().replace(/\s+/g, '-')}`,
+        name: bandName,
+        createdAt: '',
+        updatedAt: ''
+      });
+    }
+    // Check if the event name itself might be the artist name (for legacy events)
+    else if (currentEvent.name && currentEvent.name !== currentEvent.venueName) {
+      // Create a mock artist from the event name
+      setArtist({
+        id: `event-artist-${currentEvent.name.toLowerCase().replace(/\s+/g, '-')}`,
+        name: currentEvent.name,
+        createdAt: '',
+        updatedAt: ''
+      });
+    }
+    else {
       setArtist(null);
     }
   }, [currentEvent, isOpenMic]);
@@ -219,12 +243,14 @@ export default function EventInfoOverlay({
                   </div>
                 </div>
               ) : (
-                // Regular Artist Header
-                currentEvent.artistIds && currentEvent.artistIds.length > 0 && artist && (
-                  <Link
-                    href={`/artists/${currentEvent.artistIds[0]}`}
-                    className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
-                  >
+                // Regular Artist Header - show if we have artist data (including legacy/mock artists)
+                artist && (
+                  // Only make it a link if we have a real artistId, otherwise just show as text
+                  (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
+                    <Link
+                      href={`/artists/${currentEvent.artistIds[0]}`}
+                      className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
+                    >
                     <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
                       {artist.profileImageUrl ? (
                         <Image
@@ -254,15 +280,43 @@ export default function EventInfoOverlay({
                         />
                       )}
                     </div>
-                    <div className="flex flex-col">
-                      {artist.name && (
-                        <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                          {artist.name}
-                        </h2>
-                      )}
-                      <span className="text-xs text-[var(--primary)]">(view artist)</span>
+                      <div className="flex flex-col">
+                        {artist.name && (
+                          <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                            {artist.name}
+                          </h2>
+                        )}
+                        <span className="text-xs text-[var(--primary)]">(view artist)</span>
+                      </div>
+                    </Link>
+                  ) : (
+                    // Non-clickable artist display for legacy events without artistIds
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
+                        {artist.profileImageUrl ? (
+                          <Image
+                            src={artist.profileImageUrl}
+                            alt=""
+                            className="object-cover w-full h-full"
+                            width={50}
+                            height={50}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
+                            <Music className="w-5 h-5 text-[var(--primary)]" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        {artist.name && (
+                          <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
+                            {artist.name}
+                          </h2>
+                        )}
+                        <span className="text-xs text-[var(--foreground)]/60">(artist)</span>
+                      </div>
                     </div>
-                  </Link>
+                  )
                 )
               )}
 
