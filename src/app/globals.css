@@ -1238,3 +1238,35 @@ main {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ======================================================
+   Map Tile Filters - Blue Washed-Out Aesthetic
+   ====================================================== */
+
+/* Light Mode: Blue hue filter mimicking Google Maps style (#242a38)
+   - Applies a cool blue-gray tint to CARTO Positron tiles
+   - Reduces saturation for washed-out look
+   - Increases brightness slightly for softer appearance */
+.map-tiles-light {
+  filter:
+    sepia(0.2)                    /* Slight warm base */
+    hue-rotate(190deg)            /* Shift to blue tones */
+    saturate(0.4)                 /* Desaturate for washed-out look */
+    brightness(1.1)               /* Lighten slightly */
+    contrast(0.9);                /* Soften contrast */
+  opacity: 0.95;                  /* Slight transparency for softer feel */
+}
+
+/* Dark Mode: Softer dark tiles with blue undertones
+   - Less harsh than pure black CARTO Dark
+   - Maintains blue aesthetic in dark mode
+   - Better contrast for markers */
+.map-tiles-dark {
+  filter:
+    sepia(0.15)                   /* Slight warmth */
+    hue-rotate(200deg)            /* Blue-gray tones */
+    saturate(0.5)                 /* Muted colors */
+    brightness(0.85)              /* Slightly darker but not pure black */
+    contrast(1.05);               /* Maintain readability */
+  opacity: 0.92;                  /* Soft appearance */
+}

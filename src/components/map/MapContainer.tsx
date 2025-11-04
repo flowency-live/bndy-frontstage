@@ -50,6 +50,7 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
+        className: tileLayer.className,
       }).addTo(map);
 
       // NOTE: We're not adding location controls here anymore
@@ -80,6 +81,7 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
+        className: tileLayer.className,
       }).addTo(mapRef.current);
     }, [isDarkMode]);
 
