@@ -50,8 +50,13 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
-        className: tileLayer.className,
       }).addTo(map);
+
+      // Apply blue filter class to tile pane for washed-out aesthetic
+      const tilePane = map.getPane('tilePane');
+      if (tilePane) {
+        tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
+      }
 
       // NOTE: We're not adding location controls here anymore
       // This is now handled by MapControls.tsx using React portals
@@ -81,8 +86,13 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
-        className: tileLayer.className,
       }).addTo(mapRef.current);
+
+      // Apply blue filter class to tile pane
+      const tilePane = mapRef.current.getPane('tilePane');
+      if (tilePane) {
+        tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
+      }
     }, [isDarkMode]);
 
     // Update map view when user location changes

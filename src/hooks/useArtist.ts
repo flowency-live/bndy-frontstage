@@ -13,8 +13,9 @@ export function useArtist(artistId: string | undefined) {
     queryFn: async () => {
       if (!artistId) return null;
 
-      // Call DynamoDB API directly for faster response
-      const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
+      // Use Next.js API route for proper service layer architecture
+      const response = await fetch(`/api/artists/${artistId}`, {
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

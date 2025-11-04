@@ -160,8 +160,8 @@ export default function ArtistBrowseClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading artists...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-3 text-muted-foreground">Loading artists...</span>
       </div>
     );
   }
@@ -169,10 +169,10 @@ export default function ArtistBrowseClient() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 mb-4">{error}</div>
+        <div className="text-destructive mb-4">{error}</div>
         <button
           onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
         >
           Try Again
         </button>
@@ -204,15 +204,15 @@ export default function ArtistBrowseClient() {
       />
 
       {/* Results count */}
-      <div className="text-sm text-gray-600 flex items-center">
+      <div className="text-sm text-muted-foreground flex items-center">
         {searching && (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
         )}
         {displayedArtists.length === allArtists.length 
           ? `Showing all ${allArtists.length} artists`
           : `Showing ${displayedArtists.length} of ${allArtists.length} artists`
         }
-        {searching && <span className="ml-2 text-blue-600">Searching...</span>}
+        {searching && <span className="ml-2 text-primary">Searching...</span>}
       </div>
 
       {/* Artist Grid */}
@@ -224,7 +224,7 @@ export default function ArtistBrowseClient() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">
+          <div className="text-muted-foreground mb-4">
             {searchQuery || locationFilter || artistTypeFilter 
               ? 'No artists match your search criteria'
               : 'No artists found'
@@ -241,7 +241,7 @@ export default function ArtistBrowseClient() {
                   sessionStorage.removeItem('artistBrowseState');
                 }
               }}
-              className="text-blue-600 hover:text-blue-700 underline"
+              className="text-primary hover:text-primary/80 underline"
             >
               Clear all filters
             </button>

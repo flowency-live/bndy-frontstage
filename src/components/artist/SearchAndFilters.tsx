@@ -31,7 +31,7 @@ export default function SearchAndFilters({
   const hasActiveFilters = searchQuery || locationFilter || artistTypeFilter;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+    <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6">
       {/* Search Bar */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

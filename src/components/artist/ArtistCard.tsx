@@ -58,11 +58,11 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
 
   return (
     <Link href={`/artists/${artist.id}`} className="group block">
-      <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-200 shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+      <div className="relative aspect-square rounded-lg overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-105">
         {/* Loading skeleton */}
         {artist.profileImageUrl && !imageError && !imageLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-pulse">
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/50 to-muted animate-pulse">
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-background/40 to-transparent" />
           </div>
         )}
 
