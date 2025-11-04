@@ -235,8 +235,8 @@ export function validateArtistData(artist: any): artist is Artist {
     return false;
   }
 
-  // Validate artist_type field exists (requirement: no "Band" entity)
-  if (artist.artist_type !== undefined) {
+  // Validate artist_type field if present (null/undefined allowed for legacy artists)
+  if (artist.artist_type !== undefined && artist.artist_type !== null) {
     const validTypes = ['band', 'solo', 'duo', 'group', 'collective'];
     if (!validTypes.includes(artist.artist_type)) {
       console.error(`🎵 Artist validation failed: invalid artist_type "${artist.artist_type}". Must be one of: ${validTypes.join(', ')}`);
