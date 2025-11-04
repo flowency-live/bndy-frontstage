@@ -7,9 +7,24 @@ import { getArtistById, getArtistEvents } from "@/lib/services/artist-service-ne
 // Fetch artist data using service layer
 async function fetchArtistData(artistId: string): Promise<Artist | null> {
   try {
-    return await getArtistById(artistId);
+    console.log("fetchArtistData: Calling getArtistById with ID:", artistId);
+    const result = await getArtistById(artistId);
+    console.log("fetchArtistData: getArtistById returned:", result ? "Artist object" : "null");
+    if (result) {
+      console.log("fetchArtistData: Artist name:", result.name);
+      console.log("fetchArtistData: Artist has required fields:", {
+        id: !!result.id,
+        name: !!result.name,
+        bio: !!result.bio,
+        profileImageUrl: !!result.profileImageUrl
+      });
+    }
+    return result;
   } catch (error) {
-    console.error("Error fetching artist data:", error);
+    console.error("fetchArtistData: ERROR caught");
+    console.error("fetchArtistData: Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("fetchArtistData: Error message:", error instanceof Error ? error.message : String(error));
+    console.error("fetchArtistData: Error details:", error);
     return null;
   }
 }
@@ -97,21 +112,31 @@ async function fetchEventsForArtist(artistId: string): Promise<Event[]> {
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
   try {
     const { artistId } = await params;
-    
+    console.log("=== ARTIST PROFILE PAGE DEBUG START ===");
+    console.log("Requested artistId:", artistId);
+
     // Fetch artist data from DynamoDB API
+    console.log("Attempting to fetch artist data from API...");
     const artistData = await fetchArtistData(artistId);
+    console.log("API fetch completed. Artist data received:", artistData ? "YES" : "NO");
+
     if (!artistData) {
-      return <ArtistProfileClient initialData={null} error="The artist you're looking for doesn't exist or has been removed." artistId={artistId} />;
+      console.error("ARTIST DATA IS NULL - Cannot load profile");
+      console.log("=== ARTIST PROFILE PAGE DEBUG END (FAILED) ===");
+      return <ArtistProfileClient initialData={null} error="CODE MODIFIED - Artist data could not be loaded from the database. Check server logs for details." artistId={artistId} />;
     }
 
-    // Fetch upcoming events from DynamoDB API
-    const upcomingEvents = await fetchEventsForArtist(artistId);
+    console.log("Artist data structure:", JSON.stringify(artistData, null, 2));
+    console.log("Artist name:", artistData.name);
+    console.log("Artist ID from data:", artistData.id);
 
-    // Debug logging to understand data structure
-    console.log("🎵 Artist Profile Page - Artist data:", artistData);
-    console.log("🎵 Artist Profile Page - Events found:", upcomingEvents.length);
+    // Fetch upcoming events from DynamoDB API
+    console.log("Attempting to fetch events for artist...");
+    const upcomingEvents = await fetchEventsForArtist(artistId);
+    console.log("Events fetch completed. Count:", upcomingEvents.length);
 
     // Combine into profile data structure
+    console.log("Building profile data structure...");
     const profileData: ArtistProfileData = {
       id: artistData.id,
       name: artistData.name,
@@ -123,10 +148,17 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       upcomingEvents: upcomingEvents
     };
 
+    console.log("Profile data built successfully");
+    console.log("=== ARTIST PROFILE PAGE DEBUG END (SUCCESS) ===");
     return <ArtistProfileClient initialData={profileData} artistId={artistId} />;
   } catch (error) {
-    console.error("Error fetching artist profile:", error);
+    console.error("=== ARTIST PROFILE PAGE ERROR ===");
+    console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Error message:", error instanceof Error ? error.message : String(error));
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
     const { artistId } = await params;
-    return <ArtistProfileClient initialData={null} error="Failed to load artist profile. Please try again later." artistId={artistId} />;
+    console.error("Failed artistId:", artistId);
+    console.error("=== ARTIST PROFILE PAGE ERROR END ===");
+    return <ArtistProfileClient initialData={null} error="EXCEPTION CAUGHT - Failed to load artist profile. Check console for detailed error information." artistId={artistId} />;
   }
 }
