@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     viewportFit: 'cover',
     // Enhanced mobile viewport settings
     minimumScale: 1,
-    shrinkToFit: false,
     interactiveWidget: 'resizes-content'
   },
   themeColor: [
@@ -42,13 +41,7 @@ export const metadata: Metadata = {
   // Enhanced mobile-specific metadata
   other: {
     'mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'default',
-    'apple-touch-fullscreen': 'yes',
     'format-detection': 'telephone=no',
-    'msapplication-tap-highlight': 'no',
-    'msapplication-TileColor': '#ffffff',
-    'msapplication-config': 'none',
     'HandheldFriendly': 'true',
     'MobileOptimized': '320'
   }

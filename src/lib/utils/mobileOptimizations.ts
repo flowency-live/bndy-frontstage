@@ -2,19 +2,13 @@
  * Mobile-specific optimization utilities
  * Helps reduce bundle size and improve mobile performance
  */
+import React from 'react';
 
-// Lazy load heavy components only when needed
-export const lazyLoadComponent = <T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>,
-  fallback?: React.ComponentType
+// Lazy load heavy components only when needed - simplified version
+export const createLazyComponent = <T extends React.ComponentType>(
+  importFn: () => Promise<{ default: T }>
 ) => {
-  const LazyComponent = React.lazy(importFn);
-  
-  return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => (
-    <React.Suspense fallback={fallback ? React.createElement(fallback) : null}>
-      <LazyComponent {...props} ref={ref} />
-    </React.Suspense>
-  ));
+  return React.lazy(importFn);
 };
 
 // Detect mobile device capabilities
@@ -43,9 +37,9 @@ export const getMobileCapabilities = () => {
       const canvas = document.createElement('canvas');
       return canvas.toDataURL('image/avif').indexOf('data:image/avif') === 0;
     })(),
-    connectionType: (navigator as any).connection?.effectiveType || 'unknown',
-    isSlowConnection: (navigator as any).connection?.effectiveType === 'slow-2g' || 
-                     (navigator as any).connection?.effectiveType === '2g'
+    connectionType: (navigator as { connection?: { effectiveType?: string } }).connection?.effectiveType || 'unknown',
+    isSlowConnection: (navigator as { connection?: { effectiveType?: string } }).connection?.effectiveType === 'slow-2g' || 
+                     (navigator as { connection?: { effectiveType?: string } }).connection?.effectiveType === '2g'
   };
 };
 
@@ -81,7 +75,7 @@ export const getOptimizedImageProps = (
 };
 
 // Debounce function for performance
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   immediate?: boolean
@@ -104,7 +98,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 };
 
 // Throttle function for scroll events
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): ((...args: Parameters<T>) => void) => {
@@ -166,8 +160,11 @@ export const cleanupResources = () => {
   
   // Clean up any unused event listeners
   // Force garbage collection if available (development only)
-  if (process.env.NODE_ENV === 'development' && (window as any).gc) {
-    (window as any).gc();
+  if (process.env.NODE_ENV === 'development') {
+    const windowWithGc = window as { gc?: () => void };
+    if (windowWithGc.gc) {
+      windowWithGc.gc();
+    }
   }
 };
 
@@ -185,5 +182,3 @@ export const measurePerformance = (name: string, fn: () => void) => {
   console.log(`${name} took ${end - start} milliseconds`);
 };
 
-// React import for lazy loading
-import React from 'react';

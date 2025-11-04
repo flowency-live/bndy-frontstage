@@ -241,10 +241,8 @@ export default function TouchGestureHandler({
       style={{ 
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
-        touchAction: onPinch ? 'none' : 'manipulation',
-        WebkitUserDrag: 'none',
-        userDrag: 'none'
-      }}
+        touchAction: onPinch ? 'none' : 'manipulation'
+      } as React.CSSProperties}
     >
       {children}
     </div>

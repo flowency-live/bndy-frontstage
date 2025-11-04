@@ -10,9 +10,7 @@ import UpcomingEvents from "@/components/artist/UpcomingEvents";
 import SocialShareSection from "@/components/artist/SocialShareSection";
 import ArtistMetaTags from "@/components/artist/ArtistMetaTags";
 
-import ArtistNotFound from "@/components/artist/ArtistNotFound";
 import EnhancedErrorBoundary from "@/components/artist/EnhancedErrorBoundary";
-import ProgressiveLoader from "@/components/artist/ProgressiveLoader";
 import LoadingStateManager from "@/components/artist/LoadingStateManager";
 import LazySection from "@/components/artist/LazySection";
 import TouchGestureHandler from "@/components/artist/TouchGestureHandler";
