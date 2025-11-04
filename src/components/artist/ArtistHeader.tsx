@@ -11,12 +11,12 @@ interface ArtistHeaderProps {
 
 export default function ArtistHeader({ artist }: ArtistHeaderProps) {
   const [showFullBio, setShowFullBio] = useState(false);
-  
+
   // Check if bio is long enough to need truncation
-  const bioNeedsTruncation = artist.description && artist.description.length > 200;
-  const displayedBio = bioNeedsTruncation && !showFullBio 
-    ? artist.description!.slice(0, 200) + "..."
-    : artist.description;
+  const bioNeedsTruncation = artist.bio && artist.bio.length > 200;
+  const displayedBio = bioNeedsTruncation && !showFullBio
+    ? artist.bio!.slice(0, 200) + "..."
+    : artist.bio;
 
   return (
     <div className="relative">
@@ -100,7 +100,7 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
             )}
 
             {/* Description */}
-            {artist.description && (
+            {artist.bio && (
               <div className="mb-4">
                 <p className="text-muted-foreground max-w-2xl leading-relaxed text-sm sm:text-base px-2 sm:px-0">
                   {displayedBio}
@@ -120,7 +120,7 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
             {/* Social Media Links */}
             <div className="mt-4">
-              <SocialMediaLinks socialMediaURLs={artist.socialMediaURLs || []} />
+              <SocialMediaLinks socialMediaURLs={artist.socialMediaUrls || []} />
             </div>
           </div>
         </div>

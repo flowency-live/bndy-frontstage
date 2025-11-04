@@ -1,14 +1,14 @@
 // Artist Profile specific types for the new mobile-first implementation
-import { Event, SocialMediaURL } from "@/lib/types";
+import { Event } from "@/lib/types";
 
 export interface ArtistProfileData {
   id: string;
   name: string;
-  description?: string;
+  bio?: string;  // Backend returns 'bio' not 'description'
   profileImageUrl?: string;
   genres?: string[];
   location?: string;
-  socialMediaURLs?: SocialMediaURL[];
+  socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
   upcomingEvents: Event[];
 }
 

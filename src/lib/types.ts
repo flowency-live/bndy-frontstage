@@ -36,18 +36,26 @@ export interface Venue extends BaseVenue {
 }
 
 // Artist Types
+// NOTE: Backend returns 'bio' not 'description', and 'socialMediaUrls' not 'socialMediaURLs'
 export interface Artist {
   id: string;
   name: string;
   nameVariants?: string[];
   artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'collective'; // No "Band" entity - use artist_type field
-  socialMediaURLs?: SocialMediaURL[];  // Unified social media URLs array
+  socialMediaUrls?: any[];  // Backend uses lowercase 'Urls' - legacy individual URL fields also exist
   genres?: string[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   profileImageUrl?: string;
-  description?: string;
+  bio?: string;  // Backend uses 'bio' not 'description'
   location?: string;
+  // Legacy fields from backend
+  facebookUrl?: string;
+  instagramUrl?: string;
+  websiteUrl?: string;
+  youtubeUrl?: string;
+  spotifyUrl?: string;
+  twitterUrl?: string;
 }
 
 // Artist and Venue Social Media URLs

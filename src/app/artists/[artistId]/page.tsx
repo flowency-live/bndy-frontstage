@@ -29,8 +29,8 @@ export async function generateMetadata({ params }: { params: Promise<{ artistId:
     }
 
     const pageTitle = `${artistData.name} | bndy`;
-    const metaDescription = artistData.description 
-      ? `${artistData.description.slice(0, 155)}...`
+    const metaDescription = artistData.bio
+      ? `${artistData.bio.slice(0, 155)}...`
       : `Discover ${artistData.name} on bndy. Find upcoming events, music, and more.${artistData.genres ? ` Genres: ${artistData.genres.join(', ')}.` : ''}`;
     
     const canonicalUrl = `https://bndy.app/artists/${artistData.id}`;
@@ -115,11 +115,11 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     const profileData: ArtistProfileData = {
       id: artistData.id,
       name: artistData.name,
-      description: artistData.description,
+      bio: artistData.bio,
       profileImageUrl: artistData.profileImageUrl,
       genres: artistData.genres || [],
       location: artistData.location,
-      socialMediaURLs: artistData.socialMediaURLs || [],
+      socialMediaUrls: artistData.socialMediaUrls || [],
       upcomingEvents: upcomingEvents
     };
 
