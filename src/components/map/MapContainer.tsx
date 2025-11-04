@@ -54,11 +54,21 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
 
       // Apply blue filter class to tile pane for washed-out aesthetic
       // Use requestAnimationFrame to ensure DOM is ready
+      console.log("=== MAP INIT: CODE IS RUNNING ===");
+      console.log("Map initialized, isDarkMode:", isDarkMode);
+      console.log("Tile layer config:", tileLayer);
       requestAnimationFrame(() => {
+        console.log("requestAnimationFrame callback executing");
         const tilePane = map.getPane('tilePane');
+        console.log("tilePane element:", tilePane);
         if (tilePane) {
-          tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
-          console.log('Map tile filter applied:', tileLayer.className);
+          const newClassName = `leaflet-tile-pane ${tileLayer.className}`;
+          console.log("Setting className to:", newClassName);
+          tilePane.className = newClassName;
+          console.log("className after set:", tilePane.className);
+          console.log("tilePane computed style filter:", window.getComputedStyle(tilePane).filter);
+        } else {
+          console.error("TILE PANE NOT FOUND!");
         }
       });
 
@@ -94,11 +104,21 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
 
       // Apply blue filter class to tile pane
       // Use requestAnimationFrame to ensure DOM is ready
+      console.log("=== MAP THEME CHANGE: CODE IS RUNNING ===");
+      console.log("Theme changed to isDarkMode:", isDarkMode);
+      console.log("New tile layer config:", tileLayer);
       requestAnimationFrame(() => {
+        console.log("Theme change requestAnimationFrame callback executing");
         const tilePane = mapRef.current?.getPane('tilePane');
+        console.log("tilePane element:", tilePane);
         if (tilePane) {
-          tilePane.className = `leaflet-tile-pane ${tileLayer.className}`;
-          console.log('Map theme changed, filter applied:', tileLayer.className);
+          const newClassName = `leaflet-tile-pane ${tileLayer.className}`;
+          console.log("Setting className to:", newClassName);
+          tilePane.className = newClassName;
+          console.log("className after set:", tilePane.className);
+          console.log("tilePane computed style filter:", window.getComputedStyle(tilePane).filter);
+        } else {
+          console.error("TILE PANE NOT FOUND ON THEME CHANGE!");
         }
       });
     }, [isDarkMode]);
