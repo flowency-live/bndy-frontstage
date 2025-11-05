@@ -42,14 +42,15 @@ class ArtistDebugLogger {
     }
 
     // Console output with appropriate styling
-    const emoji = {
-      info: 'ℹ️',
-      warn: '⚠️',
-      error: '❌'
+    // NOTE: No emojis - they cause encoding errors in Node.js SSR
+    const prefix = {
+      info: '[INFO]',
+      warn: '[WARN]',
+      error: '[ERROR]'
     }[level];
 
     const categoryTag = `[${category.toUpperCase()}]`;
-    const fullMessage = `${emoji} ${categoryTag} ${message}`;
+    const fullMessage = `${prefix} ${categoryTag} ${message}`;
 
     switch (level) {
       case 'info':
