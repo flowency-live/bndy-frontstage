@@ -67,7 +67,7 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
         console.log("Target URL:", `/artists/${artist.id}`);
       }}
     >
-      <div className="relative aspect-square rounded-lg overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+      <div className="relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 sm:group-hover:scale-105">
         {/* Loading skeleton */}
         {artist.profileImageUrl && !imageError && !imageLoaded && (
           <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/50 to-muted animate-pulse">

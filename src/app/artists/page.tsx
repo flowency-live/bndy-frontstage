@@ -4,8 +4,8 @@ import ArtistBrowseClient from './ArtistBrowseClient';
 export default function ArtistsPage() {
   return (
     <div className="h-full w-full overflow-y-auto bg-background">
-      <div className="container mx-auto px-4 py-8 pb-32">
-        <div className="mb-8">
+      <div className="container mx-auto px-2 py-8 pb-32">
+        <div className="mb-8 px-2">
           <h1 className="text-3xl font-bold text-foreground mb-2">Artists</h1>
         </div>
 
