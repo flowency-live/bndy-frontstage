@@ -3,17 +3,21 @@ import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { Artist, Event } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
 
+// Simple fetch helper that uses /api/* proxy (Amplify routes to API Gateway)
+async function fetchFromAPI(path: string): Promise<Response> {
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store'
+  });
+}
+
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
   const { artistId } = await params;
 
   console.log("=== FETCHING ARTIST:", artistId);
 
-  // Direct API call - NO SERVICE LAYER, NO VALIDATION, NO ERROR TRAPPING
-  const artistResponse = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
-    headers: { 'Content-Type': 'application/json' },
-    cache: 'no-store'
-  });
-
+  // Use /api/* proxy - Amplify routes to API Gateway
+  const artistResponse = await fetchFromAPI(`/api/artists/${artistId}`);
   console.log("Artist API response status:", artistResponse.status);
 
   if (!artistResponse.ok) {
@@ -24,12 +28,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   const artistData = await artistResponse.json() as Artist;
   console.log("Artist data received:", artistData.name);
 
-  // Fetch events
-  const eventsResponse = await fetch(`https://api.bndy.co.uk/api/events?artistId=${artistId}`, {
-    headers: { 'Content-Type': 'application/json' },
-    cache: 'no-store'
-  });
-
+  // Fetch events using /api/* proxy
+  const eventsResponse = await fetchFromAPI(`/api/events?artistId=${artistId}`);
   const upcomingEvents = eventsResponse.ok ? await eventsResponse.json() as Event[] : [];
   console.log("Events received:", upcomingEvents.length);
 
@@ -53,10 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<{ artistId:
   const { artistId } = await params;
 
   try {
-    const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store'
-    });
+    const response = await fetchFromAPI(`/api/artists/${artistId}`);
 
     if (!response.ok) {
       return {
