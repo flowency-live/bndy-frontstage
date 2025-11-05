@@ -22,13 +22,46 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
 
   const artistData = await artistResponse.json() as Artist;
 
-  // Fetch events
-  const eventsResponse = await fetch(`https://api.bndy.co.uk/api/events?artistId=${artistId}`, {
-    headers: { 'Content-Type': 'application/json' },
-    cache: 'no-store'
-  });
+  // Fetch public events for this artist
+  // Use new public endpoint - efficient query using artistId-date-index GSI
+  const today = new Date().toISOString().split('T')[0];
+  const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const upcomingEvents = eventsResponse.ok ? await eventsResponse.json() as Event[] : [];
+  const eventsResponse = await fetch(
+    `https://api.bndy.co.uk/api/artists/${artistId}/public-events?startDate=${today}&endDate=${futureDate}`,
+    {
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    }
+  );
+
+  let upcomingEvents: Event[] = [];
+  if (eventsResponse.ok) {
+    const data = await eventsResponse.json();
+    // Transform from DynamoDB format to frontend Event format
+    upcomingEvents = (data.events || []).map((event: any) => ({
+      id: event.id,
+      name: event.title || event.name || 'Unnamed Event',
+      date: event.date,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      venueId: event.venueId,
+      venueName: event.venueName || '',
+      artistIds: [event.artistId],
+      location: {
+        lat: event.geoLat,
+        lng: event.geoLng
+      },
+      description: event.description,
+      ticketed: event.ticketed,
+      ticketUrl: event.ticketUrl,
+      eventUrl: event.eventUrl,
+      source: event.source || 'bndy.live',
+      status: event.status || 'approved',
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt
+    } as Event));
+  }
 
   // Build profile data
   const profileData: ArtistProfileData = {
