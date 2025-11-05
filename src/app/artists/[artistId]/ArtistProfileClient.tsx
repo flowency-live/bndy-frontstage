@@ -14,33 +14,13 @@ interface ArtistProfileClientProps {
 }
 
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
-  // IMMEDIATE CLIENT-SIDE DEBUG - Logs on every render
-  console.log("=== CLIENT RENDER START ===");
-  console.log("CLIENT RENDER: artistId =", artistId);
-  console.log("CLIENT RENDER: error =", error);
-  console.log("CLIENT RENDER: initialData =", initialData ? "HAS DATA" : "NULL");
-  if (initialData) {
-    console.log("CLIENT RENDER: Artist name =", initialData.name);
-  }
-  console.log("=== CLIENT RENDER END ===");
-
   const [isLoading] = useState(false);
 
-  // CLIENT-SIDE DEBUG LOGGING - After mount
-  useEffect(() => {
-    console.log("=== CLIENT: ArtistProfileClient mounted (useEffect) ===");
-    console.log("CLIENT useEffect: artistId prop:", artistId);
-    console.log("CLIENT useEffect: error prop:", error);
-    console.log("CLIENT useEffect: initialData prop:", initialData);
-    if (initialData) {
-      console.log("CLIENT useEffect: Artist name from initialData:", initialData.name);
-      console.log("CLIENT useEffect: Full initialData:", JSON.stringify(initialData, null, 2));
-    }
-  }, [artistId, error, initialData]);
+  // Simple logging
+  console.log("Artist Profile Client:", { artistId, hasData: !!initialData, error });
 
   // Handle error state
   if (error) {
-    console.error("CLIENT: Rendering error state. Error message:", error);
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -59,7 +39,6 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   // Handle loading state
   if (isLoading || !initialData) {
-    console.log("CLIENT: Rendering loading/no-data state. isLoading:", isLoading, "initialData:", initialData);
     return (
       <div className="min-h-screen bg-background">
         <div className="animate-pulse">
@@ -75,8 +54,6 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </div>
     );
   }
-
-  console.log("CLIENT: Rendering artist profile for:", initialData.name);
 
   return (
     <div className="min-h-screen bg-background">
