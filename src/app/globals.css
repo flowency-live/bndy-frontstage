@@ -1243,5 +1243,8 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Map tiles - Using CARTO Voyager tile provider with built-in blue water colors
-   No CSS filter needed */
+/* Map tiles - CARTO Voyager with subtle blue enhancement to match Google Maps
+   Light filter to cool the overall tone and increase blue saturation */
+.leaflet-tile-pane {
+  filter: saturate(1.15) hue-rotate(5deg) brightness(1.02) !important;
+}
