@@ -1243,26 +1243,8 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Map tiles - single consistent blue-gray style
-   Pronounced blue tint matching Google Maps aesthetic
-   Theme toggle does NOT affect map tiles (only UI overlays) */
-.map-tiles-blue {
-  filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
-}
-
-/* Apply blue filter to all Leaflet tile pane images */
-.leaflet-tile-pane img.map-tiles-blue,
-.leaflet-tile-pane .map-tiles-blue {
-  filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
-}
-
-/* Fallback: Apply to all tile images in tile container */
-.leaflet-tile-container img {
-  filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
-}
-
-/* TEST: Very obvious red filter to verify CSS is loading - TEMPORARY */
+/* Map tiles - Google Maps style blue appearance
+   Applied directly to Leaflet tile pane for consistent styling */
 .leaflet-tile-pane {
-  filter: sepia(1) hue-rotate(330deg) saturate(3) !important;
-  background: red !important;
+  filter: invert(1) hue-rotate(180deg) saturate(1.2) brightness(0.95) contrast(0.9) !important;
 }
