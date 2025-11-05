@@ -72,13 +72,13 @@ export default function RootLayout({
         {/* Resource hints for better mobile performance */}
         <link rel="preload" href="/openmic.png" as="image" type="image/png" />
       </head>
-      <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 overflow-hidden mobile-optimized keyboard-safe">
+      <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 mobile-optimized keyboard-safe">
         <Providers>
           <AuthProvider>
             <ViewToggleProvider>
               <ServiceWorkerRegistration />
               <Header />
-              <main className="flex-1 mt-[88px] mb-0 p-0 flex flex-col mobile-scroll-enhanced">
+              <main className="flex-1 mt-[88px] mb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
                 {children}
               </main>
               <Footer />
