@@ -1243,5 +1243,8 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Map tiles - Using Stadia Maps tile provider for native blue appearance
-   No CSS filter needed - the tile provider has the style built-in */
+/* Map tiles - Google Maps style blue appearance
+   Balanced filter for light CARTO tiles to create soft blue aesthetic */
+.leaflet-tile-pane {
+  filter: saturate(0.5) brightness(1.05) hue-rotate(185deg) contrast(0.88) !important;
+}
