@@ -298,7 +298,7 @@ export default function ArtistBrowseClient() {
                 {groupKey}
               </h2>
               {/* Group Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 sm:gap-3 md:gap-4">
                 {artists.map(artist => (
                   <ArtistCard key={artist.id} artist={artist} />
                 ))}

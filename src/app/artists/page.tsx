@@ -7,7 +7,6 @@ export default function ArtistsPage() {
       <div className="container mx-auto px-4 py-8 pb-32">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Artists</h1>
-          <p className="text-muted-foreground">Discover talented musicians and bands</p>
         </div>
 
         <Suspense fallback={
