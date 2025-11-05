@@ -16,8 +16,10 @@ interface ArtistProfileClientProps {
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
   const [isLoading] = useState(false);
 
-  // Simple logging
-  console.log("Artist Profile Client:", { artistId, hasData: !!initialData, error });
+  // Simple logging (client-side only to avoid hydration issues)
+  useEffect(() => {
+    console.log("Artist Profile Client:", { artistId, hasData: !!initialData, error });
+  }, [artistId, initialData, error]);
 
   // Handle error state
   if (error) {
