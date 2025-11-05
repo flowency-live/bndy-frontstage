@@ -1260,3 +1260,9 @@ main {
 .leaflet-tile-container img {
   filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
 }
+
+/* TEST: Very obvious red filter to verify CSS is loading - TEMPORARY */
+.leaflet-tile-pane {
+  filter: sepia(1) hue-rotate(330deg) saturate(3) !important;
+  background: red !important;
+}
