@@ -48,11 +48,13 @@ export async function getArtistById(artistId: string): Promise<Artist | null> {
     }
 
     const artist = await response.json() as Artist;
-    
-    // Comprehensive data analysis
+
+    // Comprehensive data analysis (non-blocking - log warnings only)
     const analysis = analyzeArtistData(artist);
     if (!analysis.isValid) {
-      throw new Error(`Invalid artist data structure: ${analysis.issues.join(', ')}`);
+      // Log validation issues but don't block - backend data is authoritative
+      console.warn(`Artist validation issues for ${artistId}:`, analysis.issues);
+      console.warn('Continuing with artist data - backend is authoritative source');
     }
 
     logPerformanceMetric('getArtistById', Date.now() - startTime, { artistId, result: 'success' });
