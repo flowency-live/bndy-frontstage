@@ -1243,19 +1243,9 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Apply filters to map tiles
-   Light Mode: Blue washed-out aesthetic similar to Google Maps (#242a38 hue)
-   - CARTO Positron base with blue-gray tint
-   - Desaturated for muted, calm appearance
-   - Less busy than standard OSM */
-.map-tiles-light {
+/* Map tiles - single consistent blue-gray style
+   Subtle blue tint matching Google Maps aesthetic
+   Theme toggle does NOT affect map tiles (only UI overlays) */
+.map-tiles-blue {
   filter: sepia(0.25) hue-rotate(180deg) saturate(0.5) brightness(1.05) contrast(0.92) !important;
-}
-
-/* Dark Mode: Softer dark with blue-gray undertones
-   - CARTO Dark base with subtle blue tint
-   - Not pure black - easier on eyes
-   - Better contrast for markers */
-.map-tiles-dark {
-  filter: sepia(0.2) hue-rotate(190deg) saturate(0.6) brightness(0.88) contrast(1.08) !important;
 }

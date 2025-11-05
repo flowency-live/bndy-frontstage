@@ -1,15 +1,9 @@
-// Configure the tile layers for light and dark modes
-// Using CARTO Positron (clean, minimal) with CSS filters for blue washed-out aesthetic
-// Mimics the Google Maps blue hue style from previous implementation (#242a38)
+// Configure the tile layer - single consistent blue-gray style
+// Uses CARTO Positron with CSS filter for subtle blue aesthetic
+// Theme toggle does NOT affect map tiles (only UI overlays)
 
-export const lightTileLayer = {
+export const tileLayer = {
   url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  className: "map-tiles-light", // CSS class for blue hue filter
-  // attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-};
-
-export const darkTileLayer = {
-  url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-  className: "map-tiles-dark", // CSS class for softer dark mode
+  className: "map-tiles-blue", // CSS class for blue-gray filter
   // attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 };

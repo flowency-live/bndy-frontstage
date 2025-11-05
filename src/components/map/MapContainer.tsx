@@ -1,12 +1,12 @@
 // src/components/Map/MapContainer.tsx
 import { useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import L from "leaflet";
-import { lightTileLayer, darkTileLayer } from "@/components/map/LeafletSettings/TileProviders";
+import { tileLayer } from "@/components/map/LeafletSettings/TileProviders";
 import { completeLeafletIconFix } from "@/components/map/LeafletSettings/leaflet-icon-fix";
 
 interface MapContainerProps {
   userLocation: google.maps.LatLngLiteral | null;
-  isDarkMode: boolean;
+  isDarkMode: boolean; // Still passed for UI overlays, but NOT used for map tiles
 }
 
 export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
@@ -46,11 +46,10 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         closePopupOnClick: true,
       });
 
-      // Add tile layer based on the theme
-      const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
-      const layer = L.tileLayer(tileLayer.url, {
+      // Add tile layer (consistent blue-gray style, not affected by theme)
+      L.tileLayer(tileLayer.url, {
         maxZoom: 19,
-        className: tileLayer.className, // Pass className to Leaflet TileLayer
+        className: tileLayer.className,
       }).addTo(map);
 
       // NOTE: We're not adding location controls here anymore
@@ -70,20 +69,7 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Update the tile layer when theme changes
-    useEffect(() => {
-      if (!mapRef.current) return;
-      mapRef.current.eachLayer((layer) => {
-        if (layer instanceof L.TileLayer) {
-          mapRef.current?.removeLayer(layer);
-        }
-      });
-      const tileLayer = isDarkMode ? darkTileLayer : lightTileLayer;
-      L.tileLayer(tileLayer.url, {
-        maxZoom: 19,
-        className: tileLayer.className, // Pass className to Leaflet TileLayer
-      }).addTo(mapRef.current);
-    }, [isDarkMode]);
+    // Map tiles stay consistent - theme toggle only affects UI overlays, not tiles
 
     // Update map view when user location changes
     useEffect(() => {

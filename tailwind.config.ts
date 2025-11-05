@@ -7,10 +7,8 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   safelist: [
-    // Preserve map tile CSS classes applied dynamically in MapContainer
-    'map-tiles-light',
-    'map-tiles-dark',
-    'leaflet-tile-pane',
+    // Preserve map tile CSS class applied dynamically in MapContainer
+    'map-tiles-blue',
   ],
   theme: {
     extend: {
