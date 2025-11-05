@@ -1243,31 +1243,19 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Apply filters to the entire Leaflet tile pane
+/* Apply filters to map tiles
    Light Mode: Blue washed-out aesthetic similar to Google Maps (#242a38 hue)
    - CARTO Positron base with blue-gray tint
    - Desaturated for muted, calm appearance
    - Less busy than standard OSM */
-.leaflet-tile-pane.map-tiles-light {
-  filter:
-    sepia(0.25)                   /* Warm sepia base */
-    hue-rotate(180deg)            /* Shift to cool blue-gray */
-    saturate(0.5)                 /* Desaturate for washed-out look */
-    brightness(1.05)              /* Slightly brighter */
-    contrast(0.92)                /* Soften harsh contrasts */
-    !important;
+.map-tiles-light {
+  filter: sepia(0.25) hue-rotate(180deg) saturate(0.5) brightness(1.05) contrast(0.92) !important;
 }
 
 /* Dark Mode: Softer dark with blue-gray undertones
    - CARTO Dark base with subtle blue tint
    - Not pure black - easier on eyes
    - Better contrast for markers */
-.leaflet-tile-pane.map-tiles-dark {
-  filter:
-    sepia(0.2)                    /* Warm base */
-    hue-rotate(190deg)            /* Blue-gray shift */
-    saturate(0.6)                 /* Muted colors */
-    brightness(0.88)              /* Softer than pure black */
-    contrast(1.08)                /* Maintain text readability */
-    !important;
+.map-tiles-dark {
+  filter: sepia(0.2) hue-rotate(190deg) saturate(0.6) brightness(0.88) contrast(1.08) !important;
 }
