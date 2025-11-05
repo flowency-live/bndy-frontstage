@@ -11,19 +11,14 @@ export default function Header() {
   const pathname = usePathname();
   const { activeView, setActiveView, mapMode, setMapMode, isDarkMode, toggleTheme } = useViewToggle();
 
-  // Only show the map/list toggle if we are on the home page ("/")
-  const showViewToggle = pathname === "/";
-  
-  // Only show the map mode toggle when in map view and on home page
-  const showMapModeToggle = showViewToggle && activeView === "map";
-  
-  // Check if we're on artists pages for active state
+  // Check if we're on specific pages
+  const isHomePage = pathname === "/";
   const isArtistsPage = pathname.startsWith("/artists");
 
   const handleViewToggle = () => {
     setActiveView((prev) => (prev === "map" ? "list" : "map"));
   };
-  
+
   const handleMapModeToggle = () => {
     setMapMode((prev) => (prev === "events" ? "venues" : "events"));
   };
@@ -40,20 +35,61 @@ export default function Header() {
       <div className="relative container mx-auto">
         {/* Navigation and toggles in top-right corner */}
         <div className="absolute top-0 right-0 mt-2 mr-2 flex items-center space-x-4">
-          {/* Artists Navigation Link */}
+          {/* Home/Map Icon - only show when NOT on home page */}
+          {!isHomePage && (
+            <Link
+              href="/"
+              className="flex items-center focus:outline-none transition-colors text-[var(--foreground)] hover:text-[var(--primary)]"
+              aria-label="Back to Map"
+            >
+              <MapIcon className="w-5 h-5" />
+            </Link>
+          )}
+
+          {/* Artists Icon */}
           <Link
             href="/artists"
             className={`flex items-center focus:outline-none transition-colors ${
-              isArtistsPage 
-                ? "text-[var(--primary)] font-medium" 
+              isArtistsPage
+                ? "text-[var(--primary)]"
                 : "text-[var(--foreground)] hover:text-[var(--primary)]"
             }`}
             aria-label="Browse Artists"
           >
-            <Users className="w-5 h-5 mr-1" />
-            <span className="text-sm">Artists</span>
+            <Users className="w-5 h-5" />
           </Link>
-          {/* Theme Toggle */}
+
+          {/* Map/List Toggle - always visible */}
+          {isHomePage && (
+            <button
+              onClick={handleViewToggle}
+              className="flex items-center focus:outline-none"
+              aria-label={activeView === "map" ? "Switch to list view" : "Switch to map view"}
+            >
+              {activeView === "map" ? (
+                <ListIcon className="w-5 h-5 text-[var(--foreground)]" />
+              ) : (
+                <MapIcon className="w-5 h-5 text-[var(--foreground)]" />
+              )}
+            </button>
+          )}
+
+          {/* Events/Venues Toggle - always visible on home page */}
+          {isHomePage && (
+            <button
+              onClick={handleMapModeToggle}
+              className="flex items-center focus:outline-none"
+              aria-label={mapMode === "events" ? "Switch to venues view" : "Switch to events view"}
+            >
+              {mapMode === "events" ? (
+                <Building className="w-5 h-5 text-[var(--foreground)]" />
+              ) : (
+                <Calendar className="w-5 h-5 calendar-icon-pulse" />
+              )}
+            </button>
+          )}
+
+          {/* Theme Toggle - always visible */}
           <button
             onClick={toggleTheme}
             className="flex items-center focus:outline-none"
@@ -65,36 +101,6 @@ export default function Header() {
               <Moon className="w-5 h-5 text-[var(--foreground)]" />
             )}
           </button>
-          
-          {/* Map Mode Toggle (only visible in map view) */}
-          {showMapModeToggle && (
-            <button 
-              onClick={handleMapModeToggle} 
-              className="flex items-center focus:outline-none"
-              aria-label={mapMode === "events" ? "Switch to venues view" : "Switch to events view"}
-            >
-              {mapMode === "events" ? (
-                <Building className="w-5 h-5 text-[var(--foreground)]" />
-              ) : (
-                <Calendar className="w-5 h-5 calendar-icon-pulse" />
-              )}
-            </button>
-          )}
-          
-          {/* Map/List Toggle */}
-          {showViewToggle && (
-            <button 
-              onClick={handleViewToggle} 
-              className="flex items-center focus:outline-none"
-              aria-label={activeView === "map" ? "Switch to list view" : "Switch to map view"}
-            >
-              {activeView === "map" ? (
-                <ListIcon className="w-5 h-5 text-[var(--foreground)]" />
-              ) : (
-                <MapIcon className="w-5 h-5 text-[var(--foreground)]" />
-              )}
-            </button>
-          )}
         </div>
         
         {/* Centered logo and tagline */}
