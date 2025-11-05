@@ -1249,3 +1249,14 @@ main {
 .map-tiles-blue {
   filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
 }
+
+/* Apply blue filter to all Leaflet tile pane images */
+.leaflet-tile-pane img.map-tiles-blue,
+.leaflet-tile-pane .map-tiles-blue {
+  filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
+}
+
+/* Fallback: Apply to all tile images in tile container */
+.leaflet-tile-container img {
+  filter: sepia(0.35) hue-rotate(185deg) saturate(0.75) brightness(0.98) contrast(0.95) !important;
+}
