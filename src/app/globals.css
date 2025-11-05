@@ -1246,5 +1246,5 @@ main {
 /* Map tiles - Google Maps style blue appearance
    Applied directly to Leaflet tile pane for consistent styling */
 .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) saturate(1.2) brightness(0.95) contrast(0.9) !important;
+  filter: grayscale(0.4) sepia(0.3) hue-rotate(180deg) saturate(0.8) brightness(0.92) contrast(0.85) !important;
 }
