@@ -6,23 +6,21 @@ import ArtistProfileClient from "./ArtistProfileClient";
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
   const { artistId } = await params;
 
-  console.log("=== FETCHING ARTIST:", artistId);
+  console.log("Fetching artist:", artistId);
 
-  // Direct API call
+  // Server components must use direct API URL (not /api/* proxy which only works in browser)
+  // This matches the pattern used in bndy-backstage godmode-service.ts
   const artistResponse = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
     headers: { 'Content-Type': 'application/json' },
     cache: 'no-store'
   });
 
-  console.log("Artist API response status:", artistResponse.status);
-
   if (!artistResponse.ok) {
-    console.error("Artist API failed:", artistResponse.status, artistResponse.statusText);
+    console.error("Failed to fetch artist:", artistResponse.status);
     return <ArtistProfileClient initialData={null} error={`Failed to load artist: ${artistResponse.status}`} artistId={artistId} />;
   }
 
   const artistData = await artistResponse.json() as Artist;
-  console.log("Artist data received:", artistData.name);
 
   // Fetch events
   const eventsResponse = await fetch(`https://api.bndy.co.uk/api/events?artistId=${artistId}`, {
@@ -31,7 +29,6 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   });
 
   const upcomingEvents = eventsResponse.ok ? await eventsResponse.json() as Event[] : [];
-  console.log("Events received:", upcomingEvents.length);
 
   // Build profile data
   const profileData: ArtistProfileData = {
