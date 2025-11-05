@@ -57,7 +57,16 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
   };
 
   return (
-    <Link href={`/artists/${artist.id}`} className="group block">
+    <Link
+      href={`/artists/${artist.id}`}
+      className="group block"
+      onClick={() => {
+        console.log("=== ARTIST CARD CLICKED ===");
+        console.log("Artist ID:", artist.id);
+        console.log("Artist Name:", artist.name);
+        console.log("Target URL:", `/artists/${artist.id}`);
+      }}
+    >
       <div className="relative aspect-square rounded-lg overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-105">
         {/* Loading skeleton */}
         {artist.profileImageUrl && !imageError && !imageLoaded && (

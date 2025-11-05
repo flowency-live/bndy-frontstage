@@ -14,17 +14,27 @@ interface ArtistProfileClientProps {
 }
 
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
+  // IMMEDIATE CLIENT-SIDE DEBUG - Logs on every render
+  console.log("=== CLIENT RENDER START ===");
+  console.log("CLIENT RENDER: artistId =", artistId);
+  console.log("CLIENT RENDER: error =", error);
+  console.log("CLIENT RENDER: initialData =", initialData ? "HAS DATA" : "NULL");
+  if (initialData) {
+    console.log("CLIENT RENDER: Artist name =", initialData.name);
+  }
+  console.log("=== CLIENT RENDER END ===");
+
   const [isLoading] = useState(false);
 
-  // CLIENT-SIDE DEBUG LOGGING
+  // CLIENT-SIDE DEBUG LOGGING - After mount
   useEffect(() => {
-    console.log("=== CLIENT: ArtistProfileClient mounted ===");
-    console.log("CLIENT: artistId prop:", artistId);
-    console.log("CLIENT: error prop:", error);
-    console.log("CLIENT: initialData prop:", initialData);
+    console.log("=== CLIENT: ArtistProfileClient mounted (useEffect) ===");
+    console.log("CLIENT useEffect: artistId prop:", artistId);
+    console.log("CLIENT useEffect: error prop:", error);
+    console.log("CLIENT useEffect: initialData prop:", initialData);
     if (initialData) {
-      console.log("CLIENT: Artist name from initialData:", initialData.name);
-      console.log("CLIENT: Full initialData:", JSON.stringify(initialData, null, 2));
+      console.log("CLIENT useEffect: Artist name from initialData:", initialData.name);
+      console.log("CLIENT useEffect: Full initialData:", JSON.stringify(initialData, null, 2));
     }
   }, [artistId, error, initialData]);
 
