@@ -3,61 +3,49 @@ import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { Artist, Event } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
 
-// Simple fetch helper that uses /api/* proxy (Amplify routes to API Gateway)
-async function fetchFromAPI(path: string): Promise<Response> {
-  return fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}${path}`, {
+export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
+  const { artistId } = await params;
+
+  console.log("=== FETCHING ARTIST:", artistId);
+
+  // Direct API call
+  const artistResponse = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
     headers: { 'Content-Type': 'application/json' },
     cache: 'no-store'
   });
-}
 
-export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
-  try {
-    const { artistId } = await params;
+  console.log("Artist API response status:", artistResponse.status);
 
-    console.log("=== FETCHING ARTIST:", artistId);
-
-    // Use /api/* proxy - Amplify routes to API Gateway
-    const artistResponse = await fetchFromAPI(`/api/artists/${artistId}`);
-    console.log("Artist API response status:", artistResponse.status);
-
-    if (!artistResponse.ok) {
-      console.error("Artist API failed:", artistResponse.status, artistResponse.statusText);
-      return <ArtistProfileClient initialData={null} error={`Failed to load artist: ${artistResponse.status}`} artistId={artistId} />;
-    }
-
-    const artistData = await artistResponse.json() as Artist;
-    console.log("Artist data received:", artistData.name);
-
-    // Fetch events using /api/* proxy
-    const eventsResponse = await fetchFromAPI(`/api/events?artistId=${artistId}`);
-    const upcomingEvents = eventsResponse.ok ? await eventsResponse.json() as Event[] : [];
-    console.log("Events received:", upcomingEvents.length);
-
-    // Build profile data
-    const profileData: ArtistProfileData = {
-      id: artistData.id,
-      name: artistData.name,
-      bio: artistData.bio,
-      profileImageUrl: artistData.profileImageUrl,
-      genres: artistData.genres || [],
-      location: artistData.location,
-      socialMediaUrls: artistData.socialMediaUrls || [],
-      upcomingEvents: upcomingEvents
-    };
-
-    return <ArtistProfileClient initialData={profileData} artistId={artistId} />;
-  } catch (error) {
-    console.error("=== ARTIST PROFILE ERROR ===");
-    console.error("Error type:", error?.constructor?.name);
-    console.error("Error message:", error instanceof Error ? error.message : String(error));
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
-    console.error("Full error object:", error);
-    console.error("=== END ERROR ===");
-
-    // Re-throw to let Next.js handle it, but we've logged everything first
-    throw error;
+  if (!artistResponse.ok) {
+    console.error("Artist API failed:", artistResponse.status, artistResponse.statusText);
+    return <ArtistProfileClient initialData={null} error={`Failed to load artist: ${artistResponse.status}`} artistId={artistId} />;
   }
+
+  const artistData = await artistResponse.json() as Artist;
+  console.log("Artist data received:", artistData.name);
+
+  // Fetch events
+  const eventsResponse = await fetch(`https://api.bndy.co.uk/api/events?artistId=${artistId}`, {
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store'
+  });
+
+  const upcomingEvents = eventsResponse.ok ? await eventsResponse.json() as Event[] : [];
+  console.log("Events received:", upcomingEvents.length);
+
+  // Build profile data
+  const profileData: ArtistProfileData = {
+    id: artistData.id,
+    name: artistData.name,
+    bio: artistData.bio,
+    profileImageUrl: artistData.profileImageUrl,
+    genres: artistData.genres || [],
+    location: artistData.location,
+    socialMediaUrls: artistData.socialMediaUrls || [],
+    upcomingEvents: upcomingEvents
+  };
+
+  return <ArtistProfileClient initialData={profileData} artistId={artistId} />;
 }
 
 // Simplified metadata generation
@@ -65,7 +53,10 @@ export async function generateMetadata({ params }: { params: Promise<{ artistId:
   const { artistId } = await params;
 
   try {
-    const response = await fetchFromAPI(`/api/artists/${artistId}`);
+    const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    });
 
     if (!response.ok) {
       return {
