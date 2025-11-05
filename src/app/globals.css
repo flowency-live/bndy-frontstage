@@ -1243,8 +1243,8 @@ main {
    Map Tile Filters - Blue Washed-Out Aesthetic
    ====================================================== */
 
-/* Map tiles - CARTO Voyager with subtle blue enhancement to match Google Maps
-   Light filter to cool the overall tone and increase blue saturation */
+/* Map tiles - CARTO Voyager with blue enhancement to match Google Maps
+   Stronger saturation and cooling for visible blue water effect */
 .leaflet-tile-pane {
-  filter: saturate(1.15) hue-rotate(5deg) brightness(1.02) !important;
+  filter: saturate(1.4) hue-rotate(10deg) brightness(1.03) contrast(0.95) !important;
 }
