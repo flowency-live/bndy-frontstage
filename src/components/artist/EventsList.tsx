@@ -335,10 +335,10 @@ function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps
               {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
                 <Link
                   href={`/artists/${event.artistIds[0]}`}
-                  className="text-xs font-bold underline decoration-primary/50 hover:decoration-primary text-primary hover:text-primary/80 truncate transition-all"
+                  className="text-xs font-bold underline decoration-secondary/50 hover:decoration-secondary text-secondary hover:text-secondary/80 truncate transition-all"
                   aria-label={`View artist details for ${event.artistName || 'artist'}`}
                 >
-                  {event.artistName || 'Unknown Artist'}
+                  {event.artistName || 'Unknown Artist'} (view artist)
                 </Link>
               ) : (
                 <Link
@@ -346,7 +346,7 @@ function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps
                   className="text-xs font-bold underline decoration-secondary/50 hover:decoration-secondary text-secondary hover:text-secondary/80 truncate transition-all"
                   aria-label={`View venue details for ${event.venueName}`}
                 >
-                  {event.venueName}
+                  {event.venueName} (view venue)
                 </Link>
               )}
             </div>

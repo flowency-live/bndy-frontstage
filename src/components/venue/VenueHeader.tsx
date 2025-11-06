@@ -22,14 +22,17 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
   // Format address for display
   const fullAddress = [venue.address, venue.postcode].filter(Boolean).join(", ");
 
+  // Get venue image - API may return either profileImageUrl or imageUrl
+  const venueImage = venue.profileImageUrl || venue.imageUrl;
+
   return (
     <div className="relative">
       {/* Cover/Banner Area - Compact - Using secondary (cyan) for venues */}
       <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-secondary/20 via-secondary/10 to-background relative overflow-hidden">
-        {venue.profileImageUrl && (
+        {venueImage && (
           <div className="absolute inset-0 opacity-20">
             <Image
-              src={venue.profileImageUrl}
+              src={venueImage}
               alt={`${venue.name} cover`}
               fill
               className="object-cover"
@@ -47,9 +50,9 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
         <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
           {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
-            {venue.profileImageUrl ? (
+            {venueImage ? (
               <Image
-                src={venue.profileImageUrl}
+                src={venueImage}
                 alt={`${venue.name} profile picture`}
                 width={125}
                 height={125}
