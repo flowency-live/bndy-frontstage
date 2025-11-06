@@ -1,0 +1,789 @@
+{
+  "audit_metadata": {
+    "audit_date": "2025-11-06",
+    "auditor": "Claude (Anthropic)",
+    "scope": "BNDY Platform AWS Infrastructure Security Audit",
+    "region": "eu-west-2 (London)",
+    "api_gateway_id": "qry0k6pmd0 (api.bndy.co.uk)"
+  },
+
+  "executive_summary": {
+    "critical_issues_count": 4,
+    "high_severity_count": 6,
+    "medium_severity_count": 3,
+    "low_severity_count": 2,
+    "overall_risk_level": "CRITICAL",
+    "immediate_actions_required": [
+      "IMMEDIATELY rotate and migrate hardcoded secrets to AWS Secrets Manager",
+      "Remove hardcoded credentials from Platform Bible documentation",
+      "Implement proper secrets management for all Lambda functions",
+      "Review and reduce Lambda package sizes (some >15MB indicating complexity bloat)"
+    ]
+  },
+
+  "lambda_findings": {
+    "critical_issues": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Hardcoded Secrets in Documentation",
+        "description": "JWT_SECRET, COGNITO_USER_POOL_CLIENT_SECRET, and other sensitive credentials are hardcoded in the Platform Bible documentation (C:\\VSProjects\\bndy All Platform Docs\\BNDY_PLATFORM_BIBLE.md lines 1171-1174, 1189, 1215)",
+        "exposed_secrets": {
+          "JWT_SECRET": "2c7fccb87d98f68d36b19d528aa81a61afacf91058c18ee49738c35b50b81aa5",
+          "COGNITO_USER_POOL_CLIENT_ID": "tb6qcc6a4suk2pv58rd40klh7",
+          "COGNITO_USER_POOL_CLIENT_SECRET": "1vk3rd8chd3mmn0ndn40kos0nbr77pjq5tkib4rlljf0n2ra633e"
+        },
+        "affected_resources": [
+          "bndy-serverless-api-AuthFunction-gKJksEC1lGjw",
+          "All authenticated API endpoints",
+          "Cognito User Pool: eu-west-2_LqtkKHs1P"
+        ],
+        "impact": "Complete authentication bypass possible. Attackers can forge JWT tokens, impersonate users, and gain unauthorized access to all platform resources.",
+        "remediation": [
+          "IMMEDIATELY rotate JWT_SECRET",
+          "Rotate Cognito app client secret",
+          "Migrate all secrets to AWS Secrets Manager",
+          "Update Lambda functions to retrieve secrets from Secrets Manager at runtime",
+          "Remove all hardcoded secrets from documentation",
+          "Implement secret rotation policy"
+        ],
+        "cvss_score": 10.0,
+        "cwe": "CWE-798: Use of Hard-coded Credentials"
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "Secrets Stored as Environment Variables Instead of Secrets Manager",
+        "description": "Platform Bible explicitly states secrets are stored as Lambda environment variables rather than AWS Secrets Manager (line 908, 1130-1133, 1168-1189)",
+        "affected_resources": [
+          "bndy-serverless-api-AuthFunction-gKJksEC1lGjw",
+          "bndy-serverless-api-SpotifyFunction (likely)",
+          "venue-enrichment-lambda (likely - Google API key)"
+        ],
+        "impact": "Environment variables are visible to anyone with Lambda:GetFunctionConfiguration permissions, stored in plaintext in AWS Systems Manager, and appear in CloudFormation/SAM templates",
+        "remediation": [
+          "Migrate to AWS Secrets Manager for all secrets",
+          "Implement runtime secret retrieval using @aws-sdk/client-secrets-manager",
+          "Remove secrets from environment variables",
+          "Update deployment scripts to reference Secrets Manager ARNs"
+        ],
+        "cvss_score": 9.5,
+        "cwe": "CWE-522: Insufficiently Protected Credentials"
+      }
+    ],
+
+    "high_severity_issues": [
+      {
+        "severity": "HIGH",
+        "issue": "Excessive Lambda Package Sizes Indicating Complexity Violations",
+        "description": "Multiple Lambda functions have package sizes >14MB, with some exceeding 15MB, violating the 'One Lambda = One Responsibility' sacred principle",
+        "affected_lambdas": [
+          {
+            "name": "venue-enrichment-lambda",
+            "size_bytes": 15528044,
+            "size_mb": "14.8 MB",
+            "concern": "Google Maps API integration bundled with full dependencies"
+          },
+          {
+            "name": "bndy-serverless-api-VenuesFunction-z91LnIIRKHhq",
+            "size_bytes": 15157028,
+            "size_mb": "14.5 MB",
+            "concern": "Likely contains full AWS SDK and unused dependencies"
+          },
+          {
+            "name": "bndy-serverless-api-SetlistsFunction",
+            "size_bytes": 28192316,
+            "size_mb": "26.9 MB",
+            "concern": "DOUBLE the size of other Lambdas - massive complexity bloat"
+          },
+          {
+            "name": "bndy-serverless-api-EventsFunction-03skAPFIwe9g",
+            "size_bytes": 14378583,
+            "size_mb": "13.7 MB"
+          },
+          {
+            "name": "bndy-serverless-api-ArtistSongsFunction",
+            "size_bytes": 14365727,
+            "size_mb": "13.7 MB"
+          }
+        ],
+        "impact": "Slow cold starts (>3 seconds), high memory usage, deployment complexity, increased attack surface",
+        "remediation": [
+          "Audit and remove unused dependencies from package.json",
+          "Use Lambda layers for shared dependencies (AWS SDK, database clients)",
+          "Implement tree-shaking and minimize bundle size",
+          "Split complex Lambdas into smaller single-purpose functions",
+          "Target package size <5MB for optimal performance"
+        ],
+        "cvss_score": 6.5,
+        "cwe": "CWE-1120: Excessive Code Complexity"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Runtime Version Inconsistency",
+        "description": "Most Lambdas run nodejs18.x but EventsAgentFunction runs nodejs20.x, creating potential compatibility and security patching issues",
+        "affected_resources": [
+          "bndy-serverless-api-EventsAgentFunction (nodejs20.x)",
+          "All other functions (nodejs18.x)"
+        ],
+        "impact": "nodejs18.x reaches end-of-life April 2025 (5 months away). Security vulnerabilities will not be patched after EOL.",
+        "remediation": [
+          "Upgrade all Lambdas to nodejs20.x immediately",
+          "Test thoroughly for breaking changes",
+          "Standardize runtime across all functions",
+          "Implement automated runtime version monitoring"
+        ],
+        "cvss_score": 7.0
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Inadequate Timeout Configuration for EventsAgentFunction",
+        "description": "EventsAgentFunction has 300s (5 minute) timeout, indicating long-running operations unsuitable for Lambda",
+        "affected_resources": [
+          "bndy-serverless-api-EventsAgentFunction"
+        ],
+        "impact": "Long-running functions increase costs, risk timeout failures, and may indicate architectural anti-patterns (should use Step Functions or SQS)",
+        "remediation": [
+          "Refactor to use AWS Step Functions for orchestration",
+          "Break into smaller asynchronous tasks with SQS",
+          "Reduce timeout to <30s if possible",
+          "Monitor actual execution times to optimize"
+        ],
+        "cvss_score": 5.5
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Extremely Short Timeout for UploadsFunction",
+        "description": "UploadsFunction has only 3 second timeout, likely causing failures for S3 presigned URL generation under load",
+        "affected_resources": [
+          "bndy-serverless-api-UploadsFunction"
+        ],
+        "impact": "Timeout errors during peak usage, failed image uploads, poor user experience",
+        "remediation": [
+          "Increase timeout to 15-30 seconds",
+          "Monitor CloudWatch logs for timeout errors",
+          "Implement retry logic in frontend"
+        ],
+        "cvss_score": 5.0
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Pinpoint Configuration Exposed in Documentation",
+        "description": "Pinpoint sender IDs, pool IDs, and configuration set ARNs are exposed in Platform Bible (lines 860-865)",
+        "exposed_data": {
+          "phone_pool": "pool-039d1debc6c84e3ab45e3f5f72adccad",
+          "sender_id_arn": "arn:aws:sms-voice:eu-west-2:771551874768:sender-id/BNDY/GB",
+          "configuration_set_arn": "arn:aws:sms-voice:eu-west-2:771551874768:configuration-set/bndy-sms-config",
+          "aws_account_id": "771551874768"
+        },
+        "impact": "AWS account ID exposed, potential SMS spoofing target, resource enumeration",
+        "remediation": [
+          "Remove sensitive ARNs from public documentation",
+          "Implement resource-based policies to restrict access",
+          "Enable CloudTrail logging for Pinpoint API calls"
+        ],
+        "cvss_score": 6.0
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Manual Environment Variable Management",
+        "description": "Platform Bible documents manual environment variable restoration after SAM deploys (lines 1168-1189, 1214-1215), indicating no infrastructure-as-code for secrets",
+        "impact": "High risk of human error, inconsistent configurations across deployments, secrets in deployment scripts",
+        "remediation": [
+          "Implement proper SAM/CloudFormation parameter handling",
+          "Use SSM Parameter Store references in template.yaml",
+          "Automate secret injection during deployment",
+          "Remove manual AWS CLI commands from documentation"
+        ],
+        "cvss_score": 6.5
+      }
+    ],
+
+    "medium_severity_issues": [
+      {
+        "severity": "MEDIUM",
+        "issue": "Inconsistent Memory Allocation",
+        "description": "Memory allocation varies wildly (128MB to 512MB) without clear justification",
+        "affected_resources": [
+          "EventsAgentFunction: 128MB (nodejs20.x, 300s timeout - likely insufficient)",
+          "UploadsFunction: 128MB (3s timeout - possibly over-provisioned)",
+          "Most others: 512MB (possibly over-provisioned)"
+        ],
+        "impact": "Unnecessary costs from over-provisioning, potential performance issues from under-provisioning",
+        "remediation": [
+          "Use AWS Lambda Power Tuning tool to optimize",
+          "Monitor actual memory usage in CloudWatch",
+          "Adjust based on p99 memory consumption"
+        ],
+        "cvss_score": 3.0
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Cognito Pool Configuration Exposed",
+        "description": "Cognito User Pool ID and client configuration details exposed in documentation",
+        "exposed_data": {
+          "user_pool_id": "eu-west-2_LqtkKHs1P",
+          "user_pool_client_id": "tb6qcc6a4suk2pv58rd40klh7"
+        },
+        "impact": "While not directly exploitable, this aids reconnaissance for attackers",
+        "remediation": [
+          "Remove from public documentation",
+          "Store in environment-specific config files",
+          "Implement proper secrets management"
+        ],
+        "cvss_score": 4.0
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No VPC Configuration Verification",
+        "description": "Cannot verify Lambdas are not in VPC (serverless principle violation)",
+        "impact": "If Lambdas are in VPC, cold starts increase 10x and NAT Gateway costs apply",
+        "remediation": [
+          "Verify all Lambdas have no VPC configuration",
+          "Document VPC-less architecture as requirement"
+        ],
+        "cvss_score": 3.5
+      }
+    ],
+
+    "low_severity_issues": [
+      {
+        "severity": "LOW",
+        "issue": "Function Naming Inconsistency",
+        "description": "Some functions have CloudFormation-generated suffixes (e.g., -HNQeQw7kJO9b) while others don't",
+        "impact": "Makes management and monitoring more difficult",
+        "remediation": [
+          "Standardize naming convention",
+          "Use logical resource IDs consistently"
+        ],
+        "cvss_score": 2.0
+      },
+      {
+        "severity": "LOW",
+        "issue": "SpotifyFunction Suspiciously Small",
+        "description": "SpotifyFunction is only 2,243 bytes (2KB), likely a stub or placeholder",
+        "impact": "Indicates incomplete implementation or missing functionality",
+        "remediation": [
+          "Verify function purpose and implement or remove",
+          "Document intended functionality"
+        ],
+        "cvss_score": 2.0
+      }
+    ],
+
+    "complexity_analysis": {
+      "total_lambdas": 15,
+      "average_package_size_mb": 13.8,
+      "largest_package": {
+        "name": "bndy-serverless-api-SetlistsFunction",
+        "size_mb": 26.9,
+        "recommendation": "URGENT: Refactor and split into smaller functions"
+      },
+      "smallest_package": {
+        "name": "bndy-serverless-api-SpotifyFunction",
+        "size_mb": 0.002,
+        "recommendation": "Investigate if function is complete"
+      },
+      "cold_start_risk": "HIGH",
+      "deployment_complexity": "HIGH"
+    }
+  },
+
+  "dynamodb_findings": {
+    "status": "PARTIAL_AUDIT",
+    "note": "Unable to execute AWS CLI commands due to connection issues. Analysis based on documentation.",
+    "tables_identified": 15,
+    "tables_list": [
+      "bndy-users",
+      "bndy-artists",
+      "bndy-artist-memberships",
+      "bndy-venues",
+      "bndy-songs",
+      "bndy-issues",
+      "bndy-user-bands (deprecated)",
+      "bndy-otp-codes",
+      "bndy-invites",
+      "bndy-events",
+      "bndy-setlists",
+      "bndy-artist-songs",
+      "Plus 3 additional tables (not documented)"
+    ],
+    "concerns": [
+      {
+        "severity": "MEDIUM",
+        "issue": "Deprecated Table Still Active",
+        "description": "bndy-user-bands table is marked deprecated but likely still exists",
+        "impact": "Data inconsistency, unnecessary costs, confusion",
+        "remediation": [
+          "Verify all data migrated to bndy-artist-memberships",
+          "Delete bndy-user-bands table",
+          "Update documentation"
+        ]
+      },
+      {
+        "severity": "LOW",
+        "issue": "TTL Implementation for Temporary Data",
+        "description": "bndy-otp-codes (5 min TTL) and bndy-invites (7 day TTL) use TTL correctly",
+        "status": "POSITIVE_FINDING"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "GSI Usage Unknown",
+        "description": "Cannot verify Global Secondary Index usage without AWS CLI access",
+        "concern": "Potential over-engineering with excessive GSIs",
+        "remediation": [
+          "Audit each table's GSIs",
+          "Remove unused indexes",
+          "Document GSI query patterns"
+        ]
+      }
+    ],
+    "required_verification": [
+      "Confirm all tables use on-demand billing (not provisioned)",
+      "Verify encryption at rest enabled for all tables",
+      "Check point-in-time recovery (PITR) status",
+      "Audit GSI configurations for each table",
+      "Verify proper IAM policies restrict table access to specific Lambdas"
+    ]
+  },
+
+  "api_gateway_findings": {
+    "status": "NOT_AUDITED",
+    "note": "Unable to execute AWS CLI commands. Manual audit required.",
+    "api_id": "qry0k6pmd0",
+    "domain": "api.bndy.co.uk",
+    "concerns": [
+      {
+        "severity": "HIGH",
+        "issue": "Unknown Public Endpoint Exposure",
+        "description": "Cannot verify which routes are public vs authenticated without API Gateway inspection",
+        "remediation": [
+          "Run: aws apigatewayv2 get-routes --api-id qry0k6pmd0 --region eu-west-2",
+          "Verify all routes except /auth/* require authentication",
+          "Implement WAF rules for DDoS protection"
+        ]
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Missing Rate Limiting Verification",
+        "description": "No evidence of throttling or usage plans in documentation",
+        "remediation": [
+          "Implement usage plans with throttling",
+          "Set burst limits (e.g., 1000 req/sec)",
+          "Set steady-state limits (e.g., 500 req/sec)"
+        ]
+      }
+    ],
+    "required_verification": [
+      "Verify CORS configuration doesn't allow * origin",
+      "Check request validation is enabled",
+      "Confirm CloudWatch logging enabled for all routes",
+      "Verify access logging configured",
+      "Check WAF association",
+      "Audit authorizer configurations"
+    ]
+  },
+
+  "s3_findings": {
+    "status": "NOT_AUDITED",
+    "note": "Unable to execute AWS CLI commands. Manual audit required.",
+    "bucket": "bndy-images",
+    "known_configuration": {
+      "purpose": "User-uploaded images (avatars, attachments)",
+      "access": "Public read access with CORS",
+      "upload_method": "Presigned URLs via UploadsFunction",
+      "size_limit": "5MB per file"
+    },
+    "concerns": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Public Read Access Configuration Unknown",
+        "description": "Documentation states 'public read access' but actual bucket policy not verified",
+        "impact": "Potential data exposure or misconfiguration",
+        "remediation": [
+          "Run: aws s3api get-bucket-policy --bucket bndy-images",
+          "Run: aws s3api get-public-access-block --bucket bndy-images",
+          "Verify only specific paths are public (not entire bucket)",
+          "Implement CloudFront with signed URLs instead"
+        ]
+      },
+      {
+        "severity": "HIGH",
+        "issue": "CORS Configuration Unknown",
+        "description": "CORS mentioned but configuration not verified",
+        "remediation": [
+          "Run: aws s3api get-bucket-cors --bucket bndy-images",
+          "Verify allowed origins are specific domains (not *)",
+          "Limit allowed methods to GET, PUT only"
+        ]
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No Lifecycle Policy Mentioned",
+        "description": "No evidence of lifecycle policies for old/deleted content",
+        "impact": "Unnecessary storage costs for abandoned uploads",
+        "remediation": [
+          "Implement lifecycle policy to delete incomplete multipart uploads after 7 days",
+          "Archive or delete files not accessed in 1 year"
+        ]
+      }
+    ],
+    "required_verification": [
+      "Verify bucket versioning status",
+      "Check encryption at rest (should use SSE-S3 or SSE-KMS)",
+      "Verify server access logging enabled",
+      "Check CloudTrail data events enabled",
+      "Audit bucket ACLs (should be private)",
+      "Verify intelligent tiering or lifecycle policies"
+    ]
+  },
+
+  "cloudwatch_findings": {
+    "status": "NOT_AUDITED",
+    "note": "Unable to execute AWS CLI commands. Manual audit required.",
+    "concerns": [
+      {
+        "severity": "HIGH",
+        "issue": "Emoji Encoding Issues in Logs",
+        "description": "Platform documentation explicitly warns: 'NO EMOJIS in console.log statements (CloudWatch logs fail with emoji encoding)'",
+        "impact": "Log corruption, failed log ingestion, monitoring gaps",
+        "remediation": [
+          "Audit all Lambda code for emoji usage",
+          "Implement linting rules to prevent emojis in code",
+          "Review existing CloudWatch logs for encoding errors"
+        ]
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "Potential Secrets in CloudWatch Logs",
+        "description": "Cannot verify if secrets are being logged. High risk given hardcoded secrets found in documentation.",
+        "remediation": [
+          "Run: aws logs describe-log-groups --region eu-west-2",
+          "For each Lambda, search recent logs for patterns:",
+          "  - grep 'JWT_SECRET\\|COGNITO.*SECRET\\|API.*KEY'",
+          "  - grep -E '[0-9a-f]{64}' (64-char hex strings like JWT secret)",
+          "  - grep -E 'Bearer [A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+' (JWT tokens)",
+          "Implement log sanitization for all sensitive data"
+        ]
+      }
+    ],
+    "required_verification": [
+      "Check log retention periods (should be 30-90 days)",
+      "Verify log encryption enabled",
+      "Search for exposed credentials in logs",
+      "Check for PII in logs (phone numbers, emails)",
+      "Verify metric filters configured for errors/alerts"
+    ]
+  },
+
+  "iam_findings": {
+    "status": "NOT_AUDITED",
+    "note": "Unable to inspect IAM roles and policies. Critical audit gap.",
+    "concerns": [
+      {
+        "severity": "HIGH",
+        "issue": "Lambda IAM Roles Not Verified",
+        "description": "Cannot verify least-privilege principle for Lambda execution roles",
+        "remediation": [
+          "For each Lambda, run: aws lambda get-function-configuration --function-name <name> --query 'Role'",
+          "Audit each role with: aws iam get-role --role-name <role>",
+          "Verify each Lambda can only access required DynamoDB tables",
+          "Verify no Lambda has Administrator or PowerUser access"
+        ]
+      },
+      {
+        "severity": "HIGH",
+        "issue": "DynamoDB Table Policies Unknown",
+        "description": "Cannot verify resource-based policies on DynamoDB tables",
+        "remediation": [
+          "Audit each table for resource policies",
+          "Implement least-privilege access per Lambda function",
+          "Enable table-level access controls"
+        ]
+      }
+    ]
+  },
+
+  "secrets_exposure_summary": {
+    "critical_secrets_found": [
+      {
+        "secret_type": "JWT_SECRET",
+        "value": "2c7fccb87d98f68d36b19d528aa81a61afacf91058c18ee49738c35b50b81aa5",
+        "location": "C:\\VSProjects\\bndy All Platform Docs\\BNDY_PLATFORM_BIBLE.md:1171, 1189, 1215",
+        "exposure": "PUBLIC",
+        "impact": "Authentication bypass, user impersonation, complete platform compromise"
+      },
+      {
+        "secret_type": "COGNITO_USER_POOL_CLIENT_SECRET",
+        "value": "1vk3rd8chd3mmn0ndn40kos0nbr77pjq5tkib4rlljf0n2ra633e",
+        "location": "C:\\VSProjects\\bndy All Platform Docs\\BNDY_PLATFORM_BIBLE.md:1132, 1174, 1189, 1215",
+        "exposure": "PUBLIC",
+        "impact": "OAuth flow compromise, user account takeover"
+      },
+      {
+        "secret_type": "COGNITO_USER_POOL_CLIENT_ID",
+        "value": "tb6qcc6a4suk2pv58rd40klh7",
+        "location": "C:\\VSProjects\\bndy All Platform Docs\\BNDY_PLATFORM_BIBLE.md:1131, 1173, 1189, 1215",
+        "exposure": "PUBLIC",
+        "impact": "Cognito configuration exposure, aids in attack reconnaissance"
+      },
+      {
+        "secret_type": "AWS_ACCOUNT_ID",
+        "value": "771551874768",
+        "location": "C:\\VSProjects\\bndy All Platform Docs\\BNDY_PLATFORM_BIBLE.md:862-863",
+        "exposure": "PUBLIC",
+        "impact": "Account enumeration, aids in attack targeting"
+      }
+    ],
+    "additional_sensitive_data": [
+      {
+        "data_type": "Cognito User Pool ID",
+        "value": "eu-west-2_LqtkKHs1P",
+        "exposure": "PUBLIC"
+      },
+      {
+        "data_type": "API Gateway ID",
+        "value": "qry0k6pmd0",
+        "exposure": "PUBLIC"
+      },
+      {
+        "data_type": "Pinpoint Phone Pool",
+        "value": "pool-039d1debc6c84e3ab45e3f5f72adccad",
+        "exposure": "PUBLIC"
+      },
+      {
+        "data_type": "Apple Developer Service ID",
+        "value": "YN2NBQK228.uk.co.bndy.backstage",
+        "exposure": "PUBLIC"
+      },
+      {
+        "data_type": "Apple Sign In Key ID",
+        "value": "Q255RQCNGB",
+        "exposure": "PUBLIC"
+      }
+    ]
+  },
+
+  "infrastructure_as_code_findings": {
+    "concerns": [
+      {
+        "severity": "HIGH",
+        "issue": "SAM/CloudFormation Disabled During Development",
+        "description": "Platform Bible states: 'STATUS: Manual deployment via AWS CLI (SAM/CloudFormation DISABLED during active development)'",
+        "impact": "No version control for infrastructure, manual errors, inconsistent deployments, configuration drift",
+        "remediation": [
+          "Re-enable CloudFormation/SAM for all deployments",
+          "Implement CI/CD pipeline with automated deployments",
+          "Use parameter stores for configuration management",
+          "Version control template.yaml changes"
+        ]
+      },
+      {
+        "severity": "HIGH",
+        "issue": "GitHub Actions Auto-Deploy Disabled",
+        "description": "Platform Bible states: 'GitHub Actions auto-deploy is TURNED OFF (as of Oct 3, 2025)'",
+        "impact": "Manual deployments increase error risk, no audit trail, inconsistent environments",
+        "remediation": [
+          "Re-enable GitHub Actions with proper secret management",
+          "Implement proper staging/production promotion workflow",
+          "Add deployment approval gates"
+        ]
+      }
+    ]
+  },
+
+  "immediate_action_items": [
+    {
+      "priority": "P0 - CRITICAL",
+      "action": "Rotate JWT_SECRET Immediately",
+      "steps": [
+        "1. Generate new JWT_SECRET: openssl rand -hex 64",
+        "2. Create AWS Secrets Manager secret: aws secretsmanager create-secret --name bndy/jwt-secret --secret-string '<new-secret>'",
+        "3. Update AuthFunction to retrieve from Secrets Manager",
+        "4. Deploy updated AuthFunction",
+        "5. ONLY THEN update environment variable as fallback",
+        "6. Force all users to re-authenticate"
+      ],
+      "estimated_time": "2-4 hours",
+      "impact": "All users logged out, must re-authenticate"
+    },
+    {
+      "priority": "P0 - CRITICAL",
+      "action": "Rotate Cognito App Client Secret",
+      "steps": [
+        "1. Create new app client in Cognito User Pool",
+        "2. Update AuthFunction with new client ID and secret",
+        "3. Test OAuth flows thoroughly",
+        "4. Migrate traffic to new client",
+        "5. Delete old app client"
+      ],
+      "estimated_time": "1-2 hours",
+      "impact": "OAuth flows temporarily disrupted during migration"
+    },
+    {
+      "priority": "P0 - CRITICAL",
+      "action": "Remove Hardcoded Secrets from Documentation",
+      "steps": [
+        "1. Edit BNDY_PLATFORM_BIBLE.md",
+        "2. Replace all hardcoded secrets with placeholders",
+        "3. Add warning about never committing secrets",
+        "4. Commit with message: 'Remove hardcoded secrets from documentation'",
+        "5. Verify no secrets in git history (or rewrite history if needed)"
+      ],
+      "estimated_time": "30 minutes"
+    },
+    {
+      "priority": "P1 - HIGH",
+      "action": "Migrate All Secrets to AWS Secrets Manager",
+      "steps": [
+        "1. Create secrets in Secrets Manager for: Google Maps API key, Spotify client secret, any other API keys",
+        "2. Update all Lambda functions to retrieve secrets at runtime",
+        "3. Remove secrets from environment variables",
+        "4. Test all integrations",
+        "5. Enable automatic rotation for secrets"
+      ],
+      "estimated_time": "4-8 hours"
+    },
+    {
+      "priority": "P1 - HIGH",
+      "action": "Audit and Reduce Lambda Package Sizes",
+      "steps": [
+        "1. For SetlistsFunction (26.9 MB): Identify why it's 2x larger than others",
+        "2. Remove unused dependencies from all package.json files",
+        "3. Create Lambda layers for shared dependencies",
+        "4. Implement webpack/esbuild for tree-shaking",
+        "5. Target <5MB per function"
+      ],
+      "estimated_time": "8-16 hours"
+    },
+    {
+      "priority": "P1 - HIGH",
+      "action": "Upgrade All Lambdas to nodejs20.x",
+      "steps": [
+        "1. Update all Lambda runtimes to nodejs20.x",
+        "2. Test for breaking changes",
+        "3. Deploy to staging first",
+        "4. Monitor for errors",
+        "5. Deploy to production"
+      ],
+      "estimated_time": "4-6 hours"
+    },
+    {
+      "priority": "P2 - MEDIUM",
+      "action": "Complete AWS Infrastructure Audit with CLI",
+      "steps": [
+        "1. Run all AWS CLI commands from original audit request",
+        "2. Verify S3 bucket policies",
+        "3. Check API Gateway configurations",
+        "4. Inspect DynamoDB table settings",
+        "5. Audit IAM roles and policies",
+        "6. Search CloudWatch logs for exposed secrets"
+      ],
+      "estimated_time": "2-4 hours"
+    },
+    {
+      "priority": "P2 - MEDIUM",
+      "action": "Re-enable Infrastructure as Code",
+      "steps": [
+        "1. Update template.yaml with current configurations",
+        "2. Add Secrets Manager references",
+        "3. Test SAM deployments in dev environment",
+        "4. Re-enable GitHub Actions with proper secrets",
+        "5. Document deployment procedures"
+      ],
+      "estimated_time": "8-12 hours"
+    }
+  ],
+
+  "compliance_concerns": [
+    {
+      "standard": "GDPR",
+      "concern": "User PII potentially logged to CloudWatch without verification",
+      "remediation": "Audit logs, implement log sanitization, ensure data retention policies"
+    },
+    {
+      "standard": "PCI DSS",
+      "concern": "If payment data is stored: hardcoded secrets violate PCI DSS 3.4, 8.2",
+      "remediation": "Immediately migrate to Secrets Manager, implement key rotation"
+    },
+    {
+      "standard": "SOC 2",
+      "concern": "Manual deployments and disabled CI/CD violate change management controls",
+      "remediation": "Re-enable automated deployments with audit trails"
+    }
+  ],
+
+  "cost_optimization_opportunities": [
+    {
+      "item": "Over-provisioned Lambda memory",
+      "potential_savings": "20-30%",
+      "action": "Use Lambda Power Tuning tool"
+    },
+    {
+      "item": "Large Lambda packages causing slower cold starts",
+      "potential_savings": "Reduce execution time by 50-70%",
+      "action": "Reduce package sizes to <5MB"
+    },
+    {
+      "item": "Deprecated DynamoDB table (bndy-user-bands)",
+      "potential_savings": "$5-20/month",
+      "action": "Delete after data migration verification"
+    },
+    {
+      "item": "S3 incomplete multipart uploads",
+      "potential_savings": "Variable",
+      "action": "Implement lifecycle policy"
+    }
+  ],
+
+  "recommendations": {
+    "immediate": [
+      "ROTATE ALL EXPOSED SECRETS WITHIN 24 HOURS",
+      "Remove hardcoded secrets from documentation",
+      "Migrate to AWS Secrets Manager",
+      "Upgrade to nodejs20.x runtime"
+    ],
+    "short_term": [
+      "Complete full AWS CLI audit",
+      "Reduce Lambda package sizes",
+      "Optimize Lambda memory allocations",
+      "Re-enable infrastructure as code",
+      "Implement proper CI/CD pipeline"
+    ],
+    "long_term": [
+      "Implement AWS WAF for API Gateway",
+      "Enable GuardDuty for threat detection",
+      "Set up AWS Config for compliance monitoring",
+      "Implement automated security scanning in CI/CD",
+      "Regular penetration testing"
+    ]
+  },
+
+  "appendix": {
+    "lambda_inventory": {
+      "total_count": 15,
+      "functions": [
+        "bndy-serverless-api-ArtistSongsFunction (nodejs18.x, 14.4MB, 30s, 256MB)",
+        "bndy-serverless-api-UsersFunction-HNQeQw7kJO9b (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-EventsFunction-03skAPFIwe9g (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-VenuesFunction-z91LnIIRKHhq (nodejs18.x, 14.5MB, 30s, 512MB)",
+        "venue-enrichment-lambda (nodejs18.x, 14.8MB, 30s, 256MB)",
+        "bndy-serverless-api-SongsFunction-c3eFxAdsTmeS (nodejs18.x, 13.6MB, 30s, 512MB)",
+        "bndy-serverless-api-InvitesFunction (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-ArtistsFunction-4wCJA9JLMwF5 (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-SetlistsFunction (nodejs18.x, 26.9MB, 30s, 256MB) [CRITICAL SIZE]",
+        "bndy-serverless-api-IssuesFunction (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-AuthFunction-gKJksEC1lGjw (nodejs18.x, 13.8MB, 30s, 512MB) [EXPOSED SECRETS]",
+        "bndy-serverless-api-MembershipsFunction-adBmJyeWuWLA (nodejs18.x, 13.7MB, 30s, 512MB)",
+        "bndy-serverless-api-EventsAgentFunction (nodejs20.x, 6.5MB, 300s, 128MB) [LONG TIMEOUT]",
+        "bndy-serverless-api-UploadsFunction (nodejs18.x, 13.7MB, 3s, 128MB) [SHORT TIMEOUT]",
+        "bndy-serverless-api-SpotifyFunction (nodejs18.x, 2KB, 30s, 256MB) [SUSPICIOUSLY SMALL]"
+      ]
+    },
+    "audit_limitations": [
+      "Unable to execute AWS CLI commands for live infrastructure inspection",
+      "Analysis based primarily on documentation review",
+      "Cannot verify actual IAM policies, S3 bucket policies, or API Gateway configurations",
+      "Cannot search CloudWatch logs for exposed secrets",
+      "Recommend re-running audit with direct AWS access"
+    ]
+  }
+}

@@ -1186,32 +1186,1146 @@ main {
 }
 
 /* ======================================================
+   14. Event Card Theme-Aware Styles
+   ====================================================== */
+
+/* Event Card Container */
+.event-card-theme {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--card-foreground);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+/* Hover Effects - Subtle animations using CSS transforms */
+.event-card-theme:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02) translateY(-2px);
+  border-color: var(--primary);
+}
+
+/* Focus Effects - Accessibility compliance */
+.event-card-theme:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--primary-translucent);
+}
+
+.event-card-theme:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--primary-translucent);
+}
+
+/* Keyboard navigation focus for the entire card */
+.event-card-theme[tabindex]:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--primary-translucent);
+}
+
+/* Active State - Touch-friendly for mobile devices */
+.event-card-theme:active {
+  transform: scale(0.98) translateY(1px);
+  transition: transform 100ms ease-out;
+}
+
+/* Dark mode hover effects */
+.dark .event-card-theme:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Accent Border */
+.accent-border {
+  background-color: var(--primary);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card-theme:hover .accent-border {
+  background-color: var(--primary);
+  width: 6px;
+  box-shadow: 0 0 8px var(--primary-translucent);
+}
+
+/* Event Title */
+.event-title {
+  color: var(--card-foreground);
+  transition: color 0.2s ease;
+}
+
+/* Today Badge */
+.today-badge {
+  background-color: var(--primary);
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+/* Event Text (dates, times, ticket info) */
+.event-text {
+  color: var(--card-foreground);
+  transition: color 0.2s ease;
+}
+
+/* Event Icons */
+.event-icon {
+  color: var(--muted-foreground);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icon hover effects when parent elements are hovered */
+.event-card-theme:hover .event-icon {
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+.venue-section:hover .event-icon {
+  color: var(--secondary);
+}
+
+.event-link:hover .event-icon,
+.venue-link:hover .event-icon {
+  transform: translateX(2px);
+}
+
+/* Venue Section */
+.venue-section {
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.venue-section:hover {
+  background-color: var(--accent);
+  border-color: var(--secondary);
+  transform: translateY(-1px);
+}
+
+/* Enhanced Venue Section */
+.venue-section-enhanced {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.venue-section-enhanced:hover {
+  background-color: var(--surface-3);
+  border-color: var(--secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .venue-section-enhanced:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Venue Icon Container */
+.venue-icon-container {
+  background-color: var(--secondary-translucent);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.venue-section-enhanced:hover .venue-icon-container {
+  background-color: var(--secondary);
+  transform: scale(1.1);
+}
+
+.venue-section-enhanced:hover .venue-icon-container .event-icon {
+  color: white;
+}
+
+/* Venue Link */
+.venue-link {
+  color: var(--secondary);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+.venue-link:hover {
+  color: var(--secondary);
+  background-color: var(--secondary-translucent);
+  transform: translateY(-1px);
+}
+
+.venue-link:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+.venue-link:active {
+  transform: translateY(0);
+}
+
+/* Enhanced Venue Link */
+.venue-link-enhanced {
+  color: var(--secondary);
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin: -6px -8px;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.venue-link-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--secondary-translucent), transparent);
+  transition: left 300ms ease;
+}
+
+.venue-link-enhanced:hover {
+  color: var(--secondary);
+  background-color: var(--secondary-translucent);
+  transform: translateY(-1px);
+  text-decoration: underline;
+  text-decoration-color: var(--secondary);
+  text-underline-offset: 3px;
+}
+
+.venue-link-enhanced:hover::before {
+  left: 100%;
+}
+
+.venue-link-enhanced:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+  background-color: var(--secondary-translucent);
+}
+
+.venue-link-enhanced:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Distance Badge */
+.distance-badge {
+  background-color: var(--primary);
+  color: white;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.distance-badge:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Enhanced Distance Badge */
+.distance-badge-enhanced {
+  background: linear-gradient(135deg, var(--primary), #e86307);
+  color: white;
+  border: 2px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.distance-badge-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 300ms ease;
+}
+
+.venue-section-enhanced:hover .distance-badge-enhanced {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+  border-color: #e86307;
+}
+
+.venue-section-enhanced:hover .distance-badge-enhanced::before {
+  left: 100%;
+}
+
+.distance-badge-enhanced:active {
+  transform: scale(0.95);
+}
+
+/* Event Divider */
+.event-divider {
+  border-top: 1px solid var(--border);
+  transition: border-color 0.2s ease;
+}
+
+/* Ticket Information Section */
+.ticket-info-section {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ticket-info-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), #e86307);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-info-section:hover {
+  background-color: var(--surface-3);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .ticket-info-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ticket-info-section:hover::before {
+  height: 4px;
+  box-shadow: 0 2px 8px var(--primary-translucent);
+}
+
+/* Ticket Information Text */
+.ticket-info-text {
+  color: var(--card-foreground);
+  font-weight: 500;
+  transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-info-section:hover .ticket-info-text {
+  color: var(--primary);
+}
+
+/* Enhanced Ticket Button */
+.ticket-button {
+  background: linear-gradient(135deg, var(--primary), #e86307);
+  color: white;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.025em;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+}
+
+.ticket-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 300ms ease;
+}
+
+.ticket-button:hover {
+  background: linear-gradient(135deg, #e86307, var(--primary));
+  border-color: #e86307;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+.ticket-button:hover::before {
+  left: 100%;
+}
+
+.ticket-button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--primary-translucent), 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+.ticket-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+  transition: all 150ms ease-out;
+}
+
+/* Free Entry Styling */
+.free-entry-badge {
+  background: linear-gradient(135deg, var(--secondary), #0891b2);
+  color: white;
+  border: 2px solid var(--secondary);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(6, 182, 212, 0.2);
+}
+
+.free-entry-badge:hover {
+  background: linear-gradient(135deg, #0891b2, var(--secondary));
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+/* Ticket Icon Styling */
+.ticket-icon-enhanced {
+  color: var(--muted-foreground);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-info-section:hover .ticket-icon-enhanced {
+  color: var(--primary);
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Event Link (More Details) */
+.event-link {
+  color: var(--primary);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+}
+
+.event-link:hover {
+  color: var(--primary);
+  background-color: var(--primary-translucent);
+  transform: translateY(-1px);
+}
+
+.event-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.event-link:active {
+  transform: translateY(0);
+}
+
+/* Event Description Section */
+.event-description-section {
+  border-top: 1px solid var(--border);
+  transition: border-color 0.2s ease;
+}
+
+/* Event Description Text */
+.event-description {
+  color: var(--muted-foreground);
+  transition: color 0.2s ease;
+}
+
+/* Theme Transition Animations - Consistent timing across all interactive elements */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Smooth theme transitions for all theme-dependent properties */
+.event-card-theme,
+.event-card-theme * {
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), 
+              color 200ms cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states for accessibility */
+.event-card-theme a:focus-visible,
+.event-card-theme button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px var(--primary-translucent);
+}
+
+/* Mobile touch feedback - Touch-friendly active states */
+@media (hover: none) and (pointer: coarse) {
+  .event-card-theme {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .event-card-theme:active {
+    transform: scale(0.98) translateY(1px);
+    transition: transform 150ms ease-out;
+  }
+  
+  .ticket-button:active {
+    transform: translateY(0) scale(0.95);
+    opacity: 0.9;
+    transition: all 150ms ease-out;
+  }
+  
+  .venue-link:active,
+  .event-link:active {
+    transform: scale(0.95);
+    opacity: 0.7;
+    transition: all 150ms ease-out;
+  }
+  
+  /* Ensure minimum touch targets for mobile */
+  .ticket-button,
+  .venue-link,
+  .event-link {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Enhanced venue section mobile interactions */
+  .venue-link-enhanced {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px 12px;
+  }
+  
+  .venue-section-enhanced:active {
+    transform: scale(0.98);
+    transition: transform 150ms ease-out;
+  }
+  
+  .distance-badge-enhanced:active {
+    transform: scale(0.9);
+    transition: transform 150ms ease-out;
+  }
+  
+  /* Mobile-specific ticket section styling */
+  .ticket-info-section {
+    padding: 12px 16px;
+  }
+  
+  .ticket-button {
+    min-height: 48px;
+    min-width: 140px;
+    font-size: 15px;
+    padding: 14px 28px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .free-entry-badge {
+    min-height: 36px;
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+  
+  .ticket-info-section:active {
+    transform: scale(0.98);
+    transition: transform 150ms ease-out;
+  }
+}
+
+/* Responsive venue section layout */
+@media (max-width: 640px) {
+  .venue-section-enhanced {
+    padding: 12px 16px;
+  }
+  
+  .venue-link-enhanced {
+    font-size: 0.875rem;
+    padding: 4px 6px;
+  }
+  
+  .distance-badge-enhanced {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  .venue-icon-container {
+    padding: 6px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .venue-section-enhanced {
+    padding: 16px 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .venue-section-enhanced {
+    padding: 18px 24px;
+  }
+  
+  .venue-section-enhanced:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Responsive ticket section layout */
+@media (max-width: 640px) {
+  .ticket-info-section {
+    padding: 14px 18px;
+    border-radius: 10px;
+  }
+  
+  .ticket-button {
+    font-size: 14px;
+    padding: 12px 20px;
+    min-width: 120px;
+    border-radius: 6px;
+  }
+  
+  .free-entry-badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 5px;
+  }
+  
+  .ticket-info-text {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .ticket-info-section {
+    padding: 16px 20px;
+    border-radius: 8px;
+  }
+  
+  .ticket-button {
+    font-size: 14px;
+    padding: 12px 24px;
+    min-width: 130px;
+  }
+  
+  .free-entry-badge {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .ticket-info-section {
+    padding: 18px 24px;
+    border-radius: 10px;
+  }
+  
+  .ticket-info-section:hover {
+    transform: translateY(-2px);
+  }
+  
+  .ticket-button {
+    font-size: 15px;
+    padding: 14px 28px;
+    min-width: 140px;
+  }
+  
+  .ticket-button:hover {
+    transform: translateY(-3px) scale(1.03);
+  }
+  
+  .free-entry-badge {
+    font-size: 14px;
+    padding: 10px 18px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .event-card-theme,
+  .event-card-theme * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ======================================================
    End of Global Styles
    ====================================================== */
 
 /* ======================================================
-   Mobile Touch Interactions for Event Cards
+   Responsive Design Improvements for Event Cards
    ====================================================== */
 
-/* Enhanced touch feedback for mobile devices */
-@media (hover: none) and (pointer: coarse) {
-  /* Mobile-specific touch interactions */
-  .event-card-touch {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+/* Mobile-First Responsive Design (< 640px) */
+@media (max-width: 639px) {
+  /* Event Card Container - Mobile */
+  .event-card-theme {
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    min-height: auto;
+  }
+  
+  /* Accent border adjustments for mobile */
+  .accent-border {
+    width: 3px;
+  }
+  
+  .event-card-theme:hover .accent-border {
+    width: 4px;
+  }
+  
+  /* Event title responsive sizing */
+  .event-title {
+    font-size: 1.125rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+  
+  /* Date and time section - mobile layout */
+  .event-card-theme .flex.items-center.gap-6 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  /* Today badge mobile sizing */
+  .today-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    min-height: 24px;
+  }
+  
+  /* Icon and text sizing for mobile */
+  .event-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  
+  .event-text {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* Venue section mobile optimizations */
+  .venue-section-enhanced {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .venue-icon-container {
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .venue-link-enhanced {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 6px 8px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .distance-badge-enhanced {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    min-height: 32px;
+    min-width: 60px;
+  }
+  
+  /* Ticket section mobile layout */
+  .ticket-info-section {
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .ticket-button {
+    font-size: 0.875rem;
+    padding: 12px 20px;
+    min-height: 48px;
+    min-width: 120px;
+    border-radius: 6px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .free-entry-badge {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    min-height: 36px;
+  }
+  
+  /* Event link mobile styling */
+  .event-link {
+    font-size: 0.875rem;
+    padding: 8px 10px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Description section mobile */
+  .event-description-section {
+    padding-top: 0.75rem;
+  }
+  
+  .event-description {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  
+  /* Mobile touch interactions */
+  .event-card-theme {
+    -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
   
-  /* Improve button touch targets on mobile */
-  .event-card-touch button,
-  .event-card-touch a {
-    min-height: 44px;
-    min-width: 44px;
+  .event-card-theme:active {
+    transform: scale(0.98) translateY(1px);
+    transition: transform 150ms ease-out;
   }
   
-  /* Smooth transitions for mobile taps */
-  .event-card-touch:active {
+  /* Ensure proper spacing between sections on mobile */
+  .event-card-theme > div > div {
+    margin-bottom: 1rem;
+  }
+  
+  .event-card-theme > div > div:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Tablet Responsive Design (640px - 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Event Card Container - Tablet */
+  .event-card-theme {
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  
+  /* Accent border tablet sizing */
+  .accent-border {
+    width: 4px;
+  }
+  
+  .event-card-theme:hover .accent-border {
+    width: 5px;
+  }
+  
+  /* Event title tablet sizing */
+  .event-title {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Today badge tablet sizing */
+  .today-badge {
+    font-size: 0.8125rem;
+    padding: 6px 12px;
+    min-height: 28px;
+  }
+  
+  /* Icon sizing for tablet */
+  .event-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .event-text {
+    font-size: 0.9375rem;
+  }
+  
+  /* Venue section tablet optimizations */
+  .venue-section-enhanced {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+  }
+  
+  .venue-icon-container {
+    padding: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .venue-link-enhanced {
+    font-size: 0.9375rem;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+  
+  .distance-badge-enhanced {
+    font-size: 0.8125rem;
+    padding: 8px 14px;
+    min-height: 36px;
+    min-width: 70px;
+  }
+  
+  /* Ticket section tablet layout */
+  .ticket-info-section {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+  }
+  
+  .ticket-button {
+    font-size: 0.9375rem;
+    padding: 14px 24px;
+    min-height: 48px;
+    min-width: 140px;
+    border-radius: 8px;
+  }
+  
+  .free-entry-badge {
+    font-size: 0.8125rem;
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+  
+  /* Event link tablet styling */
+  .event-link {
+    font-size: 0.9375rem;
+    padding: 8px 12px;
+    min-height: 44px;
+  }
+  
+  /* Description section tablet */
+  .event-description {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+}
+
+/* Desktop Responsive Design (1024px+) */
+@media (min-width: 1024px) {
+  /* Event Card Container - Desktop */
+  .event-card-theme {
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  
+  /* Enhanced hover effects for desktop */
+  .event-card-theme:hover {
+    transform: scale(1.02) translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+  
+  .dark .event-card-theme:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+  
+  /* Accent border desktop sizing */
+  .accent-border {
+    width: 4px;
+  }
+  
+  .event-card-theme:hover .accent-border {
+    width: 6px;
+  }
+  
+  /* Event title desktop sizing */
+  .event-title {
+    font-size: 1.375rem;
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Today badge desktop sizing */
+  .today-badge {
+    font-size: 0.875rem;
+    padding: 8px 16px;
+    min-height: 32px;
+  }
+  
+  /* Icon sizing for desktop */
+  .event-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .event-text {
+    font-size: 1rem;
+  }
+  
+  /* Venue section desktop optimizations */
+  .venue-section-enhanced {
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .venue-section-enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+  
+  .dark .venue-section-enhanced:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+  
+  .venue-icon-container {
+    padding: 12px;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .venue-link-enhanced {
+    font-size: 1rem;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  
+  .distance-badge-enhanced {
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    min-height: 40px;
+    min-width: 80px;
+  }
+  
+  .venue-section-enhanced:hover .distance-badge-enhanced {
+    transform: scale(1.1) translateY(-3px);
+  }
+  
+  /* Ticket section desktop layout */
+  .ticket-info-section {
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .ticket-info-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+  
+  .dark .ticket-info-section:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+  
+  .ticket-button {
+    font-size: 1rem;
+    padding: 16px 28px;
+    min-height: 52px;
+    min-width: 160px;
+    border-radius: 10px;
+  }
+  
+  .ticket-button:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.45);
+  }
+  
+  .free-entry-badge {
+    font-size: 0.875rem;
+    padding: 12px 20px;
+    min-height: 44px;
+  }
+  
+  /* Event link desktop styling */
+  .event-link {
+    font-size: 1rem;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  
+  /* Description section desktop */
+  .event-description {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+}
+
+/* Large Desktop Responsive Design (1440px+) */
+@media (min-width: 1440px) {
+  .event-card-theme {
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  
+  .event-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+  
+  .venue-section-enhanced,
+  .ticket-info-section {
+    padding: 24px 28px;
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Enhanced touch feedback for mobile devices */
+  .event-card-theme {
+    -webkit-tap-highlight-color: rgba(249, 115, 22, 0.1);
+    touch-action: manipulation;
+  }
+  
+  /* Ensure all interactive elements meet touch target requirements */
+  .event-card-theme button,
+  .event-card-theme a,
+  .venue-link-enhanced,
+  .ticket-button,
+  .event-link {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Touch feedback animations */
+  .event-card-theme:active {
     transform: scale(0.98) translateY(1px);
-    transition: transform 0.1s ease-out;
+    transition: transform 150ms ease-out;
+  }
+  
+  .ticket-button:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+    transition: all 150ms ease-out;
+  }
+  
+  .venue-link-enhanced:active,
+  .event-link:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+    transition: all 150ms ease-out;
+  }
+  
+  .venue-section-enhanced:active {
+    transform: scale(0.98);
+    transition: transform 150ms ease-out;
+  }
+  
+  .distance-badge-enhanced:active {
+    transform: scale(0.9);
+    transition: transform 150ms ease-out;
+  }
+  
+  .ticket-info-section:active {
+    transform: scale(0.98);
+    transition: transform 150ms ease-out;
   }
 }
 
@@ -1221,22 +2335,239 @@ main {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* Optimize spacing for mobile event lists */
+  .grid.gap-4 {
+    gap: 0.75rem;
+  }
 }
 
-/* Focus styles for accessibility */
-.event-card-focus:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+/* Focus styles for accessibility across all breakpoints */
+.event-card-theme:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
   border-radius: 12px;
+  box-shadow: 0 0 0 6px var(--primary-translucent);
 }
 
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .event-card-motion * {
+  .event-card-theme,
+  .event-card-theme * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  
+  .event-card-theme:hover {
+    transform: none !important;
+  }
+  
+  .venue-section-enhanced:hover,
+  .ticket-info-section:hover,
+  .ticket-button:hover {
+    transform: none !important;
+  }
+}
+
+/* ======================================================
+   Accessibility Improvements
+   ====================================================== */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Enhanced focus states for better accessibility */
+.event-card-theme:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 6px var(--primary-translucent);
+}
+
+/* Improved button focus states */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced contrast for better readability */
+.event-text {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.event-icon {
+  color: var(--muted-foreground);
+  opacity: 0.8;
+}
+
+/* Ensure minimum color contrast ratios */
+.today-badge {
+  background-color: var(--primary);
+  color: white;
+  font-weight: 700;
+}
+
+.distance-badge-enhanced {
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  border: 2px solid var(--primary);
+}
+
+.free-entry-badge {
+  background: var(--secondary);
+  color: white;
+  font-weight: 700;
+  border: 2px solid var(--secondary);
+}
+
+/* Improved venue link contrast */
+.venue-link-enhanced {
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.venue-link-enhanced:hover {
+  color: var(--secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* Enhanced ticket button accessibility */
+.ticket-button {
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  border: 2px solid var(--primary);
+  min-height: 48px;
+  min-width: 120px;
+}
+
+.ticket-button:hover {
+  background: #e86307;
+  border-color: #e86307;
+}
+
+.ticket-button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--primary-translucent);
+}
+
+/* Event link accessibility improvements */
+.event-link {
+  color: var(--primary);
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.event-link:hover {
+  background-color: var(--primary-translucent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.event-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  background-color: var(--primary-translucent);
+}
+
+/* Select dropdown accessibility */
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--primary-translucent);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .event-card-theme {
+    border: 2px solid var(--foreground);
+  }
+  
+  .accent-border {
+    width: 6px;
+  }
+  
+  .event-icon {
+    opacity: 1;
+  }
+  
+  .today-badge,
+  .distance-badge-enhanced,
+  .free-entry-badge,
+  .ticket-button {
+    border-width: 3px;
+    font-weight: 800;
+  }
+  
+  .venue-link-enhanced,
+  .event-link {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .event-card-theme,
+  .event-card-theme *,
+  .venue-section-enhanced,
+  .ticket-info-section,
+  .ticket-button,
+  .venue-link-enhanced,
+  .event-link {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .event-card-theme:hover,
+  .venue-section-enhanced:hover,
+  .ticket-info-section:hover {
+    transform: none !important;
+  }
+}
+
+/* Dark mode accessibility improvements */
+.dark .event-text {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.dark .event-icon {
+  color: var(--muted-foreground);
+  opacity: 0.9;
+}
+
+.dark .venue-link-enhanced {
+  color: var(--secondary);
+}
+
+.dark .event-link {
+  color: var(--primary);
 }
 
 /* ======================================================
