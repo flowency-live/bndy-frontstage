@@ -207,28 +207,28 @@ function EventCard({ event, userLocation }: EventCardProps) {
   const isToday = eventDate.getTime() === today.getTime();
 
   return (
-    <article 
-      className="relative rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-[1.02] focus-within:outline-2 focus-within:outline-offset-2 event-card-theme"
+    <article
+      className="relative rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 transition-all duration-200 hover:shadow-lg"
       tabIndex={0}
       role="article"
-      aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}${isToday ? ', happening today' : ''}`}
+      aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${distance.toFixed(1)} miles away` : ''}${isToday ? ', happening today' : ''}`}
       aria-describedby={`event-${event.id}-details`}
     >
-      {/* Left accent border */}
-      <div className="absolute top-0 left-0 bottom-0 w-1 accent-border" />
+      {/* Gradient top stripe: orange -> cyan -> orange */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-cyan-500 to-orange-500" />
 
-      <div className="p-4 pl-5 sm:p-5 sm:pl-6 lg:p-6 lg:pl-7">
+      <div className="pt-3 px-3 pb-3">
         {/* Header: Event Name + Today Badge */}
-        <div className="flex items-start justify-between gap-2 sm:gap-3 mb-4 sm:mb-5">
-          <h3 
-            className="font-semibold text-lg sm:text-xl lg:text-xl leading-tight flex-1 event-title"
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3
+            className="font-bold text-base leading-tight flex-1 text-foreground"
             id={`event-${event.id}-title`}
           >
             {event.name}
           </h3>
           {isToday && (
-            <span 
-              className="inline-flex items-center px-2 py-1 text-xs font-bold rounded-full whitespace-nowrap today-badge flex-shrink-0"
+            <span
+              className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full whitespace-nowrap bg-orange-500 text-white flex-shrink-0"
               aria-label="This event is happening today"
               role="status"
             >
@@ -237,239 +237,143 @@ function EventCard({ event, userLocation }: EventCardProps) {
           )}
         </div>
 
-        {/* Date and Time with icons */}
-        <div 
-          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-5"
+        {/* Date and Time on same row */}
+        <div
+          className="flex items-center gap-4 mb-2"
           id={`event-${event.id}-details`}
         >
-          <div className="flex items-center gap-2">
-            <svg 
-              className="w-4 h-4 event-icon" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
+          <div className="flex items-center gap-1.5">
+            <svg
+              className="w-3.5 h-3.5 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
               aria-hidden="true"
-              role="img"
-              aria-label="Calendar icon"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <time 
-              className="font-medium text-sm event-text"
+            <time
+              className="text-xs text-foreground"
               dateTime={event.date}
               aria-label={`Event date: ${formattedDate}`}
             >
               {formattedDate}
             </time>
           </div>
-          <div className="flex items-center gap-2">
-            <svg 
-              className="w-4 h-4 event-icon" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
+          <div className="flex items-center gap-1.5">
+            <svg
+              className="w-3.5 h-3.5 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
               aria-hidden="true"
-              role="img"
-              aria-label="Clock icon"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span 
-              className="font-medium text-sm event-text"
-              aria-label={`Event time: ${event.startTime}${event.endTime ? ` to ${event.endTime}` : ''}`}
+            <span
+              className="text-xs text-foreground"
+              aria-label={`Event time: ${event.startTime}`}
             >
               {event.startTime}
-              {event.endTime && ` - ${event.endTime}`}
             </span>
           </div>
         </div>
 
-        {/* Venue section with enhanced styling */}
-        <section 
-          className="relative mb-4 sm:mb-5 p-3 sm:p-4 lg:p-5 rounded-lg border transition-all duration-200 venue-section-enhanced"
+        {/* Venue section - compact with distance on same row */}
+        <section
+          className="relative mb-2 p-2 rounded-md bg-secondary/10 dark:bg-secondary/20 border-l-4 border-secondary"
           aria-labelledby={`venue-${event.id}-heading`}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="flex-shrink-0 p-2 rounded-full venue-icon-container" aria-hidden="true">
-                <svg 
-                  className="w-4 h-4 event-icon" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
-                  aria-hidden="true"
-                  role="img"
-                  aria-label="Location pin icon"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 
-                  id={`venue-${event.id}-heading`}
-                  className="sr-only"
-                >
-                  Venue Information
-                </h4>
-                <Link
-                  href={`/venues/${event.venueId}`}
-                  className="inline-block font-semibold text-sm transition-all duration-200 venue-link-enhanced"
-                  aria-label={`View venue details for ${event.venueName}`}
-                  aria-describedby={distance !== null ? `distance-${event.id}` : undefined}
-                >
-                  {event.venueName}
-                </Link>
-              </div>
+          <h4
+            id={`venue-${event.id}-heading`}
+            className="sr-only"
+          >
+            Venue Information
+          </h4>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <svg
+                className="w-3.5 h-3.5 text-secondary flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <Link
+                href={`/venues/${event.venueId}`}
+                className="text-xs font-semibold text-secondary hover:underline truncate"
+                aria-label={`View venue details for ${event.venueName}`}
+              >
+                {event.venueName}
+              </Link>
             </div>
             {distance !== null && (
-              <div className="flex-shrink-0 self-start sm:self-center">
-                <span 
-                  className="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 distance-badge-enhanced"
-                  id={`distance-${event.id}`}
-                  aria-label={`Distance from your location: ${formatDistance(distance)}`}
-                  role="status"
-                >
-                  {formatDistance(distance)}
-                </span>
-              </div>
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap flex-shrink-0"
+                id={`distance-${event.id}`}
+                aria-label={`Distance from your location: ${distance.toFixed(1)} miles`}
+                role="status"
+              >
+                {distance.toFixed(1)} miles
+              </span>
             )}
           </div>
         </section>
 
         {/* Divider */}
-        <div className="mb-4 sm:mb-5 event-divider"></div>
+        <div className="mb-2 border-t border-gray-200 dark:border-gray-700"></div>
 
-        {/* Enhanced Ticket Information Section */}
-        <section 
-          className="mb-4 sm:mb-5 ticket-info-section"
+        {/* Ticket Information Section - compact */}
+        <section
+          className="flex items-center justify-between gap-2"
           aria-labelledby={`ticket-${event.id}-heading`}
         >
-          <h4 
+          <h4
             id={`ticket-${event.id}-heading`}
             className="sr-only"
           >
             Ticket Information
           </h4>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 p-2 rounded-full bg-primary/10" aria-hidden="true">
-                <svg 
-                  className="w-4 h-4 ticket-icon-enhanced" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            </svg>
+            {event.ticketed ? (
+              <span
+                className="text-xs text-foreground"
+                aria-label={`Ticket information: ${event.ticketinformation || "Ticketed Event"}`}
+              >
+                {event.ticketinformation || "Ticketed"}
+              </span>
+            ) : (
+              <div
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500 text-white text-xs font-bold"
+                role="status"
+                aria-label="This event has free entry"
+              >
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                   aria-hidden="true"
-                  role="img"
-                  aria-label="Ticket icon"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-              </div>
-              <div className="flex-1">
-                {event.ticketed ? (
-                  <span 
-                    className="text-sm font-medium ticket-info-text"
-                    aria-label={`Ticket information: ${event.ticketinformation || "Ticketed Event"}`}
-                  >
-                    {event.ticketinformation || "Ticketed Event"}
-                  </span>
-                ) : (
-                  <div 
-                    className="free-entry-badge"
-                    role="status"
-                    aria-label="This event has free entry"
-                  >
-                    <svg 
-                      className="w-3 h-3" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24" 
-                      aria-hidden="true"
-                      role="img"
-                      aria-label="Checkmark icon"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Free Entry
-                  </div>
-                )}
-              </div>
-            </div>
-            {event.ticketed && event.ticketUrl && (
-              <div className="flex-shrink-0 w-full sm:w-auto">
-                <a
-                  href={event.ticketUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ticket-button w-full sm:w-auto"
-                  aria-label={`Get tickets for ${event.name} - opens in new tab`}
-                  aria-describedby={`ticket-${event.id}-heading`}
-                >
-                  <svg 
-                    className="w-4 h-4 mr-2" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
-                    aria-hidden="true"
-                    role="img"
-                    aria-label="Dollar sign icon"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                  Get Tickets
-                </a>
+                Free Entry
               </div>
             )}
           </div>
         </section>
-
-        {/* Event URL */}
-        {event.eventUrl && (
-          <div className="mb-4">
-            <a
-              href={event.eventUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium hover:underline transition-colors duration-200 event-link"
-              aria-label={`View more details for ${event.name} - opens in new tab`}
-            >
-              <svg 
-                className="w-4 h-4" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                aria-hidden="true"
-                role="img"
-                aria-label="External link icon"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              More Details
-            </a>
-          </div>
-        )}
-
-        {/* Description */}
-        {event.description && (
-          <section 
-            className="pt-3 sm:pt-4 event-description-section"
-            aria-labelledby={`description-${event.id}-heading`}
-          >
-            <h4 
-              id={`description-${event.id}-heading`}
-              className="sr-only"
-            >
-              Event Description
-            </h4>
-            <p 
-              className="text-xs sm:text-sm leading-relaxed line-clamp-2 event-description"
-              aria-label={`Event description: ${event.description}`}
-            >
-              {event.description}
-            </p>
-          </section>
-        )}
       </div>
     </article>
   );
