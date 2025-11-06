@@ -69,7 +69,7 @@ export default function VenueProfileClient({ initialData, events, error, venueId
         <section aria-label="Events at this venue">
           <EventsList
             events={events}
-            artistLocation={initialData.location}
+            artistLocation={initialData.address || `${initialData.location.lat}, ${initialData.location.lng}`}
           />
         </section>
 
