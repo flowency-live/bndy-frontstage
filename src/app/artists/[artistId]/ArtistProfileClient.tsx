@@ -58,14 +58,14 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Artist Header */}
       <header>
         <ArtistHeader artist={initialData} />
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-8 -mt-2">
+      <main className="container mx-auto px-4 pb-4 -mt-2">
         {/* Events Section */}
         <section aria-label="Upcoming Events">
           <EventsList
