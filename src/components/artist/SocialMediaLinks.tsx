@@ -1,7 +1,7 @@
 "use client";
 
 import { SocialMediaURL } from "@/lib/types";
-import { FaFacebook, FaInstagram, FaYoutube, FaSpotify, FaXTwitter, FaGlobe, FaShareAlt } from "react-icons/fa6";
+import { FaFacebook, FaInstagram, FaYoutube, FaSpotify, FaXTwitter, FaGlobe, FaShare } from "react-icons/fa6";
 import { useState } from "react";
 
 interface SocialMediaLinksProps {
@@ -183,7 +183,7 @@ function ShareButton({ onClick, showTooltip }: { onClick: () => void; showToolti
         className="transition-all duration-200"
         style={{ color: shareConfig.color }}
       >
-        <FaShareAlt className="w-5 h-5" />
+        <FaShare className="w-5 h-5" />
       </div>
 
       {/* Hover tooltip */}
