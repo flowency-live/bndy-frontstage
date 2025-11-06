@@ -64,7 +64,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pb-4">
+      <div className="container mx-auto px-4 pb-4 pt-4">
         {/* Events Section */}
         <section aria-label="Upcoming Events">
           <EventsList

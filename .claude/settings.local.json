@@ -74,7 +74,10 @@
       "Bash(aws lambda update-function-configuration:*)",
       "Bash(zip:*)",
       "Bash(aws lambda update-function-code:*)",
-      "Bash(aws lambda invoke:*)"
+      "Bash(aws lambda invoke:*)",
+      "Bash(aws ssm put-parameter --name /bndy/google/maps-api-key --value \"AIzaSyBIofN_PD0aiSsyx52I7-DCvas2cz7rz_Q\" --type SecureString --region eu-west-2 --description \"Google Maps API key for venue enrichment\")",
+      "Bash(aws ssm put-parameter --name \"/bndy/google/maps-api-key\" --value \"AIzaSyBIofN_PD0aiSsyx52I7-DCvas2cz7rz_Q\" --type SecureString --region eu-west-2 --description \"Google Maps API key for venue enrichment\")",
+      "Bash(MSYS_NO_PATHCONV=1 aws ssm put-parameter:*)"
     ],
     "deny": [],
     "ask": []
