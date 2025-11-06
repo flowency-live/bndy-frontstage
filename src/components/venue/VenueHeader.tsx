@@ -1,10 +1,11 @@
 "use client";
 
-import { Venue } from "@/lib/types";
+import { Venue, getSocialMediaURLs } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
 import SocialMediaLinks from "@/components/artist/SocialMediaLinks";
 import { Building } from "lucide-react";
+import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface VenueHeaderProps {
   venue: Venue;
@@ -12,6 +13,8 @@ interface VenueHeaderProps {
 
 export default function VenueHeader({ venue }: VenueHeaderProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(venue.profileImageUrl || venue.imageUrl || "");
+  const [hasFetched, setHasFetched] = useState(false);
 
   // Check if description is long enough to need truncation
   const descriptionNeedsTruncation = venue.description && venue.description.length > 200;
@@ -22,23 +25,33 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
   // Format address for display
   const fullAddress = [venue.address, venue.postcode].filter(Boolean).join(", ");
 
-  // Get venue image - API may return either profileImageUrl or imageUrl
-  const venueImage = venue.profileImageUrl || venue.imageUrl;
+  // Get social media URLs to extract Facebook URL
+  const socialMediaUrls = getSocialMediaURLs(venue);
+  const fbURL = socialMediaUrls.find((s) => s.platform === "facebook")?.url;
+
+  const handleProfilePictureFetched = (url: string) => {
+    setProfileImageUrl(url);
+    setHasFetched(true);
+  };
 
   return (
     <div className="relative">
       {/* Cover/Banner Area - Compact - Using secondary (cyan) for venues */}
       <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-secondary/20 via-secondary/10 to-background relative overflow-hidden">
-        {venueImage && (
+        {profileImageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
-              src={venueImage}
+              src={profileImageUrl}
               alt={`${venue.name} cover`}
               fill
               className="object-cover"
               priority
               quality={60}
               sizes="100vw"
+              onError={() => {
+                setProfileImageUrl("");
+                setHasFetched(true);
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
           </div>
@@ -50,9 +63,9 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
         <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
           {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
-            {venueImage ? (
+            {profileImageUrl ? (
               <Image
-                src={venueImage}
+                src={profileImageUrl}
                 alt={`${venue.name} profile picture`}
                 width={125}
                 height={125}
@@ -60,11 +73,21 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
                 priority
                 quality={90}
                 sizes="(max-width: 640px) 125px, (max-width: 768px) 120px, 140px"
+                onError={() => {
+                  setProfileImageUrl("");
+                  setHasFetched(true);
+                }}
               />
             ) : (
               <div className="w-[125px] h-[125px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
                 <Building className="w-12 h-12 text-secondary" />
               </div>
+            )}
+            {!profileImageUrl && !hasFetched && (
+              <ProfilePictureFetcher
+                facebookUrl={fbURL}
+                onPictureFetched={handleProfilePictureFetched}
+              />
             )}
           </div>
 
