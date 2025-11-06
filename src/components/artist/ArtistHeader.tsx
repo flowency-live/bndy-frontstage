@@ -64,7 +64,7 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
           </div>
 
           {/* Artist Info - Compact spacing */}
-          <div className="flex-1 text-center md:text-left pb-2 w-full md:w-auto">
+          <div className="flex-1 text-center md:text-left w-full md:w-auto">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 leading-tight">
               {artist.name}
             </h1>

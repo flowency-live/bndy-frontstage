@@ -99,8 +99,8 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
   }
 
   return (
-    <section className="space-y-3" aria-labelledby="events-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <section className="space-y-2" aria-labelledby="events-heading">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-2 text-2xl font-bold text-foreground hover:text-primary transition-colors text-left"
@@ -128,7 +128,7 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
       {isExpanded && (
         <div
           id="events-list"
-          className="grid gap-3 sm:gap-4 lg:gap-5"
+          className="grid gap-2 sm:gap-3"
           role="list"
           aria-label={`${filteredEvents.length} upcoming events`}
         >
