@@ -10,9 +10,11 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 interface EventsListProps {
   events: Event[];
   artistLocation?: string;
+  hideDistanceFilter?: boolean; // Hide distance filter for venue pages
+  linkToArtist?: boolean; // Link to artist instead of venue (for venue pages)
 }
 
-export default function EventsList({ events, artistLocation }: EventsListProps) {
+export default function EventsList({ events, artistLocation, hideDistanceFilter = false, linkToArtist = false }: EventsListProps) {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [locationPermission, setLocationPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null); // null means "All"
@@ -67,9 +69,9 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
           <h2 id="events-heading" className="text-2xl font-bold text-foreground">
             Upcoming Events ({events.length})
           </h2>
-          
-          {userLocation && locationPermission === 'granted' && (
-            <LocationFilter 
+
+          {!hideDistanceFilter && userLocation && locationPermission === 'granted' && (
+            <LocationFilter
               distanceFilter={distanceFilter}
               onDistanceChange={setDistanceFilter}
             />
@@ -117,7 +119,7 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
           )}
         </button>
 
-        {userLocation && locationPermission === 'granted' && isExpanded && (
+        {!hideDistanceFilter && userLocation && locationPermission === 'granted' && isExpanded && (
           <LocationFilter
             distanceFilter={distanceFilter}
             onDistanceChange={setDistanceFilter}
@@ -137,6 +139,7 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
               key={event.id}
               event={event}
               userLocation={userLocation}
+              linkToArtist={linkToArtist}
             />
           ))}
         </div>
@@ -148,6 +151,7 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
 interface EventCardProps {
   event: Event;
   userLocation?: Location | null;
+  linkToArtist?: boolean;
 }
 
 interface LocationFilterProps {
@@ -213,7 +217,7 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
   );
 }
 
-function EventCard({ event, userLocation }: EventCardProps) {
+function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps) {
   const eventDate = new Date(event.date);
   const formattedDate = format(eventDate, "EEE, MMM d, yyyy");
 
@@ -328,13 +332,23 @@ function EventCard({ event, userLocation }: EventCardProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <Link
-                href={`/venues/${event.venueId}`}
-                className="text-xs font-bold underline decoration-secondary/50 hover:decoration-secondary text-secondary hover:text-secondary/80 truncate transition-all"
-                aria-label={`View venue details for ${event.venueName}`}
-              >
-                {event.venueName}
-              </Link>
+              {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
+                <Link
+                  href={`/artists/${event.artistIds[0]}`}
+                  className="text-xs font-bold underline decoration-primary/50 hover:decoration-primary text-primary hover:text-primary/80 truncate transition-all"
+                  aria-label={`View artist details for ${event.artistName || 'artist'}`}
+                >
+                  {event.artistName || 'Unknown Artist'}
+                </Link>
+              ) : (
+                <Link
+                  href={`/venues/${event.venueId}`}
+                  className="text-xs font-bold underline decoration-secondary/50 hover:decoration-secondary text-secondary hover:text-secondary/80 truncate transition-all"
+                  aria-label={`View venue details for ${event.venueName}`}
+                >
+                  {event.venueName}
+                </Link>
+              )}
             </div>
             {distance !== null && (
               <span

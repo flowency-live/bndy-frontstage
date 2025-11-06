@@ -13,12 +13,17 @@ export interface BaseVenue {
     lat: number;
     lng: number;
   };
+  // API also returns these at root level (legacy)
+  latitude?: number;
+  longitude?: number;
   address: string;
   postcode?: string;
   description?: string;
   imageUrl?: string;
+  profileImageUrl?: string | null; // API returns this field
   phone?: string;
   email?: string;
+  website?: string;
   socialMediaUrls?: any[];  // NOTE: Backend inconsistency - Venues use uppercase, Artists use lowercase
   facilities?: string[];
   standardStartTime?: string;

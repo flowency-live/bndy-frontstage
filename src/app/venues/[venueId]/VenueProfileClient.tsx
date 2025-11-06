@@ -70,6 +70,8 @@ export default function VenueProfileClient({ initialData, events, error, venueId
           <EventsList
             events={events}
             artistLocation={initialData.address || `${initialData.location.lat}, ${initialData.location.lng}`}
+            hideDistanceFilter={true}
+            linkToArtist={true}
           />
         </section>
 
