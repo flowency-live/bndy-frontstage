@@ -46,8 +46,8 @@ export default async function VenueProfilePage({ params }: { params: Promise<{ v
       artistIds: event.artistId ? [event.artistId] : [],
       artistName: event.artist?.name || 'Unknown Artist',
       location: {
-        lat: event.geoLat || venueData.latitude,
-        lng: event.geoLng || venueData.longitude
+        lat: event.geoLat || venueData.location.lat,
+        lng: event.geoLng || venueData.location.lng
       },
       description: event.description,
       ticketed: event.ticketed,

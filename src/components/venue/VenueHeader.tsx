@@ -26,10 +26,10 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
     <div className="relative">
       {/* Cover/Banner Area - Compact - Using secondary (cyan) for venues */}
       <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-secondary/20 via-secondary/10 to-background relative overflow-hidden">
-        {venue.profileImageUrl && (
+        {venue.imageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
-              src={venue.profileImageUrl}
+              src={venue.imageUrl}
               alt={`${venue.name} cover`}
               fill
               className="object-cover"
@@ -47,9 +47,9 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
         <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
           {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
-            {venue.profileImageUrl ? (
+            {venue.imageUrl ? (
               <Image
-                src={venue.profileImageUrl}
+                src={venue.imageUrl}
                 alt={`${venue.name} profile picture`}
                 width={125}
                 height={125}
