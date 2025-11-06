@@ -208,7 +208,12 @@ function EventCard({ event, userLocation }: EventCardProps) {
 
   return (
     <article
-      className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200 hover:shadow-lg"
+      className="relative rounded-lg overflow-hidden border-2 transition-all duration-200 hover:shadow-lg"
+      style={{
+        backgroundColor: 'var(--card-bg)',
+        borderColor: 'var(--card-border)',
+        color: 'var(--foreground)'
+      }}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${distance.toFixed(1)} miles away` : ''}${isToday ? ', happening today' : ''}`}
@@ -324,7 +329,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
         </section>
 
         {/* Divider */}
-        <div className="mb-2 border-t border-gray-200 dark:border-gray-700"></div>
+        <div className="mb-2 border-t" style={{ borderColor: 'var(--border)' }}></div>
 
         {/* Ticket Information Section - compact */}
         <section
