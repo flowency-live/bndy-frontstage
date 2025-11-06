@@ -64,7 +64,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-4">
+      <div className="container mx-auto px-4 pb-4">
         {/* Events Section */}
         <section aria-label="Upcoming Events">
           <EventsList
@@ -75,14 +75,14 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
         {/* Navigation Section */}
         <nav className="pt-8 mt-8 border-t border-border" aria-label="Page Navigation">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors"
           >
             ← Back to Map
           </Link>
         </nav>
-      </main>
+      </div>
     </div>
   );
 }

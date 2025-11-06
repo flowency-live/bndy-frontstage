@@ -73,7 +73,8 @@
       "Bash(aws sts get-caller-identity:*)",
       "Bash(aws lambda update-function-configuration:*)",
       "Bash(zip:*)",
-      "Bash(aws lambda update-function-code:*)"
+      "Bash(aws lambda update-function-code:*)",
+      "Bash(aws lambda invoke:*)"
     ],
     "deny": [],
     "ask": []
