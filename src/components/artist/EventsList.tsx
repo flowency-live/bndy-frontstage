@@ -5,6 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { getUserLocation, calculateDistance, formatDistance, Location } from "@/lib/utils/distance";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface EventsListProps {
   events: Event[];
@@ -15,6 +16,7 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [locationPermission, setLocationPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null); // null means "All"
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   // Get user location on component mount
   useEffect(() => {
@@ -97,33 +99,48 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
   }
 
   return (
-    <section className="space-y-6" aria-labelledby="events-heading">
+    <section className="space-y-3" aria-labelledby="events-heading">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 id="events-heading" className="text-2xl font-bold text-foreground">
-          Upcoming Events ({filteredEvents.length}{events.length !== filteredEvents.length ? ` of ${events.length}` : ''})
-        </h2>
-        
-        {userLocation && locationPermission === 'granted' && (
-          <LocationFilter 
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-2xl font-bold text-foreground hover:text-primary transition-colors text-left"
+          aria-expanded={isExpanded}
+          aria-controls="events-list"
+        >
+          <span id="events-heading">
+            Upcoming Events ({filteredEvents.length}{events.length !== filteredEvents.length ? ` of ${events.length}` : ''})
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+          )}
+        </button>
+
+        {userLocation && locationPermission === 'granted' && isExpanded && (
+          <LocationFilter
             distanceFilter={distanceFilter}
             onDistanceChange={setDistanceFilter}
           />
         )}
       </div>
-      
-      <div 
-        className="grid gap-3 sm:gap-4 lg:gap-5"
-        role="list"
-        aria-label={`${filteredEvents.length} upcoming events`}
-      >
-        {filteredEvents.map((event) => (
-          <EventCard 
-            key={event.id} 
-            event={event} 
-            userLocation={userLocation}
-          />
-        ))}
-      </div>
+
+      {isExpanded && (
+        <div
+          id="events-list"
+          className="grid gap-3 sm:gap-4 lg:gap-5"
+          role="list"
+          aria-label={`${filteredEvents.length} upcoming events`}
+        >
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              userLocation={userLocation}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -309,7 +326,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
               </svg>
               <Link
                 href={`/venues/${event.venueId}`}
-                className="text-xs font-semibold text-secondary hover:underline truncate"
+                className="text-xs font-bold underline decoration-secondary/50 hover:decoration-secondary text-secondary hover:text-secondary/80 truncate transition-all"
                 aria-label={`View venue details for ${event.venueName}`}
               >
                 {event.venueName}
