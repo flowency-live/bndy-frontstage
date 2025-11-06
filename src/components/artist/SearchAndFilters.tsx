@@ -35,14 +35,14 @@ export default function SearchAndFilters({
       {/* Search Bar */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+          <Search className="h-5 w-5 text-muted-foreground" />
         </div>
         <input
           type="text"
           placeholder="Search artists by name..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="block w-full pl-10 pr-12 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
+          className="block w-full pl-10 pr-12 py-3 sm:py-2 border border-input rounded-md leading-5 bg-background placeholder-muted-foreground text-foreground focus:outline-none focus:placeholder-muted-foreground/70 focus:ring-2 foc:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"
