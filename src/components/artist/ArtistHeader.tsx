@@ -81,14 +81,12 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
             )}
 
             {/* Social Media Links - Mobile positioned here */}
-            <div className="mb-2">
-              <SocialMediaLinks
-                socialMediaUrls={artist.socialMediaUrls || []}
-                artistId={artist.id}
-                artistName={artist.name}
-                className="justify-start"
-              />
-            </div>
+            <SocialMediaLinks
+              socialMediaUrls={artist.socialMediaUrls || []}
+              artistId={artist.id}
+              artistName={artist.name}
+              className="justify-start -ml-1"
+            />
           </div>
         </div>
 
