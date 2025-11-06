@@ -170,35 +170,36 @@ function EventCard({ event, userLocation }: EventCardProps) {
   const isToday = eventDate.getTime() === today.getTime();
 
   return (
-    <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+    <div className="relative bg-card rounded-xl shadow-md border border-border overflow-hidden hover:shadow-lg transition-all duration-200">
       {/* Top accent stripe */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
 
-      <div className="p-5">
+      <div className="p-4 pt-5">
         {/* Header: Event Name + Today Badge */}
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <h3 className="text-foreground font-bold text-lg leading-tight flex-1">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h3 className="text-card-foreground font-bold text-base leading-tight flex-1">
             {event.name}
           </h3>
           {isToday && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full whitespace-nowrap">
+            <span className="inline-flex items-center px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full whitespace-nowrap">
               Today
             </span>
           )}
         </div>
 
-        {/* Key Info Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          {/* Date */}
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase tracking-wide font-medium mb-1">Date</span>
-            <span className="text-foreground text-sm font-semibold">{formattedDate}</span>
+        {/* Date and Time in single line */}
+        <div className="flex items-center gap-4 mb-3 text-sm">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-card-foreground font-medium">{formattedDate}</span>
           </div>
-
-          {/* Time */}
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase tracking-wide font-medium mb-1">Time</span>
-            <span className="text-foreground text-sm font-semibold">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-card-foreground font-medium">
               {event.startTime}
               {event.endTime && ` - ${event.endTime}`}
             </span>
@@ -206,7 +207,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
         </div>
 
         {/* Venue */}
-        <div className="flex items-center justify-between mb-4 p-3 bg-secondary/10 dark:bg-secondary/5 rounded-lg border border-secondary/20">
+        <div className="flex items-center justify-between mb-3 p-2.5 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <svg className="w-4 h-4 text-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -220,19 +221,19 @@ function EventCard({ event, userLocation }: EventCardProps) {
             </Link>
           </div>
           {distance !== null && (
-            <span className="text-xs bg-primary text-white px-2 py-1 rounded-full font-bold ml-2 whitespace-nowrap">
+            <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold ml-2 whitespace-nowrap">
               {formatDistance(distance)}
             </span>
           )}
         </div>
 
         {/* Ticket Info */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
             </svg>
-            <span className="text-foreground text-sm font-medium">
+            <span className="text-card-foreground text-sm font-medium">
               {event.ticketed ? (event.ticketinformation || "Ticketed") : "Free entry"}
             </span>
           </div>
@@ -241,7 +242,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
               href={event.ticketUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors"
+              className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors"
             >
               Get Tickets
             </a>
@@ -250,7 +251,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
 
         {/* Event URL */}
         {event.eventUrl && (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-2">
             <a
               href={event.eventUrl}
               target="_blank"
@@ -267,7 +268,7 @@ function EventCard({ event, userLocation }: EventCardProps) {
 
         {/* Description */}
         {event.description && (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-2 pt-2 border-t border-border">
             <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">
               {event.description}
             </p>
