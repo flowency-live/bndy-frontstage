@@ -87,7 +87,7 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
                 {artist.genres.map((genre, index) => (
                   <span
                     key={index}
-                    className="px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium whitespace-nowrap"
+                    className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary/10 text-primary border border-primary/30 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 backdrop-blur-sm"
                   >
                     {genre}
                   </span>
