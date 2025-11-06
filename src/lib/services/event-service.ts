@@ -175,21 +175,31 @@ export async function getEventsForArtist(
  */
 export async function getEventsForVenue(
   venueId: string,
-  dateStart: Date = new Date()
+  dateStart?: Date
 ): Promise<Event[]> {
   if (!db) return [];
 
   const firestore = db;
   try {
     const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
-    const dateFilter = dateStart.toISOString().split('T')[0];
 
-    const eventsQuery = query(
-      eventsRef,
-      where('venueId', '==', venueId),
-      where('date', '>=', dateFilter),
-      orderBy('date', 'asc')
-    );
+    let eventsQuery;
+    if (dateStart) {
+      const dateFilter = dateStart.toISOString().split('T')[0];
+      eventsQuery = query(
+        eventsRef,
+        where('venueId', '==', venueId),
+        where('date', '>=', dateFilter),
+        orderBy('date', 'asc')
+      );
+    } else {
+      // Get ALL events for this venue (past and future)
+      eventsQuery = query(
+        eventsRef,
+        where('venueId', '==', venueId),
+        orderBy('date', 'desc')
+      );
+    }
 
     const snapshot = await getDocs(eventsQuery);
 
