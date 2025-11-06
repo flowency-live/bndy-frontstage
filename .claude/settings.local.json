@@ -85,7 +85,11 @@
       "Bash(aws iam put-role-policy:*)",
       "Bash(echo:*)",
       "Bash(C:/Temp/uploads-test-payload.json)",
-      "Bash(MSYS_NO_PATHCONV=1 aws lambda invoke:*)"
+      "Bash(MSYS_NO_PATHCONV=1 aws lambda invoke:*)",
+      "Bash(for dir in *-lambda)",
+      "Bash(do if [ -f \"$dir/handler.js\" ])",
+      "Bash(then if grep -q \"JWT_SECRET\" \"$dir/handler.js\")",
+      "Bash(then echo \"$dir: uses JWT_SECRET\")"
     ],
     "deny": [],
     "ask": []
