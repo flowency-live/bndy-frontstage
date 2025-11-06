@@ -98,6 +98,7 @@ export interface Event {
   venueId: string;
   venueName: string;
   artistIds: string[];
+  artistName?: string; // Artist name for venue event listings
   location: {
       lat: number;
       lng: number;
