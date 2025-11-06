@@ -20,9 +20,8 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
   return (
     <div className="relative">
-      {/* Cover/Banner Area */}
-      <div className="h-40 sm:h-48 md:h-64 bg-gradient-to-br from-primary/20 via-primary/10 to-background relative overflow-hidden">
-        {/* Optional: Add artist image as background with overlay */}
+      {/* Cover/Banner Area - Reduced height on mobile */}
+      <div className="h-32 sm:h-40 md:h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-background relative overflow-hidden">
         {artist.profileImageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
@@ -39,55 +38,55 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
         )}
       </div>
 
-      {/* Profile Content */}
+      {/* Profile Content - More compact */}
       <div className="container mx-auto px-4 relative">
-        {/* Profile Picture - Positioned over cover area */}
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-16 md:-mt-20">
-          <div className="relative">
+        <div className="flex flex-col md:flex-row items-center md:items-end gap-3 sm:gap-4 md:gap-6 -mt-10 sm:-mt-12 md:-mt-16">
+          {/* Profile Picture - Smaller on mobile */}
+          <div className="relative flex-shrink-0">
             {artist.profileImageUrl ? (
               <Image
                 src={artist.profileImageUrl}
                 alt={`${artist.name} profile picture`}
-                width={120}
-                height={120}
-                className="w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[150px] md:h-[150px] rounded-full border-4 border-background shadow-lg object-cover"
+                width={100}
+                height={100}
+                className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg object-cover"
                 priority
                 quality={90}
-                sizes="(max-width: 640px) 120px, (max-width: 768px) 140px, 150px"
+                sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 140px"
               />
             ) : (
-              <div className="w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[150px] md:h-[150px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
-                <span className="text-3xl sm:text-4xl font-bold text-muted-foreground">
+              <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
+                <span className="text-2xl sm:text-3xl font-bold text-muted-foreground">
                   {artist.name.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Artist Info */}
-          <div className="flex-1 text-center md:text-left pb-4 px-4 sm:px-0">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 leading-tight">
+          {/* Artist Info - Tighter spacing */}
+          <div className="flex-1 text-center md:text-left pb-3 w-full md:w-auto">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 leading-tight">
               {artist.name}
             </h1>
-            
-            {/* Location */}
+
+            {/* Location - More compact */}
             {artist.location && (
-              <div className="flex items-center justify-center md:justify-start gap-2 text-muted-foreground mb-3">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center justify-center md:justify-start gap-1.5 text-muted-foreground mb-2">
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-sm sm:text-base">{artist.location}</span>
+                <span className="text-xs sm:text-sm">{artist.location}</span>
               </div>
             )}
 
-            {/* Genres */}
+            {/* Genres - Subtle, compact badges */}
             {artist.genres && artist.genres.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4 max-w-full">
+              <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mb-2.5">
                 {artist.genres.map((genre, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary/10 text-primary border border-primary/30 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 backdrop-blur-sm"
+                    className="inline-block px-2 py-0.5 bg-primary/10 text-primary/90 border border-primary/20 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap"
                   >
                     {genre}
                   </span>
@@ -95,16 +94,16 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
               </div>
             )}
 
-            {/* Description */}
+            {/* Description - More compact */}
             {artist.bio && (
-              <div className="mb-4">
-                <p className="text-muted-foreground max-w-2xl leading-relaxed text-sm sm:text-base px-2 sm:px-0">
+              <div className="mb-2.5">
+                <p className="text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
                   {displayedBio}
                 </p>
                 {bioNeedsTruncation && (
                   <button
                     onClick={() => setShowFullBio(!showFullBio)}
-                    className="mt-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                    className="mt-1.5 text-primary hover:text-primary/80 text-xs font-medium transition-colors"
                     aria-expanded={showFullBio}
                     aria-label={showFullBio ? "Show less" : "Show more"}
                   >
@@ -115,7 +114,7 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
             )}
 
             {/* Social Media Links */}
-            <div className="mt-4">
+            <div className="mt-2">
               <SocialMediaLinks socialMediaUrls={artist.socialMediaUrls || []} />
             </div>
           </div>

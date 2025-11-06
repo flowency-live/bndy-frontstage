@@ -229,21 +229,29 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   }
 
   // Handle legacy venue social properties
-  if ('websiteUrl' in item && typeof item.websiteUrl === 'string') {
+  if ('websiteUrl' in item && typeof item.websiteUrl === 'string' && item.websiteUrl.trim()) {
     socialMediaUrls.push({ platform: 'website', url: item.websiteUrl });
   }
 
-  if ('facebookUrl' in item && typeof item.facebookUrl === 'string') {
+  if ('facebookUrl' in item && typeof item.facebookUrl === 'string' && item.facebookUrl.trim()) {
     socialMediaUrls.push({ platform: 'facebook', url: item.facebookUrl });
   }
 
   // Handle legacy artist social properties
-  if ('instagramUrl' in item && typeof item.instagramUrl === 'string') {
+  if ('instagramUrl' in item && typeof item.instagramUrl === 'string' && item.instagramUrl.trim()) {
     socialMediaUrls.push({ platform: 'instagram', url: item.instagramUrl });
   }
 
-  if ('spotifyUrl' in item && typeof item.spotifyUrl === 'string') {
+  if ('spotifyUrl' in item && typeof item.spotifyUrl === 'string' && item.spotifyUrl.trim()) {
     socialMediaUrls.push({ platform: 'spotify', url: item.spotifyUrl });
+  }
+
+  if ('youtubeUrl' in item && typeof item.youtubeUrl === 'string' && item.youtubeUrl.trim()) {
+    socialMediaUrls.push({ platform: 'youtube', url: item.youtubeUrl });
+  }
+
+  if ('twitterUrl' in item && typeof item.twitterUrl === 'string' && item.twitterUrl.trim()) {
+    socialMediaUrls.push({ platform: 'x', url: item.twitterUrl });
   }
 
   return socialMediaUrls;
