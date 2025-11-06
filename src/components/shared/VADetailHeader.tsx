@@ -129,7 +129,6 @@ export default function VADetailHeader({
 
   // DEBUG BASK
 
-
   useEffect(() => {
 
     setName(item.name);

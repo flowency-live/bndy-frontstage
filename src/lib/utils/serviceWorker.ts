@@ -9,9 +9,6 @@ export const registerServiceWorker = async (): Promise<void> => {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
-
-    console.log('Service Worker registered successfully:', registration);
-
     // Update service worker when new version is available
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
@@ -19,8 +16,6 @@ export const registerServiceWorker = async (): Promise<void> => {
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             // New service worker is available
-            console.log('New service worker available');
-            
             // Optionally show update notification to user
             if (window.confirm('A new version is available. Refresh to update?')) {
               window.location.reload();
@@ -43,7 +38,6 @@ export const unregisterServiceWorker = async (): Promise<void> => {
   try {
     const registrations = await navigator.serviceWorker.getRegistrations();
     await Promise.all(registrations.map(registration => registration.unregister()));
-    console.log('Service Worker unregistered successfully');
   } catch (error) {
     console.error('Service Worker unregistration failed:', error);
   }

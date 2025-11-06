@@ -95,6 +95,7 @@
 
 
 
+
   - Add proper ARIA labels for interactive elements
   - Test keyboard navigation flow
   - Verify color contrast ratios in both themes

@@ -32,7 +32,6 @@ if (hasFirebaseConfig) {
   auth = getAuth(app);
   dbInstance = getFirestore(app);
 } else {
-  console.warn('Firebase credentials not configured - Firebase features will be unavailable');
 }
 
 // Export db with type assertion to avoid null checks everywhere

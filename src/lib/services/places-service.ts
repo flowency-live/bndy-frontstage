@@ -29,7 +29,7 @@ export async function searchVenueWithIncreasingRadius(
 
   // If Google Maps is not available, return empty array
   if (!googleMapsAvailable) {
-    console.warn("Google Maps Places API is not available for venue search");
+
     return [];
   }
 
@@ -48,7 +48,7 @@ export async function searchVenueWithIncreasingRadius(
         } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
           resolve([]);
         } else {
-          console.warn(`Places API error: ${status}`);
+
           resolve([]); // Return empty array instead of rejecting to prevent cascade failures
         }
       });
@@ -73,7 +73,7 @@ export async function searchPlacesAutocomplete(
 
   // If Google Maps is not available, return empty array
   if (!googleMapsAvailable) {
-    console.warn("Google Maps Places API is not available for place autocomplete");
+
     return [];
   }
 
@@ -92,7 +92,7 @@ export async function searchPlacesAutocomplete(
           } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
             resolve([]);
           } else {
-            console.warn(`Places Autocomplete API error: ${status}`);
+
             resolve([]); // Return empty array instead of rejecting
           }
         }
@@ -118,7 +118,7 @@ export async function getPlaceDetails(
 
   // If Google Maps is not available, return null
   if (!googleMapsAvailable) {
-    console.warn("Google Maps Places API is not available for place details");
+
     return null;
   }
 
@@ -141,7 +141,7 @@ export async function getPlaceDetails(
           if (status === google.maps.places.PlacesServiceStatus.OK && place) {
             resolve(place);
           } else {
-            console.warn(`Place Details API error: ${status}`);
+
             resolve(null);
           }
         }

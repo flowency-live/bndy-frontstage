@@ -60,11 +60,9 @@ class EnhancedErrorBoundary extends React.Component<
 
     // Log error details for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.group('🚨 Error Boundary Details');
       console.error('Error:', error);
       console.error('Error Info:', errorInfo);
       console.error('Component Stack:', errorInfo.componentStack);
-      console.groupEnd();
     }
   }
 

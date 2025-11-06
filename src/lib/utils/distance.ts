@@ -58,7 +58,6 @@ export function formatDistance(distance: number): string {
 export function getUserLocation(): Promise<Location | null> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.warn('Geolocation is not supported by this browser');
       resolve(null);
       return;
     }
@@ -71,7 +70,6 @@ export function getUserLocation(): Promise<Location | null> {
         });
       },
       (error) => {
-        console.warn('Error getting user location:', error.message);
         resolve(null);
       },
       {

@@ -37,7 +37,6 @@ const ProfilePictureFetcher: React.FC<ProfilePictureFetcherProps> = ({
                 onPictureFetched(profilePicUrl);
               };
               img.onerror = () => {
-                console.warn("Failed to load Facebook profile picture for:", username);
               };
               img.src = profilePicUrl;
             }

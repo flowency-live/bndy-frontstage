@@ -25,7 +25,6 @@ export async function getEvents(
   try {
 
     if (!userLocation) {
-      console.warn("No location provided for radius filtering, using default");
       return [];
     }
 

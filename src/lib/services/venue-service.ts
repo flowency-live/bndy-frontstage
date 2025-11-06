@@ -166,7 +166,6 @@ export async function searchVenues(searchTerm: string): Promise<Venue[]> {
       return []; // Return empty array to fail gracefully
     }
   } else {
-    console.warn("Google Maps Places API not available. Only returning database results.");
     return [];
   }
 }
@@ -300,7 +299,6 @@ export async function searchGooglePlaces(query: string): Promise<Venue[]> {
   try {
     // First check if Google Maps is available
     if (!isGoogleMapsAvailable()) {
-      console.warn("Google Maps Places API is not available for venue search");
       return [];
     }
 

@@ -61,10 +61,6 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
       href={`/artists/${artist.id}`}
       className="group block"
       onClick={() => {
-        console.log("=== ARTIST CARD CLICKED ===");
-        console.log("Artist ID:", artist.id);
-        console.log("Artist Name:", artist.name);
-        console.log("Target URL:", `/artists/${artist.id}`);
       }}
     >
       <div className="relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 sm:group-hover:scale-105">

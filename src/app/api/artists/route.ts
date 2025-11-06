@@ -8,8 +8,6 @@ import { Artist } from "@/lib/types";
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('🎵 API Route: Fetching all artists for browse page');
-
     // Forward credentials from the original request
     const forwardHeaders: HeadersInit = {
       'Content-Type': 'application/json',
@@ -34,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
-      console.error(`🎵 API Route: Failed to fetch artists:`, {
+      console.error(` API Route: Failed to fetch artists:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorText
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
     
     // Validate that we received an array
     if (!Array.isArray(artists)) {
-      console.error(`🎵 API Route: Invalid artists response format:`, artists);
+      console.error(` API Route: Invalid artists response format:`, artists);
       return NextResponse.json(
         { error: "Invalid artists response format" },
         { status: 500 }
@@ -60,13 +58,10 @@ export async function GET(request: NextRequest) {
     // Validate artist data structure for each result
     const validArtists = artists.filter(artist => {
       if (!artist.id || !artist.name) {
-        console.warn(`🎵 API Route: Filtering out invalid artist data:`, artist);
         return false;
       }
       return true;
     });
-
-    console.log(`🎵 API Route: Successfully fetched ${validArtists.length} valid artists (filtered from ${artists.length} total)`);
 
     // Set appropriate cache headers - short cache for frequently changing artist data
     const response_headers = new Headers();
@@ -74,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(validArtists, { headers: response_headers });
   } catch (error) {
-    console.error("🎵 API Route: Error in artists API route:", {
+    console.error(" API Route: Error in artists API route:", {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined
     });

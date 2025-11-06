@@ -54,10 +54,10 @@ class ArtistDebugLogger {
 
     switch (level) {
       case 'info':
-        console.log(fullMessage, data || '');
+
         break;
       case 'warn':
-        console.warn(fullMessage, data || '');
+
         break;
       case 'error':
         console.error(fullMessage, data || '');

@@ -29,46 +29,35 @@ export async function testArtistService(artistId: string): Promise<{
   let events: Event[] = [];
 
   try {
-    console.group(`🧪 Testing Artist Service for ID: ${artistId}`);
-
     // Test 1: Fetch artist by ID
-    console.log('🧪 Test 1: Fetching artist by ID...');
     try {
       artist = await getArtistById(artistId);
       if (artist) {
-        console.log('✅ Artist fetched successfully:', artist.name);
-        
         // Validate artist data structure
         if (!validateArtistData(artist)) {
           errors.push('Artist data validation failed');
         } else {
-          console.log('✅ Artist data validation passed');
         }
 
         // Debug artist data
         debugArtistData(artist);
       } else {
         errors.push('Artist not found');
-        console.log('❌ Artist not found');
       }
     } catch (error) {
       errors.push(`Failed to fetch artist: ${error}`);
-      console.error('❌ Failed to fetch artist:', error);
+      console.error(' Failed to fetch artist:', error);
     }
 
     // Test 2: Fetch artist events
     if (artist) {
-      console.log('🧪 Test 2: Fetching artist events...');
       try {
         events = await getArtistEvents(artistId);
-        console.log(`✅ Found ${events.length} events for artist`);
-        
         // Validate each event
         events.forEach((event, index) => {
           if (!validateEventData(event)) {
             errors.push(`Event ${index} validation failed`);
           } else {
-            console.log(`✅ Event ${index} validation passed: ${event.name}`);
           }
           
           // Debug event data
@@ -76,28 +65,23 @@ export async function testArtistService(artistId: string): Promise<{
         });
       } catch (error) {
         errors.push(`Failed to fetch artist events: ${error}`);
-        console.error('❌ Failed to fetch artist events:', error);
+        console.error(' Failed to fetch artist events:', error);
       }
     }
 
     // Test 3: Validate artist_type field (no "Band" entity)
     if (artist) {
-      console.log('🧪 Test 3: Validating artist_type field...');
       if (artist.artist_type !== undefined) {
         const validTypes = ['band', 'solo', 'duo', 'group', 'collective'];
         if (validTypes.includes(artist.artist_type)) {
-          console.log(`✅ Artist type is valid: ${artist.artist_type}`);
         } else {
           errors.push(`Invalid artist_type: ${artist.artist_type}`);
-          console.error(`❌ Invalid artist_type: ${artist.artist_type}`);
+          console.error(` Invalid artist_type: ${artist.artist_type}`);
         }
       } else {
         console.log('⚠️ Artist type not specified (optional field)');
       }
     }
-
-    console.groupEnd();
-
     return {
       success: errors.length === 0,
       artist,
@@ -105,7 +89,6 @@ export async function testArtistService(artistId: string): Promise<{
       errors
     };
   } catch (error) {
-    console.groupEnd();
     errors.push(`Test suite failed: ${error}`);
     return {
       success: false,
@@ -128,30 +111,21 @@ export async function testArtistSearch(query: string, location?: string): Promis
   let artists: Artist[] = [];
 
   try {
-    console.group(`🧪 Testing Artist Search for query: "${query}"${location ? ` in ${location}` : ''}`);
-
     artists = await searchArtists(query, location);
-    console.log(`✅ Found ${artists.length} artists`);
-
     // Validate each artist in results
     artists.forEach((artist, index) => {
       if (!validateArtistData(artist)) {
         errors.push(`Search result ${index} validation failed`);
-        console.error(`❌ Search result ${index} validation failed:`, artist);
+        console.error(` Search result ${index} validation failed:`, artist);
       } else {
-        console.log(`✅ Search result ${index} validation passed: ${artist.name}`);
       }
     });
-
-    console.groupEnd();
-
     return {
       success: errors.length === 0,
       artists,
       errors
     };
   } catch (error) {
-    console.groupEnd();
     errors.push(`Search test failed: ${error}`);
     return {
       success: false,
@@ -173,36 +147,29 @@ export async function testArtistBrowse(): Promise<{
   let artists: Artist[] = [];
 
   try {
-    console.group('🧪 Testing Artist Browse (Get All Artists)');
+    console.group('[TEST] Testing Artist Browse (Get All Artists)');
 
     artists = await getAllArtists();
-    console.log(`✅ Found ${artists.length} artists for browse`);
-
     // Validate first 10 artists (to avoid overwhelming logs)
     const samplesToValidate = Math.min(10, artists.length);
     for (let i = 0; i < samplesToValidate; i++) {
       const artist = artists[i];
       if (!validateArtistData(artist)) {
         errors.push(`Browse result ${i} validation failed`);
-        console.error(`❌ Browse result ${i} validation failed:`, artist);
+        console.error(` Browse result ${i} validation failed:`, artist);
       } else {
-        console.log(`✅ Browse result ${i} validation passed: ${artist.name}`);
       }
     }
 
     if (artists.length > samplesToValidate) {
       console.log(`ℹ️ Validated ${samplesToValidate} of ${artists.length} artists (sample)`);
     }
-
-    console.groupEnd();
-
     return {
       success: errors.length === 0,
       artists,
       errors
     };
   } catch (error) {
-    console.groupEnd();
     errors.push(`Browse test failed: ${error}`);
     return {
       success: false,
@@ -226,12 +193,8 @@ export async function runArtistServiceTests(testArtistId?: string): Promise<{
 }> {
   const allErrors: string[] = [];
   const results: any = {};
-
-  console.group('🧪 Running Comprehensive Artist Service Tests');
-
   try {
     // Test 1: Artist browse
-    console.log('🧪 Running browse test...');
     const browseResult = await testArtistBrowse();
     results.browseTest = browseResult;
     if (!browseResult.success) {
@@ -239,7 +202,6 @@ export async function runArtistServiceTests(testArtistId?: string): Promise<{
     }
 
     // Test 2: Artist search
-    console.log('🧪 Running search test...');
     const searchResult = await testArtistSearch('test', 'London');
     results.searchTest = searchResult;
     if (!searchResult.success) {
@@ -248,7 +210,6 @@ export async function runArtistServiceTests(testArtistId?: string): Promise<{
 
     // Test 3: Individual artist (if ID provided)
     if (testArtistId) {
-      console.log('🧪 Running individual artist test...');
       const artistResult = await testArtistService(testArtistId);
       results.artistTest = artistResult;
       if (!artistResult.success) {
@@ -257,21 +218,15 @@ export async function runArtistServiceTests(testArtistId?: string): Promise<{
     }
 
     const overallSuccess = allErrors.length === 0;
-    console.log(`🧪 Test Suite Complete: ${overallSuccess ? '✅ ALL PASSED' : '❌ SOME FAILED'}`);
-    
     if (allErrors.length > 0) {
-      console.error('🧪 Test Errors:', allErrors);
+      console.error(' Test Errors:', allErrors);
     }
-
-    console.groupEnd();
-
     return {
       success: overallSuccess,
       results,
       errors: allErrors
     };
   } catch (error) {
-    console.groupEnd();
     allErrors.push(`Test suite execution failed: ${error}`);
     return {
       success: false,
@@ -286,11 +241,8 @@ export async function runArtistServiceTests(testArtistId?: string): Promise<{
  * Can be called from browser console for debugging
  */
 export function quickValidateArtist(artist: any): boolean {
-  console.group('🧪 Quick Artist Validation');
   debugArtistData(artist);
   const isValid = validateArtistData(artist);
-  console.log(`Result: ${isValid ? '✅ VALID' : '❌ INVALID'}`);
-  console.groupEnd();
   return isValid;
 }
 
@@ -298,11 +250,8 @@ export function quickValidateArtist(artist: any): boolean {
  * Quick validation utility for events
  */
 export function quickValidateEvent(event: any): boolean {
-  console.group('🧪 Quick Event Validation');
   debugEventData(event);
   const isValid = validateEventData(event);
-  console.log(`Result: ${isValid ? '✅ VALID' : '❌ INVALID'}`);
-  console.groupEnd();
   return isValid;
 }
 

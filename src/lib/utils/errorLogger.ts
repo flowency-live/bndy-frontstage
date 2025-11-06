@@ -52,17 +52,11 @@ class ErrorLogger {
 
     // Console log in development
     if (process.env.NODE_ENV === 'development') {
-      console.group(`🚨 ${entry.level.toUpperCase()}: ${entry.component || 'Unknown Component'}`);
+      console.group(`[${entry.level.toUpperCase()}] ${entry.component || 'Unknown Component'}`);
       console.error('Error:', entry.error);
       if (entry.stack) {
         console.error('Stack:', entry.stack);
       }
-      console.info('Context:', {
-        artistId: entry.artistId,
-        url: entry.url,
-        timestamp: entry.timestamp
-      });
-      console.groupEnd();
     }
 
     // In production, you might want to send to an error tracking service

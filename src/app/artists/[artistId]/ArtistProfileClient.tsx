@@ -18,7 +18,6 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   // Simple logging (client-side only to avoid hydration issues)
   useEffect(() => {
-    console.log("Artist Profile Client:", { artistId, hasData: !!initialData, error });
   }, [artistId, initialData, error]);
 
   // Handle error state
@@ -65,7 +64,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-4 -mt-8">
+      <main className="container mx-auto px-4 pb-4">
         {/* Events Section */}
         <section aria-label="Upcoming Events">
           <EventsList

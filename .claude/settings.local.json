@@ -62,7 +62,18 @@
       "Bash(aws logs:*)",
       "Bash(awk:*)",
       "Bash(find:*)",
-      "Bash(export MSYS_NO_PATHCONV=1)"
+      "Bash(export MSYS_NO_PATHCONV=1)",
+      "Bash(for func in \"bndy-serverless-api-AuthFunction-gKJksEC1lGjw\" \"venue-enrichment-lambda\" \"bndy-serverless-api-EventsAgentFunction\")",
+      "Bash(for lambda in events-lambda artists-lambda memberships-lambda artist-songs-lambda users-lambda invites-lambda uploads-lambda)",
+      "Bash(do if [ -f $lambda/handler.js ])",
+      "Bash(then awk \"/const requireAuth|const parseCookies|function parseCookies/,/^}/\" $lambda/handler.js)",
+      "Bash(fi)",
+      "Bash(git stash:*)",
+      "Bash(node:*)",
+      "Bash(aws sts get-caller-identity:*)",
+      "Bash(aws lambda update-function-configuration:*)",
+      "Bash(zip:*)",
+      "Bash(aws lambda update-function-code:*)"
     ],
     "deny": [],
     "ask": []

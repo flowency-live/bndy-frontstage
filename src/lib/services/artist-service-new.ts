@@ -20,7 +20,7 @@ import {
  */
 export async function getArtistById(artistId: string): Promise<Artist | null> {
   if (!artistId) {
-    console.warn('getArtistById: artistId is required');
+
     return null;
   }
 
@@ -53,8 +53,7 @@ export async function getArtistById(artistId: string): Promise<Artist | null> {
     const analysis = analyzeArtistData(artist);
     if (!analysis.isValid) {
       // Log validation issues but don't block - backend data is authoritative
-      console.warn(`Artist validation issues for ${artistId}:`, analysis.issues);
-      console.warn('Continuing with artist data - backend is authoritative source');
+
     }
 
     logPerformanceMetric('getArtistById', Date.now() - startTime, { artistId, result: 'success' });
@@ -72,7 +71,7 @@ export async function getArtistById(artistId: string): Promise<Artist | null> {
  */
 export async function searchArtists(query: string, location?: string): Promise<Artist[]> {
   if (!query || query.trim().length < 2) {
-    console.warn('searchArtists: query must be at least 2 characters');
+
     return [];
   }
 
@@ -128,7 +127,7 @@ export async function searchArtists(query: string, location?: string): Promise<A
  */
 export async function getArtistEvents(artistId: string): Promise<Event[]> {
   if (!artistId) {
-    console.warn('getArtistEvents: artistId is required');
+
     return [];
   }
 
@@ -183,7 +182,6 @@ export async function getArtistEvents(artistId: string): Promise<Event[]> {
  */
 export async function getAllArtists(): Promise<Artist[]> {
   try {
-    console.log('🎵 Fetching all artists for browse page');
 
     const response = await fetch('/api/artists', {
       credentials: 'include',
@@ -202,15 +200,14 @@ export async function getAllArtists(): Promise<Artist[]> {
     const validArtists = artists.filter(artist => {
       const isValid = validateArtistData(artist);
       if (!isValid) {
-        console.warn('🎵 Invalid artist data in browse results:', artist);
+
       }
       return isValid;
     });
 
-    console.log(`🎵 Found ${validArtists.length} valid artists for browse page`);
     return validArtists;
   } catch (error) {
-    console.error('🎵 Error fetching all artists:', error);
+    console.error(' Error fetching all artists:', error);
     throw error;
   }
 }
@@ -222,18 +219,18 @@ export async function getAllArtists(): Promise<Artist[]> {
  */
 export function validateArtistData(artist: any): artist is Artist {
   if (!artist || typeof artist !== 'object') {
-    console.error('🎵 Artist validation failed: not an object');
+    console.error(' Artist validation failed: not an object');
     return false;
   }
 
   // Required fields
   if (!artist.id || typeof artist.id !== 'string') {
-    console.error('🎵 Artist validation failed: missing or invalid id');
+    console.error(' Artist validation failed: missing or invalid id');
     return false;
   }
 
   if (!artist.name || typeof artist.name !== 'string') {
-    console.error('🎵 Artist validation failed: missing or invalid name');
+    console.error(' Artist validation failed: missing or invalid name');
     return false;
   }
 
@@ -241,7 +238,7 @@ export function validateArtistData(artist: any): artist is Artist {
   if (artist.artist_type !== undefined && artist.artist_type !== null) {
     const validTypes = ['band', 'solo', 'duo', 'group', 'collective'];
     if (!validTypes.includes(artist.artist_type)) {
-      console.error(`🎵 Artist validation failed: invalid artist_type "${artist.artist_type}". Must be one of: ${validTypes.join(', ')}`);
+      console.error(` Artist validation failed: invalid artist_type "${artist.artist_type}". Must be one of: ${validTypes.join(', ')}`);
       return false;
     }
   }
@@ -249,24 +246,23 @@ export function validateArtistData(artist: any): artist is Artist {
   // Validate optional fields if present
   if (artist.socialMediaUrls !== undefined) {
     if (!Array.isArray(artist.socialMediaUrls)) {
-      console.error('🎵 Artist validation failed: socialMediaUrls must be an array');
+      console.error(' Artist validation failed: socialMediaUrls must be an array');
       return false;
     }
     
     for (const social of artist.socialMediaUrls) {
       if (!social.platform || !social.url) {
-        console.error('🎵 Artist validation failed: invalid social media URL structure');
+        console.error(' Artist validation failed: invalid social media URL structure');
         return false;
       }
     }
   }
 
   if (artist.genres !== undefined && !Array.isArray(artist.genres)) {
-    console.error('🎵 Artist validation failed: genres must be an array');
+    console.error(' Artist validation failed: genres must be an array');
     return false;
   }
 
-  console.log(`🎵 Artist validation passed for: ${artist.name}`);
   return true;
 }
 
@@ -276,7 +272,7 @@ export function validateArtistData(artist: any): artist is Artist {
  */
 export function validateEventData(event: any): event is Event {
   if (!event || typeof event !== 'object') {
-    console.error('🎵 Event validation failed: not an object');
+    console.error(' Event validation failed: not an object');
     return false;
   }
 
@@ -284,24 +280,23 @@ export function validateEventData(event: any): event is Event {
   const requiredFields = ['id', 'name', 'date', 'startTime', 'venueId', 'venueName'];
   for (const field of requiredFields) {
     if (!event[field] || typeof event[field] !== 'string') {
-      console.error(`🎵 Event validation failed: missing or invalid ${field}`);
+      console.error(` Event validation failed: missing or invalid ${field}`);
       return false;
     }
   }
 
   // Validate artistIds array
   if (!Array.isArray(event.artistIds)) {
-    console.error('🎵 Event validation failed: artistIds must be an array');
+    console.error(' Event validation failed: artistIds must be an array');
     return false;
   }
 
   // Validate location object
   if (!event.location || typeof event.location.lat !== 'number' || typeof event.location.lng !== 'number') {
-    console.error('🎵 Event validation failed: invalid location object');
+    console.error(' Event validation failed: invalid location object');
     return false;
   }
 
-  console.log(`🎵 Event validation passed for: ${event.name}`);
   return true;
 }
 
@@ -310,63 +305,34 @@ export function validateEventData(event: any): event is Event {
  * Helps understand data structure problems
  */
 export function debugArtistData(artist: any): void {
-  console.group(`🎵 DEBUG: Artist Data Analysis for ${artist?.name || 'Unknown'}`);
-  
-  console.log('Raw artist data:', artist);
-  
+
   if (artist) {
-    console.log('ID:', artist.id);
-    console.log('Name:', artist.name);
-    console.log('Artist Type:', artist.artist_type);
-    console.log('Description:', artist.description);
-    console.log('Profile Image:', artist.profileImageUrl);
-    console.log('Genres:', artist.genres);
-    console.log('Social Media URLs:', artist.socialMediaUrls);
-    console.log('Location:', artist.location);
-    console.log('Created At:', artist.createdAt);
-    console.log('Updated At:', artist.updatedAt);
-    
+
     // Check for legacy fields that shouldn't exist
     const legacyFields = ['websiteUrl', 'facebookUrl', 'instagramUrl', 'spotifyUrl'];
     legacyFields.forEach(field => {
       if (artist[field]) {
-        console.warn(`⚠️ Legacy field detected: ${field} = ${artist[field]}`);
+
       }
     });
     
     // Validate structure
     const isValid = validateArtistData(artist);
-    console.log('Validation Result:', isValid ? '✅ VALID' : '❌ INVALID');
+
   }
-  
-  console.groupEnd();
+
 }
 
 /**
  * Debug utility to log event data issues
  */
 export function debugEventData(event: any): void {
-  console.group(`🎵 DEBUG: Event Data Analysis for ${event?.name || 'Unknown'}`);
-  
-  console.log('Raw event data:', event);
-  
+
   if (event) {
-    console.log('ID:', event.id);
-    console.log('Name:', event.name);
-    console.log('Date:', event.date);
-    console.log('Start Time:', event.startTime);
-    console.log('End Time:', event.endTime);
-    console.log('Venue ID:', event.venueId);
-    console.log('Venue Name:', event.venueName);
-    console.log('Artist IDs:', event.artistIds);
-    console.log('Location:', event.location);
-    console.log('Ticketed:', event.ticketed);
-    console.log('Ticket URL:', event.ticketUrl);
-    
+
     // Validate structure
     const isValid = validateEventData(event);
-    console.log('Validation Result:', isValid ? '✅ VALID' : '❌ INVALID');
+
   }
-  
-  console.groupEnd();
+
 }

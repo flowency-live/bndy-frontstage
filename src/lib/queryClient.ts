@@ -11,6 +11,7 @@ export async function apiRequest(
 
   const res = await fetch(fullUrl, {
     method,
+    credentials: 'include',  // Send httpOnly cookies with requests
     headers: {
       ...(data ? { "Content-Type": "application/json" } : {}),
     },

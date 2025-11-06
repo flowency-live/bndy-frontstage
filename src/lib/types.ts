@@ -68,8 +68,6 @@ export interface SocialMediaURL {
   url: string;
 }
 
-
-
 // Member Types
 export interface ArtistMember {
   id: string;
@@ -146,7 +144,6 @@ export interface User {
   isAdmin?: boolean;
 }
 
-
 // Recurring Event Types
 export type RecurringFrequency = 'weekly' | 'monthly';
 export interface RecurringEventConfig {
@@ -212,7 +209,6 @@ export interface ImportMatch<T> {
   isNew?: boolean;
   data?: Partial<T>;
 }
-
 
 // Added helper functions to handle social media URLs for legacy properties
 export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {

@@ -15,30 +15,21 @@ export default function PerformanceMonitor({ enabled = process.env.NODE_ENV === 
       list.getEntries().forEach((entry) => {
         if (entry.entryType === 'navigation') {
           const navEntry = entry as PerformanceNavigationTiming;
-          console.log('Navigation Timing:', {
-            domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
-            loadComplete: navEntry.loadEventEnd - navEntry.loadEventStart,
-            firstPaint: navEntry.responseEnd - navEntry.requestStart,
-          });
         }
 
         if (entry.entryType === 'paint') {
-          console.log(`${entry.name}: ${entry.startTime}ms`);
         }
 
         if (entry.entryType === 'largest-contentful-paint') {
-          console.log(`LCP: ${entry.startTime}ms`);
         }
 
         if (entry.entryType === 'first-input') {
           const fidEntry = entry as PerformanceEventTiming;
-          console.log(`FID: ${fidEntry.processingStart - fidEntry.startTime}ms`);
         }
 
         if (entry.entryType === 'layout-shift') {
           const clsEntry = entry as any;
           if (!clsEntry.hadRecentInput) {
-            console.log(`CLS: ${clsEntry.value}`);
           }
         }
       });
@@ -70,7 +61,6 @@ export default function PerformanceMonitor({ enabled = process.env.NODE_ENV === 
     // Monitor long tasks
     const longTaskObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        console.warn(`Long task detected: ${entry.duration}ms`);
       });
     });
 

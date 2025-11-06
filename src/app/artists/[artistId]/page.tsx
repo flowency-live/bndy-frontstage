@@ -5,9 +5,6 @@ import ArtistProfileClient from "./ArtistProfileClient";
 
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
   const { artistId } = await params;
-
-  console.log("Fetching artist:", artistId);
-
   // Server components must use direct API URL (not /api/* proxy which only works in browser)
   // This matches the pattern used in bndy-backstage godmode-service.ts
   const artistResponse = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {

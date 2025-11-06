@@ -15,15 +15,11 @@ export async function GET(
     
     // Validate input parameters
     if (!artistId || artistId.trim() === '') {
-      console.warn(`🎵 API Route: Invalid artist ID provided: "${artistId}"`);
       return NextResponse.json(
         { error: "Artist ID is required and cannot be empty" },
         { status: 400 }
       );
     }
-
-    console.log(`🎵 API Route: Fetching artist data for ID: ${artistId}`);
-
     // Forward credentials from the original request
     const forwardHeaders: HeadersInit = {
       'Content-Type': 'application/json',
@@ -48,7 +44,6 @@ export async function GET(
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log(`🎵 API Route: Artist not found: ${artistId}`);
         return NextResponse.json(
           { error: "Artist not found" },
           { status: 404 }
@@ -56,7 +51,7 @@ export async function GET(
       }
       
       const errorText = await response.text().catch(() => 'Unknown error');
-      console.error(`🎵 API Route: Failed to fetch artist ${artistId}:`, {
+      console.error(` API Route: Failed to fetch artist ${artistId}:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorText
@@ -72,22 +67,20 @@ export async function GET(
     
     // Validate artist data structure
     if (!artistData.id || !artistData.name) {
-      console.error(`🎵 API Route: Invalid artist data structure for ${artistId}:`, artistData);
+      console.error(` API Route: Invalid artist data structure for ${artistId}:`, artistData);
       return NextResponse.json(
         { error: "Invalid artist data received" },
         { status: 500 }
       );
     }
 
-    console.log(`🎵 API Route: Successfully fetched artist: ${artistData.name} (${artistId})`);
-    
     // Set appropriate cache headers
     const response_headers = new Headers();
     response_headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     
     return NextResponse.json(artistData, { headers: response_headers });
   } catch (error) {
-    console.error("🎵 API Route: Error in artist API route:", {
+    console.error(" API Route: Error in artist API route:", {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       artistId: (await params).artistId

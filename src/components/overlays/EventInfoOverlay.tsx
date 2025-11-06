@@ -55,10 +55,7 @@ export default function EventInfoOverlay({
   // Debug logging to understand loading issues
   useEffect(() => {
     if (artistId) {
-      console.log("🎵 EventInfoOverlay - Artist ID:", artistId);
-      console.log("🎵 EventInfoOverlay - Artist loading:", artistLoading);
-      console.log("🎵 EventInfoOverlay - Artist error:", artistError);
-      console.log("🎵 EventInfoOverlay - Artist data:", artist);
+
     }
   }, [artistId, artistLoading, artistError, artist]);
 
@@ -136,8 +133,6 @@ export default function EventInfoOverlay({
   };
 
   if (!currentEvent) return null;
-
-
 
   return (
     <AnimatePresence>

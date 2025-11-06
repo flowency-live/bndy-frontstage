@@ -15,15 +15,11 @@ export async function GET(
     
     // Validate input parameters
     if (!artistId || artistId.trim() === '') {
-      console.warn(`🎵 API Route: Invalid artist ID provided for events: "${artistId}"`);
       return NextResponse.json(
         { error: "Artist ID is required and cannot be empty" },
         { status: 400 }
       );
     }
-
-    console.log(`🎵 API Route: Fetching events for artist: ${artistId}`);
-
     // Forward credentials from the original request
     const forwardHeaders: HeadersInit = {
       'Content-Type': 'application/json',
@@ -49,7 +45,7 @@ export async function GET(
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
-      console.error(`🎵 API Route: Failed to fetch events for artist ${artistId}:`, {
+      console.error(` API Route: Failed to fetch events for artist ${artistId}:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorText
@@ -65,7 +61,7 @@ export async function GET(
     
     // Validate that we received an array
     if (!Array.isArray(allEvents)) {
-      console.error(`🎵 API Route: Invalid events response format for artist ${artistId}:`, allEvents);
+      console.error(` API Route: Invalid events response format for artist ${artistId}:`, allEvents);
       return NextResponse.json(
         { error: "Invalid events response format" },
         { status: 500 }
@@ -76,7 +72,6 @@ export async function GET(
     const artistEvents = allEvents.filter(event => {
       // Validate event structure
       if (!event.id || !event.name || !event.date) {
-        console.warn(`🎵 API Route: Filtering out invalid event data:`, event);
         return false;
       }
       
@@ -91,7 +86,6 @@ export async function GET(
         const eventDate = new Date(event.date);
         return eventDate >= now;
       } catch (error) {
-        console.warn(`🎵 API Route: Invalid date format for event ${event.id}: ${event.date}`);
         return false;
       }
     });
@@ -101,20 +95,17 @@ export async function GET(
       try {
         return new Date(a.date).getTime() - new Date(b.date).getTime();
       } catch (error) {
-        console.warn(`🎵 API Route: Error sorting events by date:`, error);
         return 0;
       }
     });
 
-    console.log(`🎵 API Route: Found ${upcomingEvents.length} upcoming events for artist: ${artistId} (filtered from ${allEvents.length} total events)`);
-    
     // Set appropriate cache headers
     const response_headers = new Headers();
     response_headers.set('Cache-Control', 'public, max-age=180, stale-while-revalidate=360');
     
     return NextResponse.json(upcomingEvents, { headers: response_headers });
   } catch (error) {
-    console.error("🎵 API Route: Error in artist events API route:", {
+    console.error(" API Route: Error in artist events API route:", {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       artistId: (await params).artistId

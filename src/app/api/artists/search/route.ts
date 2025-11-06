@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
 
     // Validate input parameters
     if (!query || query.trim().length < 2) {
-      console.warn(`🎵 API Route: Invalid search query: "${query}"`);
       return NextResponse.json(
         { error: "Query parameter 'q' is required and must be at least 2 characters" },
         { status: 400 }
@@ -23,8 +22,6 @@ export async function GET(request: NextRequest) {
     }
 
     const trimmedQuery = query.trim();
-    console.log(`🎵 API Route: Searching artists with query: "${trimmedQuery}"${location ? ` in ${location}` : ''}${artistType ? ` of type ${artistType}` : ''}`);
-
     // Forward credentials from the original request
     const forwardHeaders: HeadersInit = {
       'Content-Type': 'application/json',
@@ -58,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
-      console.error(`🎵 API Route: Failed to search artists:`, {
+      console.error(` API Route: Failed to search artists:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorText,
@@ -80,7 +77,7 @@ export async function GET(request: NextRequest) {
     
     // Validate that we received an array
     if (!Array.isArray(artists)) {
-      console.error(`🎵 API Route: Invalid search response format:`, data);
+      console.error(` API Route: Invalid search response format:`, data);
       return NextResponse.json(
         { error: "Invalid search response format" },
         { status: 500 }
@@ -90,21 +87,17 @@ export async function GET(request: NextRequest) {
     // Validate artist data structure for each result
     const validArtists = artists.filter(artist => {
       if (!artist.id || !artist.name) {
-        console.warn(`🎵 API Route: Filtering out invalid artist data:`, artist);
         return false;
       }
       return true;
     });
-
-    console.log(`🎵 API Route: Found ${validArtists.length} valid artists for query: "${trimmedQuery}"`);
-    
     // Set appropriate cache headers
     const response_headers = new Headers();
     response_headers.set('Cache-Control', 'public, max-age=180, stale-while-revalidate=360');
     
     return NextResponse.json(validArtists, { headers: response_headers });
   } catch (error) {
-    console.error("🎵 API Route: Error in artist search API route:", {
+    console.error(" API Route: Error in artist search API route:", {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       query: request.url
