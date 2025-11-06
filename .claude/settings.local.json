@@ -83,7 +83,9 @@
       "Bash(echo {\"\"body\"\":\"\"{\"\"\"venueId\"\"\":\"\"\"test-venue-id\"\"\"}\"\"})",
       "Bash(C:/Temp/venue-test-payload.json)",
       "Bash(aws iam put-role-policy:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(C:/Temp/uploads-test-payload.json)",
+      "Bash(MSYS_NO_PATHCONV=1 aws lambda invoke:*)"
     ],
     "deny": [],
     "ask": []

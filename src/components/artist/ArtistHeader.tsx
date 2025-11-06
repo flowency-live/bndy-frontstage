@@ -38,88 +38,94 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
         )}
       </div>
 
-      {/* Profile Content - Compact */}
+      {/* Profile Content - Compact mobile layout */}
       <div className="container mx-auto px-4 relative">
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-3 sm:gap-4 md:gap-6 -mt-8 sm:-mt-10 md:-mt-12">
-          {/* Profile Picture - Smaller on mobile */}
+        <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
+          {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
             {artist.profileImageUrl ? (
               <Image
                 src={artist.profileImageUrl}
                 alt={`${artist.name} profile picture`}
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg object-cover"
+                width={125}
+                height={125}
+                className="w-[125px] h-[125px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg object-cover"
                 priority
                 quality={90}
-                sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 140px"
+                sizes="(max-width: 640px) 125px, (max-width: 768px) 120px, 140px"
               />
             ) : (
-              <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
-                <span className="text-2xl sm:text-3xl font-bold text-muted-foreground">
+              <div className="w-[125px] h-[125px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
+                <span className="text-3xl sm:text-3xl font-bold text-muted-foreground">
                   {artist.name.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Artist Info - Compact spacing */}
-          <div className="flex-1 text-center md:text-left w-full md:w-auto">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 leading-tight">
+          {/* Artist Info - Right side on mobile, stacked */}
+          <div className="flex-1 min-w-0 pt-2">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground mb-1 leading-tight">
               {artist.name}
             </h1>
 
-            {/* Location - More compact */}
+            {/* Location */}
             {artist.location && (
-              <div className="flex items-center justify-center md:justify-start gap-1.5 text-muted-foreground mb-2">
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-2">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-xs sm:text-sm">{artist.location}</span>
+                <span className="text-xs sm:text-sm truncate">{artist.location}</span>
               </div>
             )}
 
-            {/* Genres - Bold, vibrant badges */}
-            {artist.genres && artist.genres.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mb-2.5">
-                {artist.genres.map((genre, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Description - More compact */}
-            {artist.bio && (
-              <div className="mb-2.5">
-                <p className="text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
-                  {displayedBio}
-                </p>
-                {bioNeedsTruncation && (
-                  <button
-                    onClick={() => setShowFullBio(!showFullBio)}
-                    className="mt-1.5 text-primary hover:text-primary/80 text-xs font-medium transition-colors"
-                    aria-expanded={showFullBio}
-                    aria-label={showFullBio ? "Show less" : "Show more"}
-                  >
-                    {showFullBio ? "Show less" : "Show more"}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Social Media Links */}
-            <SocialMediaLinks
-              socialMediaUrls={artist.socialMediaUrls || []}
-              artistId={artist.id}
-              artistName={artist.name}
-            />
+            {/* Social Media Links - Mobile positioned here */}
+            <div className="mb-2">
+              <SocialMediaLinks
+                socialMediaUrls={artist.socialMediaUrls || []}
+                artistId={artist.id}
+                artistName={artist.name}
+                className="justify-start"
+              />
+            </div>
           </div>
+        </div>
+
+        {/* Genres and Bio - Full width below on mobile */}
+        <div className="mt-3">
+          {/* Genres - Bold, vibrant badges */}
+          {artist.genres && artist.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
+              {artist.genres.map((genre, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Description */}
+          {artist.bio && (
+            <div className="mb-2.5">
+              <p className="text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
+                {displayedBio}
+              </p>
+              {bioNeedsTruncation && (
+                <button
+                  onClick={() => setShowFullBio(!showFullBio)}
+                  className="mt-1.5 text-primary hover:text-primary/80 text-xs font-medium transition-colors"
+                  aria-expanded={showFullBio}
+                  aria-label={showFullBio ? "Show less" : "Show more"}
+                >
+                  {showFullBio ? "Show less" : "Show more"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
