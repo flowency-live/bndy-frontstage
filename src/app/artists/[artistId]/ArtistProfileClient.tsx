@@ -65,26 +65,17 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="container mx-auto px-4 pt-4 pb-8">
         {/* Events Section */}
         <section aria-label="Upcoming Events">
-          <EventsList 
-            events={initialData.upcomingEvents} 
+          <EventsList
+            events={initialData.upcomingEvents}
             artistLocation={initialData.location}
           />
         </section>
 
-        {/* Social Share Section */}
-        <section aria-label="Share Artist">
-          <SocialShareSection
-            artistName={initialData.name}
-            artistId={artistId || ''}
-            description={initialData.bio}
-          />
-        </section>
-
         {/* Navigation Section */}
-        <nav className="pt-6 border-t border-border" aria-label="Page Navigation">
+        <nav className="pt-8 mt-8 border-t border-border" aria-label="Page Navigation">
           <Link 
             href="/" 
             className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors"

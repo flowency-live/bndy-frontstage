@@ -20,8 +20,8 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
   return (
     <div className="relative">
-      {/* Cover/Banner Area - Reduced height on mobile */}
-      <div className="h-32 sm:h-40 md:h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-background relative overflow-hidden">
+      {/* Cover/Banner Area - Compact */}
+      <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-background relative overflow-hidden">
         {artist.profileImageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
@@ -38,9 +38,9 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
         )}
       </div>
 
-      {/* Profile Content - More compact */}
+      {/* Profile Content - Compact */}
       <div className="container mx-auto px-4 relative">
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-3 sm:gap-4 md:gap-6 -mt-10 sm:-mt-12 md:-mt-16">
+        <div className="flex flex-col md:flex-row items-center md:items-end gap-3 sm:gap-4 md:gap-6 -mt-8 sm:-mt-10 md:-mt-12">
           {/* Profile Picture - Smaller on mobile */}
           <div className="relative flex-shrink-0">
             {artist.profileImageUrl ? (
@@ -63,8 +63,8 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
             )}
           </div>
 
-          {/* Artist Info - Tighter spacing */}
-          <div className="flex-1 text-center md:text-left pb-3 w-full md:w-auto">
+          {/* Artist Info - Compact spacing */}
+          <div className="flex-1 text-center md:text-left pb-2 w-full md:w-auto">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 leading-tight">
               {artist.name}
             </h1>
@@ -115,7 +115,11 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
             {/* Social Media Links */}
             <div className="mt-2">
-              <SocialMediaLinks socialMediaUrls={artist.socialMediaUrls || []} />
+              <SocialMediaLinks
+                socialMediaUrls={artist.socialMediaUrls || []}
+                artistId={artist.id}
+                artistName={artist.name}
+              />
             </div>
           </div>
         </div>
