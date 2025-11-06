@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { ArtistProfileData } from "@/lib/types/artist-profile";
-import { Artist, Event, getSocialMediaUrls } from "@/lib/types";
+import { Artist, Event, getSocialMediaURLs } from "@/lib/types";
 import ArtistProfileClient from "./ArtistProfileClient";
 
 export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }) {
@@ -71,7 +71,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     profileImageUrl: artistData.profileImageUrl,
     genres: artistData.genres || [],
     location: artistData.location,
-    socialMediaUrls: getSocialMediaUrls(artistData),
+    socialMediaUrls: getSocialMediaURLs(artistData),
     upcomingEvents: upcomingEvents
   };
 
