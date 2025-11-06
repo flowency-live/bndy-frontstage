@@ -114,13 +114,11 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
             )}
 
             {/* Social Media Links */}
-            <div className="mt-2">
-              <SocialMediaLinks
-                socialMediaUrls={artist.socialMediaUrls || []}
-                artistId={artist.id}
-                artistName={artist.name}
-              />
-            </div>
+            <SocialMediaLinks
+              socialMediaUrls={artist.socialMediaUrls || []}
+              artistId={artist.id}
+              artistName={artist.name}
+            />
           </div>
         </div>
       </div>
