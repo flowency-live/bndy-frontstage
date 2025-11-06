@@ -80,13 +80,13 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
               </div>
             )}
 
-            {/* Genres - Subtle, compact badges */}
+            {/* Genres - Bold, vibrant badges */}
             {artist.genres && artist.genres.length > 0 && (
               <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mb-2.5">
                 {artist.genres.map((genre, index) => (
                   <span
                     key={index}
-                    className="inline-block px-2 py-0.5 bg-primary/10 text-primary/90 border border-primary/20 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap"
+                    className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap"
                   >
                     {genre}
                   </span>

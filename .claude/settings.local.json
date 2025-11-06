@@ -82,7 +82,8 @@
       "Bash(aws lambda get-function:*)",
       "Bash(echo {\"\"body\"\":\"\"{\"\"\"venueId\"\"\":\"\"\"test-venue-id\"\"\"}\"\"})",
       "Bash(C:/Temp/venue-test-payload.json)",
-      "Bash(aws iam put-role-policy:*)"
+      "Bash(aws iam put-role-policy:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
