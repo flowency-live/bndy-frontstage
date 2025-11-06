@@ -46,7 +46,7 @@ export default function ArtistFilters({
           <select
             value={artistTypeFilter}
             onChange={(e) => onArtistTypeChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
           >
             <option value="">All Types</option>
             {availableArtistTypes.map(type => (
@@ -62,7 +62,7 @@ export default function ArtistFilters({
           <select
             value={locationFilter}
             onChange={(e) => onLocationChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
           >
             <option value="">All Locations</option>
             {availableLocations.map(location => (
@@ -76,7 +76,7 @@ export default function ArtistFilters({
           <select
             value={genreFilter}
             onChange={(e) => onGenreChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
           >
             <option value="">All Genres</option>
             {availableGenres.map(genre => (
@@ -90,7 +90,7 @@ export default function ArtistFilters({
           <select
             value={groupBy}
             onChange={(e) => onGroupByChange(e.target.value as 'alpha' | 'type' | 'location' | 'genre')}
-            className="w-full px-3 py-2 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
           >
             <option value="alpha">Group: A-Z</option>
             <option value="type">Group: Type</option>
@@ -103,7 +103,7 @@ export default function ArtistFilters({
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
-            className="px-3 py-2 text-sm border border-border bg-background text-foreground hover:bg-muted rounded whitespace-nowrap"
+            className="px-3 py-2 text-sm border-2 border-border bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-lg whitespace-nowrap transition-all"
             title="Clear filters"
           >
             <X className="w-4 h-4 inline mr-1" />
@@ -121,7 +121,7 @@ export default function ArtistFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search artists by name..."
-            className="w-full px-3 py-2 pl-10 pr-8 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 pl-10 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
           />
           {searchQuery && (
             <button

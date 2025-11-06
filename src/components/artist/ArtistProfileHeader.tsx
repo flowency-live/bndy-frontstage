@@ -59,17 +59,13 @@ export default function ArtistProfileHeader({ profileData }: ArtistProfileHeader
             </h1>
           </div>
 
-          {/* Genre Tags with modern pill design and smooth animations */}
+          {/* Genre Tags with pill design matching event cards */}
           {profileData.genres && profileData.genres.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-4">
+            <div className="flex flex-wrap justify-center gap-2 max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-4">
               {profileData.genres.map((genre, index) => (
                 <span
                   key={index}
-                  className="genre-tag touch-feedback gpu-layer px-3 py-1.5 sm:px-4 sm:py-2 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-[var(--primary)]/20 hover:scale-105 active:scale-95 cursor-default"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animation: 'fadeInUp 0.6s ease-out forwards'
-                  }}
+                  className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-500/20 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:bg-gray-500/30 cursor-default"
                 >
                   {genre}
                 </span>

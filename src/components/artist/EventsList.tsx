@@ -100,10 +100,10 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
 
   return (
     <section className="space-y-2" aria-labelledby="events-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-2xl font-bold text-foreground hover:text-primary transition-colors text-left"
+          className="flex items-center gap-1.5 sm:gap-2 text-base sm:text-2xl font-bold text-foreground hover:text-primary transition-colors text-left"
           aria-expanded={isExpanded}
           aria-controls="events-list"
         >
@@ -111,9 +111,9 @@ export default function EventsList({ events, artistLocation }: EventsListProps) 
             Upcoming Events ({filteredEvents.length}{events.length !== filteredEvents.length ? ` of ${events.length}` : ''})
           </span>
           {isExpanded ? (
-            <ChevronUp className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+            <ChevronUp className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0" aria-hidden="true" />
           ) : (
-            <ChevronDown className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+            <ChevronDown className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0" aria-hidden="true" />
           )}
         </button>
 
@@ -157,19 +157,19 @@ interface LocationFilterProps {
 
 function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProps) {
   const distanceOptions = [
-    { value: null, label: "All distances" },
-    { value: 5, label: "Within 5 miles" },
-    { value: 10, label: "Within 10 miles" },
-    { value: 25, label: "Within 25 miles" },
-    { value: 50, label: "Within 50 miles" },
+    { value: null, label: "All" },
+    { value: 5, label: "5mi" },
+    { value: 10, label: "10mi" },
+    { value: 25, label: "25mi" },
+    { value: 50, label: "50mi" },
   ];
 
   return (
-    <div className="flex items-center gap-2" role="group" aria-labelledby="distance-filter-label">
-      <svg 
-        className="w-4 h-4 text-muted-foreground" 
-        fill="none" 
-        stroke="currentColor" 
+    <div className="flex items-center gap-1.5" role="group" aria-labelledby="distance-filter-label">
+      <svg
+        className="w-3.5 h-3.5 text-orange-500 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
         viewBox="0 0 24 24"
         aria-hidden="true"
         role="img"
@@ -178,8 +178,8 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
-      <label 
-        id="distance-filter-label" 
+      <label
+        id="distance-filter-label"
         htmlFor="distance-filter-select"
         className="sr-only"
       >
@@ -189,7 +189,11 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
         id="distance-filter-select"
         value={distanceFilter || ""}
         onChange={(e) => onDistanceChange(e.target.value ? Number(e.target.value) : null)}
-        className="px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        className="px-2 py-1 bg-orange-500 text-white rounded-full text-xs font-bold border-none focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 cursor-pointer"
+        style={{
+          backgroundColor: 'rgb(249 115 22)',
+          color: 'white'
+        }}
         aria-label="Filter events by distance from your location"
         aria-describedby="distance-filter-description"
       >
@@ -199,8 +203,8 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
           </option>
         ))}
       </select>
-      <span 
-        id="distance-filter-description" 
+      <span
+        id="distance-filter-description"
         className="sr-only"
       >
         Select a distance range to filter events based on your current location
