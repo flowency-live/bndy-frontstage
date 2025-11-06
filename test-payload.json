@@ -1,0 +1,1 @@
+{"routeKey":"GET /api/artists/{artistId}/public-events","pathParameters":{"artistId":"13944bfd-89ab-402e-95dc-a371fd78fd2f"},"queryStringParameters":{"startDate":"2025-11-01","endDate":"2025-11-30"},"requestContext":{"http":{"method":"GET","path":"/api/artists/13944bfd-89ab-402e-95dc-a371fd78fd2f/public-events"}}}

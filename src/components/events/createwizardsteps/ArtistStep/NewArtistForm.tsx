@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GenreSelector } from "@/components/ui/genre-selector";
 import { AlertCircle } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
 import type { Artist } from '@/lib/types';
@@ -17,20 +18,22 @@ interface NewArtistFormProps {
 interface NewArtistData {
     name: string;
     location: string;  // Required field to prevent duplicates
+    genres?: string[];
     facebookUrl?: string;
     instagramUrl?: string;
     websiteUrl?: string;
 }
 
-export function NewArtistForm({ 
-    initialName, 
-    onCancel, 
+export function NewArtistForm({
+    initialName,
+    onCancel,
     onArtistCreated,
-    existingArtists 
+    existingArtists
 }: NewArtistFormProps) {
     const [formData, setFormData] = useState<NewArtistData>({
         name: initialName,
-        location: ''
+        location: '',
+        genres: []
     });
     const [loading, setLoading] = useState(false);
 
@@ -119,7 +122,15 @@ export function NewArtistForm({
                 onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
                 className="mb-2"
             />
-            
+
+            <div className="mt-4">
+                <label className="text-sm font-medium mb-2 block">Genres (Optional)</label>
+                <GenreSelector
+                    selectedGenres={formData.genres || []}
+                    onChange={(genres) => setFormData({ ...formData, genres })}
+                />
+            </div>
+
             <div className="flex gap-2 pt-4">
                 <Button
                     variant="outline"
