@@ -1,7 +1,5 @@
 // src/components/events/steps/ArtistStep/NewArtistForm.tsx
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { GenreSelector } from "@/components/ui/genre-selector";
 import { AlertCircle } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
@@ -69,32 +67,64 @@ export function NewArtistForm({
 
     return (
         <div className="space-y-4">
-            <Input
+            <input
+                type="text"
                 placeholder="Artist Name *"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mb-2"
                 autoFocus
+                style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--background)',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                    marginBottom: '0.5rem'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
 
-            <Input
+            <input
+                type="text"
                 placeholder="Location (e.g., Manchester, UK) *"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="mb-2"
+                style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--background)',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                    marginBottom: '0.5rem'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
 
-            <p className="text-xs text-muted-foreground mb-2">
+            <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginBottom: '0.5rem' }}>
                 Location is required to prevent duplicate artists
             </p>
 
             {similarArtists.length > 0 && (
-                <div className="p-3 bg-yellow-500/10 rounded-md border border-yellow-500/50">
-                    <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm text-yellow-500 font-medium">Similar artists found:</p>
-                            <ul className="mt-1 text-sm text-muted-foreground">
+                <div style={{
+                    padding: '0.75rem',
+                    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                    borderRadius: '0.375rem',
+                    border: '1px solid rgba(234, 179, 8, 0.5)',
+                    marginBottom: '0.5rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <AlertCircle style={{ width: '1rem', height: '1rem', color: '#eab308', marginTop: '0.125rem', flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '0.875rem', color: '#eab308', fontWeight: 500 }}>Similar artists found:</p>
+                            <ul style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--muted-foreground)', paddingLeft: '1.25rem' }}>
                                 {similarArtists.map(artist => (
                                     <li key={artist.id}>{artist.name}</li>
                                 ))}
@@ -104,48 +134,123 @@ export function NewArtistForm({
                 </div>
             )}
 
-            <Input
+            <input
+                type="text"
                 placeholder="Facebook URL"
                 value={formData.facebookUrl || ''}
                 onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
-                className="mb-2"
+                style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--background)',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                    marginBottom: '0.5rem'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
-            <Input
+            <input
+                type="text"
                 placeholder="Instagram URL"
                 value={formData.instagramUrl || ''}
                 onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
-                className="mb-2"
+                style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--background)',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                    marginBottom: '0.5rem'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
-            <Input
+            <input
+                type="text"
                 placeholder="Website URL"
                 value={formData.websiteUrl || ''}
                 onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                className="mb-2"
+                style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--background)',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                    marginBottom: '0.5rem'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
             />
 
-            <div className="mt-4">
-                <label className="text-sm font-medium mb-2 block">Genres (Optional)</label>
+            <div style={{ marginTop: '1rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: 'var(--foreground)' }}>
+                    Genres (Optional)
+                </label>
                 <GenreSelector
                     selectedGenres={formData.genres || []}
                     onChange={(genres) => setFormData({ ...formData, genres })}
                 />
             </div>
 
-            <div className="flex gap-2 pt-4">
-                <Button
-                    variant="outline"
+            <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '1rem' }}>
+                <button
                     onClick={onCancel}
-                    className="flex-1"
+                    style={{
+                        flex: 1,
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        borderRadius: '0.5rem',
+                        border: '2px solid var(--border)',
+                        backgroundColor: 'var(--background)',
+                        color: 'var(--foreground)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--muted)'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--background)'}
                 >
                     Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                     onClick={handleSubmit}
                     disabled={!formData.name || !formData.location || loading}
-                    className="flex-1 bg-[var(--primary)] text-white"
+                    style={{
+                        flex: 1,
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        backgroundColor: 'var(--primary)',
+                        color: 'white',
+                        cursor: (!formData.name || !formData.location || loading) ? 'not-allowed' : 'pointer',
+                        opacity: (!formData.name || !formData.location || loading) ? 0.5 : 1,
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => {
+                        if (!(!formData.name || !formData.location || loading)) {
+                            e.currentTarget.style.opacity = '0.9';
+                        }
+                    }}
+                    onMouseOut={(e) => {
+                        if (!(!formData.name || !formData.location || loading)) {
+                            e.currentTarget.style.opacity = '1';
+                        }
+                    }}
                 >
                     {loading ? 'Creating...' : 'Save New Artist'}
-                </Button>
+                </button>
             </div>
         </div>
     );
