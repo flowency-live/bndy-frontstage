@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { X, ChevronDown, ChevronRight } from 'lucide-react';
 import { GENRE_CATEGORIES, type Genre } from '@/lib/constants/genres';
 
@@ -38,71 +36,137 @@ export function GenreSelector({ selectedGenres, onChange, className = '' }: Genr
     <div className={className}>
       {/* Selected Genres Display */}
       {selectedGenres.length > 0 && (
-        <div className="mb-3">
-          <div className="text-sm font-medium mb-2">Selected Genres ({selectedGenres.length})</div>
-          <div className="flex flex-wrap gap-2">
+        <div style={{ marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--foreground)' }}>
+            Selected Genres ({selectedGenres.length})
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {selectedGenres.map((genre) => (
-              <Badge
+              <span
                 key={genre}
-                variant="default"
-                className="cursor-pointer hover:bg-destructive transition-colors"
                 onClick={() => removeGenre(genre)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: '0.375rem',
+                  border: '1px solid transparent',
+                  padding: '0.25rem 0.625rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  backgroundColor: 'var(--primary)',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
               >
                 {genre}
-                <X className="h-3 w-3 ml-1" />
-              </Badge>
+                <X style={{ width: '0.75rem', height: '0.75rem', marginLeft: '0.25rem' }} />
+              </span>
             ))}
           </div>
         </div>
       )}
 
       {/* Category Browser */}
-      <div className="border rounded-md divide-y max-h-96 overflow-y-auto">
-        {GENRE_CATEGORIES.map((category) => {
+      <div style={{
+        border: '1px solid var(--border)',
+        borderRadius: '0.375rem',
+        maxHeight: '24rem',
+        overflowY: 'auto'
+      }}>
+        {GENRE_CATEGORIES.map((category, categoryIndex) => {
           const isExpanded = expandedCategories.has(category.name);
           const categoryGenreCount = category.genres.filter(g => selectedGenres.includes(g)).length;
 
           return (
-            <div key={category.name}>
+            <div key={category.name} style={{ borderTop: categoryIndex > 0 ? '1px solid var(--border)' : 'none' }}>
               {/* Category Header */}
               <button
                 type="button"
                 onClick={() => toggleCategory(category.name)}
-                className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent transition-colors text-left"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0.75rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.2s',
+                  color: 'var(--foreground)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    <ChevronDown style={{ width: '1rem', height: '1rem', color: 'var(--muted-foreground)' }} />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <ChevronRight style={{ width: '1rem', height: '1rem', color: 'var(--muted-foreground)' }} />
                   )}
-                  <span className="font-medium">{category.name}</span>
+                  <span style={{ fontWeight: 500 }}>{category.name}</span>
                   {categoryGenreCount > 0 && (
-                    <Badge variant="secondary" className="text-xs">
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      borderRadius: '0.375rem',
+                      padding: '0.125rem 0.5rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      backgroundColor: 'var(--secondary)',
+                      color: 'var(--secondary-foreground)'
+                    }}>
                       {categoryGenreCount}
-                    </Badge>
+                    </span>
                   )}
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
                   {category.genres.length} {category.genres.length === 1 ? 'genre' : 'genres'}
                 </span>
               </button>
 
               {/* Category Genres */}
               {isExpanded && (
-                <div className="px-3 py-2 bg-muted/30 flex flex-wrap gap-2">
+                <div style={{
+                  padding: '0.5rem 0.75rem',
+                  backgroundColor: 'rgba(var(--muted-rgb), 0.3)',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem'
+                }}>
                   {category.genres.map((genre) => {
                     const isSelected = selectedGenres.includes(genre);
                     return (
-                      <Badge
+                      <span
                         key={genre}
-                        variant={isSelected ? 'default' : 'outline'}
-                        className="cursor-pointer hover:scale-105 transition-transform"
                         onClick={() => toggleGenre(genre)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          borderRadius: '0.375rem',
+                          border: isSelected ? '1px solid transparent' : '1px solid var(--border)',
+                          padding: '0.25rem 0.625rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          backgroundColor: isSelected ? 'var(--primary)' : 'var(--background)',
+                          color: isSelected ? 'white' : 'var(--foreground)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
                       >
-                        {isSelected && <span className="mr-1">✓</span>}
+                        {isSelected && <span style={{ marginRight: '0.25rem' }}>✓</span>}
                         {genre}
-                      </Badge>
+                      </span>
                     );
                   })}
                 </div>
@@ -113,11 +177,9 @@ export function GenreSelector({ selectedGenres, onChange, className = '' }: Genr
       </div>
 
       {/* Quick Actions */}
-      <div className="flex justify-between items-center mt-3">
-        <Button
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={() => {
             if (expandedCategories.size === GENRE_CATEGORIES.length) {
               setExpandedCategories(new Set());
@@ -125,18 +187,42 @@ export function GenreSelector({ selectedGenres, onChange, className = '' }: Genr
               setExpandedCategories(new Set(GENRE_CATEGORIES.map(c => c.name)));
             }
           }}
+          style={{
+            padding: '0.375rem 0.75rem',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            borderRadius: '0.375rem',
+            border: 'none',
+            backgroundColor: 'transparent',
+            color: 'var(--foreground)',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
           {expandedCategories.size === GENRE_CATEGORIES.length ? 'Collapse All' : 'Expand All'}
-        </Button>
+        </button>
         {selectedGenres.length > 0 && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={() => onChange([])}
+            style={{
+              padding: '0.375rem 0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              borderRadius: '0.375rem',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: 'var(--foreground)',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             Clear All
-          </Button>
+          </button>
         )}
       </div>
     </div>

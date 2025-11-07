@@ -253,11 +253,11 @@ export function ArtistStep({
                                 Add New Artist
                             </Button>
                         </SheetTrigger>
-                        <SheetContent className="sm:max-w-[425px]">
+                        <SheetContent className="sm:max-w-[425px] overflow-y-auto">
                             <SheetHeader>
                                 <SheetTitle>Add New Artist</SheetTitle>
                             </SheetHeader>
-                            <div className="mt-4">
+                            <div className="mt-4 pb-6">
                                 <NewArtistForm
                                     initialName={searchTerm}
                                     onCancel={() => setIsNewArtistSheetOpen(false)}

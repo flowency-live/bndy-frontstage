@@ -106,6 +106,48 @@ export async function searchPlacesAutocomplete(
   }
 }
 
+// Search for cities/towns with Google Places Autocomplete
+export async function searchCityAutocomplete(
+  query: string
+): Promise<google.maps.places.AutocompletePrediction[]> {
+  // Check if Google Maps is available
+  if (!googleMapsAvailable) {
+    googleMapsAvailable = initGoogleMapsCheck();
+  }
+
+  // If Google Maps is not available, return empty array
+  if (!googleMapsAvailable) {
+    return [];
+  }
+
+  try {
+    const autocompleteService = new google.maps.places.AutocompleteService();
+    const predictions = await new Promise<google.maps.places.AutocompletePrediction[]>((resolve) => {
+      autocompleteService.getPlacePredictions(
+        {
+          input: query,
+          types: ['(cities)'],  // Only cities and towns
+          componentRestrictions: { country: 'gb' }
+        },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            resolve(predictions);
+          } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+            resolve([]);
+          } else {
+            resolve([]); // Return empty array instead of rejecting
+          }
+        }
+      );
+    });
+
+    return predictions;
+  } catch (error) {
+    console.error('Error in city autocomplete:', error);
+    return [];
+  }
+}
+
 // Get place details (more fields) from a place_id
 export async function getPlaceDetails(
   placeId: string,

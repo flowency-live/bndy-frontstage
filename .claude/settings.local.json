@@ -15,7 +15,9 @@
       "Bash(aws lambda publish-layer-version:*)",
       "Bash(Select-Object -Last 100)",
       "Bash(MSYS_NO_PATHCONV=1 aws logs tail:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(unzip:*)",
+      "Bash(aws lambda list-functions:*)"
     ],
     "deny": [],
     "ask": []
