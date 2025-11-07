@@ -45,12 +45,31 @@ const nextConfig: NextConfig = {
 
   // Enhanced image optimization for mobile
   images: {
-    domains: [
-      'graph.facebook.com',
-      'bndy-images.s3.eu-west-2.amazonaws.com',
-      'bndy-images.s3.amazonaws.com',
-      'i.ibb.co',
-      'yt3.googleusercontent.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'graph.facebook.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.fbcdn.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bndy-images.s3.eu-west-2.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bndy-images.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yt3.googleusercontent.com',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

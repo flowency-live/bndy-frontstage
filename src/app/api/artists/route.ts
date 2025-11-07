@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Artist } from "@/lib/types";
 
+// Force dynamic rendering - never cache this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * GET /api/artists - Get all artists for browse page
  * Proxies to API Gateway following serverless architecture
