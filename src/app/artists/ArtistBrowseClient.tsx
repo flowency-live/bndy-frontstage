@@ -31,13 +31,22 @@ export default function ArtistBrowseClient() {
             genreFilter: savedGenre,
             groupBy: savedGroupBy
           } = JSON.parse(savedState);
-          if (savedQuery) setSearchQuery(savedQuery);
-          if (savedLocation) setLocationFilter(savedLocation);
-          if (savedType) setArtistTypeFilter(savedType);
-          if (savedGenre) setGenreFilter(savedGenre);
-          if (savedGroupBy) setGroupBy(savedGroupBy);
+          if (savedQuery && typeof savedQuery === 'string') setSearchQuery(savedQuery);
+          if (savedLocation && typeof savedLocation === 'string') setLocationFilter(savedLocation);
+          // Only restore filters if they're valid non-empty strings (not "null", "undefined", etc)
+          if (savedType && typeof savedType === 'string' && savedType.trim() !== '' && savedType !== 'null' && savedType !== 'undefined') {
+            setArtistTypeFilter(savedType);
+          }
+          if (savedGenre && typeof savedGenre === 'string' && savedGenre !== 'null' && savedGenre !== 'undefined') {
+            setGenreFilter(savedGenre);
+          }
+          if (savedGroupBy && ['alpha', 'type', 'location', 'genre'].includes(savedGroupBy)) {
+            setGroupBy(savedGroupBy);
+          }
         } catch (error) {
           console.error('Error loading saved search state:', error);
+          // Clear corrupted state
+          sessionStorage.removeItem('artistBrowseState');
         }
       }
     }
