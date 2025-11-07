@@ -77,7 +77,7 @@ export default function ArtistProfileHeader({ profileData }: ArtistProfileHeader
           {profileData.socialMediaUrls && profileData.socialMediaUrls.length > 0 && (
             <SocialMediaLinks
               socialMediaUrls={profileData.socialMediaUrls}
-              className="animate-fade-in-up"
+              className="justify-center animate-fade-in-up"
             />
           )}
         </div>

@@ -85,7 +85,7 @@ export default function SocialMediaLinks({ socialMediaUrls, className = "", arti
     // If no social media URLs but we have artist info, show only share button
     if (artistId && artistName) {
       return (
-        <div className={`flex justify-center gap-3 ${className}`}>
+        <div className={`flex gap-3 ${className}`}>
           <ShareButton onClick={handleShare} showTooltip={showShareTooltip} />
         </div>
       );
@@ -94,7 +94,7 @@ export default function SocialMediaLinks({ socialMediaUrls, className = "", arti
   }
 
   return (
-    <div className={`flex justify-center gap-3 ${className}`}>
+    <div className={`flex gap-3 ${className}`}>
       {socialMediaUrls.map((social, index) => {
         const config = platformConfig[social.platform];
         if (!config) return null;
