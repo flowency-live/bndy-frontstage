@@ -109,7 +109,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
             )}
 
             {/* Social Media Links - Mobile positioned here */}
-            <div className="-ml-2">
+            <div className="-ml-1.5">
               <SocialMediaLinks
                 socialMediaUrls={venue.socialMediaUrls || []}
                 artistId={venue.id}
