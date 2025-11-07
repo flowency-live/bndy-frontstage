@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Fetch from the DynamoDB API via API Gateway
     const response = await fetch('https://api.bndy.co.uk/api/artists', {
       headers: forwardHeaders,
-      next: { revalidate: 60 } // Cache for 1 minute - artists data changes frequently
+      cache: 'no-store' // Always fetch fresh data - artists are frequently added/updated
     });
 
     if (!response.ok) {
@@ -63,9 +63,9 @@ export async function GET(request: NextRequest) {
       return true;
     });
 
-    // Set appropriate cache headers - short cache for frequently changing artist data
+    // Set cache headers to prevent browser caching - artist data changes frequently
     const response_headers = new Headers();
-    response_headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    response_headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     return NextResponse.json(validArtists, { headers: response_headers });
   } catch (error) {
