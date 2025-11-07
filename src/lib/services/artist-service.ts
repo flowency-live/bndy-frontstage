@@ -99,6 +99,7 @@ export async function createArtist(
         instagramUrl: artist.instagramUrl || '',
         websiteUrl: artist.websiteUrl || '',
         bio: artist.bio || artist.description || '',
+        genres: artist.genres || [],
       }),
     });
 

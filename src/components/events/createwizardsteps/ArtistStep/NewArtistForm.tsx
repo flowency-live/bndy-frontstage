@@ -1,5 +1,5 @@
 // src/components/events/steps/ArtistStep/NewArtistForm.tsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { GenreSelector } from "@/components/ui/genre-selector";
 import { AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
@@ -42,9 +42,13 @@ export function NewArtistForm({
     const locationWrapperRef = useRef<HTMLDivElement>(null);
     const { isLoaded: googleMapsLoaded, loadGoogleMaps } = useGoogleMaps();
 
-    const similarArtists = existingArtists.filter(artist =>
-        stringSimilarity(artist.name.toLowerCase(), formData.name.toLowerCase()) > 0.8
-    );
+    // Memoize similarArtists calculation to prevent recalculating on every render
+    const similarArtists = useMemo(() => {
+        if (!formData.name || formData.name.length < 2) return [];
+        return existingArtists.filter(artist =>
+            stringSimilarity(artist.name.toLowerCase(), formData.name.toLowerCase()) > 0.8
+        );
+    }, [formData.name, existingArtists]);
 
     // Handle location autocomplete search
     useEffect(() => {
@@ -184,9 +188,9 @@ export function NewArtistForm({
                         overflow: 'hidden',
                         borderRadius: '0.375rem',
                         border: '1px solid var(--border)',
-                        backgroundColor: 'var(--popover)',
+                        backgroundColor: 'var(--card-bg)',
                         padding: '0.25rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
                     }}>
                         {locationPredictions.map((prediction) => (
                             <div
