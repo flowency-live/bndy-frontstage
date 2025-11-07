@@ -38,12 +38,36 @@ export async function updateVenue(_venue: Venue): Promise<void> {
 }
 
 /**
- * Create a new venue (Backend endpoint not implemented yet)
+ * Create a new venue
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function createVenue(_venue: Omit<Venue, "id" | "createdAt" | "updatedAt">): Promise<Venue> {
-  // TODO: Implement POST /api/venues on backend
-  throw new Error("Create venue not implemented - backend endpoint needed: POST /api/venues");
+export async function createVenue(venue: Omit<Venue, "id" | "createdAt" | "updatedAt">): Promise<Venue> {
+  try {
+    const response = await fetch('https://api.bndy.co.uk/api/venues', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: venue.name,
+        address: venue.address,
+        latitude: venue.location?.lat || 0,
+        longitude: venue.location?.lng || 0,
+        location: venue.location,
+        googlePlaceId: venue.googlePlaceId,
+        validated: venue.validated || false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create venue');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating venue:', error);
+    throw error;
+  }
 }
 
 /**
