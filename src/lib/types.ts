@@ -47,6 +47,7 @@ export interface Artist {
   name: string;
   nameVariants?: string[];
   artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'dj' | 'collective'; // No "Band" entity - use artist_type field
+  artistType?: string; // NEW: Lambda now returns both artist_type and artistType for compatibility
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls' - legacy individual URL fields also exist
   genres?: string[];  // Flat list of genres (simplified 2025-11-07)
   acoustic?: boolean;  // NEW: Indicates acoustic performance capability
