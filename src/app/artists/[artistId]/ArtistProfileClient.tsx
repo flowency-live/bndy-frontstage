@@ -3,7 +3,7 @@
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import ArtistProfileHeader from "@/components/artist/ArtistProfileHeader";
+import ArtistHeader from "@/components/artist/ArtistHeader";
 import EventsList from "@/components/artist/EventsList";
 import SocialShareSection from "@/components/artist/SocialShareSection";
 
@@ -60,7 +60,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
     <div className="bg-background">
       {/* Artist Header */}
       <header>
-        <ArtistProfileHeader profileData={initialData} />
+        <ArtistHeader artist={initialData} />
       </header>
 
       {/* Main Content */}

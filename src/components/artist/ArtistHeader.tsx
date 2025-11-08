@@ -94,10 +94,17 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
         {/* Genres and Bio - Full width below on mobile */}
         <div className="mt-3">
-          {/* Genres - Bold, vibrant badges */}
-          {artist.genres && artist.genres.length > 0 && (
+          {/* Artist Type and Genre Badges */}
+          {(artist.artistType || (artist.genres && artist.genres.length > 0)) && (
             <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {artist.genres.map((genre, index) => (
+              {/* Artist Type Badge - Blue */}
+              {artist.artistType && (
+                <span className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-blue-500 text-white whitespace-nowrap">
+                  {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
+                </span>
+              )}
+              {/* Genre Badges - Orange */}
+              {artist.genres && artist.genres.map((genre, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap"
