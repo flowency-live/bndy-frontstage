@@ -80,8 +80,15 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
               </div>
             )}
 
-            {/* Social Media Links - Mobile positioned here */}
-            <div className="-ml-1.5">
+            {/* Artist Type Badge and Social Media Links - Same Row */}
+            <div className="flex items-center gap-2 -ml-1.5">
+              {/* Artist Type Badge */}
+              {artist.artistType && (
+                <span className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-blue-500 text-white whitespace-nowrap">
+                  {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
+                </span>
+              )}
+              {/* Social Media Links */}
               <SocialMediaLinks
                 socialMediaUrls={artist.socialMediaUrls || []}
                 artistId={artist.id}
@@ -94,17 +101,10 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
         {/* Genres and Bio - Full width below on mobile */}
         <div className="mt-3">
-          {/* Artist Type and Genre Badges */}
-          {(artist.artistType || (artist.genres && artist.genres.length > 0)) && (
+          {/* Genre Badges */}
+          {artist.genres && artist.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {/* Artist Type Badge - Blue */}
-              {artist.artistType && (
-                <span className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-blue-500 text-white whitespace-nowrap">
-                  {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
-                </span>
-              )}
-              {/* Genre Badges - Orange */}
-              {artist.genres && artist.genres.map((genre, index) => (
+              {artist.genres.map((genre, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500 text-white whitespace-nowrap"
