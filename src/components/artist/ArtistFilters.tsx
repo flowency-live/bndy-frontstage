@@ -13,6 +13,10 @@ interface ArtistFiltersProps {
   onGroupByChange: (value: 'alpha' | 'type' | 'location' | 'genre') => void;
   genreFilter: string;
   onGenreChange: (value: string) => void;
+  acousticFilter: string;  // 'all' | 'acoustic' | 'non-acoustic'
+  onAcousticChange: (value: string) => void;
+  actTypeFilter: string;  // '' | 'originals' | 'covers' | 'tribute'
+  onActTypeChange: (value: string) => void;
   availableLocations: string[];
   availableArtistTypes: string[];
   availableGenres: string[];
@@ -30,12 +34,16 @@ export default function ArtistFilters({
   onGroupByChange,
   genreFilter,
   onGenreChange,
+  acousticFilter,
+  onAcousticChange,
+  actTypeFilter,
+  onActTypeChange,
   availableLocations,
   availableArtistTypes,
   availableGenres,
   onClearFilters,
 }: ArtistFiltersProps) {
-  const hasActiveFilters = locationFilter || artistTypeFilter || genreFilter;
+  const hasActiveFilters = locationFilter || artistTypeFilter || genreFilter || (acousticFilter && acousticFilter !== 'all') || actTypeFilter;
 
   return (
     <div className="mb-4 space-y-3">
@@ -82,6 +90,33 @@ export default function ArtistFilters({
             {availableGenres.map(genre => (
               <option key={genre} value={genre}>{genre}</option>
             ))}
+          </select>
+        </div>
+
+        {/* Acoustic Filter */}
+        <div className="flex-1 min-w-[120px]">
+          <select
+            value={acousticFilter || 'all'}
+            onChange={(e) => onAcousticChange(e.target.value)}
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+          >
+            <option value="all">All Acts</option>
+            <option value="acoustic">Acoustic Only</option>
+            <option value="non-acoustic">Non-Acoustic</option>
+          </select>
+        </div>
+
+        {/* Act Type Filter */}
+        <div className="flex-1 min-w-[120px]">
+          <select
+            value={actTypeFilter}
+            onChange={(e) => onActTypeChange(e.target.value)}
+            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+          >
+            <option value="">All Act Types</option>
+            <option value="originals">Originals</option>
+            <option value="covers">Covers</option>
+            <option value="tribute">Tribute</option>
           </select>
         </div>
 

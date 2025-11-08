@@ -1,8 +1,6 @@
 // src/lib/constants.ts
-export const GENRES = [
-  'Rock', 'Jazz', 'Blues', 'Alternative', 'Folk', 'Pop', 
-  'Indie', 'Metal', 'Soul', 'Funk', 'Country', 'Rock n Roll', 'Punk', 'Hip Hop', 'Other'
-] as const;
+// NOTE: GENRES moved to src/lib/constants/genres.ts (2025-11-07)
+// Import from there instead: import { GENRES } from '@/lib/constants/genres';
 
 export const COLLECTIONS = {
   EVENTS: 'bf_events',

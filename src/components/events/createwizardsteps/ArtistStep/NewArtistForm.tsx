@@ -1,10 +1,13 @@
 // src/components/events/steps/ArtistStep/NewArtistForm.tsx
 import { useState, useMemo } from 'react';
 import { GenreSelector } from "@/components/ui/genre-selector";
+import { ArtistTypeSelector } from "@/components/ui/artist-type-selector";
+import { ActTypeSelector } from "@/components/ui/act-type-selector";
 import { LocationSelector } from "@/components/ui/location-selector";
 import { AlertCircle } from 'lucide-react';
 import { createArtist } from '@/lib/services/artist-service';
 import type { Artist } from '@/lib/types';
+import type { ArtistType, ActType } from '@/lib/constants/artist';
 import { stringSimilarity } from '@/lib/utils/string-similarity';
 import { searchCityAutocomplete } from '@/lib/services/places-service';
 
@@ -19,7 +22,10 @@ interface NewArtistData {
     name: string;
     location: string;  // Required field to prevent duplicates
     locationType?: 'national' | 'region' | 'city';
+    artist_type?: ArtistType;  // Required field
     genres?: string[];
+    acoustic?: boolean;  // Optional acoustic flag
+    actType?: ActType[];  // Optional act type(s)
     facebookUrl?: string;
     instagramUrl?: string;
     websiteUrl?: string;
@@ -34,9 +40,11 @@ export function NewArtistForm({
     const [formData, setFormData] = useState<NewArtistData>({
         name: initialName,
         location: '',
-        genres: []
+        genres: [],
+        actType: []
     });
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     // Memoize similarArtists calculation to prevent recalculating on every render
     const similarArtists = useMemo(() => {
@@ -63,21 +71,29 @@ export function NewArtistForm({
     };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.location) {
-            alert('Artist name and location are required');
+        const newErrors: { [key: string]: string } = {};
+
+        // Validate required fields
+        if (!formData.name) newErrors.name = 'Artist name is required';
+        if (!formData.location) newErrors.location = 'Location is required';
+        if (!formData.artist_type) newErrors.artist_type = 'Artist type is required';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
         const exactMatch = existingArtists.find(
             artist => artist.name.toLowerCase() === formData.name.toLowerCase()
         );
-        
+
         if (exactMatch) {
             alert('An artist with this exact name already exists');
             return;
         }
 
         setLoading(true);
+        setErrors({});
         try {
             const artist = await createArtist(formData);
             onArtistCreated(artist);
@@ -117,6 +133,44 @@ export function NewArtistForm({
                 onCitySearch={handleCitySearch}
                 required
             />
+
+            <ArtistTypeSelector
+                selectedType={formData.artist_type}
+                onChange={(type) => setFormData({ ...formData, artist_type: type })}
+                required
+                error={errors.artist_type}
+            />
+
+            <ActTypeSelector
+                selectedTypes={formData.actType || []}
+                onChange={(types) => setFormData({ ...formData, actType: types })}
+            />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+                <input
+                    type="checkbox"
+                    id="acoustic"
+                    checked={formData.acoustic || false}
+                    onChange={(e) => setFormData({ ...formData, acoustic: e.target.checked })}
+                    style={{
+                        width: '1rem',
+                        height: '1rem',
+                        cursor: 'pointer',
+                        accentColor: 'var(--primary)'
+                    }}
+                />
+                <label
+                    htmlFor="acoustic"
+                    style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        color: 'var(--foreground)',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Acoustic performances
+                </label>
+            </div>
 
             {similarArtists.length > 0 && (
                 <div style={{
@@ -230,7 +284,7 @@ export function NewArtistForm({
                 </button>
                 <button
                     onClick={handleSubmit}
-                    disabled={!formData.name || !formData.location || loading}
+                    disabled={!formData.name || !formData.location || !formData.artist_type || loading}
                     style={{
                         flex: 1,
                         padding: '0.5rem 1rem',
@@ -240,17 +294,17 @@ export function NewArtistForm({
                         border: 'none',
                         backgroundColor: 'var(--primary)',
                         color: 'white',
-                        cursor: (!formData.name || !formData.location || loading) ? 'not-allowed' : 'pointer',
-                        opacity: (!formData.name || !formData.location || loading) ? 0.5 : 1,
+                        cursor: (!formData.name || !formData.location || !formData.artist_type || loading) ? 'not-allowed' : 'pointer',
+                        opacity: (!formData.name || !formData.location || !formData.artist_type || loading) ? 0.5 : 1,
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => {
-                        if (!(!formData.name || !formData.location || loading)) {
+                        if (!(!formData.name || !formData.location || !formData.artist_type || loading)) {
                             e.currentTarget.style.opacity = '0.9';
                         }
                     }}
                     onMouseOut={(e) => {
-                        if (!(!formData.name || !formData.location || loading)) {
+                        if (!(!formData.name || !formData.location || !formData.artist_type || loading)) {
                             e.currentTarget.style.opacity = '1';
                         }
                     }}

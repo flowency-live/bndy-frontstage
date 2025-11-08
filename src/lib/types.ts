@@ -46,9 +46,11 @@ export interface Artist {
   id: string;
   name: string;
   nameVariants?: string[];
-  artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'collective'; // No "Band" entity - use artist_type field
+  artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'dj' | 'collective'; // No "Band" entity - use artist_type field
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls' - legacy individual URL fields also exist
-  genres?: string[];
+  genres?: string[];  // Flat list of genres (simplified 2025-11-07)
+  acoustic?: boolean;  // NEW: Indicates acoustic performance capability
+  actType?: ('originals' | 'covers' | 'tribute')[]; // NEW: Type of act (multiselect)
   createdAt?: string;
   updatedAt?: string;
   profileImageUrl?: string;

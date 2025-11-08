@@ -16,6 +16,8 @@ export default function ArtistBrowseClient() {
   const [locationFilter, setLocationFilter] = useState<string>('');
   const [artistTypeFilter, setArtistTypeFilter] = useState<string>('');
   const [genreFilter, setGenreFilter] = useState<string>('');
+  const [acousticFilter, setAcousticFilter] = useState<string>('all');
+  const [actTypeFilter, setActTypeFilter] = useState<string>('');
   const [groupBy, setGroupBy] = useState<'alpha' | 'type' | 'location' | 'genre'>('alpha');
 
   // Load saved search state from sessionStorage
@@ -29,6 +31,8 @@ export default function ArtistBrowseClient() {
             locationFilter: savedLocation,
             artistTypeFilter: savedType,
             genreFilter: savedGenre,
+            acousticFilter: savedAcoustic,
+            actTypeFilter: savedActType,
             groupBy: savedGroupBy
           } = JSON.parse(savedState);
           if (savedQuery && typeof savedQuery === 'string') setSearchQuery(savedQuery);
@@ -39,6 +43,12 @@ export default function ArtistBrowseClient() {
           }
           if (savedGenre && typeof savedGenre === 'string' && savedGenre !== 'null' && savedGenre !== 'undefined') {
             setGenreFilter(savedGenre);
+          }
+          if (savedAcoustic && typeof savedAcoustic === 'string' && savedAcoustic !== 'null' && savedAcoustic !== 'undefined') {
+            setAcousticFilter(savedAcoustic);
+          }
+          if (savedActType && typeof savedActType === 'string' && savedActType !== 'null' && savedActType !== 'undefined') {
+            setActTypeFilter(savedActType);
           }
           if (savedGroupBy && ['alpha', 'type', 'location', 'genre'].includes(savedGroupBy)) {
             setGroupBy(savedGroupBy);
@@ -60,11 +70,13 @@ export default function ArtistBrowseClient() {
         locationFilter,
         artistTypeFilter,
         genreFilter,
+        acousticFilter,
+        actTypeFilter,
         groupBy,
       };
       sessionStorage.setItem('artistBrowseState', JSON.stringify(state));
     }
-  }, [searchQuery, locationFilter, artistTypeFilter, genreFilter, groupBy]);
+  }, [searchQuery, locationFilter, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, groupBy]);
 
   // Load all artists on component mount
   useEffect(() => {
@@ -97,7 +109,12 @@ export default function ArtistBrowseClient() {
           artist.artist_type === artistTypeFilter;
         const matchesGenre = !genreFilter ||
           (artist.genres && artist.genres.some(g => g === genreFilter));
-        return matchesLocation && matchesType && matchesGenre;
+        const matchesAcoustic = acousticFilter === 'all' ||
+          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
+          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+        const matchesActType = !actTypeFilter ||
+          (artist.actType && artist.actType.includes(actTypeFilter as any));
+        return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
       });
       setDisplayedArtists(filtered);
       return;
@@ -108,13 +125,18 @@ export default function ArtistBrowseClient() {
       setError(null);
       const searchResults = await searchArtists(query, location);
 
-      // Apply additional local filtering for artist type and genre
+      // Apply additional local filtering for artist type, genre, acoustic, and actType
       const filtered = searchResults.filter(artist => {
         const matchesType = !artistTypeFilter ||
           artist.artist_type === artistTypeFilter;
         const matchesGenre = !genreFilter ||
           (artist.genres && artist.genres.some(g => g === genreFilter));
-        return matchesType && matchesGenre;
+        const matchesAcoustic = acousticFilter === 'all' ||
+          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
+          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+        const matchesActType = !actTypeFilter ||
+          (artist.actType && artist.actType.includes(actTypeFilter as any));
+        return matchesType && matchesGenre && matchesAcoustic && matchesActType;
       });
 
       setDisplayedArtists(filtered);
@@ -130,13 +152,18 @@ export default function ArtistBrowseClient() {
           artist.artist_type === artistTypeFilter;
         const matchesGenre = !genreFilter ||
           (artist.genres && artist.genres.some(g => g === genreFilter));
-        return matchesSearch && matchesLocation && matchesType && matchesGenre;
+        const matchesAcoustic = acousticFilter === 'all' ||
+          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
+          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+        const matchesActType = !actTypeFilter ||
+          (artist.actType && artist.actType.includes(actTypeFilter as any));
+        return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
       });
       setDisplayedArtists(filtered);
     } finally {
       setSearching(false);
     }
-  }, [allArtists, artistTypeFilter, genreFilter]);
+  }, [allArtists, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter]);
 
   // Effect to trigger search when query or location changes
   useEffect(() => {
@@ -147,7 +174,7 @@ export default function ArtistBrowseClient() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, locationFilter, performSearch]);
 
-  // Effect to re-filter when artist type or genre changes
+  // Effect to re-filter when artist type, genre, acoustic, or actType changes
   useEffect(() => {
     if (searchQuery && searchQuery.trim().length >= 2) {
       performSearch(searchQuery, locationFilter);
@@ -160,11 +187,16 @@ export default function ArtistBrowseClient() {
           artist.artist_type === artistTypeFilter;
         const matchesGenre = !genreFilter ||
           (artist.genres && artist.genres.some(g => g === genreFilter));
-        return matchesLocation && matchesType && matchesGenre;
+        const matchesAcoustic = acousticFilter === 'all' ||
+          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
+          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+        const matchesActType = !actTypeFilter ||
+          (artist.actType && artist.actType.includes(actTypeFilter as any));
+        return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
       });
       setDisplayedArtists(filtered);
     }
-  }, [artistTypeFilter, genreFilter, allArtists, searchQuery, locationFilter, performSearch]);
+  }, [artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, allArtists, searchQuery, locationFilter, performSearch]);
 
   // Get unique locations for filter dropdown
   const availableLocations = useMemo(() => {
@@ -270,6 +302,10 @@ export default function ArtistBrowseClient() {
         onGroupByChange={setGroupBy}
         genreFilter={genreFilter}
         onGenreChange={setGenreFilter}
+        acousticFilter={acousticFilter}
+        onAcousticChange={setAcousticFilter}
+        actTypeFilter={actTypeFilter}
+        onActTypeChange={setActTypeFilter}
         availableLocations={availableLocations}
         availableArtistTypes={availableArtistTypes}
         availableGenres={availableGenres}
@@ -278,6 +314,8 @@ export default function ArtistBrowseClient() {
           setLocationFilter('');
           setArtistTypeFilter('');
           setGenreFilter('');
+          setAcousticFilter('all');
+          setActTypeFilter('');
           // Clear saved state
           if (typeof window !== 'undefined') {
             sessionStorage.removeItem('artistBrowseState');
@@ -318,18 +356,20 @@ export default function ArtistBrowseClient() {
       ) : (
         <div className="text-center py-12">
           <div className="text-muted-foreground mb-4">
-            {searchQuery || locationFilter || artistTypeFilter || genreFilter
+            {searchQuery || locationFilter || artistTypeFilter || genreFilter || (acousticFilter && acousticFilter !== 'all') || actTypeFilter
               ? 'No artists match your search criteria'
               : 'No artists found'
             }
           </div>
-          {(searchQuery || locationFilter || artistTypeFilter || genreFilter) && (
+          {(searchQuery || locationFilter || artistTypeFilter || genreFilter || (acousticFilter && acousticFilter !== 'all') || actTypeFilter) && (
             <button
               onClick={() => {
                 setSearchQuery('');
                 setLocationFilter('');
                 setArtistTypeFilter('');
                 setGenreFilter('');
+                setAcousticFilter('all');
+                setActTypeFilter('');
                 // Clear saved state
                 if (typeof window !== 'undefined') {
                   sessionStorage.removeItem('artistBrowseState');
