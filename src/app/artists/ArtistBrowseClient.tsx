@@ -111,7 +111,7 @@ export default function ArtistBrowseClient() {
           (artist.genres && artist.genres.some(g => g === genreFilter));
         const matchesAcoustic = acousticFilter === 'all' ||
           (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+          (acousticFilter === 'non-acoustic' && !artist.acoustic);
         const matchesActType = !actTypeFilter ||
           (artist.actType && artist.actType.includes(actTypeFilter as any));
         return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
@@ -133,7 +133,7 @@ export default function ArtistBrowseClient() {
           (artist.genres && artist.genres.some(g => g === genreFilter));
         const matchesAcoustic = acousticFilter === 'all' ||
           (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+          (acousticFilter === 'non-acoustic' && !artist.acoustic);
         const matchesActType = !actTypeFilter ||
           (artist.actType && artist.actType.includes(actTypeFilter as any));
         return matchesType && matchesGenre && matchesAcoustic && matchesActType;
@@ -154,7 +154,7 @@ export default function ArtistBrowseClient() {
           (artist.genres && artist.genres.some(g => g === genreFilter));
         const matchesAcoustic = acousticFilter === 'all' ||
           (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+          (acousticFilter === 'non-acoustic' && !artist.acoustic);
         const matchesActType = !actTypeFilter ||
           (artist.actType && artist.actType.includes(actTypeFilter as any));
         return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
@@ -189,7 +189,7 @@ export default function ArtistBrowseClient() {
           (artist.genres && artist.genres.some(g => g === genreFilter));
         const matchesAcoustic = acousticFilter === 'all' ||
           (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && (!artist.acoustic || artist.acoustic === false));
+          (acousticFilter === 'non-acoustic' && !artist.acoustic);
         const matchesActType = !actTypeFilter ||
           (artist.actType && artist.actType.includes(actTypeFilter as any));
         return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
