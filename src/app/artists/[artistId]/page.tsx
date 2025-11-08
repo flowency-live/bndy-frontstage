@@ -67,6 +67,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     bio: artistData.bio,
     profileImageUrl: artistData.profileImageUrl,
     genres: artistData.genres || [],
+    artistType: artistData.artistType || artistData.artist_type,
     location: artistData.location,
     socialMediaUrls: getSocialMediaURLs(artistData),
     upcomingEvents: upcomingEvents
