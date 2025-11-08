@@ -59,10 +59,19 @@ export default function ArtistProfileHeader({ profileData }: ArtistProfileHeader
             </h1>
           </div>
 
-          {/* Genre Tags with pill design matching event cards */}
-          {profileData.genres && profileData.genres.length > 0 && (
+          {/* Artist Type and Genre Tags */}
+          {(profileData.artistType || (profileData.genres && profileData.genres.length > 0)) && (
             <div className="flex flex-wrap justify-center gap-2 max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-4">
-              {profileData.genres.map((genre, index) => (
+              {/* Artist Type Badge - Blue/Primary Color */}
+              {profileData.artistType && (
+                <span
+                  className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-blue-500/20 text-blue-700 dark:text-blue-300 transition-all duration-200 hover:bg-blue-500/30 cursor-default border border-blue-500/30"
+                >
+                  {profileData.artistType.charAt(0).toUpperCase() + profileData.artistType.slice(1)}
+                </span>
+              )}
+              {/* Genre Tags - Gray */}
+              {profileData.genres && profileData.genres.map((genre, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-500/20 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:bg-gray-500/30 cursor-default"

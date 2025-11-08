@@ -7,6 +7,7 @@ export interface ArtistProfileData {
   bio?: string;  // Backend returns 'bio' not 'description'
   profileImageUrl?: string;
   genres?: string[];
+  artistType?: string;
   location?: string;
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
   upcomingEvents: Event[];
