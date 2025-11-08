@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, X } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, X, ChevronDown } from 'lucide-react';
 
 interface ArtistFiltersProps {
   searchQuery: string;
@@ -45,6 +46,26 @@ export default function ArtistFilters({
 }: ArtistFiltersProps) {
   const genreArray = Array.isArray(genreFilter) ? genreFilter : (genreFilter ? [genreFilter] : []);
   const hasActiveFilters = locationFilter || artistTypeFilter || genreArray.length > 0 || (acousticFilter && acousticFilter !== 'all') || actTypeFilter;
+  const [genreDropdownOpen, setGenreDropdownOpen] = useState(false);
+  const genreDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (genreDropdownRef.current && !genreDropdownRef.current.contains(event.target as Node)) {
+        setGenreDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleGenre = (genre: string) => {
+    const newGenres = genreArray.includes(genre)
+      ? genreArray.filter(g => g !== genre)
+      : [...genreArray, genre];
+    onGenreChange(newGenres);
+  };
 
   return (
     <div className="mb-4 space-y-3">
@@ -82,26 +103,52 @@ export default function ArtistFilters({
           </select>
         </div>
 
-        {/* Genre Filter - Multi-select */}
-        <div className="flex-1 min-w-[120px] relative">
-          <select
-            multiple
-            value={genreArray}
-            onChange={(e) => {
-              const selected = Array.from(e.target.selectedOptions, option => option.value);
-              onGenreChange(selected);
-            }}
-            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400"
-            size={1}
-            title={genreArray.length > 0 ? `Selected: ${genreArray.join(', ')}` : 'All Genres (hold Ctrl/Cmd to select multiple)'}
+        {/* Genre Filter - Custom Dropdown with Checkboxes */}
+        <div className="flex-1 min-w-[120px] relative" ref={genreDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setGenreDropdownOpen(!genreDropdownOpen)}
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none text-left flex items-center justify-between"
           >
-            {availableGenres.map(genre => (
-              <option key={genre} value={genre}>{genre}</option>
-            ))}
-          </select>
+            <span className="truncate">
+              {genreArray.length === 0 ? 'All Genres' : `${genreArray.length} Genre${genreArray.length > 1 ? 's' : ''}`}
+            </span>
+            <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
+          </button>
           {genreArray.length > 0 && (
-            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold pointer-events-none">
               {genreArray.length}
+            </div>
+          )}
+          {genreDropdownOpen && (
+            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto">
+              <div className="p-2">
+                {availableGenres.map(genre => (
+                  <label
+                    key={genre}
+                    className="flex items-center px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={genreArray.includes(genre)}
+                      onChange={() => toggleGenre(genre)}
+                      className="mr-2 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <span className="text-gray-900 dark:text-gray-100">{genre}</span>
+                  </label>
+                ))}
+              </div>
+              {genreArray.length > 0 && (
+                <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+                  <button
+                    type="button"
+                    onClick={() => onGenreChange([])}
+                    className="w-full px-2 py-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
