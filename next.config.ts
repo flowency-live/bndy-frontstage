@@ -132,6 +132,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Security headers for all routes
         source: '/(.*)',
         headers: [
           {
@@ -146,11 +147,16 @@ const nextConfig: NextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-          // Mobile-specific headers
           {
             key: 'X-UA-Compatible',
             value: 'IE=edge',
           },
+        ],
+      },
+      {
+        // Cache static assets aggressively
+        source: '/_next/static/:path*',
+        headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
@@ -158,11 +164,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/sw.js',
+        // Never cache API routes
+        source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
+            value: 'no-store, no-cache, must-revalidate',
           },
         ],
       },
