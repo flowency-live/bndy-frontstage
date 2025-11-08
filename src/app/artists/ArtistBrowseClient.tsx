@@ -305,7 +305,7 @@ export default function ArtistBrowseClient() {
         groupBy={groupBy}
         onGroupByChange={setGroupBy}
         genreFilter={genreFilter}
-        onGenreChange={setGenreFilter}
+        onGenreChange={(value) => setGenreFilter(Array.isArray(value) ? value : (value ? [value] : []))}
         acousticFilter={acousticFilter}
         onAcousticChange={setAcousticFilter}
         actTypeFilter={actTypeFilter}
