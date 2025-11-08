@@ -11,8 +11,8 @@ interface ArtistFiltersProps {
   onArtistTypeChange: (value: string) => void;
   groupBy: 'alpha' | 'type' | 'location' | 'genre';
   onGroupByChange: (value: 'alpha' | 'type' | 'location' | 'genre') => void;
-  genreFilter: string;
-  onGenreChange: (value: string) => void;
+  genreFilter: string | string[];  // Support both single and multiple genres
+  onGenreChange: (value: string | string[]) => void;
   acousticFilter: string;  // 'all' | 'acoustic' | 'non-acoustic'
   onAcousticChange: (value: string) => void;
   actTypeFilter: string;  // '' | 'originals' | 'covers' | 'tribute'
@@ -43,18 +43,20 @@ export default function ArtistFilters({
   availableGenres,
   onClearFilters,
 }: ArtistFiltersProps) {
-  const hasActiveFilters = locationFilter || artistTypeFilter || genreFilter || (acousticFilter && acousticFilter !== 'all') || actTypeFilter;
+  const genreArray = Array.isArray(genreFilter) ? genreFilter : (genreFilter ? [genreFilter] : []);
+  const hasActiveFilters = locationFilter || artistTypeFilter || genreArray.length > 0 || (acousticFilter && acousticFilter !== 'all') || actTypeFilter;
 
   return (
     <div className="mb-4 space-y-3">
       {/* Filter Dropdowns Row */}
       <div className="flex flex-wrap gap-2">
         {/* Artist Type Filter */}
-        <div className="flex-1 min-w-[140px]">
+        <div className="flex-1 min-w-[140px] relative">
           <select
             value={artistTypeFilter}
             onChange={(e) => onArtistTypeChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
+            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
           >
             <option value="">All Types</option>
             {availableArtistTypes.map(type => (
@@ -66,11 +68,12 @@ export default function ArtistFilters({
         </div>
 
         {/* Location Filter */}
-        <div className="flex-1 min-w-[140px]">
+        <div className="flex-1 min-w-[140px] relative">
           <select
             value={locationFilter}
             onChange={(e) => onLocationChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
+            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
           >
             <option value="">All Locations</option>
             {availableLocations.map(location => (
@@ -79,26 +82,37 @@ export default function ArtistFilters({
           </select>
         </div>
 
-        {/* Genre Filter */}
-        <div className="flex-1 min-w-[120px]">
+        {/* Genre Filter - Multi-select */}
+        <div className="flex-1 min-w-[120px] relative">
           <select
-            value={genreFilter}
-            onChange={(e) => onGenreChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            multiple
+            value={genreArray}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions, option => option.value);
+              onGenreChange(selected);
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400"
+            size={1}
+            title={genreArray.length > 0 ? `Selected: ${genreArray.join(', ')}` : 'All Genres (hold Ctrl/Cmd to select multiple)'}
           >
-            <option value="">All Genres</option>
             {availableGenres.map(genre => (
               <option key={genre} value={genre}>{genre}</option>
             ))}
           </select>
+          {genreArray.length > 0 && (
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {genreArray.length}
+            </div>
+          )}
         </div>
 
         {/* Acoustic Filter */}
-        <div className="flex-1 min-w-[120px]">
+        <div className="flex-1 min-w-[120px] relative">
           <select
             value={acousticFilter || 'all'}
             onChange={(e) => onAcousticChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
+            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
           >
             <option value="all">All Acts</option>
             <option value="acoustic">Acoustic Only</option>
@@ -107,11 +121,12 @@ export default function ArtistFilters({
         </div>
 
         {/* Act Type Filter */}
-        <div className="flex-1 min-w-[120px]">
+        <div className="flex-1 min-w-[120px] relative">
           <select
             value={actTypeFilter}
             onChange={(e) => onActTypeChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
+            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
           >
             <option value="">All Act Types</option>
             <option value="originals">Originals</option>
@@ -121,11 +136,12 @@ export default function ArtistFilters({
         </div>
 
         {/* Group By */}
-        <div className="flex-1 min-w-[140px]">
+        <div className="flex-1 min-w-[140px] relative">
           <select
             value={groupBy}
             onChange={(e) => onGroupByChange(e.target.value as 'alpha' | 'type' | 'location' | 'genre')}
-            className="w-full px-3 py-2 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50"
+            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
+            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
           >
             <option value="alpha">Group: A-Z</option>
             <option value="type">Group: Type</option>
