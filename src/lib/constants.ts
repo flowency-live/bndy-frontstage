@@ -2,13 +2,6 @@
 // NOTE: GENRES moved to src/lib/constants/genres.ts (2025-11-07)
 // Import from there instead: import { GENRES } from '@/lib/constants/genres';
 
-export const COLLECTIONS = {
-  EVENTS: 'bf_events',
-  VENUES: 'bf_venues',
-  ARTISTS: 'bf_artists',
-  USERS: 'bf_users'
-} as const;
-
 // Date range options for list view
 export const DATE_RANGES = [
   { id: "today", label: "Today" },

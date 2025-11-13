@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
-import { AuthProvider } from '@/context/AuthContext';
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
@@ -74,16 +73,14 @@ export default function RootLayout({
       </head>
       <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 mobile-optimized keyboard-safe">
         <Providers>
-          <AuthProvider>
-            <ViewToggleProvider>
-              <ServiceWorkerRegistration />
-              <Header />
-              <main className="flex-1 mt-[88px] mb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
-                {children}
-              </main>
-              <Footer />
-            </ViewToggleProvider>
-          </AuthProvider>
+          <ViewToggleProvider>
+            <ServiceWorkerRegistration />
+            <Header />
+            <main className="flex-1 mt-[88px] mb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+              {children}
+            </main>
+            <Footer />
+          </ViewToggleProvider>
         </Providers>
       </body>
     </html>
