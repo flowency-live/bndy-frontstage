@@ -14,11 +14,19 @@ interface EventsListProps {
   linkToArtist?: boolean; // Link to artist instead of venue (for venue pages)
 }
 
+// Group events by month
+interface MonthGroup {
+  monthKey: string; // YYYY-MM format
+  monthLabel: string; // "November 2025"
+  events: Event[];
+}
+
 export default function EventsList({ events, artistLocation, hideDistanceFilter = false, linkToArtist = false }: EventsListProps) {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [locationPermission, setLocationPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null); // null means "All"
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
   // Get user location on component mount
   useEffect(() => {
@@ -37,16 +45,39 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
     if (!distanceFilter || !userLocation || !event.location) {
       return true; // Show all events if no filter or no location data
     }
-    
+
     const distance = calculateDistance(userLocation, event.location);
     return distance <= distanceFilter;
   });
+
+  // Group events by month
+  const monthGroups: MonthGroup[] = [];
+  const groupMap = new Map<string, Event[]>();
+
+  filteredEvents.forEach((event) => {
+    const eventDate = new Date(event.date);
+    const monthKey = format(eventDate, 'yyyy-MM');
+
+    if (!groupMap.has(monthKey)) {
+      groupMap.set(monthKey, []);
+    }
+    groupMap.get(monthKey)!.push(event);
+  });
+
+  // Convert map to sorted array
+  Array.from(groupMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([monthKey, monthEvents]) => {
+      const firstEvent = monthEvents[0];
+      const monthLabel = format(new Date(firstEvent.date), 'MMMM yyyy');
+      monthGroups.push({ monthKey, monthLabel, events: monthEvents });
+    });
 
   if (!events || events.length === 0) {
     return (
       <section className="space-y-4" aria-labelledby="events-heading">
         <h2 id="events-heading" className="text-2xl font-bold text-foreground">Upcoming Events</h2>
-        <div 
+        <div
           className="text-center py-12 bg-muted/50 rounded-lg"
           role="status"
           aria-live="polite"
@@ -77,8 +108,8 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
             />
           )}
         </div>
-        
-        <div 
+
+        <div
           className="text-center py-12 bg-muted/50 rounded-lg"
           role="status"
           aria-live="polite"
@@ -87,7 +118,7 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
           <h3 className="text-lg font-medium text-foreground mb-2">No events within {distanceFilter} miles</h3>
           <p className="text-muted-foreground">
             Try expanding your search radius or{" "}
-            <button 
+            <button
               onClick={() => setDistanceFilter(null)}
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
               aria-label="Clear distance filter to view all events"
@@ -99,6 +130,18 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
       </section>
     );
   }
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(monthKey)) {
+        newSet.delete(monthKey);
+      } else {
+        newSet.add(monthKey);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <section className="space-y-2" aria-labelledby="events-heading">
@@ -130,18 +173,104 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
       {isExpanded && (
         <div
           id="events-list"
-          className="grid gap-2 sm:gap-3"
+          className="space-y-3"
           role="list"
-          aria-label={`${filteredEvents.length} upcoming events`}
+          aria-label={`${filteredEvents.length} upcoming events grouped by month`}
         >
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              userLocation={userLocation}
-              linkToArtist={linkToArtist}
-            />
-          ))}
+          {monthGroups.map((group, groupIndex) => {
+            const isFirstGroup = groupIndex === 0;
+            const isMonthExpanded = expandedMonths.has(group.monthKey);
+            const firstEventInGroup = group.events[0];
+
+            return (
+              <div key={group.monthKey} className="space-y-2">
+                {/* Month Header - always show first event of first month, collapsed for others */}
+                {isFirstGroup ? (
+                  // First month: show next event as full card, then collapsed month header if more events
+                  <>
+                    <EventCard
+                      event={firstEventInGroup}
+                      userLocation={userLocation}
+                      linkToArtist={linkToArtist}
+                      isNextEvent={true}
+                    />
+                    {group.events.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => toggleMonth(group.monthKey)}
+                          className="w-full flex items-center justify-between px-4 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors"
+                          aria-expanded={isMonthExpanded}
+                          aria-controls={`month-${group.monthKey}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {group.monthLabel}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              +{group.events.length - 1} more
+                            </span>
+                          </div>
+                          {isMonthExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                          )}
+                        </button>
+                        {isMonthExpanded && (
+                          <div id={`month-${group.monthKey}`} className="space-y-2 pl-2">
+                            {group.events.slice(1).map((event) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                userLocation={userLocation}
+                                linkToArtist={linkToArtist}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  // Other months: collapsed by default
+                  <>
+                    <button
+                      onClick={() => toggleMonth(group.monthKey)}
+                      className="w-full flex items-center justify-between px-4 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors"
+                      aria-expanded={isMonthExpanded}
+                      aria-controls={`month-${group.monthKey}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">
+                          {group.monthLabel}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                        </span>
+                      </div>
+                      {isMonthExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </button>
+                    {isMonthExpanded && (
+                      <div id={`month-${group.monthKey}`} className="space-y-2 pl-2">
+                        {group.events.map((event) => (
+                          <EventCard
+                            key={event.id}
+                            event={event}
+                            userLocation={userLocation}
+                            linkToArtist={linkToArtist}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </section>
@@ -152,6 +281,7 @@ interface EventCardProps {
   event: Event;
   userLocation?: Location | null;
   linkToArtist?: boolean;
+  isNextEvent?: boolean;
 }
 
 interface LocationFilterProps {
@@ -217,7 +347,7 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
   );
 }
 
-function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps) {
+function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = false }: EventCardProps) {
   const eventDate = new Date(event.date);
   const formattedDate = format(eventDate, "EEE, MMM d, yyyy");
 
@@ -233,22 +363,22 @@ function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps
 
   return (
     <article
-      className="relative rounded-lg overflow-hidden border-2 transition-all duration-200 hover:shadow-lg"
+      className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 hover:shadow-lg ${isNextEvent ? 'ring-2 ring-orange-500/50' : ''}`}
       style={{
         backgroundColor: 'var(--card-bg)',
-        borderColor: 'var(--card-border)',
+        borderColor: isNextEvent ? 'rgb(249 115 22)' : 'var(--card-border)',
         color: 'var(--foreground)'
       }}
       tabIndex={0}
       role="article"
-      aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${distance.toFixed(1)} miles away` : ''}${isToday ? ', happening today' : ''}`}
+      aria-label={`${isNextEvent ? 'Next event: ' : 'Event: '}${event.name} on ${formattedDate}${distance ? `, ${distance.toFixed(1)} miles away` : ''}${isToday ? ', happening today' : ''}`}
       aria-describedby={`event-${event.id}-details`}
     >
       {/* Gradient top stripe: orange -> cyan -> orange */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-cyan-500 to-orange-500" />
 
       <div className="pt-3 px-3 pb-3">
-        {/* Header: Event Name + Today Badge */}
+        {/* Header: Event Name + Badges */}
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3
             className="font-bold text-base leading-tight flex-1 text-foreground"
@@ -256,15 +386,26 @@ function EventCard({ event, userLocation, linkToArtist = false }: EventCardProps
           >
             {event.name}
           </h3>
-          {isToday && (
-            <span
-              className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full whitespace-nowrap bg-orange-500 text-white flex-shrink-0"
-              aria-label="This event is happening today"
-              role="status"
-            >
-              Today
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {isNextEvent && (
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full whitespace-nowrap bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                aria-label="This is your next upcoming event"
+                role="status"
+              >
+                Next
+              </span>
+            )}
+            {isToday && (
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full whitespace-nowrap bg-orange-500 text-white"
+                aria-label="This event is happening today"
+                role="status"
+              >
+                Today
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Date and Time on same row */}
