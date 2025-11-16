@@ -17,6 +17,15 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
       throw new Error('Artist ID is required to create event');
     }
 
+    // Calculate hasCustomTitle by checking if title differs from default format
+    // Default format: {artistName} @ {venueName}
+    const artist = (event as any).artists?.[0];
+    const venue = (event as any).venue;
+    const artistName = artist?.name || '';
+    const venueName = venue?.name || (event as any).venueName || '';
+    const defaultTitle = artistName && venueName ? `${artistName} @ ${venueName}` : '';
+    const hasCustomTitle = defaultTitle ? event.name !== defaultTitle : false;
+
     const response = await fetch('https://api.bndy.co.uk/api/events/community', {
       method: 'POST',
       headers: {
@@ -29,6 +38,7 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
         startTime: event.startTime,
         endTime: event.endTime || '00:00',
         title: event.name,
+        hasCustomTitle: hasCustomTitle,
         price: event.price || null,
         ticketUrl: event.ticketUrl || null,
         notes: event.notes || null,
