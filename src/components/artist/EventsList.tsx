@@ -144,15 +144,15 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
   };
 
   return (
-    <section className="space-y-2" aria-labelledby="events-heading">
-      <div className="flex items-center justify-between gap-2">
+    <section className="space-y-4" aria-labelledby="events-heading">
+      <div className="flex items-center justify-between gap-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1.5 sm:gap-2 text-base sm:text-2xl font-bold text-foreground hover:text-primary transition-colors text-left"
+          className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-foreground hover:text-primary transition-colors text-left antialiased"
           aria-expanded={isExpanded}
           aria-controls="events-list"
         >
-          <span id="events-heading">
+          <span id="events-heading" className="tracking-tight">
             Upcoming Events ({filteredEvents.length}{events.length !== filteredEvents.length ? ` of ${events.length}` : ''})
           </span>
           {isExpanded ? (

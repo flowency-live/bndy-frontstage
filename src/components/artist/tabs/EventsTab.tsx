@@ -16,7 +16,7 @@ interface EventsTabProps {
  */
 export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   return (
-    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab">
+    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4">
       {/* TODO: Add EventFilters component here */}
       <EventsList events={events} artistLocation={artistLocation} />
     </div>
