@@ -31,6 +31,21 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
+      {/* Genre Badges - Below banner, above avatar */}
+      {artist.genres && artist.genres.length > 0 && (
+        <div className="flex flex-wrap gap-2 justify-end mb-2">
+          {artist.genres.map((genre, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {genre}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Profile Image - Overlaps banner */}
       <div className="flex flex-col -mt-16 sm:-mt-20 md:-mt-24">
         <div className="relative flex-shrink-0">

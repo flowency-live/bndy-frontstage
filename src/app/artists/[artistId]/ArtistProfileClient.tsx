@@ -69,7 +69,6 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         socialMediaUrls={initialData.socialMediaUrls}
         artistId={initialData.id}
         artistName={initialData.name}
-        genres={initialData.genres}
       />
 
       {/* Artist Info Section */}
