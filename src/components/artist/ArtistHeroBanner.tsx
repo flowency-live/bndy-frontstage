@@ -11,6 +11,7 @@ interface ArtistHeroBannerProps {
   socialMediaUrls?: SocialMediaURL[];
   artistId?: string;
   artistName?: string;
+  genres?: string[];
 }
 
 /**
@@ -24,7 +25,7 @@ interface ArtistHeroBannerProps {
  * - Dark gradient at bottom for profile image overlap
  * - Responsive: Mobile (200px) → Tablet (250px) → Desktop (300px)
  */
-export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName }: ArtistHeroBannerProps) {
+export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName, genres }: ArtistHeroBannerProps) {
   const router = useRouter();
   const { isDarkMode, toggleTheme } = useViewToggle();
 
@@ -90,6 +91,21 @@ export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName
             artistName={artistName}
             className="flex gap-2"
           />
+        </div>
+      )}
+
+      {/* Genre Badges - Below social icons in bottom-right */}
+      {genres && genres.length > 0 && (
+        <div className="absolute bottom-[-20px] right-4 flex flex-wrap gap-2 justify-end z-10">
+          {genres.map((genre, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {genre}
+            </span>
+          ))}
         </div>
       )}
     </div>
