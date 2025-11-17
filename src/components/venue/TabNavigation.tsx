@@ -80,7 +80,7 @@ export default function TabNavigation({
                   flex items-center justify-center gap-2.5 border-2
                   ${
                     activeTab === tab.id
-                      ? "border-[#FF6B35] text-foreground"
+                      ? "border-cyan-500 text-foreground"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }
                 `}
