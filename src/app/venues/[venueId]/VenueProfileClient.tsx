@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Event, Venue } from "@/lib/types";
 import Link from "next/link";
-import VenueHeader from "@/components/venue/VenueHeader";
+import VenueHeroBanner from "@/components/venue/VenueHeroBanner";
+import VenueInfo from "@/components/venue/VenueInfo";
 import TabNavigation from "@/components/venue/TabNavigation";
 import EventsTab from "@/components/venue/tabs/EventsTab";
 import LinksTab from "@/components/venue/tabs/LinksTab";
@@ -63,8 +64,17 @@ export default function VenueProfileClient({ initialData, events, error, venueId
 
   return (
     <div className="venue-profile-page bg-background min-h-screen">
-      {/* Venue Header */}
-      <VenueHeader venue={initialData} />
+      {/* Hero Banner with transparent controls and social icons */}
+      <VenueHeroBanner
+        socialMediaUrls={initialData.socialMediaUrls}
+        venueId={initialData.id}
+        venueName={initialData.name}
+      />
+
+      {/* Venue Info Section - Avatar overlaps banner via negative margin */}
+      <div className="mb-8">
+        <VenueInfo venue={initialData} />
+      </div>
 
       {/* Tab Navigation */}
       <TabNavigation venueId={initialData.id} />

@@ -18,7 +18,12 @@ export default function EventsTab({ events, venueLocation }: EventsTabProps) {
   return (
     <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4">
       {/* TODO: Add EventFilters component here */}
-      <EventsList events={events} artistLocation={venueLocation} />
+      <EventsList
+        events={events}
+        artistLocation={venueLocation}
+        hideDistanceFilter={true}
+        linkToArtist={true}
+      />
     </div>
   );
 }
