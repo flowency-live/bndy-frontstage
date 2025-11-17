@@ -4,6 +4,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
 import { useViewToggle } from "@/context/ViewToggleContext";
+import SocialMediaLinks from "./SocialMediaLinks";
+import { SocialMediaURL } from "@/lib/types";
+
+interface ArtistHeroBannerProps {
+  socialMediaUrls?: SocialMediaURL[];
+  artistId?: string;
+  artistName?: string;
+}
 
 /**
  * ArtistHeroBanner - Generic hero banner for artist profile pages
@@ -12,10 +20,11 @@ import { useViewToggle } from "@/context/ViewToggleContext";
  * - Generic concert crowd image (same for all artists)
  * - Transparent back button (top-left)
  * - Transparent theme toggle (top-right)
+ * - Social media icons (bottom-right)
  * - Dark gradient at bottom for profile image overlap
  * - Responsive: Mobile (200px) → Tablet (250px) → Desktop (300px)
  */
-export default function ArtistHeroBanner() {
+export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName }: ArtistHeroBannerProps) {
   const router = useRouter();
   const { isDarkMode, toggleTheme } = useViewToggle();
 
@@ -71,6 +80,18 @@ export default function ArtistHeroBanner() {
           )}
         </button>
       </div>
+
+      {/* Social Media Icons - Bottom Right */}
+      {(socialMediaUrls && socialMediaUrls.length > 0) || (artistId && artistName) ? (
+        <div className="absolute bottom-4 right-4">
+          <SocialMediaLinks
+            socialMediaUrls={socialMediaUrls || []}
+            artistId={artistId}
+            artistName={artistName}
+            className="flex gap-2"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

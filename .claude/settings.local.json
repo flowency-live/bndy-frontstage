@@ -116,7 +116,12 @@
       "Bash(nul)",
       "Bash(/tmp/torrists-setlists.json)",
       "Bash(npm uninstall:*)",
-      "Bash(Select-Object -Last 50)"
+      "Bash(Select-Object -Last 50)",
+      "Bash(xargs:*)",
+      "Bash(if not exist \"C:\\VSProjects\\bndy-frontstage\\public\\images\" mkdir \"C:\\VSProjects\\bndy-frontstage\\public\\images\")",
+      "Bash(dir:*)",
+      "Bash(mkdir:*)",
+      "Bash(git revert:*)"
     ],
     "deny": [],
     "ask": []

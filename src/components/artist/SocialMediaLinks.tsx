@@ -100,11 +100,10 @@ export default function SocialMediaLinks({ socialMediaUrls, className = "", arti
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 flex items-center justify-center rounded-lg border
-                       bg-gray-100 dark:bg-transparent
-                       border-gray-400 dark:border-gray-600
-                       text-gray-800 dark:text-gray-200
-                       hover:border-orange-500 hover:scale-105
+            className="w-10 h-10 flex items-center justify-center rounded-lg
+                       bg-black/40 backdrop-blur-md border-2 border-white/60
+                       text-white
+                       hover:bg-orange-500 hover:border-orange-500 hover:scale-105
                        transition-all duration-200"
             aria-label={`Visit ${config.label}`}
           >
@@ -126,11 +125,10 @@ function ShareButton({ onClick, showTooltip }: { onClick: () => void; showToolti
   return (
     <button
       onClick={onClick}
-      className="w-10 h-10 flex items-center justify-center rounded-lg border
-                 bg-gray-100 dark:bg-transparent
-                 border-gray-400 dark:border-gray-600
-                 text-gray-800 dark:text-gray-200
-                 hover:border-orange-500 hover:scale-105
+      className="w-10 h-10 flex items-center justify-center rounded-lg
+                 bg-black/40 backdrop-blur-md border-2 border-white/60
+                 text-white
+                 hover:bg-orange-500 hover:border-orange-500 hover:scale-105
                  transition-all duration-200"
       aria-label="Share artist profile"
     >

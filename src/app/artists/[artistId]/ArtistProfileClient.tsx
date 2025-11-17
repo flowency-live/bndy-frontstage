@@ -64,8 +64,12 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Hero Banner with transparent controls */}
-      <ArtistHeroBanner />
+      {/* Hero Banner with transparent controls and social icons */}
+      <ArtistHeroBanner
+        socialMediaUrls={initialData.socialMediaUrls}
+        artistId={initialData.id}
+        artistName={initialData.name}
+      />
 
       {/* Artist Info Section */}
       <div className="mb-8">

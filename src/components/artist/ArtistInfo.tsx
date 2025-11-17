@@ -4,7 +4,6 @@ import { ArtistProfileData } from "@/lib/types/artist-profile";
 import Image from "next/image";
 import { useState } from "react";
 import { MapPin } from "lucide-react";
-import SocialMediaLinks from "./SocialMediaLinks";
 
 interface ArtistInfoProps {
   artist: ArtistProfileData;
@@ -32,11 +31,9 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
-      {/* Semi-transparent background panel for text readability in both themes */}
-      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl pl-1 pr-4 py-4 sm:pl-4 shadow-lg -mt-12 sm:-mt-16 md:-mt-20">
-      {/* Profile Image - Positioned to center on banner/panel boundary */}
-      <div className="flex items-start gap-3 sm:gap-4">
-        <div className="relative flex-shrink-0 -mt-12 sm:-mt-16 md:-mt-18">
+      {/* Profile Image - Overlaps banner */}
+      <div className="flex flex-col items-center -mt-16 sm:-mt-20 md:-mt-24">
+        <div className="relative flex-shrink-0">
           {artist.profileImageUrl ? (
             <Image
               src={artist.profileImageUrl}
@@ -57,15 +54,15 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
           )}
         </div>
 
-        {/* Artist Name, Location, Bio */}
-        <div className="flex-1 min-w-0 pt-2">
+        {/* Artist Name, Location, Bio - Below Avatar, Full Width */}
+        <div className="w-full mt-4 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
             {artist.name}
           </h1>
 
           {/* Location - Immediately below name */}
           {artist.location && (
-            <div className="flex items-center gap-2 text-foreground mb-2">
+            <div className="flex items-center justify-center gap-2 text-foreground mb-3">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <span className="text-sm font-medium">{artist.location}</span>
             </div>
@@ -73,7 +70,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
           {/* Bio/Subtitle */}
           {artist.bio && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground max-w-2xl mx-auto px-4">
               {displayedBio}
               {bioNeedsTruncation && (
                 <button
@@ -90,33 +87,20 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
         </div>
       </div>
 
-      {/* Genres and Social Links */}
-      <div className="mt-4 space-y-3">
-        {/* Genre Badges - ALL displayed, no limit - ORANGE */}
-        {artist.genres && artist.genres.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {artist.genres.map((genre, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
-                style={{ backgroundColor: '#FF6B35' }}
-              >
-                {genre}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Social Media Links */}
-        <div className="pt-2">
-          <SocialMediaLinks
-            socialMediaUrls={artist.socialMediaUrls || []}
-            artistId={artist.id}
-            artistName={artist.name}
-          />
+      {/* Genres */}
+      {artist.genres && artist.genres.length > 0 && (
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {artist.genres.map((genre, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {genre}
+            </span>
+          ))}
         </div>
-      </div>
-      </div>
+      )}
     </div>
   );
 }
