@@ -7,7 +7,7 @@ interface GenreBadgesProps {
 /**
  * GenreBadges - Displays genre badges below banner, right-aligned
  *
- * Simple layout component with no absolute positioning
+ * Right-aligned with social icons, wraps on mobile to avoid avatar
  */
 export default function GenreBadges({ genres }: GenreBadgesProps) {
   if (!genres || genres.length === 0) {
@@ -16,7 +16,7 @@ export default function GenreBadges({ genres }: GenreBadgesProps) {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 pt-2 pb-1">
-      <div className="flex flex-wrap gap-1.5 justify-end">
+      <div className="flex flex-wrap gap-1.5 justify-end max-w-[200px] ml-auto sm:max-w-none">
         {genres.map((genre, index) => (
           <span
             key={index}
