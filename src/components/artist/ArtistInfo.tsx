@@ -33,7 +33,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
   return (
     <div className="container mx-auto px-4 relative" data-testid="artist-info-container">
       {/* Semi-transparent background panel for text readability in both themes */}
-      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl p-4 shadow-lg -mt-12 sm:-mt-14 md:-mt-16">
+      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl p-4 shadow-lg -mt-16 sm:-mt-20 md:-mt-24">
       {/* Profile Image - Overlaps banner by 20px */}
       <div className="flex items-start gap-4">
         <div className="relative flex-shrink-0">
@@ -41,16 +41,16 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
             <Image
               src={artist.profileImageUrl}
               alt={`${artist.name} profile picture`}
-              width={120}
-              height={120}
-              className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full border-4 border-background shadow-lg object-cover"
+              width={160}
+              height={160}
+              className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg object-cover"
               priority
               quality={90}
-              sizes="(max-width: 640px) 100px, (max-width: 768px) 110px, 120px"
+              sizes="(max-width: 640px) 140px, (max-width: 768px) 150px, 160px"
             />
           ) : (
-            <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
-              <span className="text-3xl font-bold text-muted-foreground">
+            <div className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
+              <span className="text-4xl font-bold text-muted-foreground">
                 {artist.name.charAt(0).toUpperCase()}
               </span>
             </div>
