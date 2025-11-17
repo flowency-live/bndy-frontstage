@@ -33,7 +33,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
   return (
     <div className="container mx-auto px-4 relative" data-testid="artist-info-container">
       {/* Semi-transparent background panel for text readability in both themes */}
-      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl p-4 shadow-lg -mt-12 sm:-mt-14 md:-mt-16">
+      <div className="bg-white/95 dark:bg-background/85 backdrop-blur-sm rounded-xl p-4 shadow-lg -mt-12 sm:-mt-14 md:-mt-16">
       {/* Profile Image - Overlaps banner by 20px */}
       <div className="flex items-start gap-4">
         <div className="relative flex-shrink-0">
