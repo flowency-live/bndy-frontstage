@@ -397,9 +397,12 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
                 {event.venueName}
               </Link>
             )}
-            <p className="text-xs text-muted-foreground truncate">
-              {event.postcode || 'Location TBA'}
-            </p>
+            {/* Venue location - show postcode if available, otherwise show a subtle indicator */}
+            {event.postcode && (
+              <p className="text-xs text-muted-foreground truncate">
+                {event.postcode}
+              </p>
+            )}
           </div>
           {distance !== null && (
             <span
