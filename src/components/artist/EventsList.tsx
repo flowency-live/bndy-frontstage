@@ -398,7 +398,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
               </Link>
             )}
             <p className="text-xs text-muted-foreground truncate">
-              {event.venueLocation || 'Location TBA'}
+              {event.postcode || 'Location TBA'}
             </p>
           </div>
           {distance !== null && (
