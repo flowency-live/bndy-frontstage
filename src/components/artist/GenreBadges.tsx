@@ -7,7 +7,11 @@ interface GenreBadgesProps {
 /**
  * GenreBadges - Displays genre badges below banner, right-aligned
  *
- * Right-aligned with social icons, wraps on mobile to avoid avatar
+ * Right-aligned with social icons, wraps on mobile to avoid avatar.
+ *
+ * CRITICAL: This component is ABSOLUTELY POSITIONED in ArtistProfileClient.
+ * It does NOT take up space in the document flow.
+ * DO NOT add margin/padding that would affect surrounding elements.
  */
 export default function GenreBadges({ genres }: GenreBadgesProps) {
   if (!genres || genres.length === 0) {

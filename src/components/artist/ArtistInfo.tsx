@@ -31,7 +31,15 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
-      {/* Profile Image - Overlaps banner */}
+      {/*
+        AVATAR POSITIONING - DO NOT MODIFY NEGATIVE MARGINS
+
+        Negative margins: -mt-16 (64px) / -mt-20 (80px) / -mt-24 (96px)
+        Avatar sizes: 140px / 150px / 160px
+
+        These values position the avatar center precisely at the banner/background boundary.
+        CRITICAL: Changing these values will break the visual alignment.
+      */}
       <div className="flex flex-col -mt-16 sm:-mt-20 md:-mt-24">
         <div className="relative flex-shrink-0">
           {artist.profileImageUrl ? (

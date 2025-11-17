@@ -65,6 +65,19 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   return (
     <div className="bg-background min-h-screen">
+      {/*
+        LAYOUT STRUCTURE - DO NOT MODIFY HIERARCHY
+
+        This layout is carefully structured to maintain correct positioning:
+        1. ArtistHeroBanner: Fixed height banner (200px/250px/300px) with social icons absolutely positioned bottom-right
+        2. GenreBadges: Absolutely positioned (does NOT affect layout flow) - sits below banner, right-aligned
+        3. ArtistInfo: Avatar uses negative margin (-mt-16/-mt-20/-mt-24) to overlap banner by exactly half its height
+
+        CRITICAL: Genre badges MUST remain absolutely positioned. If moved into normal flow, avatar will be pushed down.
+        CRITICAL: Avatar negative margin values are calibrated to position center at banner/background boundary.
+        CRITICAL: Social icons are absolutely positioned within banner - independent of other elements.
+      */}
+
       {/* Hero Banner with transparent controls and social icons */}
       <ArtistHeroBanner
         socialMediaUrls={initialData.socialMediaUrls}
@@ -72,7 +85,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         artistName={initialData.name}
       />
 
-      {/* Genre Badges - Absolutely positioned below banner */}
+      {/* Genre Badges - ABSOLUTELY POSITIONED (does not affect layout flow) */}
       {initialData.genres && initialData.genres.length > 0 && (
         <div className="relative">
           <div className="absolute top-0 left-0 right-0 z-10">
@@ -81,7 +94,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         </div>
       )}
 
-      {/* Artist Info Section */}
+      {/* Artist Info Section - Avatar overlaps banner via negative margin */}
       <div className="mb-8">
         <ArtistInfo artist={initialData} />
       </div>

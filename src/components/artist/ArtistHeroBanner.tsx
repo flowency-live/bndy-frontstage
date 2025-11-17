@@ -20,9 +20,12 @@ interface ArtistHeroBannerProps {
  * - Generic concert crowd image (same for all artists)
  * - Transparent back button (top-left)
  * - Transparent theme toggle (top-right)
- * - Social media icons (bottom-right)
+ * - Social media icons (bottom-right) - ABSOLUTELY POSITIONED
  * - Dark gradient at bottom for profile image overlap
  * - Responsive: Mobile (200px) → Tablet (250px) → Desktop (300px)
+ *
+ * CRITICAL: Social icons are absolutely positioned (bottom-4 right-4).
+ * DO NOT change to relative/static positioning as this will affect layout flow.
  */
 export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName }: ArtistHeroBannerProps) {
   const router = useRouter();
