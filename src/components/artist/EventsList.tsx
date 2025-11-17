@@ -12,6 +12,7 @@ interface EventsListProps {
   artistLocation?: string;
   hideDistanceFilter?: boolean; // Hide distance filter for venue pages
   linkToArtist?: boolean; // Link to artist instead of venue (for venue pages)
+  sortBy?: 'date' | 'distance'; // Sort order: by date (default) or by distance
 }
 
 // Group events by month
@@ -21,12 +22,20 @@ interface MonthGroup {
   events: Event[];
 }
 
-export default function EventsList({ events, artistLocation, hideDistanceFilter = false, linkToArtist = false }: EventsListProps) {
+// Group events by distance range
+interface DistanceGroup {
+  rangeKey: string; // "0-5", "5-10", etc.
+  rangeLabel: string; // "< 5 miles", "5-10 miles", etc.
+  events: Event[];
+}
+
+export default function EventsList({ events, artistLocation, hideDistanceFilter = false, linkToArtist = false, sortBy = 'date' }: EventsListProps) {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [locationPermission, setLocationPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null); // null means "All"
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const [expandedDistances, setExpandedDistances] = useState<Set<string>>(new Set());
 
   // Get user location on component mount
   useEffect(() => {
@@ -50,28 +59,68 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
     return distance <= distanceFilter;
   });
 
-  // Group events by month
+  // Group events by month (for date sort)
   const monthGroups: MonthGroup[] = [];
-  const groupMap = new Map<string, Event[]>();
+  if (sortBy === 'date') {
+    const groupMap = new Map<string, Event[]>();
 
-  filteredEvents.forEach((event) => {
-    const eventDate = new Date(event.date);
-    const monthKey = format(eventDate, 'yyyy-MM');
+    filteredEvents.forEach((event) => {
+      const eventDate = new Date(event.date);
+      const monthKey = format(eventDate, 'yyyy-MM');
 
-    if (!groupMap.has(monthKey)) {
-      groupMap.set(monthKey, []);
-    }
-    groupMap.get(monthKey)!.push(event);
-  });
-
-  // Convert map to sorted array
-  Array.from(groupMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .forEach(([monthKey, monthEvents]) => {
-      const firstEvent = monthEvents[0];
-      const monthLabel = format(new Date(firstEvent.date), 'MMMM yyyy');
-      monthGroups.push({ monthKey, monthLabel, events: monthEvents });
+      if (!groupMap.has(monthKey)) {
+        groupMap.set(monthKey, []);
+      }
+      groupMap.get(monthKey)!.push(event);
     });
+
+    // Convert map to sorted array
+    Array.from(groupMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([monthKey, monthEvents]) => {
+        const firstEvent = monthEvents[0];
+        const monthLabel = format(new Date(firstEvent.date), 'MMMM yyyy');
+        monthGroups.push({ monthKey, monthLabel, events: monthEvents });
+      });
+  }
+
+  // Group events by distance (for distance sort)
+  const distanceGroups: DistanceGroup[] = [];
+  if (sortBy === 'distance' && userLocation) {
+    const groupMap = new Map<string, Event[]>();
+    const ranges = [
+      { key: '0-5', label: '< 5 miles', min: 0, max: 5 },
+      { key: '5-10', label: '5-10 miles', min: 5, max: 10 },
+      { key: '10-15', label: '10-15 miles', min: 10, max: 15 },
+      { key: '15-20', label: '15-20 miles', min: 15, max: 20 },
+      { key: '20-25', label: '20-25 miles', min: 20, max: 25 },
+      { key: '25+', label: '25+ miles', min: 25, max: Infinity },
+    ];
+
+    filteredEvents.forEach((event) => {
+      if (!event.location) return;
+
+      const distance = calculateDistance(userLocation, event.location);
+      const range = ranges.find(r => distance >= r.min && distance < r.max);
+
+      if (range) {
+        if (!groupMap.has(range.key)) {
+          groupMap.set(range.key, []);
+        }
+        groupMap.get(range.key)!.push(event);
+      }
+    });
+
+    // Convert map to array in order of distance ranges
+    ranges.forEach(range => {
+      const events = groupMap.get(range.key);
+      if (events && events.length > 0) {
+        // Sort events within each distance group by date
+        events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        distanceGroups.push({ rangeKey: range.key, rangeLabel: range.label, events });
+      }
+    });
+  }
 
   if (!events || events.length === 0) {
     return (
@@ -143,6 +192,18 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
     });
   };
 
+  const toggleDistance = (rangeKey: string) => {
+    setExpandedDistances((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rangeKey)) {
+        newSet.delete(rangeKey);
+      } else {
+        newSet.add(rangeKey);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <section className="space-y-4" aria-labelledby="events-heading">
       <div className="flex items-center justify-between gap-4">
@@ -175,9 +236,9 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
           id="events-list"
           className="space-y-3"
           role="list"
-          aria-label={`${filteredEvents.length} upcoming events grouped by month`}
+          aria-label={`${filteredEvents.length} upcoming events grouped by ${sortBy === 'date' ? 'month' : 'distance'}`}
         >
-          {monthGroups.map((group, groupIndex) => {
+          {sortBy === 'date' && monthGroups.map((group, groupIndex) => {
             const isFirstGroup = groupIndex === 0;
             const isMonthExpanded = expandedMonths.has(group.monthKey);
             const firstEventInGroup = group.events[0];
@@ -256,6 +317,100 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                     </button>
                     {isMonthExpanded && (
                       <div id={`month-${group.monthKey}`} className="space-y-2 pl-2">
+                        {group.events.map((event) => (
+                          <EventCard
+                            key={event.id}
+                            event={event}
+                            userLocation={userLocation}
+                            linkToArtist={linkToArtist}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+
+          {sortBy === 'distance' && distanceGroups.map((group, groupIndex) => {
+            const isFirstGroup = groupIndex === 0;
+            const isDistanceExpanded = expandedDistances.has(group.rangeKey);
+            const firstEventInGroup = group.events[0];
+
+            return (
+              <div key={group.rangeKey} className="space-y-2">
+                {isFirstGroup ? (
+                  // First distance group: show next event as full card, then collapsed header if more events
+                  <>
+                    <EventCard
+                      event={firstEventInGroup}
+                      userLocation={userLocation}
+                      linkToArtist={linkToArtist}
+                      isNextEvent={true}
+                    />
+                    {group.events.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => toggleDistance(group.rangeKey)}
+                          className="w-full flex items-center justify-between px-4 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors"
+                          aria-expanded={isDistanceExpanded}
+                          aria-controls={`distance-${group.rangeKey}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {group.rangeLabel}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              +{group.events.length - 1} more
+                            </span>
+                          </div>
+                          {isDistanceExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                          )}
+                        </button>
+                        {isDistanceExpanded && (
+                          <div id={`distance-${group.rangeKey}`} className="space-y-2 pl-2">
+                            {group.events.slice(1).map((event) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                userLocation={userLocation}
+                                linkToArtist={linkToArtist}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  // Other distance groups: collapsed by default
+                  <>
+                    <button
+                      onClick={() => toggleDistance(group.rangeKey)}
+                      className="w-full flex items-center justify-between px-4 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors"
+                      aria-expanded={isDistanceExpanded}
+                      aria-controls={`distance-${group.rangeKey}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">
+                          {group.rangeLabel}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                        </span>
+                      </div>
+                      {isDistanceExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </button>
+                    {isDistanceExpanded && (
+                      <div id={`distance-${group.rangeKey}`} className="space-y-2 pl-2">
                         {group.events.map((event) => (
                           <EventCard
                             key={event.id}
