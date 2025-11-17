@@ -63,7 +63,7 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="bg-background">
+    <div className="bg-background border-y border-border">
       <div className="container mx-auto px-4 py-3">
         <nav
           role="tablist"
@@ -81,11 +81,11 @@ export default function TabNavigation({
                 onClick={() => handleTabClick(tab.id)}
                 className={`
                   flex-1 py-3.5 px-5 font-semibold text-sm transition-all rounded-xl
-                  flex items-center justify-center gap-2
+                  flex items-center justify-center gap-2 border-2
                   ${
                     activeTab === tab.id
-                      ? "bg-muted text-foreground shadow-lg"
-                      : "bg-muted/20 text-muted-foreground hover:bg-muted/40"
+                      ? "bg-[#1a1a2e] dark:bg-white text-white dark:text-[#1a1a2e] border-[#1a1a2e] dark:border-white shadow-lg"
+                      : "bg-transparent border-border text-foreground hover:bg-muted/50"
                   }
                 `}
               >
