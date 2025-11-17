@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ArtistHeroBanner from "@/components/artist/ArtistHeroBanner";
+import GenreBadges from "@/components/artist/GenreBadges";
 import ArtistInfo from "@/components/artist/ArtistInfo";
 import TabNavigation from "@/components/artist/TabNavigation";
 import EventsTab from "@/components/artist/tabs/EventsTab";
@@ -69,8 +70,12 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         socialMediaUrls={initialData.socialMediaUrls}
         artistId={initialData.id}
         artistName={initialData.name}
-        genres={initialData.genres}
       />
+
+      {/* Genre Badges - Below banner */}
+      {initialData.genres && initialData.genres.length > 0 && (
+        <GenreBadges genres={initialData.genres} />
+      )}
 
       {/* Artist Info Section */}
       <div className="mb-8">
