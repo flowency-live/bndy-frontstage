@@ -1,7 +1,7 @@
 // src/components/Map/Map.tsx
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
@@ -335,7 +335,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
 
 
   // Handle event marker click: sort events and open overlay
-  const handleEventClick = (events: Event[]) => {
+  const handleEventClick = useCallback((events: Event[]) => {
     const sortedEvents = [...events].sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
@@ -351,15 +351,15 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     setShowEventOverlay(true);
     setShowVenueOverlay(false);
     setSelectedVenue(null);
-  };
+  }, []);
 
   // Handle venue marker click: open overlay
-  const handleVenueClick = (venue: Venue) => {
+  const handleVenueClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     setShowVenueOverlay(true);
     setShowEventOverlay(false);
     setSelectedEvents([]);
-  };
+  }, []);
 
   const renderMapComponents = leafletInitialized && typeof window !== "undefined";
 

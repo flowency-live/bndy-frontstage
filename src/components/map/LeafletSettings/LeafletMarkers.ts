@@ -1,6 +1,9 @@
 // src/components/Map/LeafletMarkers.ts
 import L from "leaflet";
 
+// Icon cache to prevent recreating the same icons on every render
+const markerIconCache = new Map<string, L.DivIcon>();
+
 /**
  * Creates a simple teardrop/balloon pin marker SVG like Google Maps
  */
@@ -34,35 +37,57 @@ export const createMapPinSVG = (fillColor: string, count?: number, faded = false
  * If count is provided, it will display the number in the marker.
  */
 export function createEventMarkerIcon(count?: number): L.DivIcon {
+  const cacheKey = `event-${count ?? 'single'}`;
+
+  // Check cache first
+  if (markerIconCache.has(cacheKey)) {
+    return markerIconCache.get(cacheKey)!;
+  }
+
   // Create the SVG for the pin marker (orange teardrop shape with optional count)
   const markerSvg = createMapPinSVG('#F97316', count);
-  
-  return L.divIcon({
+
+  const icon = L.divIcon({
     className: 'event-marker',
     html: markerSvg,
     iconSize: [22, 29],
     iconAnchor: [11, 29], // Bottom tip of the teardrop
     popupAnchor: [0, -27] // Popup appears above the marker
   });
+
+  // Store in cache
+  markerIconCache.set(cacheKey, icon);
+  return icon;
 }
 
 /**
  * Creates a custom marker icon for venues (simplified - no event count).
  */
 export function createVenueMarkerIcon(): L.DivIcon {
+  const cacheKey = 'venue-marker';
+
+  // Check cache first
+  if (markerIconCache.has(cacheKey)) {
+    return markerIconCache.get(cacheKey)!;
+  }
+
   // Hot pink color for venue markers
   const color = '#FF1493';
 
   // Create the SVG for the marker (no count, no fading)
   const markerSvg = createMapPinSVG(color, undefined, false);
 
-  return L.divIcon({
+  const icon = L.divIcon({
     className: 'venue-marker',
     html: markerSvg,
     iconSize: [22, 29],
     iconAnchor: [11, 29], // Bottom tip of the teardrop
     popupAnchor: [0, -27] // Popup appears above the marker
   });
+
+  // Store in cache
+  markerIconCache.set(cacheKey, icon);
+  return icon;
 }
 
 /**
@@ -70,6 +95,13 @@ export function createVenueMarkerIcon(): L.DivIcon {
  * Updated to use simpler HTML/CSS that's more cross-browser compatible
  */
 export function createUserLocationMarkerIcon(): L.DivIcon {
+  const cacheKey = 'user-location-marker';
+
+  // Check cache first
+  if (markerIconCache.has(cacheKey)) {
+    return markerIconCache.get(cacheKey)!;
+  }
+
   // Using class-based styling instead of inline styles for better Edge compatibility
   const userMarkerHtml = `
     <div class="user-location-marker">
@@ -77,13 +109,17 @@ export function createUserLocationMarkerIcon(): L.DivIcon {
       <div class="user-location-dot"></div>
     </div>
   `;
-  
-  return L.divIcon({
+
+  const icon = L.divIcon({
     className: 'user-location-marker-container',
     html: userMarkerHtml,
     iconSize: [1, 1], // Small size since we position with absolute
     iconAnchor: [0, 0]
   });
+
+  // Store in cache
+  markerIconCache.set(cacheKey, icon);
+  return icon;
 }
 
 /**
