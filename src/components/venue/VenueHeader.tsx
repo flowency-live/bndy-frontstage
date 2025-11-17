@@ -36,8 +36,8 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
 
   return (
     <div className="relative">
-      {/* Cover/Banner Area - Compact - Using secondary (cyan) for venues */}
-      <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-secondary/20 via-secondary/10 to-background relative overflow-hidden">
+      {/* Cover/Banner Area - Large banner like artist profile - Using secondary (cyan) for venues */}
+      <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gradient-to-br from-secondary/20 via-secondary/10 to-background relative overflow-hidden">
         {profileImageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
@@ -58,9 +58,9 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
         )}
       </div>
 
-      {/* Profile Content - Compact mobile layout */}
+      {/* Profile Content - Avatar overlaps banner */}
       <div className="container mx-auto px-4 relative">
-        <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
+        <div className="flex items-start gap-3 md:gap-6 -mt-16 sm:-mt-20 md:-mt-24">
           {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
             {profileImageUrl ? (
