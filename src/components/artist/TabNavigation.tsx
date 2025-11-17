@@ -61,11 +61,11 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="border-b-2 border-border">
+    <div className="border-y border-border bg-muted/5">
       <div className="container mx-auto px-4">
         <nav
           role="tablist"
-          className="flex gap-1"
+          className="flex gap-2"
           aria-label="Artist profile sections"
         >
           {visibleTabs.map((tab) => (
@@ -76,11 +76,11 @@ export default function TabNavigation({
               aria-controls={`${tab.id}-panel`}
               onClick={() => handleTabClick(tab.id)}
               className={`
-                py-3 px-6 font-medium text-sm transition-all rounded-t-lg
+                flex-1 py-3 px-4 font-medium text-sm transition-all rounded-lg
                 ${
                   activeTab === tab.id
-                    ? "bg-background text-foreground font-bold border-b-2 border-[#FF6B35] -mb-0.5"
-                    : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "bg-transparent text-muted-foreground hover:bg-background/50"
                 }
               `}
             >

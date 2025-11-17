@@ -107,13 +107,15 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
       {/* Tab Content */}
       <div className="py-6">
-        {activeTab === "events" && (
+        <div className={activeTab === "events" ? "block" : "hidden"}>
           <EventsTab
             events={initialData.upcomingEvents}
             artistLocation={initialData.location}
           />
-        )}
-        {activeTab === "links" && <LinksTab />}
+        </div>
+        <div className={activeTab === "links" ? "block" : "hidden"}>
+          <LinksTab />
+        </div>
       </div>
 
       {/* Navigation Section */}
