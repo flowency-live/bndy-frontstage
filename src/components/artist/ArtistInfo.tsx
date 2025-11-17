@@ -31,8 +31,8 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
-      {/* Profile Image - Overlaps banner and genre badges */}
-      <div className="flex flex-col -mt-[88px] sm:-mt-24 md:-mt-28">
+      {/* Profile Image - Overlaps banner, center aligned with banner bottom */}
+      <div className="flex flex-col -mt-[70px] sm:-mt-[75px] md:-mt-[80px]">
         <div className="relative flex-shrink-0">
           {artist.profileImageUrl ? (
             <Image
