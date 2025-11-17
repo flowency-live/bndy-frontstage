@@ -31,12 +31,12 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
     : artist.bio;
 
   return (
-    <div className="container mx-auto px-4 relative" data-testid="artist-info-container">
+    <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
       {/* Semi-transparent background panel for text readability in both themes */}
       <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl p-4 shadow-lg -mt-16 sm:-mt-20 md:-mt-24">
-      {/* Profile Image - Overlaps banner by 20px */}
-      <div className="flex items-start gap-4">
-        <div className="relative flex-shrink-0">
+      {/* Profile Image - Positioned to center on banner/panel boundary */}
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="relative flex-shrink-0 -mt-16 sm:-mt-20 md:-mt-24">
           {artist.profileImageUrl ? (
             <Image
               src={artist.profileImageUrl}
