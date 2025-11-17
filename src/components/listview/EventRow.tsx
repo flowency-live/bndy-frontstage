@@ -47,25 +47,25 @@ export function EventRow({
           </div>
         )}
         <div className="sm:hidden text-xs text-gray-500 dark:text-gray-400 mt-1">
-          <Link 
+          <Link
             href={`/venues/${event.venueId}`}
             className="text-[var(--secondary)] hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
-            {event.venueName}
+            {event.venueCity ? `${event.venueName}, ${event.venueCity}` : event.venueName}
           </Link>
         </div>
       </td>
       <td className="px-2 sm:px-4 py-3 text-sm text-[var(--foreground)] hidden sm:table-cell border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center">
-          <Link 
+          <Link
             href={`/venues/${event.venueId}`}
             className="text-[var(--secondary)] hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
-            {event.venueName}
+            {event.venueCity ? `${event.venueName}, ${event.venueCity}` : event.venueName}
           </Link>
-          <a 
+          <a
             href={mapUrl}
             target="_blank"
             rel="noopener noreferrer"

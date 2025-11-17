@@ -86,8 +86,8 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
       {/* Genre Badges - ABSOLUTELY POSITIONED (does not affect layout flow) */}
       {initialData.genres && initialData.genres.length > 0 && (
-        <div className="relative">
-          <div className="absolute top-0 left-0 right-0 z-10">
+        <div className="relative pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 z-10 pointer-events-auto">
             <GenreBadges genres={initialData.genres} />
           </div>
         </div>

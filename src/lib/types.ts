@@ -17,6 +17,7 @@ export interface BaseVenue {
   latitude?: number;
   longitude?: number;
   address: string;
+  city?: string;
   postcode?: string;
   description?: string;
   imageUrl?: string;
@@ -100,6 +101,7 @@ export interface Event {
   endTime?: string;
   venueId: string;
   venueName: string;
+  venueCity?: string; // City/town where venue is located
   artistIds: string[];
   artistName?: string; // Artist name for venue event listings
   location: {

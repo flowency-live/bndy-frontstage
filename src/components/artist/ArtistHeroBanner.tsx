@@ -100,7 +100,7 @@ export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName
 
       {/* Social Media Icons - Bottom Right */}
       {((socialMediaUrls && socialMediaUrls.length > 0) || (artistId && artistName)) && (
-        <div className="absolute bottom-4 right-4">
+        <div className="absolute bottom-4 right-4 z-20">
           <SocialMediaLinks
             socialMediaUrls={socialMediaUrls || []}
             artistId={artistId}

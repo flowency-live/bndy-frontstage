@@ -32,14 +32,14 @@ export function EventCard({ event }: { event: Event }) {
       )}
       
       <div className="text-sm text-[var(--foreground)] flex items-center">
-        <Link 
+        <Link
           href={`/venues/${event.venueId}`}
           className="text-[var(--secondary)] hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
-          {event.venueName}
+          {event.venueCity ? `${event.venueName}, ${event.venueCity}` : event.venueName}
         </Link>
-        <a 
+        <a
           href={mapUrl}
           target="_blank"
           rel="noopener noreferrer"
