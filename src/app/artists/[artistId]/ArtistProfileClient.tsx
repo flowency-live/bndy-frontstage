@@ -63,7 +63,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   }
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="artist-profile-page bg-background min-h-screen">
       {/*
         LAYOUT STRUCTURE - DO NOT MODIFY HIERARCHY
 

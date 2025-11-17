@@ -6,8 +6,8 @@ export default function ArtistsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="artist-profile-page">
+    <>
       {children}
-    </div>
+    </>
   );
 }
