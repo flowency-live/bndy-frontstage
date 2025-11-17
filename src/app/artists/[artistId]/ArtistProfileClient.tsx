@@ -2,11 +2,14 @@
 
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ArtistHeroBanner from "@/components/artist/ArtistHeroBanner";
 import ArtistInfo from "@/components/artist/ArtistInfo";
-import EventsList from "@/components/artist/EventsList";
-import SocialShareSection from "@/components/artist/SocialShareSection";
+import TabNavigation from "@/components/artist/TabNavigation";
+import EventsTab from "@/components/artist/tabs/EventsTab";
+import VideosTab from "@/components/artist/tabs/VideosTab";
+import AvailabilityTab from "@/components/artist/tabs/AvailabilityTab";
 
 interface ArtistProfileClientProps {
   initialData: ArtistProfileData | null;
@@ -16,6 +19,8 @@ interface ArtistProfileClientProps {
 
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
   const [isLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const activeTab = (searchParams.get("tab") as "events" | "videos" | "availability") || "events";
 
   // Simple logging (client-side only to avoid hydration issues)
   useEffect(() => {
@@ -58,7 +63,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   }
 
   return (
-    <div className="bg-background">
+    <div className="bg-background min-h-screen">
       {/* Hero Banner with transparent controls */}
       <ArtistHeroBanner />
 
@@ -67,17 +72,27 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         <ArtistInfo artist={initialData} />
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-4 pt-4">
-        {/* Events Section */}
-        <section aria-label="Upcoming Events">
-          <EventsList
+      {/* Tab Navigation */}
+      <TabNavigation
+        artistId={initialData.id}
+        hasVideos={false}
+        publishAvailability={false}
+      />
+
+      {/* Tab Content */}
+      <div className="py-6">
+        {activeTab === "events" && (
+          <EventsTab
             events={initialData.upcomingEvents}
             artistLocation={initialData.location}
           />
-        </section>
+        )}
+        {activeTab === "videos" && <VideosTab />}
+        {activeTab === "availability" && <AvailabilityTab />}
+      </div>
 
-        {/* Navigation Section */}
+      {/* Navigation Section */}
+      <div className="container mx-auto px-4 pb-8 pt-4">
         <nav className="pt-8 mt-8 border-t border-border" aria-label="Page Navigation">
           <Link
             href="/"
