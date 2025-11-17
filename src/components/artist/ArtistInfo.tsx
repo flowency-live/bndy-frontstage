@@ -86,21 +86,6 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
           )}
         </div>
       </div>
-
-      {/* Genres */}
-      {artist.genres && artist.genres.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
-          {artist.genres.map((genre, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
-              {genre}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

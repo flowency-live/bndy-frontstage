@@ -100,14 +100,14 @@ export default function SocialMediaLinks({ socialMediaUrls, className = "", arti
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 flex items-center justify-center rounded-lg
+            className="w-8 h-8 flex items-center justify-center rounded-lg
                        bg-black/40 backdrop-blur-md border-2 border-white/60
                        text-white
                        hover:bg-orange-500 hover:border-orange-500 hover:scale-105
                        transition-all duration-200"
             aria-label={`Visit ${config.label}`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4" />
           </a>
         );
       })}
@@ -125,14 +125,14 @@ function ShareButton({ onClick, showTooltip }: { onClick: () => void; showToolti
   return (
     <button
       onClick={onClick}
-      className="w-10 h-10 flex items-center justify-center rounded-lg
+      className="w-8 h-8 flex items-center justify-center rounded-lg
                  bg-black/40 backdrop-blur-md border-2 border-white/60
                  text-white
                  hover:bg-orange-500 hover:border-orange-500 hover:scale-105
                  transition-all duration-200"
       aria-label="Share artist profile"
     >
-      <IoShareSocialOutline className="w-5 h-5" />
+      <IoShareSocialOutline className="w-4 h-4" />
     </button>
   );
 }

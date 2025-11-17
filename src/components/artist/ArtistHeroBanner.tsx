@@ -11,6 +11,7 @@ interface ArtistHeroBannerProps {
   socialMediaUrls?: SocialMediaURL[];
   artistId?: string;
   artistName?: string;
+  genres?: string[];
 }
 
 /**
@@ -24,7 +25,7 @@ interface ArtistHeroBannerProps {
  * - Dark gradient at bottom for profile image overlap
  * - Responsive: Mobile (200px) → Tablet (250px) → Desktop (300px)
  */
-export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName }: ArtistHeroBannerProps) {
+export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName, genres }: ArtistHeroBannerProps) {
   const router = useRouter();
   const { isDarkMode, toggleTheme } = useViewToggle();
 
@@ -81,17 +82,35 @@ export default function ArtistHeroBanner({ socialMediaUrls, artistId, artistName
         </button>
       </div>
 
-      {/* Social Media Icons - Bottom Right */}
-      {(socialMediaUrls && socialMediaUrls.length > 0) || (artistId && artistName) ? (
-        <div className="absolute bottom-4 right-4">
-          <SocialMediaLinks
-            socialMediaUrls={socialMediaUrls || []}
-            artistId={artistId}
-            artistName={artistName}
-            className="flex gap-2"
-          />
+      {/* Social Media Icons and Genre Badges - Bottom Right */}
+      {((socialMediaUrls && socialMediaUrls.length > 0) || (artistId && artistName) || (genres && genres.length > 0)) && (
+        <div className="absolute bottom-4 right-4 flex flex-col items-end gap-2">
+          {/* Social Media Icons */}
+          {((socialMediaUrls && socialMediaUrls.length > 0) || (artistId && artistName)) && (
+            <SocialMediaLinks
+              socialMediaUrls={socialMediaUrls || []}
+              artistId={artistId}
+              artistName={artistName}
+              className="flex gap-2"
+            />
+          )}
+
+          {/* Genre Badges */}
+          {genres && genres.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-end">
+              {genres.map((genre, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
+                  style={{ backgroundColor: '#FF6B35' }}
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
