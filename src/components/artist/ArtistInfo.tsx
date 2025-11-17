@@ -32,7 +32,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
       {/* Profile Image - Overlaps banner */}
-      <div className="flex flex-col items-center -mt-16 sm:-mt-20 md:-mt-24">
+      <div className="flex flex-col -mt-16 sm:-mt-20 md:-mt-24">
         <div className="relative flex-shrink-0">
           {artist.profileImageUrl ? (
             <Image
@@ -54,15 +54,15 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
           )}
         </div>
 
-        {/* Artist Name, Location, Bio - Below Avatar, Full Width */}
-        <div className="w-full mt-4 text-center">
+        {/* Artist Name, Location, Bio - Below Avatar */}
+        <div className="w-full mt-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
             {artist.name}
           </h1>
 
           {/* Location - Immediately below name */}
           {artist.location && (
-            <div className="flex items-center justify-center gap-2 text-foreground mb-3">
+            <div className="flex items-center gap-2 text-foreground mb-3">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <span className="text-sm font-medium">{artist.location}</span>
             </div>
@@ -70,7 +70,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
           {/* Bio/Subtitle */}
           {artist.bio && (
-            <p className="text-sm text-muted-foreground max-w-2xl mx-auto px-4">
+            <p className="text-sm text-muted-foreground">
               {displayedBio}
               {bioNeedsTruncation && (
                 <button
@@ -89,7 +89,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
       {/* Genres */}
       {artist.genres && artist.genres.length > 0 && (
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {artist.genres.map((genre, index) => (
             <span
               key={index}
