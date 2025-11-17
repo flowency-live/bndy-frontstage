@@ -1,7 +1,71 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, ChevronDown } from 'lucide-react';
+import { Search, X, ChevronDown, Check } from 'lucide-react';
+
+interface CustomSelectOption {
+  value: string;
+  label: string;
+}
+
+interface CustomSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: CustomSelectOption[];
+  placeholder: string;
+  className?: string;
+}
+
+function CustomSelect({ value, onChange, options, placeholder, className = '' }: CustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+  const displayLabel = selectedOption ? selectedOption.label : placeholder;
+
+  return (
+    <div className={`relative ${className}`} ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 text-left flex items-center justify-between"
+      >
+        <span className="truncate">{displayLabel}</span>
+        <ChevronDown className={`w-4 h-4 ml-2 flex-shrink-0 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full max-w-[calc(100vw-2rem)] bg-background border-2 border-primary rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          {options.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition-colors flex items-center justify-between ${
+                value === option.value ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
+              }`}
+            >
+              <span>{option.label}</span>
+              {value === option.value && <Check className="w-4 h-4 text-primary flex-shrink-0 ml-2" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface ArtistFiltersProps {
   searchQuery: string;
@@ -72,36 +136,34 @@ export default function ArtistFilters({
       {/* Filter Dropdowns Row */}
       <div className="flex flex-wrap gap-2">
         {/* Artist Type Filter */}
-        <div className="flex-1 min-w-[140px] relative">
-          <select
-            value={artistTypeFilter}
-            onChange={(e) => onArtistTypeChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
-          >
-            <option value="">All Types</option>
-            {availableArtistTypes.map(type => (
-              <option key={type} value={type}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={artistTypeFilter}
+          onChange={onArtistTypeChange}
+          options={[
+            { value: '', label: 'All Types' },
+            ...availableArtistTypes.map(type => ({
+              value: type,
+              label: type.charAt(0).toUpperCase() + type.slice(1)
+            }))
+          ]}
+          placeholder="All Types"
+          className="flex-1 min-w-[140px]"
+        />
 
         {/* Location Filter */}
-        <div className="flex-1 min-w-[140px] relative">
-          <select
-            value={locationFilter}
-            onChange={(e) => onLocationChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
-          >
-            <option value="">All Locations</option>
-            {availableLocations.map(location => (
-              <option key={location} value={location}>{location}</option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={locationFilter}
+          onChange={onLocationChange}
+          options={[
+            { value: '', label: 'All Locations' },
+            ...availableLocations.map(location => ({
+              value: location,
+              label: location
+            }))
+          ]}
+          placeholder="All Locations"
+          className="flex-1 min-w-[140px]"
+        />
 
         {/* Genre Filter - Custom Dropdown with Checkboxes */}
         <div className="flex-1 min-w-[120px] relative" ref={genreDropdownRef}>
@@ -154,48 +216,45 @@ export default function ArtistFilters({
         </div>
 
         {/* Acoustic Filter */}
-        <div className="flex-1 min-w-[120px] relative">
-          <select
-            value={acousticFilter || 'all'}
-            onChange={(e) => onAcousticChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
-          >
-            <option value="all">All Acts</option>
-            <option value="acoustic">Acoustic Only</option>
-            <option value="non-acoustic">Non-Acoustic</option>
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={acousticFilter || 'all'}
+          onChange={onAcousticChange}
+          options={[
+            { value: 'all', label: 'All Acts' },
+            { value: 'acoustic', label: 'Acoustic Only' },
+            { value: 'non-acoustic', label: 'Non-Acoustic' }
+          ]}
+          placeholder="All Acts"
+          className="flex-1 min-w-[120px]"
+        />
 
         {/* Act Type Filter */}
-        <div className="flex-1 min-w-[120px] relative">
-          <select
-            value={actTypeFilter}
-            onChange={(e) => onActTypeChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
-          >
-            <option value="">All Act Types</option>
-            <option value="originals">Originals</option>
-            <option value="covers">Covers</option>
-            <option value="tribute">Tribute</option>
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={actTypeFilter}
+          onChange={onActTypeChange}
+          options={[
+            { value: '', label: 'All Act Types' },
+            { value: 'originals', label: 'Originals' },
+            { value: 'covers', label: 'Covers' },
+            { value: 'tribute', label: 'Tribute' }
+          ]}
+          placeholder="All Act Types"
+          className="flex-1 min-w-[120px]"
+        />
 
         {/* Group By */}
-        <div className="flex-1 min-w-[140px] relative">
-          <select
-            value={groupBy}
-            onChange={(e) => onGroupByChange(e.target.value as 'alpha' | 'type' | 'location' | 'genre')}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
-          >
-            <option value="alpha">Group: A-Z</option>
-            <option value="type">Group: Type</option>
-            <option value="location">Group: Location</option>
-            <option value="genre">Group: Genre</option>
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={groupBy}
+          onChange={(value) => onGroupByChange(value as 'alpha' | 'type' | 'location' | 'genre')}
+          options={[
+            { value: 'alpha', label: 'Group: A-Z' },
+            { value: 'type', label: 'Group: Type' },
+            { value: 'location', label: 'Group: Location' },
+            { value: 'genre', label: 'Group: Genre' }
+          ]}
+          placeholder="Group: A-Z"
+          className="flex-1 min-w-[140px]"
+        />
 
         {/* Clear Filters Button */}
         {hasActiveFilters && (
