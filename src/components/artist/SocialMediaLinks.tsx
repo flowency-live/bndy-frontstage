@@ -12,42 +12,35 @@ interface SocialMediaLinksProps {
   artistName?: string;
 }
 
-// Platform-specific configurations with brand colors and react-icons
+/**
+ * Platform configurations - Ghosted, theme-aware style
+ * - Transparent background (ghosted)
+ * - Theme-aware borders and icon colors
+ * - X logo for Twitter/X platform
+ */
 const platformConfig = {
   website: {
-    icon: <FaGlobe className="w-5 h-5" />,
-    color: "#6B7280",
-    hoverColor: "#374151",
+    icon: FaGlobe,
     label: "Website"
   },
   spotify: {
-    icon: <FaSpotify className="w-5 h-5" />,
-    color: "#1DB954",
-    hoverColor: "#1ed760",
+    icon: FaSpotify,
     label: "Spotify"
   },
   facebook: {
-    icon: <FaFacebook className="w-5 h-5" />,
-    color: "#1877F2",
-    hoverColor: "#166fe5",
+    icon: FaFacebook,
     label: "Facebook"
   },
   instagram: {
-    icon: <FaInstagram className="w-5 h-5" />,
-    color: "#E4405F",
-    hoverColor: "#d73559",
+    icon: FaInstagram,
     label: "Instagram"
   },
   youtube: {
-    icon: <FaYoutube className="w-5 h-5" />,
-    color: "#FF0000",
-    hoverColor: "#e60000",
+    icon: FaYoutube,
     label: "YouTube"
   },
   x: {
-    icon: <FaXTwitter className="w-5 h-5" />,
-    color: "#000000",
-    hoverColor: "#1a1a1a",
+    icon: FaXTwitter,
     label: "X (Twitter)"
   }
 };
@@ -99,18 +92,22 @@ export default function SocialMediaLinks({ socialMediaUrls, className = "", arti
         const config = platformConfig[social.platform];
         if (!config) return null;
 
+        const Icon = config.icon;
+
         return (
           <a
             key={index}
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-all duration-200 hover:scale-110 active:scale-95"
+            className="w-10 h-10 flex items-center justify-center rounded-lg border bg-transparent
+                       border-gray-300 dark:border-gray-600
+                       text-gray-700 dark:text-gray-200
+                       hover:border-orange-500 hover:scale-105
+                       transition-all duration-200"
             aria-label={`Visit ${config.label}`}
           >
-            <div style={{ color: config.color }}>
-              {config.icon}
-            </div>
+            <Icon className="w-5 h-5" />
           </a>
         );
       })}
@@ -128,12 +125,14 @@ function ShareButton({ onClick, showTooltip }: { onClick: () => void; showToolti
   return (
     <button
       onClick={onClick}
-      className="transition-all duration-200 hover:scale-110 active:scale-95"
+      className="w-10 h-10 flex items-center justify-center rounded-lg border bg-transparent
+                 border-gray-300 dark:border-gray-600
+                 text-gray-700 dark:text-gray-200
+                 hover:border-orange-500 hover:scale-105
+                 transition-all duration-200"
       aria-label="Share artist profile"
     >
-      <div style={{ color: "#F97316" }}>
-        <IoShareSocialOutline className="w-5 h-5" />
-      </div>
+      <IoShareSocialOutline className="w-5 h-5" />
     </button>
   );
 }

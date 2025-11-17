@@ -4,7 +4,7 @@ import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import ArtistHeroBanner from "@/components/artist/ArtistHeroBanner";
-import ArtistHeader from "@/components/artist/ArtistHeader";
+import ArtistInfo from "@/components/artist/ArtistInfo";
 import EventsList from "@/components/artist/EventsList";
 import SocialShareSection from "@/components/artist/SocialShareSection";
 
@@ -62,10 +62,10 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       {/* Hero Banner with transparent controls */}
       <ArtistHeroBanner />
 
-      {/* Artist Header */}
-      <header>
-        <ArtistHeader artist={initialData} />
-      </header>
+      {/* Artist Info Section */}
+      <div className="mb-8">
+        <ArtistInfo artist={initialData} />
+      </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-4 pt-4">
