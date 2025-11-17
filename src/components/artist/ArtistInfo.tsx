@@ -55,15 +55,23 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
           )}
         </div>
 
-        {/* Artist Name and Bio */}
+        {/* Artist Name, Location, Bio */}
         <div className="flex-1 min-w-0 pt-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
             {artist.name}
           </h1>
 
+          {/* Location - Immediately below name */}
+          {artist.location && (
+            <div className="flex items-center gap-2 text-foreground mb-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-medium">{artist.location}</span>
+            </div>
+          )}
+
           {/* Bio/Subtitle */}
           {artist.bio && (
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm text-muted-foreground">
               {displayedBio}
               {bioNeedsTruncation && (
                 <button
@@ -80,24 +88,16 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
         </div>
       </div>
 
-      {/* Location, Genres, Social Links */}
+      {/* Genres and Social Links */}
       <div className="mt-4 space-y-3">
-        {/* Location - BEFORE genres */}
-        {artist.location && (
-          <div className="flex items-center gap-2 text-foreground">
-            <MapPin className="w-4 h-4 flex-shrink-0" />
-            <span className="text-sm font-medium">{artist.location}</span>
-          </div>
-        )}
-
-        {/* Genre Badges - ALL displayed, no limit */}
+        {/* Genre Badges - ALL displayed, no limit - ORANGE */}
         {artist.genres && artist.genres.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {artist.genres.map((genre, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-cyan-500 text-white"
-                style={{ backgroundColor: '#00D9FF' }}
+                className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full text-white"
+                style={{ backgroundColor: '#FF6B35' }}
               >
                 {genre}
               </span>

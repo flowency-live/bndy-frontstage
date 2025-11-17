@@ -27,8 +27,9 @@ export default function ArtistHeroBanner() {
         alt="Concert crowd"
         fill
         priority
-        className="object-cover sm:hidden"
+        className="object-cover object-center sm:hidden"
         sizes="100vw"
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
       />
 
       {/* Generic Banner Image - Desktop */}
@@ -37,8 +38,9 @@ export default function ArtistHeroBanner() {
         alt="Concert crowd"
         fill
         priority
-        className="object-cover hidden sm:block"
+        className="object-cover object-center hidden sm:block"
         sizes="100vw"
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
       />
 
       {/* Dark gradient at bottom for profile overlap */}
