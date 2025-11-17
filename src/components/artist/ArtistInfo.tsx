@@ -68,20 +68,20 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
             {artist.name}
           </h1>
 
-          {/* Location - Immediately below name */}
-          {artist.location && (
-            <div className="flex items-center gap-2 text-foreground mb-3">
-              <MapPin className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm font-medium">{artist.location}</span>
-            </div>
-          )}
-
-          {/* Artist Type Badge - Blue pill badge */}
-          {artist.artistType && (
-            <div className="mb-3">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30">
-                {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
-              </span>
+          {/* Location and Artist Type Badge - Same row */}
+          {(artist.location || artist.artistType) && (
+            <div className="flex items-center gap-2 flex-wrap mb-3">
+              {artist.location && (
+                <>
+                  <MapPin className="w-4 h-4 flex-shrink-0 text-foreground" />
+                  <span className="text-sm font-medium text-foreground">{artist.location}</span>
+                </>
+              )}
+              {artist.artistType && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#4A90E2] text-white border border-[#4A90E2]/30">
+                  {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
+                </span>
+              )}
             </div>
           )}
 
