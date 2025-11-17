@@ -72,9 +72,13 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         artistName={initialData.name}
       />
 
-      {/* Genre Badges - Below banner, right-aligned */}
+      {/* Genre Badges - Absolutely positioned below banner */}
       {initialData.genres && initialData.genres.length > 0 && (
-        <GenreBadges genres={initialData.genres} />
+        <div className="relative">
+          <div className="absolute top-0 left-0 right-0 z-10">
+            <GenreBadges genres={initialData.genres} />
+          </div>
+        </div>
       )}
 
       {/* Artist Info Section */}
