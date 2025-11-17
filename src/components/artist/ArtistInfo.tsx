@@ -33,10 +33,10 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
   return (
     <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
       {/* Semi-transparent background panel for text readability in both themes */}
-      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl pl-2 pr-4 py-4 shadow-lg -mt-16 sm:-mt-20 md:-mt-24">
+      <div className="bg-background/90 dark:bg-background/85 backdrop-blur-sm rounded-xl pl-1 pr-4 py-4 sm:pl-4 shadow-lg -mt-12 sm:-mt-16 md:-mt-20">
       {/* Profile Image - Positioned to center on banner/panel boundary */}
       <div className="flex items-start gap-3 sm:gap-4">
-        <div className="relative flex-shrink-0 -mt-16 sm:-mt-18 md:-mt-20">
+        <div className="relative flex-shrink-0 -mt-12 sm:-mt-16 md:-mt-18">
           {artist.profileImageUrl ? (
             <Image
               src={artist.profileImageUrl}
