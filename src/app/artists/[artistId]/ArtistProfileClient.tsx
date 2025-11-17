@@ -65,19 +65,17 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Hero Banner with transparent controls, social icons, and genre badges */}
-      <div className="relative">
-        <ArtistHeroBanner
-          socialMediaUrls={initialData.socialMediaUrls}
-          artistId={initialData.id}
-          artistName={initialData.name}
-        />
+      {/* Hero Banner with transparent controls and social icons */}
+      <ArtistHeroBanner
+        socialMediaUrls={initialData.socialMediaUrls}
+        artistId={initialData.id}
+        artistName={initialData.name}
+      />
 
-        {/* Genre Badges - Overlapping bottom of banner */}
-        {initialData.genres && initialData.genres.length > 0 && (
-          <GenreBadges genres={initialData.genres} />
-        )}
-      </div>
+      {/* Genre Badges - Below banner, right-aligned */}
+      {initialData.genres && initialData.genres.length > 0 && (
+        <GenreBadges genres={initialData.genres} />
+      )}
 
       {/* Artist Info Section */}
       <div className="mb-8">
