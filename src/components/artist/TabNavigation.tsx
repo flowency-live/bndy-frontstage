@@ -64,7 +64,7 @@ export default function TabNavigation({
 
   return (
     <div className="bg-background border-y border-border">
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-2">
         <nav
           role="tablist"
           className="flex gap-2"
@@ -80,16 +80,16 @@ export default function TabNavigation({
                 aria-controls={`${tab.id}-panel`}
                 onClick={() => handleTabClick(tab.id)}
                 className={`
-                  flex-1 py-3.5 px-5 font-semibold text-sm transition-all rounded-xl
-                  flex items-center justify-center gap-2 border-2
+                  flex-1 py-2 px-4 font-medium text-sm transition-all rounded-lg
+                  flex items-center justify-center gap-2 border
                   ${
                     activeTab === tab.id
-                      ? "bg-[#1a1a2e] dark:bg-white text-white dark:text-[#1a1a2e] border-[#1a1a2e] dark:border-white shadow-lg"
+                      ? "bg-[#1a1a2e] dark:bg-white text-white dark:text-[#1a1a2e] border-[#1a1a2e] dark:border-white"
                       : "bg-transparent border-border text-foreground hover:bg-muted/50"
                   }
                 `}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
