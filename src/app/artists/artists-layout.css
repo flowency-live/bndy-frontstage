@@ -1,0 +1,8 @@
+/* Hide header and remove top margin for artist profile pages */
+body:has(.artist-profile-page) header {
+  display: none;
+}
+
+body:has(.artist-profile-page) main {
+  margin-top: 0 !important;
+}
