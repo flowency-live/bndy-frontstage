@@ -76,8 +76,7 @@ export default function ArtistFilters({
           <select
             value={artistTypeFilter}
             onChange={(e) => onArtistTypeChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
-            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
           >
             <option value="">All Types</option>
             {availableArtistTypes.map(type => (
@@ -86,6 +85,7 @@ export default function ArtistFilters({
               </option>
             ))}
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
 
         {/* Location Filter */}
@@ -93,14 +93,14 @@ export default function ArtistFilters({
           <select
             value={locationFilter}
             onChange={(e) => onLocationChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
-            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
           >
             <option value="">All Locations</option>
             {availableLocations.map(location => (
               <option key={location} value={location}>{location}</option>
             ))}
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
 
         {/* Genre Filter - Custom Dropdown with Checkboxes */}
@@ -108,42 +108,42 @@ export default function ArtistFilters({
           <button
             type="button"
             onClick={() => setGenreDropdownOpen(!genreDropdownOpen)}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none text-left flex items-center justify-between"
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 text-left flex items-center justify-between"
           >
             <span className="truncate">
               {genreArray.length === 0 ? 'All Genres' : `${genreArray.length} Genre${genreArray.length > 1 ? 's' : ''}`}
             </span>
-            <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 text-muted-foreground" />
           </button>
           {genreArray.length > 0 && (
-            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold pointer-events-none">
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold pointer-events-none">
               {genreArray.length}
             </div>
           )}
           {genreDropdownOpen && (
-            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-50 mt-1 w-full bg-background border-2 border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
               <div className="p-2">
                 {availableGenres.map(genre => (
                   <label
                     key={genre}
-                    className="flex items-center px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer text-sm"
+                    className="flex items-center px-2 py-1.5 hover:bg-muted rounded cursor-pointer text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={genreArray.includes(genre)}
                       onChange={() => toggleGenre(genre)}
-                      className="mr-2 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                      className="mr-2 rounded border-input text-primary focus:ring-primary"
                     />
-                    <span className="text-gray-900 dark:text-gray-100">{genre}</span>
+                    <span className="text-foreground">{genre}</span>
                   </label>
                 ))}
               </div>
               {genreArray.length > 0 && (
-                <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+                <div className="border-t border-border p-2">
                   <button
                     type="button"
                     onClick={() => onGenreChange([])}
-                    className="w-full px-2 py-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium"
+                    className="w-full px-2 py-1 text-xs text-primary hover:text-primary/80 font-medium"
                   >
                     Clear All
                   </button>
@@ -158,13 +158,13 @@ export default function ArtistFilters({
           <select
             value={acousticFilter || 'all'}
             onChange={(e) => onAcousticChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
-            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
           >
             <option value="all">All Acts</option>
             <option value="acoustic">Acoustic Only</option>
             <option value="non-acoustic">Non-Acoustic</option>
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
 
         {/* Act Type Filter */}
@@ -172,14 +172,14 @@ export default function ArtistFilters({
           <select
             value={actTypeFilter}
             onChange={(e) => onActTypeChange(e.target.value)}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
-            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
           >
             <option value="">All Act Types</option>
             <option value="originals">Originals</option>
             <option value="covers">Covers</option>
             <option value="tribute">Tribute</option>
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
 
         {/* Group By */}
@@ -187,14 +187,14 @@ export default function ArtistFilters({
           <select
             value={groupBy}
             onChange={(e) => onGroupByChange(e.target.value as 'alpha' | 'type' | 'location' | 'genre')}
-            className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer hover:border-orange-400 appearance-none"
-            style={{backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem'}}
+            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 appearance-none"
           >
             <option value="alpha">Group: A-Z</option>
             <option value="type">Group: Type</option>
             <option value="location">Group: Location</option>
             <option value="genre">Group: Genre</option>
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
 
         {/* Clear Filters Button */}
