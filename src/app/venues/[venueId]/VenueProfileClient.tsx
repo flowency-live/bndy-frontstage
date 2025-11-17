@@ -64,9 +64,7 @@ export default function VenueProfileClient({ initialData, events, error, venueId
   return (
     <div className="venue-profile-page bg-background min-h-screen">
       {/* Venue Header */}
-      <header>
-        <VenueHeader venue={initialData} />
-      </header>
+      <VenueHeader venue={initialData} />
 
       {/* Tab Navigation */}
       <TabNavigation venueId={initialData.id} />
