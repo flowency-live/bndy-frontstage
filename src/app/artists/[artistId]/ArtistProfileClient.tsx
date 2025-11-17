@@ -3,6 +3,7 @@
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import ArtistHeroBanner from "@/components/artist/ArtistHeroBanner";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import EventsList from "@/components/artist/EventsList";
 import SocialShareSection from "@/components/artist/SocialShareSection";
@@ -43,8 +44,8 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
     return (
       <div className="min-h-screen bg-background">
         <div className="animate-pulse">
-          {/* Header skeleton */}
-          <div className="h-64 bg-muted rounded-lg mb-6"></div>
+          {/* Banner skeleton - matches ArtistHeroBanner heights */}
+          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted mb-6"></div>
           {/* Content skeleton */}
           <div className="container mx-auto px-4 space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
@@ -58,6 +59,9 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
   return (
     <div className="bg-background">
+      {/* Hero Banner with transparent controls */}
+      <ArtistHeroBanner />
+
       {/* Artist Header */}
       <header>
         <ArtistHeader artist={initialData} />
