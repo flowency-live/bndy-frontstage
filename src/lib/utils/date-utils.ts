@@ -37,7 +37,12 @@ export function formatEventDate(date: Date): string {
   return `${weekday} ${day}${getOrdinalSuffix(day)} ${month}`;
 }
 
-export function formatTime(time24: string): string {
+export function formatTime(time24: string | undefined | null): string {
+  // Handle undefined/null time values
+  if (!time24) {
+    return 'TBA';
+  }
+
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   let hours12 = hours % 12;
@@ -49,7 +54,7 @@ export function formatTime(time24: string): string {
   /**
    * Formats a full event datetime (e.g., "Sat 22nd Feb @ 7:00PM")
    */
-  export function formatEventDateTime(date: Date, time24: string): string {
+  export function formatEventDateTime(date: Date, time24: string | undefined | null): string {
     return `${formatEventDate(date)} @ ${formatTime(time24)}`;
   }
   
