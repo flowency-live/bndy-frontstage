@@ -107,12 +107,21 @@ export function isDateInRange(date: Date, filter: DateRangeFilter, baseDate: Dat
  * @param filter The filter type
  * @param baseDate The date to calculate from (defaults to today)
  * @returns Date range formatted as ISO strings (YYYY-MM-DD)
+ * NOTE: endDate is set to the day AFTER the last day to make database queries inclusive
+ * e.g., for "today" on Jan 15, returns startDate: "2025-01-15", endDate: "2025-01-16"
+ * This allows queries like: WHERE date >= startDate AND date < endDate
  */
 export function getFormattedDateRange(filter: DateRangeFilter, baseDate: Date = new Date()): { startDate: string, endDate: string } {
   const { startDate, endDate } = getDateRange(filter, baseDate);
+
+  // For database queries, add 1 day to endDate to make it inclusive
+  const inclusiveEndDate = new Date(endDate);
+  inclusiveEndDate.setDate(inclusiveEndDate.getDate() + 1);
+  inclusiveEndDate.setHours(0, 0, 0, 0);
+
   return {
     startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0]
+    endDate: inclusiveEndDate.toISOString().split('T')[0]
   };
 }
 

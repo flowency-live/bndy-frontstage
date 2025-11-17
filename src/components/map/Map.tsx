@@ -8,7 +8,7 @@ import { useEvents } from "@/context/EventsContext";
 import { useVenues } from "@/hooks/useVenues";
 import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
 import type { Event, Venue } from "@/lib/types";
-import { isDateInRange, DateRangeFilter } from "@/lib/utils/date-filter-utils";
+import { isDateInRange, DateRangeFilter, getFormattedDateRange } from "@/lib/utils/date-filter-utils";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 
@@ -79,48 +79,9 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   } = useEvents();
   const { isDarkMode, mapMode } = useViewToggle();
 
-  // Calculate date range for queries
+  // Calculate date range for queries using centralized utility
   const { startDate, endDate } = useMemo(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    switch (dateRange) {
-      case "today": {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return { startDate: today.toISOString().split('T')[0], endDate: tomorrow.toISOString().split('T')[0] };
-      }
-      case "thisWeek": {
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(endOfWeek.getDate() + (6 - today.getDay()));
-        return { startDate: today.toISOString().split('T')[0], endDate: endOfWeek.toISOString().split('T')[0] };
-      }
-      case "thisWeekend": {
-        const saturday = new Date(today);
-        saturday.setDate(today.getDate() + (6 - today.getDay() || 7));
-        const monday = new Date(saturday);
-        monday.setDate(saturday.getDate() + 2);
-        return { startDate: saturday.toISOString().split('T')[0], endDate: monday.toISOString().split('T')[0] };
-      }
-      case "nextWeek": {
-        const startNextWeek = new Date(today);
-        startNextWeek.setDate(today.getDate() + (7 - today.getDay()));
-        const endNextWeek = new Date(startNextWeek);
-        endNextWeek.setDate(startNextWeek.getDate() + 6);
-        return { startDate: startNextWeek.toISOString().split('T')[0], endDate: endNextWeek.toISOString().split('T')[0] };
-      }
-      case "nextWeekend": {
-        const todayDay = now.getDay();
-        const daysUntilNextFriday = todayDay === 0 ? 5 : todayDay === 1 ? 11 : todayDay === 2 ? 10 : todayDay === 3 ? 9 : todayDay === 4 ? 8 : todayDay === 5 ? 7 : 6;
-        const nextFriday = new Date(today);
-        nextFriday.setDate(now.getDate() + daysUntilNextFriday);
-        const nextSunday = new Date(nextFriday);
-        nextSunday.setDate(nextFriday.getDate() + 2);
-        return { startDate: nextFriday.toISOString().split('T')[0], endDate: nextSunday.toISOString().split('T')[0] };
-      }
-      default:
-        return { startDate: undefined, endDate: undefined };
-    }
+    return getFormattedDateRange(dateRange as DateRangeFilter);
   }, [dateRange]);
 
   // Fetch ALL public events in date range (matches venue pattern)
