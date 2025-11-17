@@ -67,7 +67,7 @@ export default function TabNavigation({
       <div className="container mx-auto px-4">
         <nav
           role="tablist"
-          className="flex gap-3 p-1.5 bg-muted/30 dark:bg-muted/10 rounded-full"
+          className="flex gap-3 p-1.5 bg-muted dark:bg-slate-800 rounded-full"
           aria-label="Artist profile sections"
         >
           {visibleTabs.map((tab) => {
