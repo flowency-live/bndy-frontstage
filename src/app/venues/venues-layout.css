@@ -1,0 +1,8 @@
+/* Hide header and remove top margin for venue profile pages */
+body:has(.venue-profile-page) header {
+  display: none;
+}
+
+body:has(.venue-profile-page) main {
+  margin-top: 0 !important;
+}

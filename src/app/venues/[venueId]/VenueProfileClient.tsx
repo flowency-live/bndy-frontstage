@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Event, Venue } from "@/lib/types";
 import Link from "next/link";
 import VenueHeader from "@/components/venue/VenueHeader";
-import EventsList from "@/components/artist/EventsList";
+import TabNavigation from "@/components/venue/TabNavigation";
+import EventsTab from "@/components/venue/tabs/EventsTab";
+import LinksTab from "@/components/venue/tabs/LinksTab";
 
 interface VenueProfileClientProps {
   initialData: Venue | null;
@@ -15,6 +18,8 @@ interface VenueProfileClientProps {
 
 export default function VenueProfileClient({ initialData, events, error, venueId }: VenueProfileClientProps) {
   const [isLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const activeTab = (searchParams.get("tab") as "events" | "links") || "events";
 
   // Simple logging (client-side only to avoid hydration issues)
   useEffect(() => {
@@ -57,25 +62,30 @@ export default function VenueProfileClient({ initialData, events, error, venueId
   }
 
   return (
-    <div className="bg-background">
+    <div className="venue-profile-page bg-background min-h-screen">
       {/* Venue Header */}
       <header>
         <VenueHeader venue={initialData} />
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-4 pt-4">
-        {/* Events Section */}
-        <section aria-label="Events at this venue">
-          <EventsList
-            events={events}
-            artistLocation={initialData.address || `${initialData.location.lat}, ${initialData.location.lng}`}
-            hideDistanceFilter={true}
-            linkToArtist={true}
-          />
-        </section>
+      {/* Tab Navigation */}
+      <TabNavigation venueId={initialData.id} />
 
-        {/* Navigation Section */}
+      {/* Tab Content */}
+      <div className="py-6">
+        <div className={activeTab === "events" ? "block" : "hidden"}>
+          <EventsTab
+            events={events}
+            venueLocation={initialData.address || `${initialData.location.lat}, ${initialData.location.lng}`}
+          />
+        </div>
+        <div className={activeTab === "links" ? "block" : "hidden"}>
+          <LinksTab />
+        </div>
+      </div>
+
+      {/* Navigation Section */}
+      <div className="container mx-auto px-4 pb-8 pt-4">
         <nav className="pt-8 mt-8 border-t border-border" aria-label="Page Navigation">
           <Link
             href="/"
