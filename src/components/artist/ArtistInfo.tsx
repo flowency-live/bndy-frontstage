@@ -76,6 +76,15 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
             </div>
           )}
 
+          {/* Artist Type Badge - Blue pill badge */}
+          {artist.artistType && (
+            <div className="mb-3">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30">
+                {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
+              </span>
+            </div>
+          )}
+
           {/* Bio/Subtitle */}
           {artist.bio && (
             <p className="text-sm text-muted-foreground">

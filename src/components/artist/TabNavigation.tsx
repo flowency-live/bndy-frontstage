@@ -9,7 +9,7 @@ interface TabNavigationProps {
   publishAvailability?: boolean;
 }
 
-type TabType = "events" | "videos" | "availability";
+type TabType = "events" | "links";
 
 interface Tab {
   id: TabType;
@@ -21,10 +21,9 @@ interface Tab {
  * TabNavigation - Tabbed interface for artist profile content
  *
  * Features:
- * - Three tabs: Upcoming Gigs | Videos & Links | Booking Availability
+ * - Two tabs: Events | Links
  * - Active tab: Orange underline (3px)
  * - URL param sync (?tab=events)
- * - Conditional visibility (availability tab only if publishAvailability is true)
  * - Default active: "events"
  */
 export default function TabNavigation({
@@ -36,11 +35,10 @@ export default function TabNavigation({
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("events");
 
-  // Define tabs with conditional visibility
+  // Define tabs - Events and Links only
   const tabs: Tab[] = [
-    { id: "events", label: "Upcoming Gigs", visible: true },
-    { id: "videos", label: "Videos & Links", visible: hasVideos },
-    { id: "availability", label: "Booking Availability", visible: publishAvailability },
+    { id: "events", label: "Events", visible: true },
+    { id: "links", label: "Links", visible: true },
   ];
 
   // Sync with URL params on mount and when search params change

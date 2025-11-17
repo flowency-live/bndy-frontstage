@@ -9,8 +9,7 @@ import GenreBadges from "@/components/artist/GenreBadges";
 import ArtistInfo from "@/components/artist/ArtistInfo";
 import TabNavigation from "@/components/artist/TabNavigation";
 import EventsTab from "@/components/artist/tabs/EventsTab";
-import VideosTab from "@/components/artist/tabs/VideosTab";
-import AvailabilityTab from "@/components/artist/tabs/AvailabilityTab";
+import LinksTab from "@/components/artist/tabs/LinksTab";
 
 interface ArtistProfileClientProps {
   initialData: ArtistProfileData | null;
@@ -21,7 +20,7 @@ interface ArtistProfileClientProps {
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
   const [isLoading] = useState(false);
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as "events" | "videos" | "availability") || "events";
+  const activeTab = (searchParams.get("tab") as "events" | "links") || "events";
 
   // Simple logging (client-side only to avoid hydration issues)
   useEffect(() => {
@@ -114,8 +113,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
             artistLocation={initialData.location}
           />
         )}
-        {activeTab === "videos" && <VideosTab />}
-        {activeTab === "availability" && <AvailabilityTab />}
+        {activeTab === "links" && <LinksTab />}
       </div>
 
       {/* Navigation Section */}
