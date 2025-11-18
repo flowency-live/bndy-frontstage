@@ -46,10 +46,10 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Artists Icon */}
+          {/* Artists Icon - hidden on mobile */}
           <Link
             href="/artists"
-            className={`flex items-center focus:outline-none transition-colors ${
+            className={`hidden md:flex items-center focus:outline-none transition-colors ${
               isArtistsPage
                 ? "text-[var(--primary)]"
                 : "text-[var(--foreground)] hover:text-[var(--primary)]"
@@ -59,11 +59,11 @@ export default function Header() {
             <Users className="w-5 h-5" />
           </Link>
 
-          {/* Map/List Toggle - always visible */}
+          {/* Map/List Toggle - hidden on mobile */}
           {isHomePage && (
             <button
               onClick={handleViewToggle}
-              className="flex items-center focus:outline-none"
+              className="hidden md:flex items-center focus:outline-none"
               aria-label={activeView === "map" ? "Switch to list view" : "Switch to map view"}
             >
               {activeView === "map" ? (
@@ -74,11 +74,11 @@ export default function Header() {
             </button>
           )}
 
-          {/* Events/Venues Toggle - always visible on home page */}
+          {/* Events/Venues Toggle - hidden on mobile */}
           {isHomePage && (
             <button
               onClick={handleMapModeToggle}
-              className="flex items-center focus:outline-none"
+              className="hidden md:flex items-center focus:outline-none"
               aria-label={mapMode === "events" ? "Switch to venues view" : "Switch to events view"}
             >
               {mapMode === "events" ? (

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
@@ -76,10 +77,11 @@ export default function RootLayout({
           <ViewToggleProvider>
             <ServiceWorkerRegistration />
             <Header />
-            <main className="flex-1 mt-[88px] mb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+            <main className="flex-1 mt-[88px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
               {children}
             </main>
             <Footer />
+            <MobileBottomNav />
           </ViewToggleProvider>
         </Providers>
       </body>

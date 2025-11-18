@@ -1224,6 +1224,33 @@ main {
 }
 
 /* ======================================================
+   Mobile Bottom Navigation
+   ====================================================== */
+
+.mobile-bottom-nav {
+  /* iOS safe area support */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-bottom-nav button {
+  /* Touch-friendly tap targets */
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.mobile-bottom-nav button:active {
+  /* Subtle press feedback */
+  transform: scale(0.95);
+}
+
+/* Smooth transitions for active states */
+.mobile-bottom-nav button {
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+/* ======================================================
    13. Artist Profile Header Animations
    ====================================================== */
 
