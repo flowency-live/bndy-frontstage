@@ -44,6 +44,14 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         zoomControl: false,
         attributionControl: true,
         closePopupOnClick: true,
+
+        // Performance & responsiveness settings for instant feedback
+        inertia: false,              // Disable momentum scrolling (eliminates drag delay)
+        zoomAnimation: true,         // Keep zoom animation
+        zoomAnimationThreshold: 4,   // Max zoom level difference for animation
+        fadeAnimation: false,        // Disable tile fade-in for instant rendering
+        markerZoomAnimation: false,  // Disable marker zoom animation for snappier feel
+        preferCanvas: false,         // Use SVG for better quality at current scale
       });
 
       // Add tile layer (consistent blue-gray style, not affected by theme)

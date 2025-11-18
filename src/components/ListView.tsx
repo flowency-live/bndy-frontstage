@@ -406,25 +406,25 @@ export default function ListView() {
                     ) : (
                       // List view for other sections
                       <div className="overflow-x-auto">
-                        <table className="min-w-full">
+                        <table className="min-w-full text-xs sm:text-sm">
                           <thead style={{ backgroundColor: 'var(--surface-2)' }} className="border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
                                 Date
                               </th>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
+                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
                                 Time
                               </th>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
+                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
                                 Artist
                               </th>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
+                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
                                 Venue
                               </th>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden lg:table-cell">
+                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
                                 Town
                               </th>
-                              <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-24">
+                              <th className="px-2 py-2 text-center text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide w-16 sm:w-24">
                                 Price
                               </th>
                             </tr>
