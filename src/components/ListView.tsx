@@ -195,6 +195,16 @@ export default function ListView() {
       }
     });
 
+    // Sort each group by date and time
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort((a, b) => {
+        const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (dateCompare !== 0) return dateCompare;
+        // If same date, sort by time
+        return a.startTime.localeCompare(b.startTime);
+      });
+    });
+
     setGroupedEvents(grouped);
   }, [filteredEvents]);
 
@@ -406,25 +416,37 @@ export default function ListView() {
                     ) : (
                       // List view for other sections
                       <div className="overflow-x-auto">
-                        <table className="min-w-full text-xs sm:text-sm">
+                        <table className="min-w-full">
                           <thead style={{ backgroundColor: 'var(--surface-2)' }} className="border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
-                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
+                              {/* Mobile: 3 columns */}
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight md:hidden">
                                 Date
                               </th>
-                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight md:hidden">
+                                Event
+                              </th>
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight md:hidden">
+                                Location
+                              </th>
+
+                              {/* Desktop: 6 columns */}
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                                Date
+                              </th>
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
                                 Time
                               </th>
-                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
                                 Artist
                               </th>
-                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
                                 Venue
                               </th>
-                              <th className="px-2 py-2 text-left text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
                                 Town
                               </th>
-                              <th className="px-2 py-2 text-center text-[9px] sm:text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-tight sm:tracking-wide w-16 sm:w-24">
+                              <th className="px-2 py-2 text-center text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-24 hidden md:table-cell">
                                 Price
                               </th>
                             </tr>
