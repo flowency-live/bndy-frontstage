@@ -143,9 +143,16 @@ main {
   margin: 0;
   padding: 0;
   background-color: var(--background);
-  z-index: 40;
+  z-index: 45;
   border-top: 1px solid var(--border-light);
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* On mobile, position footer above the mobile nav */
+@media (max-width: 768px) {
+  .footer {
+    bottom: 64px; /* Height of mobile nav */
+  }
 }
 .footer p {
   margin: 0;
