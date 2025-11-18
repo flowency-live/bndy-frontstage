@@ -33,16 +33,16 @@ export function EventRow({
       </td>
       <td className="px-2 sm:px-4 py-3 text-sm border-b border-gray-200 dark:border-gray-700">
         <div className="font-medium text-[var(--primary)]">{event.name}</div>
-        {/* Artist link if available */}
-        {hasArtist && (
+        {/* Artist name with link if available */}
+        {hasArtist && event.artistName && (
           <div className="text-xs text-[var(--foreground)]/70 flex items-center mt-1">
             <User className="w-3 h-3 mr-1" />
-            <Link 
+            <Link
               href={`/artists/${event.artistIds[0]}`}
               className="text-[var(--primary)] hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
-              View Artist
+              {event.artistName}
             </Link>
           </div>
         )}

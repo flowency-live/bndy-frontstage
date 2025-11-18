@@ -158,15 +158,15 @@ function EventCard({ event }: EventCardProps) {
               </div>
             )}
 
-            {/* Venue - Clickable link with proper spacing */}
+            {/* Venue - Clickable link with city/town */}
             <div className="flex items-center gap-2 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
               <span className="text-blue-500 text-base group-hover:scale-110 transition-transform duration-300">📍</span>
-              <Link 
+              <Link
                 href={`/venues/${event.venueId}`}
                 className="font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline-offset-2 hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                {event.venueName}
+                {event.venueCity ? `${event.venueName}, ${event.venueCity}` : event.venueName}
               </Link>
             </div>
 
