@@ -59,11 +59,8 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         markerZoomAnimation: false,  // Disable marker zoom animation for snappier feel
 
         preferCanvas: false,         // Use SVG for better quality at current scale
-        updateWhenIdle: false,       // Update tiles during pan (not after)
-        updateWhenZooming: true,     // Update tiles during zoom
-        updateInterval: 150,         // Tile update throttle in ms
 
-        // Drag-specific performance settings
+        // Interaction settings
         dragging: true,
         touchZoom: true,
         scrollWheelZoom: true,
