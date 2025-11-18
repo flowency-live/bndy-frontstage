@@ -14,7 +14,7 @@ interface DynamoDBEvent {
   title?: string;
   name?: string;
   date: string;
-  startTime: string;
+  startTime?: string;  // Optional - some community events don't have it
   endTime?: string;
   venueId: string;
   venueName?: string;
@@ -36,6 +36,7 @@ interface DynamoDBEvent {
   updatedAt: string;
   isOpenMic?: boolean;
   postcode?: string;
+  hasCustomTitle?: boolean;
 }
 
 /**
@@ -60,22 +61,6 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
 
       const response = await apiRequest('GET', url);
       const data = await response.json();
-
-      console.error('🔴🔴🔴 useAllPublicEvents CALLED - CHECK IF YOU SEE THIS 🔴🔴🔴');
-      console.error('FULL DATA OBJECT:', data);
-      console.error('data.events exists?', !!data.events);
-      console.error('data.events length:', data.events?.length);
-      console.log('=== RAW EVENT DATA FROM BACKEND ===');
-      console.log('Total events:', data.events?.length || 0);
-      if (data.events && data.events.length > 0) {
-        console.log('First event sample:', data.events[0]);
-        console.log('Fields check on first event:');
-        console.log('- artistName:', data.events[0].artistName);
-        console.log('- artist.name:', data.events[0].artist?.name);
-        console.log('- venueName:', data.events[0].venueName);
-        console.log('- venueCity:', data.events[0].venueCity);
-        console.log('- venue.city:', data.events[0].venue?.city);
-      }
 
       // Transform: DynamoDB format → Frontstage format
       const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {
@@ -104,20 +89,12 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
         createdAt: event.createdAt,
         updatedAt: event.updatedAt,
         isOpenMic: event.isOpenMic,
-        postcode: event.postcode
+        postcode: event.postcode,
+        hasCustomTitle: event.hasCustomTitle
       };
 
         return transformed;
       }) as Event[];
-
-      console.log('=== TRANSFORMED EVENT DATA ===');
-      if (transformedEvents.length > 0) {
-        console.log('First transformed event:', transformedEvents[0]);
-        console.log('Fields check on transformed:');
-        console.log('- artistName:', transformedEvents[0].artistName);
-        console.log('- venueName:', transformedEvents[0].venueName);
-        console.log('- venueCity:', transformedEvents[0].venueCity);
-      }
 
       return transformedEvents;
     },

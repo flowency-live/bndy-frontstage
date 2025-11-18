@@ -14,8 +14,6 @@ import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
-  console.log('=== LISTVIEW COMPONENT RENDERING ===');
-
   const {
     radius,
     setRadius,
@@ -43,14 +41,6 @@ export default function ListView() {
     endDate,
     enabled: true
   });
-
-  console.log('=== LISTVIEW AFTER useEventsForList ===');
-  console.log('Events received:', events.length);
-  console.log('Loading:', loading);
-  console.log('Error:', isError, error);
-  if (events.length > 0) {
-    console.log('First event in ListView:', events[0]);
-  }
 
   const refreshEvents = async () => {
     // TanStack Query handles refetching automatically
@@ -416,28 +406,28 @@ export default function ListView() {
                     ) : (
                       // List view for other sections
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                          <thead className="bg-gray-50 dark:bg-gray-700">
+                        <table className="min-w-full">
+                          <thead className="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
-                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Date &amp; Time
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
+                                Time
                               </th>
-                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
                                 Event
                               </th>
-                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden sm:table-cell">
                                 Venue
                               </th>
-                              <th className="px-2 sm:px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-12">
-                                <span className="sr-only">Price</span>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-24">
+                                Price
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-[var(--background)] divide-y divide-gray-200 dark:divide-gray-700">
+                          <tbody className="bg-[var(--background)]">
                             {events.map((event) => (
                               <tr
                                 key={event.id}
-                                className="cursor-pointer event-row hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
                                 onClick={() => handleEventClick(event)}
                               >
                                 <EventRow event={event} showFullDate={section !== 'today' && section !== 'tomorrow'} />

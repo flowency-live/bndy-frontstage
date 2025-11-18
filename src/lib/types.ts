@@ -124,6 +124,7 @@ export interface Event {
   postcode?: string; // For event location postcode
   verifiedByArtist?: boolean; // Whether artist has verified this community event
   notes?: string | null; // Additional notes for community events
+  hasCustomTitle?: boolean; // Whether event has a custom title (not default format)
 }
 
 // Filter Types

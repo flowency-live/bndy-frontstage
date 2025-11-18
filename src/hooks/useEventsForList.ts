@@ -49,16 +49,6 @@ export function useEventsForList({
     enabled
   });
 
-  console.log('=== useEventsForList DEBUG ===');
-  console.log('Total events from useAllPublicEvents:', allEvents.length);
-  if (allEvents.length > 0) {
-    console.log('First event from useEventsForList:', allEvents[0]);
-    console.log('- artistName:', allEvents[0].artistName);
-    console.log('- venueName:', allEvents[0].venueName);
-    console.log('- venueCity:', allEvents[0].venueCity);
-    console.log('- startTime:', allEvents[0].startTime);
-  }
-
   // Client-side radius filtering (instant from TanStack Query cache)
   const filteredEvents = useMemo(() => {
     if (!location || !allEvents.length) return allEvents;
