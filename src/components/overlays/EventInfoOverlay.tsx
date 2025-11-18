@@ -128,15 +128,10 @@ const overlayThemes: OverlayTheme[] = [
   },
 ];
 
-// Hash function to deterministically select theme based on event ID
-function getThemeForEvent(eventId: string): OverlayTheme {
-  let hash = 0;
-  for (let i = 0; i < eventId.length; i++) {
-    hash = ((hash << 5) - hash) + eventId.charCodeAt(i);
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  const index = Math.abs(hash) % overlayThemes.length;
-  return overlayThemes[index];
+// Get a random theme from the available themes
+function getRandomTheme(): OverlayTheme {
+  const randomIndex = Math.floor(Math.random() * overlayThemes.length);
+  return overlayThemes[randomIndex];
 }
 
 interface EventInfoOverlayProps {
@@ -156,6 +151,9 @@ export default function EventInfoOverlay({
   // Track which event in the list is being shown.
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentEvent = events[currentIndex];
+
+  // Select a random theme when overlay opens
+  const [theme] = useState<OverlayTheme>(() => getRandomTheme());
 
   const [venue, setVenue] = useState<VenueData | null>(null);
   // Flag to avoid repeated fetch attempts in overlay.
@@ -250,9 +248,6 @@ export default function EventInfoOverlay({
   };
 
   if (!currentEvent) return null;
-
-  // Get theme for current event
-  const theme = getThemeForEvent(currentEvent.id);
 
   // Apply neon glow effect for neon theme
   const getNeonStyle = (color: string) => {
