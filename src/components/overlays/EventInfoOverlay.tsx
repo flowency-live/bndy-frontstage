@@ -28,6 +28,117 @@ const architectsDaughter = Architects_Daughter({
   subsets: ["latin"],
 });
 
+// Theme configurations for 5 different overlay designs
+interface OverlayTheme {
+  name: string;
+  background: string;
+  borderClass: string;
+  borderStyle?: React.CSSProperties;
+  artistColorClass: string;
+  venueColorClass: string;
+  textColorClass: string;
+  freeColorClass: string;
+  todayBadgeClass: string;
+  separatorClass: string;
+  iconColorClass: string;
+  navButtonClass: string;
+  useFont: boolean;
+}
+
+const overlayThemes: OverlayTheme[] = [
+  // 1. Chalkboard
+  {
+    name: "chalkboard",
+    background: "linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%)",
+    borderClass: "border-4 border-amber-600",
+    artistColorClass: "text-orange-400 hover:text-orange-300",
+    venueColorClass: "text-cyan-400 hover:text-cyan-300",
+    textColorClass: "text-white",
+    freeColorClass: "text-green-400",
+    todayBadgeClass: "bg-yellow-400 text-slate-900",
+    separatorClass: "bg-white/20",
+    iconColorClass: "text-white/80",
+    navButtonClass: "bg-white/20 text-white hover:bg-white/30",
+    useFont: true,
+  },
+  // 2. Neon Sign
+  {
+    name: "neon",
+    background: "linear-gradient(135deg, #000000 0%, #0a0a0a 100%)",
+    borderClass: "border-4 border-orange-500",
+    borderStyle: { boxShadow: "0 0 20px rgba(249, 115, 22, 0.8), inset 0 0 20px rgba(249, 115, 22, 0.2)" },
+    artistColorClass: "text-orange-500 hover:text-orange-400",
+    venueColorClass: "text-cyan-400 hover:text-cyan-300",
+    textColorClass: "text-white",
+    freeColorClass: "text-purple-400",
+    todayBadgeClass: "bg-pink-500 text-white",
+    separatorClass: "bg-orange-500/30",
+    iconColorClass: "text-cyan-400",
+    navButtonClass: "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/50",
+    useFont: false,
+  },
+  // 3. Vintage Gig Poster
+  {
+    name: "poster",
+    background: "linear-gradient(135deg, #4a1a1a 0%, #6b2020 50%, #4a1a1a 100%)",
+    borderClass: "border-8 border-orange-600",
+    artistColorClass: "text-orange-400 hover:text-orange-300",
+    venueColorClass: "text-cyan-400 hover:text-cyan-300",
+    textColorClass: "text-white",
+    freeColorClass: "text-green-400",
+    todayBadgeClass: "bg-red-600 text-white",
+    separatorClass: "bg-orange-500/50",
+    iconColorClass: "text-orange-300",
+    navButtonClass: "bg-orange-600 text-white hover:bg-orange-700",
+    useFont: true,
+  },
+  // 4. Concert Ticket
+  {
+    name: "ticket",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)",
+    borderClass: "border-2 border-white/30",
+    borderStyle: {
+      borderStyle: "dashed",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.5)"
+    },
+    artistColorClass: "text-orange-400 hover:text-orange-300",
+    venueColorClass: "text-cyan-400 hover:text-cyan-300",
+    textColorClass: "text-white/90",
+    freeColorClass: "text-green-400",
+    todayBadgeClass: "bg-yellow-400 text-black",
+    separatorClass: "bg-white/20",
+    iconColorClass: "text-white/70",
+    navButtonClass: "bg-white/10 text-white hover:bg-white/20 border border-white/30",
+    useFont: false,
+  },
+  // 5. Minimal Swiss
+  {
+    name: "minimal",
+    background: "linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%)",
+    borderClass: "border border-white/40",
+    artistColorClass: "text-white hover:text-white/80",
+    venueColorClass: "text-cyan-400 hover:text-cyan-300 underline",
+    textColorClass: "text-white/80",
+    freeColorClass: "text-white",
+    todayBadgeClass: "bg-white text-black",
+    separatorClass: "bg-white/10",
+    iconColorClass: "text-white/50",
+    navButtonClass: "bg-transparent text-white hover:bg-white/5 border border-white/20",
+    useFont: false,
+  },
+];
+
+// Hash function to deterministically select theme based on event ID
+function getThemeForEvent(eventId: string): OverlayTheme {
+  let hash = 0;
+  for (let i = 0; i < eventId.length; i++) {
+    hash = ((hash << 5) - hash) + eventId.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const index = Math.abs(hash) % overlayThemes.length;
+  return overlayThemes[index];
+}
+
 interface EventInfoOverlayProps {
   events: Event[];
   isOpen: boolean;
@@ -140,6 +251,19 @@ export default function EventInfoOverlay({
 
   if (!currentEvent) return null;
 
+  // Get theme for current event
+  const theme = getThemeForEvent(currentEvent.id);
+
+  // Apply neon glow effect for neon theme
+  const getNeonStyle = (color: string) => {
+    if (theme.name === "neon") {
+      return {
+        textShadow: `0 0 10px ${color}, 0 0 20px ${color}, 0 0 30px ${color}`,
+      };
+    }
+    return {};
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -149,10 +273,11 @@ export default function EventInfoOverlay({
             initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.9, rotate: 2 }}
-            className={`relative w-[340px] rounded-lg shadow-2xl border-4 border-amber-600 ${architectsDaughter.className}`}
+            className={`relative w-[340px] rounded-lg shadow-2xl ${theme.borderClass} ${theme.useFont ? architectsDaughter.className : ''}`}
             style={{
-              background: "linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%)",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
+              background: theme.background,
+              boxShadow: theme.borderStyle?.boxShadow || "0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
+              ...(theme.borderStyle?.borderStyle && { borderStyle: theme.borderStyle.borderStyle }),
             }}
           >
 
@@ -217,15 +342,15 @@ export default function EventInfoOverlay({
                 <div className="flex-1">
                   {isOpenMic ? (
                     <div>
-                      <h2 className="text-white text-xl mb-1">
+                      <h2 className={`${theme.textColorClass} text-xl mb-1`}>
                         Open Mic
                       </h2>
                       {artist && currentEvent.artistIds?.[0] && (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className="text-orange-400 text-lg hover:text-orange-300 inline-block transform hover:scale-105 transition-transform"
+                          className={`${theme.artistColorClass} text-lg inline-block transform hover:scale-105 transition-transform`}
                           onClick={(e) => e.stopPropagation()}
-                          style={{ transform: "rotate(-1deg)" }}
+                          style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
                           with {artist.name}
                         </Link>
@@ -236,14 +361,14 @@ export default function EventInfoOverlay({
                       (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className="text-orange-400 text-2xl font-bold hover:text-orange-300 inline-block transform hover:scale-105 transition-transform"
+                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform`}
                           onClick={(e) => e.stopPropagation()}
-                          style={{ transform: "rotate(-1deg)" }}
+                          style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
                           {artist.name}
                         </Link>
                       ) : (
-                        <h2 className="text-orange-400 text-2xl font-bold" style={{ transform: "rotate(-1deg)" }}>
+                        <h2 className={`${theme.artistColorClass} text-2xl font-bold`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
                           {artist.name}
                         </h2>
                       )
@@ -252,17 +377,17 @@ export default function EventInfoOverlay({
                 </div>
               </div>
 
-              <div className="h-px bg-white/20 mb-4" style={{
-                backgroundImage: "repeating-linear-gradient(90deg, white 0, white 4px, transparent 4px, transparent 8px)"
+              <div className={`h-px ${theme.separatorClass} mb-4`} style={{
+                backgroundImage: theme.name === "chalkboard" ? "repeating-linear-gradient(90deg, white 0, white 4px, transparent 4px, transparent 8px)" : undefined
               }} />
 
               <div className="space-y-3 text-base">
                 {/* Date */}
                 <div className="flex items-center gap-3">
-                  <CalendarDays className="w-5 h-5 text-white/80" />
-                  <span className="text-white text-lg">{formattedDate}</span>
+                  <CalendarDays className={`w-5 h-5 ${theme.iconColorClass}`} />
+                  <span className={`${theme.textColorClass} text-lg`}>{formattedDate}</span>
                   {isToday && (
-                    <div className="ml-auto inline-block px-2 py-1 bg-yellow-400 text-slate-900 text-sm font-bold rounded transform -rotate-2">
+                    <div className={`ml-auto inline-block px-2 py-1 ${theme.todayBadgeClass} text-sm font-bold rounded transform -rotate-2`}>
                       Today!
                     </div>
                   )}
@@ -270,8 +395,8 @@ export default function EventInfoOverlay({
 
                 {/* Time */}
                 <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-white/80" />
-                  <span className="text-white text-lg">
+                  <Clock className={`w-5 h-5 ${theme.iconColorClass}`} />
+                  <span className={`${theme.textColorClass} text-lg`}>
                     {formattedTime}
                     {endTime && ` - ${endTime}`}
                   </span>
@@ -279,13 +404,13 @@ export default function EventInfoOverlay({
 
                 {/* Venue */}
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-cyan-400/80" />
+                  <MapPin className={`w-5 h-5 ${theme.iconColorClass}`} />
                   <div className="flex-1 flex items-center gap-2">
                     <Link
                       href={`/venues/${currentEvent.venueId}`}
-                      className="text-cyan-400 text-lg font-medium hover:text-cyan-300 inline-block transform hover:scale-105 transition-transform"
+                      className={`${theme.venueColorClass} text-lg font-medium inline-block transform hover:scale-105 transition-transform`}
                       onClick={(e) => e.stopPropagation()}
-                      style={{ transform: "rotate(0.5deg)" }}
+                      style={{ transform: "rotate(0.5deg)", ...getNeonStyle("rgba(34, 211, 238, 0.8)") }}
                     >
                       {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
                     </Link>
@@ -294,7 +419,7 @@ export default function EventInfoOverlay({
                         href={directionsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-cyan-400 hover:text-cyan-300"
+                        className={theme.venueColorClass}
                         aria-label="Open in Maps"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -306,17 +431,17 @@ export default function EventInfoOverlay({
 
                 {/* Location City */}
                 {venue?.city && (
-                  <div className="pl-8 text-white/60 text-sm">
+                  <div className={`pl-8 ${theme.textColorClass} opacity-60 text-sm`}>
                     {venue.city}
                   </div>
                 )}
 
                 {/* Ticket Information */}
                 <div className="flex items-center gap-3">
-                  <Ticket className="w-5 h-5 text-green-400/80" />
+                  <Ticket className={`w-5 h-5 ${theme.iconColorClass}`} />
                   {currentEvent.ticketed ? (
                     <div className="flex-1 flex items-center justify-between">
-                      <span className="text-white text-lg">
+                      <span className={`${theme.textColorClass} text-lg`}>
                         {currentEvent.ticketinformation || "Ticketed"}
                       </span>
                       {currentEvent.ticketUrl && (
@@ -324,7 +449,7 @@ export default function EventInfoOverlay({
                           href={currentEvent.ticketUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-green-400 text-sm hover:text-green-300 underline"
+                          className={`${theme.freeColorClass} text-sm hover:opacity-80 underline`}
                           onClick={(e) => e.stopPropagation()}
                         >
                           Buy Tickets
@@ -332,19 +457,19 @@ export default function EventInfoOverlay({
                       )}
                     </div>
                   ) : (
-                    <span className="text-green-400 text-lg font-bold transform -rotate-1 inline-block">Free</span>
+                    <span className={`${theme.freeColorClass} text-lg font-bold transform -rotate-1 inline-block`} style={getNeonStyle("rgba(168, 85, 247, 0.8)")}>Free</span>
                   )}
                 </div>
 
                 {/* Event URL */}
                 {currentEvent.eventUrl && (
                   <div className="flex items-center gap-3">
-                    <ExternalLink className="w-5 h-5 text-white/80" />
+                    <ExternalLink className={`w-5 h-5 ${theme.iconColorClass}`} />
                     <a
                       href={currentEvent.eventUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white text-sm hover:text-white/80 underline"
+                      className={`${theme.textColorClass} text-sm hover:opacity-80 underline`}
                       onClick={(e) => e.stopPropagation()}
                     >
                       Event Details
@@ -354,7 +479,7 @@ export default function EventInfoOverlay({
 
                 {/* Description */}
                 {currentEvent.description && (
-                  <p className="mt-3 text-white/90 text-sm leading-relaxed pt-3 border-t border-white/20">
+                  <p className={`mt-3 ${theme.textColorClass} opacity-90 text-sm leading-relaxed pt-3 border-t ${theme.separatorClass}`}>
                     {currentEvent.description}
                   </p>
                 )}
@@ -373,17 +498,17 @@ export default function EventInfoOverlay({
 
             {/* Navigation controls if there is more than one event */}
             {events.length > 1 && (
-              <div className="flex justify-between items-center p-4 border-t border-white/20">
+              <div className={`flex justify-between items-center p-4 border-t ${theme.separatorClass}`}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePrev();
                   }}
-                  className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded hover:bg-white/30 transform hover:scale-105 transition-all"
+                  className={`px-4 py-2 text-sm font-bold ${theme.navButtonClass} rounded transform hover:scale-105 transition-all`}
                 >
                   ← Prev
                 </button>
-                <span className="text-white/60 text-sm">
+                <span className={`${theme.textColorClass} opacity-60 text-sm`}>
                   {currentIndex + 1} of {events.length}
                 </span>
                 <button
@@ -391,7 +516,7 @@ export default function EventInfoOverlay({
                     e.stopPropagation();
                     handleNext();
                   }}
-                  className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded hover:bg-white/30 transform hover:scale-105 transition-all"
+                  className={`px-4 py-2 text-sm font-bold ${theme.navButtonClass} rounded transform hover:scale-105 transition-all`}
                 >
                   Next →
                 </button>
