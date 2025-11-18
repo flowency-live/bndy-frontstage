@@ -20,11 +20,11 @@ export function EventRow({
       {/* Column 1: Date & Time */}
       <td className="px-2 py-2.5 whitespace-nowrap text-xs border-b border-gray-200 dark:border-gray-700 md:hidden">
         {showFullDate && (
-          <div className="font-medium text-[var(--foreground)] mb-1">
+          <div className="text-[var(--foreground)] mb-1">
             {formatEventDate(new Date(event.date))}
           </div>
         )}
-        <div className="font-medium text-[var(--foreground)]">
+        <div className="text-[var(--foreground)]">
           {formatTime(event.startTime)}
         </div>
       </td>
@@ -74,7 +74,7 @@ export function EventRow({
       {/* Date Column */}
       <td className="px-2 py-2.5 whitespace-nowrap text-sm border-b border-gray-200 dark:border-gray-700 hidden md:table-cell">
         {showFullDate && (
-          <div className="font-medium text-[var(--foreground)]">
+          <div className="text-[var(--foreground)]">
             {formatEventDate(new Date(event.date))}
           </div>
         )}
@@ -82,7 +82,7 @@ export function EventRow({
 
       {/* Time Column */}
       <td className="px-2 py-2.5 whitespace-nowrap text-sm border-b border-gray-200 dark:border-gray-700 hidden md:table-cell">
-        <div className="font-medium text-[var(--foreground)]">
+        <div className="text-[var(--foreground)]">
           {formatTime(event.startTime)}
         </div>
       </td>
