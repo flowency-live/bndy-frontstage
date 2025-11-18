@@ -18,7 +18,6 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
       name: 'Test Artist',
       bio: 'A test artist',
       location: 'London',
-      profileImageUrl: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
