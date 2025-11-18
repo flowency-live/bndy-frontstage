@@ -362,11 +362,12 @@ export default function EventInfoOverlay({
                       {artist && currentEvent.artistIds?.[0] && (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className={`${theme.artistColorClass} text-lg inline-block transform hover:scale-105 transition-transform`}
+                          className={`${theme.artistColorClass} text-lg inline-flex items-center gap-1.5 transform hover:scale-105 transition-transform group`}
                           onClick={(e) => e.stopPropagation()}
                           style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
-                          with {artist.name}
+                          <span>with {artist.name}</span>
+                          <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" />
                         </Link>
                       )}
                     </div>
@@ -375,11 +376,12 @@ export default function EventInfoOverlay({
                       (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded w-full text-center uppercase tracking-wider font-black" : theme.name === "minimal" ? "text-center w-full text-3xl uppercase tracking-wide" : ""}`}
+                          className={`${theme.artistColorClass} text-2xl font-bold inline-flex items-center gap-2 transform hover:scale-105 transition-transform group ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded w-full justify-center uppercase tracking-wider font-black" : theme.name === "minimal" ? "w-full justify-center text-3xl uppercase tracking-wide" : ""}`}
                           onClick={(e) => e.stopPropagation()}
                           style={{ transform: theme.name === "minimal" ? "none" : "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
-                          {artist.name}
+                          <span>{artist.name}</span>
+                          <ExternalLink className={`opacity-60 group-hover:opacity-100 transition-opacity ${theme.name === "poster" || theme.name === "minimal" ? "w-6 h-6" : "w-5 h-5"}`} />
                         </Link>
                       ) : (
                         <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded uppercase tracking-wider font-black" : theme.name === "minimal" ? "text-center w-full text-3xl uppercase tracking-wide" : ""}`} style={{ transform: theme.name === "minimal" ? "none" : "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
