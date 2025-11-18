@@ -421,63 +421,73 @@ main {
    8. Neon Light Effects for List View
    ====================================================== */
 
-/* Neon Artist - Bright Orange */
+/* Neon Artist - Orange text on orange background */
 .neon-artist {
-  background-color: #F97316;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(249, 115, 22, 0.6),
-              0 0 20px rgba(249, 115, 22, 0.4),
-              inset 0 0 10px rgba(249, 115, 22, 0.3);
+  background-color: rgba(249, 115, 22, 0.2);
+  color: #F97316;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.4),
+              0 0 20px rgba(249, 115, 22, 0.2),
+              inset 0 0 10px rgba(249, 115, 22, 0.15);
   transition: all 0.3s ease;
 }
 
 .neon-artist:hover {
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.8),
-              0 0 30px rgba(249, 115, 22, 0.6),
-              inset 0 0 15px rgba(249, 115, 22, 0.4);
+  background-color: rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.6),
+              0 0 30px rgba(249, 115, 22, 0.4),
+              inset 0 0 15px rgba(249, 115, 22, 0.2);
   transform: translateY(-1px);
 }
 
-/* Neon Venue - Bright Cyan */
+/* Neon Venue - Cyan text on cyan background */
 .neon-venue {
-  background-color: #06B6D4;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.6),
-              0 0 20px rgba(6, 182, 212, 0.4),
-              inset 0 0 10px rgba(6, 182, 212, 0.3);
+  background-color: rgba(6, 182, 212, 0.2);
+  color: #06B6D4;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.4),
+              0 0 20px rgba(6, 182, 212, 0.2),
+              inset 0 0 10px rgba(6, 182, 212, 0.15);
   transition: all 0.3s ease;
 }
 
 .neon-venue:hover {
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.8),
-              0 0 30px rgba(6, 182, 212, 0.6),
-              inset 0 0 15px rgba(6, 182, 212, 0.4);
+  background-color: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.6),
+              0 0 30px rgba(6, 182, 212, 0.4),
+              inset 0 0 15px rgba(6, 182, 212, 0.2);
   transform: translateY(-1px);
 }
 
-/* Dark mode adjustments */
+/* Dark mode adjustments - brighter glow */
 .dark .neon-artist {
-  box-shadow: 0 0 12px rgba(249, 115, 22, 0.8),
-              0 0 25px rgba(249, 115, 22, 0.5),
-              inset 0 0 12px rgba(249, 115, 22, 0.4);
+  background-color: rgba(249, 115, 22, 0.25);
+  color: #fb923c;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.6),
+              0 0 25px rgba(249, 115, 22, 0.3),
+              inset 0 0 12px rgba(249, 115, 22, 0.2);
 }
 
 .dark .neon-artist:hover {
-  box-shadow: 0 0 20px rgba(249, 115, 22, 1),
-              0 0 40px rgba(249, 115, 22, 0.7),
-              inset 0 0 20px rgba(249, 115, 22, 0.5);
+  background-color: rgba(249, 115, 22, 0.35);
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.8),
+              0 0 40px rgba(249, 115, 22, 0.5),
+              inset 0 0 20px rgba(249, 115, 22, 0.3);
 }
 
 .dark .neon-venue {
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.8),
-              0 0 25px rgba(6, 182, 212, 0.5),
-              inset 0 0 12px rgba(6, 182, 212, 0.4);
+  background-color: rgba(6, 182, 212, 0.25);
+  color: #22d3ee;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6),
+              0 0 25px rgba(6, 182, 212, 0.3),
+              inset 0 0 12px rgba(6, 182, 212, 0.2);
 }
 
 .dark .neon-venue:hover {
-  box-shadow: 0 0 20px rgba(6, 182, 212, 1),
-              0 0 40px rgba(6, 182, 212, 0.7),
-              inset 0 0 20px rgba(6, 182, 212, 0.5);
+  background-color: rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.8),
+              0 0 40px rgba(6, 182, 212, 0.5),
+              inset 0 0 20px rgba(6, 182, 212, 0.3);
 }
 .dark .event-wizard-sheet {
   background-color: var(--background) !important;
