@@ -18,7 +18,11 @@ interface DynamoDBEvent {
   endTime?: string;
   venueId: string;
   venueName?: string;
+  venueCity?: string;
+  venue?: { city?: string };
   artistId?: string;
+  artistName?: string;
+  artist?: { name?: string };
   geoLat: number;
   geoLng: number;
   description?: string;
@@ -66,7 +70,9 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
         endTime: event.endTime,
         venueId: event.venueId,
         venueName: event.venueName || '',
+        venueCity: event.venue?.city || event.venueCity,
         artistIds: event.artistId ? [event.artistId] : [],
+        artistName: event.artist?.name || event.artistName,
         location: {
           lat: event.geoLat,
           lng: event.geoLng
