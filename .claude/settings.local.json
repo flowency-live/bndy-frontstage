@@ -130,7 +130,8 @@
       "Bash(Select-String -Pattern \"venue\" -Context 2,2)",
       "Bash(Select-Object -Last 20)",
       "Bash(wslpath:*)",
-      "Bash(Select-Object -First 50)"
+      "Bash(Select-Object -First 50)",
+      "Bash(/tmp/events-check.json)"
     ],
     "deny": [],
     "ask": []

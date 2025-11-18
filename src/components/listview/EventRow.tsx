@@ -21,14 +21,10 @@ export function EventRow({
         {showFullDate ? (
           <div>
             <div className="font-medium text-[var(--foreground)]">{formatEventDate(new Date(event.date))}</div>
-            <div className="text-xs text-[var(--foreground)]/60">
-              {event.startTime ? formatTime(event.startTime) : 'NO TIME'}
-            </div>
+            <div className="text-xs text-[var(--foreground)]/60">{formatTime(event.startTime)}</div>
           </div>
         ) : (
-          <div className="font-medium text-[var(--foreground)]">
-            {event.startTime ? formatTime(event.startTime) : `NO TIME [${JSON.stringify(event.startTime)}]`}
-          </div>
+          <div className="font-medium text-[var(--foreground)]">{formatTime(event.startTime)}</div>
         )}
       </td>
 

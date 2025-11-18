@@ -14,7 +14,7 @@ interface DynamoDBEvent {
   title?: string;
   name?: string;
   date: string;
-  startTime?: string;  // Optional - some community events don't have it
+  startTime?: string;  // Optional - some old events don't have it
   endTime?: string;
   venueId: string;
   venueName?: string;
@@ -62,17 +62,13 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       const response = await apiRequest('GET', url);
       const data = await response.json();
 
-      console.log('[DEBUG] Raw backend data:', data);
-      console.log('[DEBUG] First event raw:', data.events?.[0]);
-      console.log('[DEBUG] First event startTime:', data.events?.[0]?.startTime);
-
       // Transform: DynamoDB format → Frontstage format
       const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {
         const transformed = {
         id: event.id,
         name: event.title || event.name || 'Unnamed Event',
         date: event.date,
-        startTime: event.startTime,
+        startTime: event.startTime || '21:00',  // Default for old events missing startTime
         endTime: event.endTime,
         venueId: event.venueId,
         venueName: event.venueName || '',
@@ -99,9 +95,6 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
 
         return transformed;
       }) as Event[];
-
-      console.log('[DEBUG] First transformed event:', transformedEvents[0]);
-      console.log('[DEBUG] Transformed startTime:', transformedEvents[0]?.startTime);
 
       return transformedEvents;
     },
