@@ -284,3 +284,45 @@ export function hasSocialMedia(item: Venue | Artist): boolean {
     ('spotifyUrl' in item && item.spotifyUrl)
   );
 }
+
+// =========================================
+// EVENT WIZARD TYPES
+// =========================================
+
+export interface DateConflict {
+  type: 'exact_duplicate' | 'venue' | 'artist';
+  severity: 'blocking' | 'warning';
+  message: string;
+  conflictingEventId?: string;
+}
+
+export interface EventWizardFormData {
+  // Step 1: Venue
+  venue: Venue | null;
+  venueName: string;
+  venueLocation: { lat: number; lng: number } | null;
+
+  // Step 2: Artists
+  eventType: 'single' | 'openMic' | 'multiple';
+  artists: Artist[];
+  isOpenMic: boolean;
+
+  // Step 3: Date/Time
+  date: string;
+  startTime: string;
+  endTime?: string;
+  conflicts?: DateConflict[];
+
+  // Step 4: Details
+  name: string;
+  description?: string;
+  ticketed?: boolean;
+  ticketinformation?: string;
+  ticketUrl?: string;
+  eventUrl?: string;
+  recurring?: {
+    frequency: 'weekly' | 'monthly';
+    endDate: string;
+  };
+  isPublic: boolean;
+}
