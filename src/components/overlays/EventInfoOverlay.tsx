@@ -87,15 +87,18 @@ const overlayThemes: OverlayTheme[] = [
     name: "poster",
     background: "linear-gradient(135deg, #4a1a1a 0%, #6b2020 50%, #4a1a1a 100%)",
     borderClass: "border-8 border-orange-600",
-    artistColorClass: "text-orange-400 hover:text-orange-300",
-    venueColorClass: "text-cyan-400 hover:text-cyan-300",
+    artistColorClass: "bg-orange-500 text-white hover:bg-orange-600",
+    venueColorClass: "bg-[#d946ef] text-white hover:bg-[#c026d3]",
     textColorClass: "text-white",
-    freeColorClass: "text-green-400",
+    freeColorClass: "bg-green-600 text-white",
     todayBadgeClass: "bg-red-600 text-white",
-    separatorClass: "bg-orange-500/50",
+    separatorClass: "border-orange-500/50 border-dashed",
     iconColorClass: "text-orange-300",
     navButtonClass: "bg-orange-600 text-white hover:bg-orange-700",
     useFont: true,
+    // Poster-specific colors for date/time blocks
+    dateColorClass: "bg-red-700 text-white",
+    timeColorClass: "bg-cyan-700 text-white",
   },
   // 4. Concert Ticket
   {
@@ -361,14 +364,14 @@ export default function EventInfoOverlay({
                       (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform`}
+                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform ${theme.name === "poster" ? "px-4 py-2 rounded w-full text-center" : ""}`}
                           onClick={(e) => e.stopPropagation()}
                           style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
                           {artist.name}
                         </Link>
                       ) : (
-                        <h2 className={`${theme.artistColorClass} text-2xl font-bold`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
+                        <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-4 py-2 rounded" : ""}`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
                           {artist.name}
                         </h2>
                       )
@@ -383,76 +386,132 @@ export default function EventInfoOverlay({
 
               <div className="space-y-3 text-base">
                 {/* Date */}
-                <div className="flex items-center gap-3">
-                  <CalendarDays className={`w-5 h-5 ${theme.dateColorClass || theme.iconColorClass}`} />
-                  <span className={`${theme.dateColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 0, 128, 0.8)") : {}}>
-                    {formattedDate}
-                  </span>
-                  {isToday && (
-                    <div className={`ml-auto inline-block px-2 py-1 ${theme.todayBadgeClass} text-sm font-bold rounded transform -rotate-2`}>
-                      Today!
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                  {theme.name === "poster" ? (
+                    <div className={`${theme.dateColorClass} px-4 py-3 rounded font-bold text-center text-xl uppercase tracking-wide`}>
+                      {formattedDate}
+                      {isToday && " - TODAY!"}
                     </div>
+                  ) : (
+                    <>
+                      <CalendarDays className={`w-5 h-5 ${theme.dateColorClass || theme.iconColorClass}`} />
+                      <span className={`${theme.dateColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 0, 128, 0.8)") : {}}>
+                        {formattedDate}
+                      </span>
+                      {isToday && (
+                        <div className={`ml-auto inline-block px-2 py-1 ${theme.todayBadgeClass} text-sm font-bold rounded transform -rotate-2`}>
+                          Today!
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
                 {/* Time */}
-                <div className="flex items-center gap-3">
-                  <Clock className={`w-5 h-5 ${theme.timeColorClass || theme.iconColorClass}`} />
-                  <span className={`${theme.timeColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 255, 0, 0.8)") : {}}>
-                    {formattedTime}
-                    {endTime && ` - ${endTime}`}
-                  </span>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                  {theme.name === "poster" ? (
+                    <div className={`${theme.timeColorClass} px-4 py-3 rounded font-bold text-center text-lg uppercase tracking-wide`}>
+                      {formattedTime}{endTime && ` - ${endTime}`}
+                    </div>
+                  ) : (
+                    <>
+                      <Clock className={`w-5 h-5 ${theme.timeColorClass || theme.iconColorClass}`} />
+                      <span className={`${theme.timeColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 255, 0, 0.8)") : {}}>
+                        {formattedTime}
+                        {endTime && ` - ${endTime}`}
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 {/* Venue */}
-                <div className="flex items-center gap-3">
-                  <MapPin className={`w-5 h-5 ${theme.venueColorClass}`} />
-                  <div className="flex-1 flex items-center gap-2">
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                  {theme.name === "poster" ? (
                     <Link
                       href={`/venues/${currentEvent.venueId}`}
-                      className={`${theme.venueColorClass} text-lg font-medium inline-block transform hover:scale-105 transition-transform`}
+                      className={`${theme.venueColorClass} px-4 py-3 rounded font-bold text-center text-lg uppercase tracking-wide block hover:scale-105 transition-transform`}
                       onClick={(e) => e.stopPropagation()}
-                      style={{ transform: "rotate(0.5deg)", ...getNeonStyle("rgba(34, 211, 238, 0.8)") }}
                     >
                       {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
                     </Link>
-                    {directionsUrl && (
-                      <a
-                        href={directionsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={theme.venueColorClass}
-                        aria-label="Open in Maps"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Map className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
+                  ) : (
+                    <>
+                      <MapPin className={`w-5 h-5 ${theme.venueColorClass}`} />
+                      <div className="flex-1 flex items-center gap-2">
+                        <Link
+                          href={`/venues/${currentEvent.venueId}`}
+                          className={`${theme.venueColorClass} text-lg font-medium inline-block transform hover:scale-105 transition-transform`}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ transform: "rotate(0.5deg)", ...getNeonStyle("rgba(34, 211, 238, 0.8)") }}
+                        >
+                          {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
+                        </Link>
+                        {directionsUrl && (
+                          <a
+                            href={directionsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={theme.venueColorClass}
+                            aria-label="Open in Maps"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Map className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Ticket Information */}
-                <div className="flex items-center gap-3">
-                  <Ticket className={`w-5 h-5 ${theme.freeColorClass}`} />
-                  {currentEvent.ticketed ? (
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className={`${theme.textColorClass} text-lg`}>
-                        {currentEvent.ticketinformation || "Ticketed"}
-                      </span>
-                      {currentEvent.ticketUrl && (
-                        <a
-                          href={currentEvent.ticketUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`${theme.freeColorClass} text-sm hover:opacity-80 underline`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Buy Tickets
-                        </a>
-                      )}
-                    </div>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                  {theme.name === "poster" ? (
+                    currentEvent.ticketed ? (
+                      <div className="space-y-2">
+                        <div className="bg-white/10 px-4 py-2 rounded text-white text-center font-bold">
+                          {currentEvent.ticketinformation || "Ticketed"}
+                        </div>
+                        {currentEvent.ticketUrl && (
+                          <a
+                            href={currentEvent.ticketUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-center text-sm hover:opacity-80 underline text-white"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Buy Tickets
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={`${theme.freeColorClass} px-4 py-3 rounded font-bold text-center text-xl uppercase tracking-wide`}>
+                        Free
+                      </div>
+                    )
                   ) : (
-                    <span className={`${theme.freeColorClass} text-lg font-bold transform -rotate-1 inline-block`} style={theme.name === "neon" ? getNeonStyle("rgba(190, 242, 100, 0.8)") : {}}>Free</span>
+                    <>
+                      <Ticket className={`w-5 h-5 ${theme.freeColorClass}`} />
+                      {currentEvent.ticketed ? (
+                        <div className="flex-1 flex items-center justify-between">
+                          <span className={`${theme.textColorClass} text-lg`}>
+                            {currentEvent.ticketinformation || "Ticketed"}
+                          </span>
+                          {currentEvent.ticketUrl && (
+                            <a
+                              href={currentEvent.ticketUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`${theme.freeColorClass} text-sm hover:opacity-80 underline`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Buy Tickets
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <span className={`${theme.freeColorClass} text-lg font-bold transform -rotate-1 inline-block`} style={theme.name === "neon" ? getNeonStyle("rgba(190, 242, 100, 0.8)") : {}}>Free</span>
+                      )}
+                    </>
                   )}
                 </div>
 
