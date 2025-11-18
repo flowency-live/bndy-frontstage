@@ -112,12 +112,14 @@ const overlayThemes: OverlayTheme[] = [
     artistColorClass: "text-orange-400 hover:text-orange-300",
     venueColorClass: "text-cyan-400 hover:text-cyan-300",
     textColorClass: "text-white/90",
-    freeColorClass: "text-green-400",
+    freeColorClass: "text-lime-400",
     todayBadgeClass: "bg-yellow-400 text-black",
-    separatorClass: "bg-white/20",
-    iconColorClass: "text-white/70",
+    separatorClass: "border-white/20 border-dashed",
+    iconColorClass: "text-cyan-400",
     navButtonClass: "bg-white/10 text-white hover:bg-white/20 border border-white/30",
     useFont: false,
+    dateColorClass: "text-white",
+    timeColorClass: "text-white",
   },
   // 5. Minimal Swiss
   {
@@ -285,6 +287,13 @@ export default function EventInfoOverlay({
           >
 
             <div className="p-5">
+              {/* Ticket header - "ADMIT ONE" */}
+              {theme.name === "ticket" && (
+                <div className="text-center mb-4 pb-4 border-b border-dashed border-white/20">
+                  <div className="text-[10px] text-white/50 uppercase tracking-[0.3em] mb-1">ADMIT ONE</div>
+                  <div className="text-xs text-white/30 uppercase tracking-widest">LIVE PERFORMANCE</div>
+                </div>
+              )}
 
               {/* Artist Profile Picture and Name */}
               <div className="flex items-center gap-4 mb-4">
@@ -364,14 +373,14 @@ export default function EventInfoOverlay({
                       (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform ${theme.name === "poster" ? "px-4 py-2 rounded w-full text-center" : ""}`}
+                          className={`${theme.artistColorClass} text-2xl font-bold inline-block transform hover:scale-105 transition-transform ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed border-orange-400 rounded w-full text-center uppercase tracking-wider" : ""}`}
                           onClick={(e) => e.stopPropagation()}
                           style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
                           {artist.name}
                         </Link>
                       ) : (
-                        <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-4 py-2 rounded" : ""}`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
+                        <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed border-orange-400 rounded uppercase tracking-wider" : ""}`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
                           {artist.name}
                         </h2>
                       )
@@ -386,12 +395,22 @@ export default function EventInfoOverlay({
 
               <div className="space-y-3 text-base">
                 {/* Date */}
-                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <div className={`${theme.dateColorClass} px-4 py-3 rounded font-bold text-center text-xl uppercase tracking-wide`}>
                       {formattedDate}
                       {isToday && " - TODAY!"}
                     </div>
+                  ) : theme.name === "ticket" ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className={`w-4 h-4 ${theme.iconColorClass}`} />
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Date:</span>
+                      </div>
+                      <span className={`${theme.dateColorClass || theme.textColorClass} text-sm font-medium`}>
+                        {formattedDate}
+                      </span>
+                    </>
                   ) : (
                     <>
                       <CalendarDays className={`w-5 h-5 ${theme.dateColorClass || theme.iconColorClass}`} />
@@ -408,11 +427,21 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Time */}
-                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <div className={`${theme.timeColorClass} px-4 py-3 rounded font-bold text-center text-lg uppercase tracking-wide`}>
                       {formattedTime}{endTime && ` - ${endTime}`}
                     </div>
+                  ) : theme.name === "ticket" ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Clock className={`w-4 h-4 ${theme.iconColorClass}`} />
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Time:</span>
+                      </div>
+                      <span className={`${theme.timeColorClass || theme.textColorClass} text-sm font-medium`}>
+                        {formattedTime}{endTime && ` - ${endTime}`}
+                      </span>
+                    </>
                   ) : (
                     <>
                       <Clock className={`w-5 h-5 ${theme.timeColorClass || theme.iconColorClass}`} />
@@ -425,15 +454,45 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Venue */}
-                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex flex-col gap-1" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <Link
                       href={`/venues/${currentEvent.venueId}`}
-                      className={`${theme.venueColorClass} px-4 py-3 rounded font-bold text-center text-lg uppercase tracking-wide block hover:scale-105 transition-transform`}
+                      className={`${theme.venueColorClass} px-4 py-3 rounded font-bold text-center block hover:scale-105 transition-transform`}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
+                      <div className="text-2xl uppercase tracking-wider">
+                        {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
+                      </div>
+                      {venue?.address && (
+                        <div className="text-sm opacity-80 mt-1 normal-case tracking-normal">
+                          {venue.address}
+                        </div>
+                      )}
                     </Link>
+                  ) : theme.name === "ticket" ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <MapPin className={`w-4 h-4 ${theme.iconColorClass}`} />
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Venue:</span>
+                      </div>
+                      <Link
+                        href={`/venues/${currentEvent.venueId}`}
+                        className={`${theme.venueColorClass} text-sm font-medium hover:underline ml-6`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
+                      </Link>
+                      {venue?.address && (
+                        <div className="flex items-center justify-between ml-6 mt-0.5">
+                          <div className="flex items-center gap-2">
+                            <MapPin className={`w-3 h-3 ${theme.iconColorClass} opacity-50`} />
+                            <span className="text-[10px] text-white/50 uppercase tracking-wider">Location:</span>
+                          </div>
+                          <span className="text-xs text-white/70">{venue.address}</span>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <>
                       <MapPin className={`w-5 h-5 ${theme.venueColorClass}`} />
@@ -464,7 +523,7 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Ticket Information */}
-                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between pt-2 border-t border-dashed border-white/20" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     currentEvent.ticketed ? (
                       <div className="space-y-2">
@@ -488,6 +547,16 @@ export default function EventInfoOverlay({
                         Free
                       </div>
                     )
+                  ) : theme.name === "ticket" ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Ticket className={`w-4 h-4 ${theme.iconColorClass}`} />
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Price:</span>
+                      </div>
+                      <span className={`${theme.freeColorClass} text-sm font-bold uppercase tracking-wide`}>
+                        {currentEvent.ticketed ? (currentEvent.ticketinformation || "Ticketed") : "Free"}
+                      </span>
+                    </>
                   ) : (
                     <>
                       <Ticket className={`w-5 h-5 ${theme.freeColorClass}`} />
@@ -538,6 +607,15 @@ export default function EventInfoOverlay({
                   </p>
                 )}
               </div>
+
+              {/* Ticket number for ticket theme */}
+              {theme.name === "ticket" && (
+                <div className="mt-4 pt-3 border-t border-dashed border-white/20 text-center">
+                  <div className="text-[9px] text-white/30 uppercase tracking-widest">
+                    No. {currentEvent.id.substring(0, 4).toUpperCase()}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Share button using reusable component */}
@@ -549,40 +627,6 @@ export default function EventInfoOverlay({
                 className="hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
               />
             </div>
-
-            {/* Kilroy character for chalkboard theme */}
-            {theme.name === "chalkboard" && (
-              <div className="absolute bottom-2 right-2 opacity-40">
-                <svg width="60" height="50" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Wall */}
-                  <line x1="0" y1="28" x2="60" y2="28" stroke="white" strokeWidth="2" />
-                  <line x1="0" y1="32" x2="60" y2="32" stroke="white" strokeWidth="2" />
-
-                  {/* Fingers on left */}
-                  <line x1="8" y1="28" x2="8" y2="18" stroke="white" strokeWidth="1.5" />
-                  <line x1="12" y1="28" x2="12" y2="16" stroke="white" strokeWidth="1.5" />
-                  <line x1="16" y1="28" x2="16" y2="18" stroke="white" strokeWidth="1.5" />
-
-                  {/* Fingers on right */}
-                  <line x1="44" y1="28" x2="44" y2="18" stroke="white" strokeWidth="1.5" />
-                  <line x1="48" y1="28" x2="48" y2="16" stroke="white" strokeWidth="1.5" />
-                  <line x1="52" y1="28" x2="52" y2="18" stroke="white" strokeWidth="1.5" />
-
-                  {/* Head */}
-                  <circle cx="30" cy="10" r="8" stroke="white" strokeWidth="2" fill="none" />
-
-                  {/* Eyes */}
-                  <circle cx="27" cy="9" r="1.5" fill="white" />
-                  <circle cx="33" cy="9" r="1.5" fill="white" />
-
-                  {/* Nose */}
-                  <ellipse cx="30" cy="14" rx="2" ry="3" stroke="white" strokeWidth="1.5" fill="none" />
-
-                  {/* Curl on top of head */}
-                  <path d="M 30 2 Q 32 0 34 2" stroke="white" strokeWidth="1.5" fill="none" />
-                </svg>
-              </div>
-            )}
 
             {/* Navigation controls if there is more than one event */}
             {events.length > 1 && (

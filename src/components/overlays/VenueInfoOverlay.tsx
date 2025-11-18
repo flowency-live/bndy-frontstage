@@ -12,6 +12,7 @@ import {
   Facebook,
   Instagram,
   Navigation,
+  ExternalLink,
 } from "lucide-react";
 import SocialShareButton from "@/components/shared/SocialShareButton";
 import Link from "next/link";
@@ -91,8 +92,9 @@ export default function VenueInfoOverlay({
                 className="block text-center mb-6 group"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h2 className="text-[#0891b2] text-2xl font-bold hover:text-[#0e7490] transition-colors">
+                <h2 className="text-[#0891b2] text-2xl font-bold hover:text-[#0e7490] transition-colors flex items-center justify-center gap-2">
                   {venue.name}
+                  <ExternalLink className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </h2>
               </Link>
 
@@ -151,7 +153,7 @@ export default function VenueInfoOverlay({
               </div>
 
               {/* Additional contact info - collapsed by default */}
-              {(venue.phone || venue.email || getSocialLink("website")) && (
+              {(venue.phone || venue.email || getSocialLink("website") || getSocialLink("facebook")) && (
                 <div className="mt-4 pt-4 border-t border-[#d4c5a0]/50 space-y-2">
                   {venue.phone && (
                     <div className="flex items-center justify-center gap-2 text-xs">
@@ -188,6 +190,20 @@ export default function VenueInfoOverlay({
                         onClick={(e) => e.stopPropagation()}
                       >
                         Website
+                      </a>
+                    </div>
+                  )}
+                  {getSocialLink("facebook") && (
+                    <div className="flex items-center justify-center gap-2 text-xs">
+                      <Facebook className="w-3 h-3 text-[#8b7355]" />
+                      <a
+                        href={getSocialLink("facebook")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#0891b2] hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Facebook
                       </a>
                     </div>
                   )}
