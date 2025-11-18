@@ -424,13 +424,6 @@ export default function EventInfoOverlay({
                   </div>
                 </div>
 
-                {/* Location City */}
-                {venue?.city && (
-                  <div className={`pl-8 ${theme.textColorClass} opacity-60 text-sm`}>
-                    {venue.city}
-                  </div>
-                )}
-
                 {/* Ticket Information */}
                 <div className="flex items-center gap-3">
                   <Ticket className={`w-5 h-5 ${theme.iconColorClass}`} />
