@@ -21,6 +21,12 @@ import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
 import SocialShareButton from "@/components/shared/SocialShareButton";
+import { Architects_Daughter } from "next/font/google";
+
+const architectsDaughter = Architects_Daughter({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 interface EventInfoOverlayProps {
   events: Event[];
@@ -140,39 +146,37 @@ export default function EventInfoOverlay({
         <div className={overlayStyles} onClick={onClose}>
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="relative w-[320px] bg-[var(--background)] rounded-lg shadow-lg border border-[var(--border)]"
-            style={{ boxShadow: "0 4px 10px rgba(0,0,0,0.15)" }}
+            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.9, rotate: 2 }}
+            className={`relative w-[340px] rounded-lg shadow-2xl border-4 border-amber-600 ${architectsDaughter.className}`}
+            style={{
+              background: "linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
+            }}
           >
-            <div className="absolute top-0 left-0 h-full w-1 bg-[var(--primary)] rounded-tl-lg rounded-bl-lg" />
 
-            <div className="p-4 pl-6">
-              
-              {isOpenMic ? (
-                // Open Mic Header
-                <div className="group flex items-center gap-3 mb-3">
-                  <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                    {artist && displayProfileImageUrl ? (
-                      // Show host artist image if available
+            <div className="p-5">
+
+              {/* Artist Profile Picture and Name */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30 shadow-lg">
+                  {isOpenMic ? (
+                    artist && displayProfileImageUrl ? (
                       <div className="relative w-full h-full">
                         <Image
                           src={displayProfileImageUrl}
                           alt=""
                           className="object-cover"
                           fill
-                          onError={() => {
-                            setHasFetched(true);
-                          }}
+                          onError={() => setHasFetched(true)}
                         />
-                        <div className="absolute bottom-0 right-0 bg-[var(--primary)] rounded-full p-1">
+                        <div className="absolute bottom-0 right-0 bg-orange-500 rounded-full p-1">
                           <Mic className="w-3 h-3 text-white" />
                         </div>
                       </div>
                     ) : (
-                      // Use generic Open Mic image
-                      <div className="relative w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
+                      <div className="relative w-full h-full flex items-center justify-center bg-slate-600">
                         <Image
                           src="/openmic.png"
                           alt="Open Mic"
@@ -181,159 +185,138 @@ export default function EventInfoOverlay({
                           className="object-contain p-1"
                         />
                       </div>
-                    )}
-                    {!displayProfileImageUrl && artist && !hasFetched && (
-                      <ProfilePictureFetcher
-                        facebookUrl={fbURL}
-                        instagramUrl={igURL}
-                        onPictureFetched={(url) => {
-                          setFetchedProfilePicture(url);
-                          setHasFetched(true);
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                      Open Mic{artist ? ` with ${artist.name}` : ""}
-                    </h2>
-                    {artist && (
-                      <Link
-                        href={`/artists/${artist.id}`}
-                        className="text-xs text-[var(--primary)] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        View host artist
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                // Regular Artist Header - show if we have artist data (including legacy/mock artists)
-                artist && (
-                  // Only make it a link if we have a real artistId, otherwise just show as text
-                  (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
-                    <Link
-                      href={`/artists/${currentEvent.artistIds[0]}`}
-                      className="group flex items-center gap-3 mb-3 transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(249,115,22,0.8)]"
-                    >
-                    <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                      {displayProfileImageUrl ? (
-                        <Image
-                          src={displayProfileImageUrl}
-                          alt=""
-                          className="object-cover w-full h-full"
-                          width={50}
-                          height={50}
-                          onError={() => {
-                            setHasFetched(true);
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
-                          <Music className="w-5 h-5 text-[var(--primary)]" />
-                        </div>
-                      )}
-                      {!displayProfileImageUrl && !hasFetched && (
-                        <ProfilePictureFetcher
-                          facebookUrl={fbURL}
-                          instagramUrl={igURL}
-                          onPictureFetched={(url) => {
-                            setFetchedProfilePicture(url);
-                            setHasFetched(true);
-                          }}
-                        />
-                      )}
-                    </div>
-                      <div className="flex flex-col">
-                        {artist.name && (
-                          <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                            {artist.name}
-                          </h2>
-                        )}
-                        <span className="text-xs text-[var(--primary)]">(view artist)</span>
-                      </div>
-                    </Link>
+                    )
                   ) : (
-                    // Non-clickable artist display for legacy events without artistIds
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-[3.125rem] h-[3.125rem] rounded-full overflow-hidden flex-shrink-0">
-                        {displayProfileImageUrl ? (
-                          <Image
-                            src={displayProfileImageUrl}
-                            alt=""
-                            className="object-cover w-full h-full"
-                            width={50}
-                            height={50}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-[var(--primary-translucent)]">
-                            <Music className="w-5 h-5 text-[var(--primary)]" />
-                          </div>
-                        )}
+                    displayProfileImageUrl ? (
+                      <Image
+                        src={displayProfileImageUrl}
+                        alt=""
+                        className="object-cover w-full h-full"
+                        width={64}
+                        height={64}
+                        onError={() => setHasFetched(true)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-600">
+                        <Music className="w-6 h-6 text-orange-400" />
                       </div>
-                      <div className="flex flex-col">
-                        {artist.name && (
-                          <h2 className="text-[var(--foreground)] font-semibold text-sm leading-tight">
-                            {artist.name}
-                          </h2>
-                        )}
-                        <span className="text-xs text-[var(--foreground)]/60">(artist)</span>
-                      </div>
+                    )
+                  )}
+                  {!displayProfileImageUrl && artist && !hasFetched && (
+                    <ProfilePictureFetcher
+                      facebookUrl={fbURL}
+                      instagramUrl={igURL}
+                      onPictureFetched={(url) => {
+                        setFetchedProfilePicture(url);
+                        setHasFetched(true);
+                      }}
+                    />
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  {isOpenMic ? (
+                    <div>
+                      <h2 className="text-white text-xl mb-1">
+                        Open Mic
+                      </h2>
+                      {artist && currentEvent.artistIds?.[0] && (
+                        <Link
+                          href={`/artists/${currentEvent.artistIds[0]}`}
+                          className="text-orange-400 text-lg hover:text-orange-300 inline-block transform hover:scale-105 transition-transform"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ transform: "rotate(-1deg)" }}
+                        >
+                          with {artist.name}
+                        </Link>
+                      )}
                     </div>
-                  )
-                )
-              )}
+                  ) : (
+                    artist && (
+                      (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
+                        <Link
+                          href={`/artists/${currentEvent.artistIds[0]}`}
+                          className="text-orange-400 text-2xl font-bold hover:text-orange-300 inline-block transform hover:scale-105 transition-transform"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ transform: "rotate(-1deg)" }}
+                        >
+                          {artist.name}
+                        </Link>
+                      ) : (
+                        <h2 className="text-orange-400 text-2xl font-bold" style={{ transform: "rotate(-1deg)" }}>
+                          {artist.name}
+                        </h2>
+                      )
+                    )
+                  )}
+                </div>
+              </div>
 
-              <div className="h-px bg-[var(--border)] mb-3" />
+              <div className="h-px bg-white/20 mb-4" style={{
+                backgroundImage: "repeating-linear-gradient(90deg, white 0, white 4px, transparent 4px, transparent 8px)"
+              }} />
 
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-[var(--foreground)]/70" />
-                  <span className="text-[var(--foreground)]">{formattedDate}</span>
+              <div className="space-y-3 text-base">
+                {/* Date */}
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="w-5 h-5 text-white/80" />
+                  <span className="text-white text-lg">{formattedDate}</span>
                   {isToday && (
-                    <div className="ml-auto inline-block px-2 py-1 bg-yellow-300 text-yellow-800 text-xs font-bold rounded-full animate-pulse">
-                      Today
+                    <div className="ml-auto inline-block px-2 py-1 bg-yellow-400 text-slate-900 text-sm font-bold rounded transform -rotate-2">
+                      Today!
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[var(--foreground)]/70" />
-                  <span className="text-[var(--foreground)]">
+                {/* Time */}
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-white/80" />
+                  <span className="text-white text-lg">
                     {formattedTime}
                     {endTime && ` - ${endTime}`}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[var(--secondary)]/70" />
-                  <Link
-                    href={`/venues/${currentEvent.venueId}`}
-                    className="group text-[var(--secondary)] font-medium transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-                  >
-                    {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
-                  </Link>
-                  {directionsUrl && (
-                    <a
-                      href={directionsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-2 text-[var(--secondary)] hover:opacity-80"
-                      aria-label="Open in Maps"
+                {/* Venue */}
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-cyan-400/80" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <Link
+                      href={`/venues/${currentEvent.venueId}`}
+                      className="text-cyan-400 text-lg font-medium hover:text-cyan-300 inline-block transform hover:scale-105 transition-transform"
                       onClick={(e) => e.stopPropagation()}
+                      style={{ transform: "rotate(0.5deg)" }}
                     >
-                      <Map className="w-4 h-4" />
-                    </a>
-                  )}
+                      {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
+                    </Link>
+                    {directionsUrl && (
+                      <a
+                        href={directionsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-400 hover:text-cyan-300"
+                        aria-label="Open in Maps"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Map className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
                 </div>
 
-                {/* Ticket Information - Only show if event is ticketed */}
-                <div className="flex items-center gap-2">
-                  <Ticket className="w-4 h-4 text-yellow-500" />
+                {/* Location City */}
+                {venue?.city && (
+                  <div className="pl-8 text-white/60 text-sm">
+                    {venue.city}
+                  </div>
+                )}
+
+                {/* Ticket Information */}
+                <div className="flex items-center gap-3">
+                  <Ticket className="w-5 h-5 text-green-400/80" />
                   {currentEvent.ticketed ? (
-                    <>
-                      <span className="text-[var(--foreground)]">
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-white text-lg">
                         {currentEvent.ticketinformation || "Ticketed"}
                       </span>
                       {currentEvent.ticketUrl && (
@@ -341,33 +324,37 @@ export default function EventInfoOverlay({
                           href={currentEvent.ticketUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ml-auto text-[var(--primary)] text-xs hover:underline"
+                          className="text-green-400 text-sm hover:text-green-300 underline"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           Buy Tickets
                         </a>
                       )}
-                    </>
+                    </div>
                   ) : (
-                    <span className="text-[var(--foreground)]">£ree entry</span>
+                    <span className="text-green-400 text-lg font-bold transform -rotate-1 inline-block">Free</span>
                   )}
                 </div>
 
+                {/* Event URL */}
                 {currentEvent.eventUrl && (
-                  <div className="flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4 text-[var(--foreground)]/70" />
+                  <div className="flex items-center gap-3">
+                    <ExternalLink className="w-5 h-5 text-white/80" />
                     <a
                       href={currentEvent.eventUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[var(--primary)] text-xs hover:underline"
+                      className="text-white text-sm hover:text-white/80 underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Event Details
                     </a>
                   </div>
                 )}
 
+                {/* Description */}
                 {currentEvent.description && (
-                  <p className="mt-2 text-[var(--foreground)]/80 text-sm leading-snug">
+                  <p className="mt-3 text-white/90 text-sm leading-relaxed pt-3 border-t border-white/20">
                     {currentEvent.description}
                   </p>
                 )}
@@ -386,24 +373,27 @@ export default function EventInfoOverlay({
 
             {/* Navigation controls if there is more than one event */}
             {events.length > 1 && (
-              <div className="flex justify-between p-4 border-t border-[var(--border)]">
+              <div className="flex justify-between items-center p-4 border-t border-white/20">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePrev();
                   }}
-                  className="px-3 py-1 text-sm font-medium bg-[var(--primary)] text-white rounded"
+                  className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded hover:bg-white/30 transform hover:scale-105 transition-all"
                 >
-                  Previous
+                  ← Prev
                 </button>
+                <span className="text-white/60 text-sm">
+                  {currentIndex + 1} of {events.length}
+                </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleNext();
                   }}
-                  className="px-3 py-1 text-sm font-medium bg-[var(--primary)] text-white rounded"
+                  className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded hover:bg-white/30 transform hover:scale-105 transition-all"
                 >
-                  Next
+                  Next →
                 </button>
               </div>
             )}
