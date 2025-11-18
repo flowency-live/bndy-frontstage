@@ -180,7 +180,9 @@ export default function EventInfoOverlay({
   const eventDate = currentEvent ? new Date(currentEvent.date) : new Date();
   const formattedDate = formatEventDate(eventDate);
   const formattedTime = currentEvent?.startTime ? formatTime(currentEvent.startTime) : "Time TBA";
-  const endTime = currentEvent?.endTime ? formatTime(currentEvent.endTime) : undefined;
+  const endTime = currentEvent?.endTime ?
+    (formatTime(currentEvent.endTime) === "12:00am" ? "LATE!" : formatTime(currentEvent.endTime)) :
+    undefined;
 
   // Check if event is today.
   const today = new Date();
