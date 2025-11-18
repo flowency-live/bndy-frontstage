@@ -16,7 +16,7 @@ export default function LocationSelector() {
   const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,10 +69,14 @@ export default function LocationSelector() {
   const handleSelectPrediction = async (prediction: google.maps.places.AutocompletePrediction) => {
     try {
       // Get place details to retrieve lat/lng
-      const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+      const mapDiv = document.createElement('div');
+      const placesService = new google.maps.places.PlacesService(mapDiv);
 
       placesService.getDetails(
-        { placeId: prediction.place_id },
+        {
+          placeId: prediction.place_id,
+          fields: ['geometry', 'name']
+        },
         (place, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
             const location: LocationWithName = {
@@ -108,7 +112,14 @@ export default function LocationSelector() {
 
   const handleClearLocation = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedLocation(null);
+    // Reset to user location if available, otherwise don't show clear button
+    if (userLocation) {
+      const location: LocationWithName = {
+        ...userLocation,
+        name: (userLocation as LocationWithName).name || "Current Location"
+      };
+      setSelectedLocation(location);
+    }
   };
 
   return (
