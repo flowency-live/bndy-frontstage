@@ -31,7 +31,7 @@ export function EventRow({
 
       {/* Column 2: Artist & Venue */}
       <td className="px-2 py-2.5 border-b border-gray-200 dark:border-gray-700 md:hidden">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           {hasArtist && event.artistName && (
             <Link
               href={`/artists/${event.artistIds[0]}`}
