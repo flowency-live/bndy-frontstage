@@ -21,10 +21,14 @@ export function EventRow({
         {showFullDate ? (
           <div>
             <div className="font-medium text-[var(--foreground)]">{formatEventDate(new Date(event.date))}</div>
-            <div className="text-xs text-[var(--foreground)]/60">{formatTime(event.startTime)}</div>
+            <div className="text-xs text-[var(--foreground)]/60">
+              {event.startTime ? formatTime(event.startTime) : 'NO TIME'}
+            </div>
           </div>
         ) : (
-          <div className="font-medium text-[var(--foreground)]">{formatTime(event.startTime)}</div>
+          <div className="font-medium text-[var(--foreground)]">
+            {event.startTime ? formatTime(event.startTime) : `NO TIME [${JSON.stringify(event.startTime)}]`}
+          </div>
         )}
       </td>
 
@@ -35,55 +39,51 @@ export function EventRow({
           <div className="font-semibold text-[var(--foreground)] mb-1.5">{event.name}</div>
         )}
 
-        {/* Artist name */}
+        {/* Artist name - normal text with orange link */}
         {hasArtist && event.artistName && (
-          <Link
-            href={`/artists/${event.artistIds[0]}`}
-            className="text-[var(--primary)] hover:underline font-medium inline-flex items-center gap-1"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {event.artistName}
-            <ExternalLink className="w-3 h-3 opacity-50" />
-          </Link>
+          <div className="font-medium text-[var(--foreground)]">
+            <Link
+              href={`/artists/${event.artistIds[0]}`}
+              className="text-[var(--primary)] hover:underline inline-flex items-center gap-0.5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {event.artistName}
+              <ExternalLink className="w-3 h-3 opacity-40" />
+            </Link>
+          </div>
         )}
 
         {/* Venue name on mobile - 2 rows */}
-        <div className="sm:hidden mt-1">
+        <div className="sm:hidden mt-1.5 text-sm text-[var(--foreground)]/70">
           <Link
             href={`/venues/${event.venueId}`}
-            className="inline-flex items-center gap-1"
+            className="text-[var(--secondary)] hover:underline inline-flex items-center gap-0.5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-sm">
-              <div className="text-[var(--secondary)] hover:underline font-medium">
-                {event.venueName}
-              </div>
-              {event.venueCity && (
-                <div className="text-[var(--foreground)]/60 text-xs">{event.venueCity}</div>
-              )}
-            </div>
-            <ExternalLink className="w-3 h-3 opacity-50 text-[var(--secondary)]" />
+            {event.venueName}
+            <ExternalLink className="w-3 h-3 opacity-40" />
           </Link>
+          {event.venueCity && (
+            <div className="text-xs text-[var(--foreground)]/50 mt-0.5">{event.venueCity}</div>
+          )}
         </div>
       </td>
 
       {/* Venue Column (desktop only) - 2 rows */}
       <td className="px-3 py-2.5 hidden sm:table-cell border-b border-gray-200 dark:border-gray-700">
-        <Link
-          href={`/venues/${event.venueId}`}
-          className="inline-flex items-center gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="text-sm">
-            <div className="text-[var(--secondary)] hover:underline font-medium">
-              {event.venueName}
-            </div>
-            {event.venueCity && (
-              <div className="text-[var(--foreground)]/60 text-xs">{event.venueCity}</div>
-            )}
-          </div>
-          <ExternalLink className="w-3 h-3 opacity-50 text-[var(--secondary)]" />
-        </Link>
+        <div className="text-sm text-[var(--foreground)]/70">
+          <Link
+            href={`/venues/${event.venueId}`}
+            className="text-[var(--secondary)] hover:underline inline-flex items-center gap-0.5 font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {event.venueName}
+            <ExternalLink className="w-3 h-3 opacity-40" />
+          </Link>
+          {event.venueCity && (
+            <div className="text-xs text-[var(--foreground)]/50 mt-0.5">{event.venueCity}</div>
+          )}
+        </div>
       </td>
 
       {/* Price Column */}
