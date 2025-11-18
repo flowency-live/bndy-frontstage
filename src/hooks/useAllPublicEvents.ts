@@ -62,6 +62,9 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       const data = await response.json();
 
       console.error('🔴🔴🔴 useAllPublicEvents CALLED - CHECK IF YOU SEE THIS 🔴🔴🔴');
+      console.error('FULL DATA OBJECT:', data);
+      console.error('data.events exists?', !!data.events);
+      console.error('data.events length:', data.events?.length);
       console.log('=== RAW EVENT DATA FROM BACKEND ===');
       console.log('Total events:', data.events?.length || 0);
       if (data.events && data.events.length > 0) {
