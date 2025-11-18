@@ -491,6 +491,40 @@ export default function EventInfoOverlay({
               />
             </div>
 
+            {/* Kilroy character for chalkboard theme */}
+            {theme.name === "chalkboard" && (
+              <div className="absolute bottom-2 right-2 opacity-40">
+                <svg width="60" height="50" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Wall */}
+                  <line x1="0" y1="28" x2="60" y2="28" stroke="white" strokeWidth="2" />
+                  <line x1="0" y1="32" x2="60" y2="32" stroke="white" strokeWidth="2" />
+
+                  {/* Fingers on left */}
+                  <line x1="8" y1="28" x2="8" y2="18" stroke="white" strokeWidth="1.5" />
+                  <line x1="12" y1="28" x2="12" y2="16" stroke="white" strokeWidth="1.5" />
+                  <line x1="16" y1="28" x2="16" y2="18" stroke="white" strokeWidth="1.5" />
+
+                  {/* Fingers on right */}
+                  <line x1="44" y1="28" x2="44" y2="18" stroke="white" strokeWidth="1.5" />
+                  <line x1="48" y1="28" x2="48" y2="16" stroke="white" strokeWidth="1.5" />
+                  <line x1="52" y1="28" x2="52" y2="18" stroke="white" strokeWidth="1.5" />
+
+                  {/* Head */}
+                  <circle cx="30" cy="10" r="8" stroke="white" strokeWidth="2" fill="none" />
+
+                  {/* Eyes */}
+                  <circle cx="27" cy="9" r="1.5" fill="white" />
+                  <circle cx="33" cy="9" r="1.5" fill="white" />
+
+                  {/* Nose */}
+                  <ellipse cx="30" cy="14" rx="2" ry="3" stroke="white" strokeWidth="1.5" fill="none" />
+
+                  {/* Curl on top of head */}
+                  <path d="M 30 2 Q 32 0 34 2" stroke="white" strokeWidth="1.5" fill="none" />
+                </svg>
+              </div>
+            )}
+
             {/* Navigation controls if there is more than one event */}
             {events.length > 1 && (
               <div className={`flex justify-between items-center p-4 border-t ${theme.separatorClass}`}>
