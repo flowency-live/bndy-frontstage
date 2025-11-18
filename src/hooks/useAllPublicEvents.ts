@@ -61,6 +61,7 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       const response = await apiRequest('GET', url);
       const data = await response.json();
 
+      console.error('🔴🔴🔴 useAllPublicEvents CALLED - CHECK IF YOU SEE THIS 🔴🔴🔴');
       console.log('=== RAW EVENT DATA FROM BACKEND ===');
       console.log('Total events:', data.events?.length || 0);
       if (data.events && data.events.length > 0) {
