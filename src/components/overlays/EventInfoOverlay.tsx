@@ -13,11 +13,11 @@ import {
   Map,
 } from "lucide-react";
 import Link from "next/link";
-import { Event, getSocialMediaURLs } from "@/lib/types";
+import { Event, Venue, getSocialMediaURLs } from "@/lib/types";
 import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
 import { getVenueById } from "@/lib/services/venue-service";
 import { useArtist } from "@/hooks/useArtist";
-import { getDirectionsUrl, VenueData } from "@/lib/utils/mapLinks";
+import { getDirectionsUrl } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
 import SocialShareButton from "@/components/shared/SocialShareButton";
@@ -167,7 +167,7 @@ export default function EventInfoOverlay({
   // Select a random theme when overlay opens
   const [theme] = useState<OverlayTheme>(() => getRandomTheme());
 
-  const [venue, setVenue] = useState<VenueData | null>(null);
+  const [venue, setVenue] = useState<Venue | null>(null);
   // Flag to avoid repeated fetch attempts in overlay.
   const [hasFetched, setHasFetched] = useState(false);
   // State to store fetched profile picture URL
