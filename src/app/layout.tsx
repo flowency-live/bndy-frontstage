@@ -68,9 +68,6 @@ export default function RootLayout({
         {/* Preconnect to external domains for better performance */}
         <link rel="preconnect" href="https://graph.facebook.com" />
         <link rel="dns-prefetch" href="https://graph.facebook.com" />
-        
-        {/* Resource hints for better mobile performance */}
-        <link rel="preload" href="/openmic.png" as="image" type="image/png" />
       </head>
       <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 mobile-optimized keyboard-safe">
         <Providers>
