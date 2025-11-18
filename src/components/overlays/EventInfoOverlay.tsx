@@ -100,44 +100,6 @@ const overlayThemes: OverlayTheme[] = [
     dateColorClass: "bg-red-700 text-white",
     timeColorClass: "bg-cyan-700 text-white",
   },
-  // 4. Concert Ticket
-  {
-    name: "ticket",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)",
-    borderClass: "border-2 border-white/30",
-    borderStyle: {
-      borderStyle: "dashed",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.5)"
-    },
-    artistColorClass: "text-orange-400 hover:text-orange-300",
-    venueColorClass: "text-cyan-400 hover:text-cyan-300",
-    textColorClass: "text-white/90",
-    freeColorClass: "text-lime-400",
-    todayBadgeClass: "bg-yellow-400 text-black",
-    separatorClass: "border-white/20 border-dashed",
-    iconColorClass: "text-cyan-400",
-    navButtonClass: "bg-white/10 text-white hover:bg-white/20 border border-white/30",
-    useFont: false,
-    dateColorClass: "text-white",
-    timeColorClass: "text-white",
-  },
-  // 5. Minimal Swiss
-  {
-    name: "minimal",
-    background: "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
-    borderClass: "border border-gray-300",
-    artistColorClass: "text-black hover:text-gray-800",
-    venueColorClass: "text-cyan-600 hover:text-cyan-700",
-    textColorClass: "text-gray-700",
-    freeColorClass: "text-black",
-    todayBadgeClass: "bg-black text-white",
-    separatorClass: "border-gray-300",
-    iconColorClass: "text-gray-500",
-    navButtonClass: "bg-transparent text-black hover:bg-gray-100 border border-gray-300",
-    useFont: false,
-    dateColorClass: "text-gray-600",
-    timeColorClass: "text-black",
-  },
 ];
 
 // Get a random theme from the available themes
@@ -289,14 +251,6 @@ export default function EventInfoOverlay({
           >
 
             <div className="p-5">
-              {/* Ticket header - "ADMIT ONE" */}
-              {theme.name === "ticket" && (
-                <div className="text-center mb-4 pb-4 border-b border-dashed border-white/20">
-                  <div className="text-[10px] text-white/50 uppercase tracking-[0.3em] mb-1">ADMIT ONE</div>
-                  <div className="text-xs text-white/30 uppercase tracking-widest">LIVE PERFORMANCE</div>
-                </div>
-              )}
-
               {/* Artist Profile Picture and Name */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30 shadow-lg">
@@ -376,15 +330,15 @@ export default function EventInfoOverlay({
                       (currentEvent.artistIds && currentEvent.artistIds.length > 0) ? (
                         <Link
                           href={`/artists/${currentEvent.artistIds[0]}`}
-                          className={`${theme.artistColorClass} text-2xl font-bold inline-flex items-center gap-2 transform hover:scale-105 transition-transform group ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded w-full justify-center uppercase tracking-wider font-black" : theme.name === "minimal" ? "w-full justify-center text-3xl uppercase tracking-wide" : ""}`}
+                          className={`${theme.artistColorClass} text-2xl font-bold inline-flex items-center gap-2 transform hover:scale-105 transition-transform group ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded w-full justify-center uppercase tracking-wider font-black" : ""}`}
                           onClick={(e) => e.stopPropagation()}
-                          style={{ transform: theme.name === "minimal" ? "none" : "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
+                          style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}
                         >
                           <span>{artist.name}</span>
-                          <ExternalLink className={`opacity-60 group-hover:opacity-100 transition-opacity ${theme.name === "poster" || theme.name === "minimal" ? "w-6 h-6" : "w-5 h-5"}`} />
+                          <ExternalLink className={`opacity-60 group-hover:opacity-100 transition-opacity ${theme.name === "poster" ? "w-6 h-6" : "w-5 h-5"}`} />
                         </Link>
                       ) : (
-                        <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded uppercase tracking-wider font-black" : theme.name === "minimal" ? "text-center w-full text-3xl uppercase tracking-wide" : ""}`} style={{ transform: theme.name === "minimal" ? "none" : "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
+                        <h2 className={`${theme.artistColorClass} text-2xl font-bold ${theme.name === "poster" ? "px-6 py-4 border-4 border-dashed rounded uppercase tracking-wider font-black" : ""}`} style={{ transform: "rotate(-1deg)", ...getNeonStyle("rgba(249, 115, 22, 0.8)") }}>
                           {artist.name}
                         </h2>
                       )
@@ -397,38 +351,13 @@ export default function EventInfoOverlay({
                 backgroundImage: theme.name === "chalkboard" ? "repeating-linear-gradient(90deg, white 0, white 4px, transparent 4px, transparent 8px)" : undefined
               }} />
 
-              <div className={theme.name === "minimal" ? "space-y-4 text-base" : "space-y-3 text-base"}>
+              <div className="space-y-3 text-base">
                 {/* Date */}
-                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between" : theme.name === "minimal" ? "text-center border-b border-gray-200 pb-3" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <div className={`${theme.dateColorClass} px-4 py-3 rounded font-bold text-center text-xl uppercase tracking-wide`}>
                       {formattedDate}
                       {isToday && " - TODAY!"}
-                    </div>
-                  ) : theme.name === "ticket" ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <CalendarDays className={`w-4 h-4 ${theme.iconColorClass}`} />
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Date:</span>
-                      </div>
-                      <span className={`${theme.dateColorClass || theme.textColorClass} text-sm font-medium`}>
-                        {formattedDate}
-                      </span>
-                    </>
-                  ) : theme.name === "minimal" ? (
-                    <div>
-                      <div className="text-4xl font-bold text-black mb-1">
-                        {eventDate.toLocaleDateString('en-GB', { day: '2-digit' })}
-                      </div>
-                      <div className="text-sm text-gray-600 uppercase tracking-wider">
-                        {eventDate.toLocaleDateString('en-GB', { month: 'short' })}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {eventDate.toLocaleDateString('en-GB', { year: 'numeric' })}
-                      </div>
-                      <div className="text-base text-black font-medium mt-2">
-                        {eventDate.toLocaleDateString('en-GB', { weekday: 'long' })}
-                      </div>
                     </div>
                   ) : (
                     <>
@@ -446,23 +375,9 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Time */}
-                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between" : theme.name === "minimal" ? "text-center" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <div className={`${theme.timeColorClass} px-4 py-3 rounded font-bold text-center text-lg uppercase tracking-wide`}>
-                      {formattedTime}{endTime && ` - ${endTime}`}
-                    </div>
-                  ) : theme.name === "ticket" ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Clock className={`w-4 h-4 ${theme.iconColorClass}`} />
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Time:</span>
-                      </div>
-                      <span className={`${theme.timeColorClass || theme.textColorClass} text-sm font-medium`}>
-                        {formattedTime}{endTime && ` - ${endTime}`}
-                      </span>
-                    </>
-                  ) : theme.name === "minimal" ? (
-                    <div className="text-xl font-medium text-black">
                       {formattedTime}{endTime && ` - ${endTime}`}
                     </div>
                   ) : (
@@ -477,7 +392,7 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Venue */}
-                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex flex-col gap-1" : theme.name === "minimal" ? "text-center border-b border-gray-200 pb-3" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     <Link
                       href={`/venues/${currentEvent.venueId}`}
@@ -493,43 +408,6 @@ export default function EventInfoOverlay({
                         </div>
                       )}
                     </Link>
-                  ) : theme.name === "ticket" ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <MapPin className={`w-4 h-4 ${theme.iconColorClass}`} />
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Venue:</span>
-                      </div>
-                      <div className="ml-6">
-                        <Link
-                          href={`/venues/${currentEvent.venueId}`}
-                          className={`${theme.venueColorClass} text-sm font-medium hover:underline`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
-                        </Link>
-                        {venue?.city && (
-                          <div className="text-xs text-white/70 mt-0.5">{venue.city}</div>
-                        )}
-                      </div>
-                    </>
-                  ) : theme.name === "minimal" ? (
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">VENUE</div>
-                      <Link
-                        href={`/venues/${currentEvent.venueId}`}
-                        className={`${theme.venueColorClass} text-base font-medium hover:underline flex items-center justify-center gap-1`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MapPin className="w-4 h-4" />
-                        {venue ? venue.name : currentEvent.venueName || "Unknown Venue"}
-                      </Link>
-                      {venue?.city && (
-                        <>
-                          <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-2 mb-1">LOCATION</div>
-                          <div className="text-sm text-gray-700">{venue.city}</div>
-                        </>
-                      )}
-                    </div>
                   ) : (
                     <>
                       <MapPin className={`w-5 h-5 ${theme.venueColorClass}`} />
@@ -560,7 +438,7 @@ export default function EventInfoOverlay({
                 </div>
 
                 {/* Ticket Information */}
-                <div className={theme.name === "poster" ? "w-full" : theme.name === "ticket" ? "flex items-center justify-between pt-2 border-t border-dashed border-white/20" : theme.name === "minimal" ? "text-center" : "flex items-center gap-3"}>
+                <div className={theme.name === "poster" ? "w-full" : "flex items-center gap-3"}>
                   {theme.name === "poster" ? (
                     currentEvent.ticketed ? (
                       <div className="space-y-2">
@@ -584,23 +462,6 @@ export default function EventInfoOverlay({
                         Free
                       </div>
                     )
-                  ) : theme.name === "ticket" ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Ticket className={`w-4 h-4 ${theme.iconColorClass}`} />
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Price:</span>
-                      </div>
-                      <span className={`${theme.freeColorClass} text-sm font-bold uppercase tracking-wide`}>
-                        {currentEvent.ticketed ? (currentEvent.ticketinformation || "Ticketed") : "Free"}
-                      </span>
-                    </>
-                  ) : theme.name === "minimal" ? (
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">ADMISSION</div>
-                      <div className="text-base font-medium text-black">
-                        {currentEvent.ticketed ? (currentEvent.ticketinformation || "Ticketed") : "Free"}
-                      </div>
-                    </div>
                   ) : (
                     <>
                       <Ticket className={`w-5 h-5 ${theme.freeColorClass}`} />
@@ -651,15 +512,6 @@ export default function EventInfoOverlay({
                   </p>
                 )}
               </div>
-
-              {/* Ticket number for ticket theme */}
-              {theme.name === "ticket" && (
-                <div className="mt-4 pt-3 border-t border-dashed border-white/20 text-center">
-                  <div className="text-[9px] text-white/30 uppercase tracking-widest">
-                    No. {currentEvent.id.substring(0, 4).toUpperCase()}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Share button using reusable component */}
