@@ -182,16 +182,6 @@ export interface EventFormData {
   dateConflicts?: DateConflict[];
 }
 
-// Make sure DateConflict is properly defined
-export interface DateConflict {
-  type: 'venue' | 'artist' | 'exact_duplicate';
-  name: string;
-  existingEvent: {
-    name: string;
-    startTime: string;
-  };
-}
-
 export interface EventConflictCheck {
   venue: Venue;
   artists: Artist[];
