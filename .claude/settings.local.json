@@ -135,7 +135,9 @@
       "Bash(for dir in \"C:\\VSProjects\\bndy-serverless-api\"/*-lambda)",
       "Bash(do if [ -f \"$dir/handler.js\" ])",
       "Bash(then basename \"$dir\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(exported-stack-template-2025-11-18.yaml)",
+      "Bash(powershell -File:*)"
     ],
     "deny": [],
     "ask": []
