@@ -14,6 +14,8 @@ import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
 
 export default function ListView() {
+  console.log('=== LISTVIEW COMPONENT RENDERING ===');
+
   const {
     radius,
     setRadius,
@@ -41,6 +43,14 @@ export default function ListView() {
     endDate,
     enabled: true
   });
+
+  console.log('=== LISTVIEW AFTER useEventsForList ===');
+  console.log('Events received:', events.length);
+  console.log('Loading:', loading);
+  console.log('Error:', isError, error);
+  if (events.length > 0) {
+    console.log('First event in ListView:', events[0]);
+  }
 
   const refreshEvents = async () => {
     // TanStack Query handles refetching automatically
