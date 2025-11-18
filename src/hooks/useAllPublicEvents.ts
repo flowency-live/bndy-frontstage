@@ -61,8 +61,21 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       const response = await apiRequest('GET', url);
       const data = await response.json();
 
+      console.log('=== RAW EVENT DATA FROM BACKEND ===');
+      console.log('Total events:', data.events?.length || 0);
+      if (data.events && data.events.length > 0) {
+        console.log('First event sample:', data.events[0]);
+        console.log('Fields check on first event:');
+        console.log('- artistName:', data.events[0].artistName);
+        console.log('- artist.name:', data.events[0].artist?.name);
+        console.log('- venueName:', data.events[0].venueName);
+        console.log('- venueCity:', data.events[0].venueCity);
+        console.log('- venue.city:', data.events[0].venue?.city);
+      }
+
       // Transform: DynamoDB format → Frontstage format
-      const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => ({
+      const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {
+        const transformed = {
         id: event.id,
         name: event.title || event.name || 'Unnamed Event',
         date: event.date,
@@ -88,7 +101,19 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
         updatedAt: event.updatedAt,
         isOpenMic: event.isOpenMic,
         postcode: event.postcode
-      })) as Event[];
+      };
+
+        return transformed;
+      }) as Event[];
+
+      console.log('=== TRANSFORMED EVENT DATA ===');
+      if (transformedEvents.length > 0) {
+        console.log('First transformed event:', transformedEvents[0]);
+        console.log('Fields check on transformed:');
+        console.log('- artistName:', transformedEvents[0].artistName);
+        console.log('- venueName:', transformedEvents[0].venueName);
+        console.log('- venueCity:', transformedEvents[0].venueCity);
+      }
 
       return transformedEvents;
     },
