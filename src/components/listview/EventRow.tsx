@@ -35,12 +35,13 @@ export function EventRow({
           <div className="font-semibold text-[var(--foreground)] mb-1.5">{event.name}</div>
         )}
 
-        {/* Artist name - normal text with link */}
+        {/* Artist name with subtle orange background */}
         {hasArtist && event.artistName && (
-          <div className="font-medium text-[var(--foreground)]">
+          <div className="inline-block">
             <Link
               href={`/artists/${event.artistIds[0]}`}
-              className="hover:underline inline-flex items-center gap-0.5"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded hover:underline font-medium"
+              style={{ backgroundColor: 'var(--primary-translucent)', color: 'var(--foreground)' }}
               onClick={(e) => e.stopPropagation()}
             >
               {event.artistName}
@@ -49,37 +50,41 @@ export function EventRow({
           </div>
         )}
 
-        {/* Venue name on mobile - 2 rows */}
-        <div className="sm:hidden mt-1.5 text-sm">
-          <Link
-            href={`/venues/${event.venueId}`}
-            className="text-[var(--foreground)] hover:underline inline-flex items-center gap-0.5 font-medium"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {event.venueName}
-            <ExternalLink className="w-3 h-3 opacity-40" />
-          </Link>
+        {/* Venue name on mobile with subtle cyan background */}
+        <div className="sm:hidden mt-1.5">
+          <div className="inline-block">
+            <Link
+              href={`/venues/${event.venueId}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded hover:underline font-medium text-sm"
+              style={{ backgroundColor: 'var(--secondary-translucent)', color: 'var(--foreground)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {event.venueName}
+              <ExternalLink className="w-3 h-3 opacity-40" />
+            </Link>
+          </div>
           {event.venueCity && (
-            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{event.venueCity}</div>
+            <div className="text-xs text-[var(--muted-foreground)] mt-1 ml-2">{event.venueCity}</div>
           )}
         </div>
       </td>
 
-      {/* Venue Column (desktop only) - 2 rows */}
+      {/* Venue Column (desktop only) with subtle cyan background */}
       <td className="px-3 py-2.5 hidden sm:table-cell border-b border-gray-200 dark:border-gray-700">
-        <div className="text-sm">
+        <div className="inline-block">
           <Link
             href={`/venues/${event.venueId}`}
-            className="text-[var(--foreground)] hover:underline inline-flex items-center gap-0.5 font-medium"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded hover:underline font-medium text-sm"
+            style={{ backgroundColor: 'var(--secondary-translucent)', color: 'var(--foreground)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {event.venueName}
             <ExternalLink className="w-3 h-3 opacity-40" />
           </Link>
-          {event.venueCity && (
-            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{event.venueCity}</div>
-          )}
         </div>
+        {event.venueCity && (
+          <div className="text-xs text-[var(--muted-foreground)] mt-1 ml-2">{event.venueCity}</div>
+        )}
       </td>
 
       {/* Price Column */}

@@ -407,7 +407,7 @@ export default function ListView() {
                       // List view for other sections
                       <div className="overflow-x-auto">
                         <table className="min-w-full">
-                          <thead className="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700">
+                          <thead style={{ backgroundColor: 'var(--surface-2)' }} className="border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
                                 Time
