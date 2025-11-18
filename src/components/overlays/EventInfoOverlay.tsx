@@ -43,6 +43,8 @@ interface OverlayTheme {
   iconColorClass: string;
   navButtonClass: string;
   useFont: boolean;
+  dateColorClass?: string;
+  timeColorClass?: string;
 }
 
 const overlayThemes: OverlayTheme[] = [
@@ -70,12 +72,15 @@ const overlayThemes: OverlayTheme[] = [
     artistColorClass: "text-orange-500 hover:text-orange-400",
     venueColorClass: "text-cyan-400 hover:text-cyan-300",
     textColorClass: "text-white",
-    freeColorClass: "text-purple-400",
-    todayBadgeClass: "bg-pink-500 text-white",
+    freeColorClass: "text-lime-400",
+    todayBadgeClass: "bg-[#ff0080] text-white",
     separatorClass: "bg-orange-500/30",
-    iconColorClass: "text-cyan-400",
+    iconColorClass: "text-white",
     navButtonClass: "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/50",
     useFont: false,
+    // Neon-specific colors for date/time
+    dateColorClass: "text-[#ff0080]",
+    timeColorClass: "text-[#ffff00]",
   },
   // 3. Vintage Gig Poster
   {
@@ -379,8 +384,10 @@ export default function EventInfoOverlay({
               <div className="space-y-3 text-base">
                 {/* Date */}
                 <div className="flex items-center gap-3">
-                  <CalendarDays className={`w-5 h-5 ${theme.iconColorClass}`} />
-                  <span className={`${theme.textColorClass} text-lg`}>{formattedDate}</span>
+                  <CalendarDays className={`w-5 h-5 ${theme.dateColorClass || theme.iconColorClass}`} />
+                  <span className={`${theme.dateColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 0, 128, 0.8)") : {}}>
+                    {formattedDate}
+                  </span>
                   {isToday && (
                     <div className={`ml-auto inline-block px-2 py-1 ${theme.todayBadgeClass} text-sm font-bold rounded transform -rotate-2`}>
                       Today!
@@ -390,8 +397,8 @@ export default function EventInfoOverlay({
 
                 {/* Time */}
                 <div className="flex items-center gap-3">
-                  <Clock className={`w-5 h-5 ${theme.iconColorClass}`} />
-                  <span className={`${theme.textColorClass} text-lg`}>
+                  <Clock className={`w-5 h-5 ${theme.timeColorClass || theme.iconColorClass}`} />
+                  <span className={`${theme.timeColorClass || theme.textColorClass} text-lg font-bold`} style={theme.name === "neon" ? getNeonStyle("rgba(255, 255, 0, 0.8)") : {}}>
                     {formattedTime}
                     {endTime && ` - ${endTime}`}
                   </span>
@@ -399,7 +406,7 @@ export default function EventInfoOverlay({
 
                 {/* Venue */}
                 <div className="flex items-center gap-3">
-                  <MapPin className={`w-5 h-5 ${theme.iconColorClass}`} />
+                  <MapPin className={`w-5 h-5 ${theme.venueColorClass}`} />
                   <div className="flex-1 flex items-center gap-2">
                     <Link
                       href={`/venues/${currentEvent.venueId}`}
@@ -426,7 +433,7 @@ export default function EventInfoOverlay({
 
                 {/* Ticket Information */}
                 <div className="flex items-center gap-3">
-                  <Ticket className={`w-5 h-5 ${theme.iconColorClass}`} />
+                  <Ticket className={`w-5 h-5 ${theme.freeColorClass}`} />
                   {currentEvent.ticketed ? (
                     <div className="flex-1 flex items-center justify-between">
                       <span className={`${theme.textColorClass} text-lg`}>
@@ -445,7 +452,7 @@ export default function EventInfoOverlay({
                       )}
                     </div>
                   ) : (
-                    <span className={`${theme.freeColorClass} text-lg font-bold transform -rotate-1 inline-block`} style={getNeonStyle("rgba(168, 85, 247, 0.8)")}>Free</span>
+                    <span className={`${theme.freeColorClass} text-lg font-bold transform -rotate-1 inline-block`} style={theme.name === "neon" ? getNeonStyle("rgba(190, 242, 100, 0.8)") : {}}>Free</span>
                   )}
                 </div>
 
