@@ -68,7 +68,7 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
         id: event.id,
         name: event.title || event.name || 'Unnamed Event',
         date: event.date,
-        startTime: event.startTime || '21:00',  // Default to 9pm if missing
+        startTime: event.startTime,
         endTime: event.endTime,
         venueId: event.venueId,
         venueName: event.venueName || '',
