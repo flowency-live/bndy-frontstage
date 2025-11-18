@@ -62,6 +62,10 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       const response = await apiRequest('GET', url);
       const data = await response.json();
 
+      console.log('[DEBUG] Raw backend data:', data);
+      console.log('[DEBUG] First event raw:', data.events?.[0]);
+      console.log('[DEBUG] First event startTime:', data.events?.[0]?.startTime);
+
       // Transform: DynamoDB format → Frontstage format
       const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {
         const transformed = {
@@ -95,6 +99,9 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
 
         return transformed;
       }) as Event[];
+
+      console.log('[DEBUG] First transformed event:', transformedEvents[0]);
+      console.log('[DEBUG] Transformed startTime:', transformedEvents[0]?.startTime);
 
       return transformedEvents;
     },
