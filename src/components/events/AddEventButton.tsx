@@ -25,10 +25,8 @@ export function AddEventButton({ map }: AddEventButtonProps) {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button
-          className="add-event-button bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-5 py-2.5 shadow-lg flex items-center bottom-[88px] md:bottom-[10px] right-3 md:right-[10px]"
+          className="add-event-button absolute bottom-20 md:bottom-2.5 right-4 md:right-2.5 bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white rounded-full px-5 py-2.5 shadow-lg flex items-center z-50"
           style={{
-            position: 'absolute',
-            zIndex: 50,
             pointerEvents: 'auto'
           }}
         >
