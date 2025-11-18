@@ -47,17 +47,39 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
 
         // Performance & responsiveness settings for instant feedback
         inertia: false,              // Disable momentum scrolling (eliminates drag delay)
+        inertiaDeceleration: 0,      // No deceleration
+        inertiaMaxSpeed: 0,          // No max speed limit for inertia
+        easeLinearity: 1.0,          // Linear easing (no ease-in/ease-out curves)
+        worldCopyJump: false,        // Disable world wrap for better performance
+        maxBoundsViscosity: 1.0,     // Hard map boundaries (no elastic bounce)
+
         zoomAnimation: true,         // Keep zoom animation
         zoomAnimationThreshold: 4,   // Max zoom level difference for animation
         fadeAnimation: false,        // Disable tile fade-in for instant rendering
         markerZoomAnimation: false,  // Disable marker zoom animation for snappier feel
+
         preferCanvas: false,         // Use SVG for better quality at current scale
+        updateWhenIdle: false,       // Update tiles during pan (not after)
+        updateWhenZooming: true,     // Update tiles during zoom
+        updateInterval: 150,         // Tile update throttle in ms
+
+        // Drag-specific performance settings
+        dragging: true,
+        touchZoom: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
       });
 
       // Add tile layer (consistent blue-gray style, not affected by theme)
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
         className: tileLayer.className,
+        // Performance optimizations for instant tile loading
+        updateWhenIdle: false,       // Load tiles during pan, not after
+        updateWhenZooming: false,    // Don't wait for zoom to finish
+        keepBuffer: 2,               // Keep 2 tile rows/cols outside viewport (default is 2)
+        updateInterval: 150,         // Throttle tile requests to 150ms
       }).addTo(map);
 
       // NOTE: We're not adding location controls here anymore

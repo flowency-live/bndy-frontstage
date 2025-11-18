@@ -31,24 +31,26 @@ export function EventRow({
 
       {/* Column 2: Artist & Venue */}
       <td className="px-2 py-2.5 border-b border-gray-200 dark:border-gray-700 md:hidden">
-        {hasArtist && event.artistName && (
+        <div className="flex flex-col gap-1">
+          {hasArtist && event.artistName && (
+            <Link
+              href={`/artists/${event.artistIds[0]}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-artist w-fit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="truncate max-w-[140px]">{event.artistName}</span>
+              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            </Link>
+          )}
           <Link
-            href={`/artists/${event.artistIds[0]}`}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-artist mb-1"
+            href={`/venues/${event.venueId}`}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-venue w-fit"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="truncate max-w-[140px]">{event.artistName}</span>
+            <span className="truncate max-w-[140px]">{event.venueName}</span>
             <ExternalLink className="w-3 h-3 flex-shrink-0" />
           </Link>
-        )}
-        <Link
-          href={`/venues/${event.venueId}`}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-venue"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="truncate max-w-[140px]">{event.venueName}</span>
-          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-        </Link>
+        </div>
       </td>
 
       {/* Column 3: Town & Price */}
