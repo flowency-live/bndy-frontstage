@@ -111,9 +111,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   const [showVenueOverlay, setShowVenueOverlay] = useState(false);
 
   // Filtered data
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
-  const [eventLocationGroups, setEventLocationGroups] = useState<Record<string, Event[]>>({});
   // No Filter match message
   const getNoMatchMessage = () => {
     if (!filterType || !filterId) return "";
@@ -174,12 +172,15 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   }, [onClearSearch]);
 
 
-  // Apply filters to events
-  useEffect(() => {
-    if (!allEvents || allEvents.length === 0) return;
+  // Memoize location grouping to prevent unnecessary recalculations
+  const eventLocationGroups = useMemo(() => {
+    if (!allEvents || allEvents.length === 0) return {};
+
     const eventsOnly = allEvents.filter(
       (e): e is Event => (e as Event).date !== undefined
     );
+
+    // Apply date filtering
     let dateFiltered = eventsOnly;
     if (dateRange) {
       dateFiltered = eventsOnly.filter((event) => {
@@ -187,6 +188,8 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
         return isDateInRange(eventDate, dateRange as DateRangeFilter);
       });
     }
+
+    // Apply search/filter
     let searchFiltered = dateFiltered;
     if (filterType && filterId && filterId.trim() !== "") {
       if (filterType === "nomatch") {
@@ -204,6 +207,8 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
         }
       }
     }
+
+    // Group by location
     const locationGroups: Record<string, Event[]> = {};
     searchFiltered.forEach((event) => {
       if (!event.location) return;
@@ -213,12 +218,14 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
       }
       locationGroups[locationKey].push(event);
     });
-    setEventLocationGroups(locationGroups);
-    const representativeEvents = Object.values(locationGroups).map(
-      (group) => group[0]
-    );
-    setFilteredEvents(representativeEvents);
+
+    return locationGroups;
   }, [allEvents, dateRange, filterType, filterId]);
+
+  // Memoize representative events for markers
+  const filteredEvents = useMemo(() => {
+    return Object.values(eventLocationGroups).map((group) => group[0]);
+  }, [eventLocationGroups]);
 
   // Apply filters to venues
   useEffect(() => {
@@ -322,6 +329,24 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     setSelectedEvents([]);
   }, []);
 
+  // Handle event overlay close
+  const handleEventOverlayClose = useCallback(() => {
+    setShowEventOverlay(false);
+    setSelectedEvents([]);
+    if (onClearSearch) {
+      onClearSearch();
+    }
+  }, [onClearSearch]);
+
+  // Handle venue overlay close
+  const handleVenueOverlayClose = useCallback(() => {
+    setShowVenueOverlay(false);
+    setSelectedVenue(null);
+    if (onClearSearch) {
+      onClearSearch();
+    }
+  }, [onClearSearch]);
+
   const renderMapComponents = leafletInitialized && typeof window !== "undefined";
 
   return (
@@ -397,16 +422,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
         <EventInfoOverlay
           events={selectedEvents}
           isOpen={showEventOverlay}
-          onClose={() => {
-            // Close the overlay
-            setShowEventOverlay(false);
-            setSelectedEvents([]);
-
-            // Clear search filters
-            if (onClearSearch) {
-              onClearSearch();
-            }
-          }}
+          onClose={handleEventOverlayClose}
           position="map"
         />
       )}
@@ -415,16 +431,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
         <VenueInfoOverlay
           venue={selectedVenue}
           isOpen={showVenueOverlay}
-          onClose={() => {
-            // Close the overlay
-            setShowVenueOverlay(false);
-            setSelectedVenue(null);
-
-            // Clear search filters
-            if (onClearSearch) {
-              onClearSearch();
-            }
-          }}
+          onClose={handleVenueOverlayClose}
           position="map"
         />
       )}

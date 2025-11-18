@@ -108,7 +108,8 @@ export const EventMarkerLayer = ({
       
       markersRef.current = {};
     };
-  }, [map, events, eventGroups, onEventClick, markersRef, clusterRef]);
+  }, [map, events, eventGroups, onEventClick]);
+  // Note: markersRef and clusterRef are refs and don't need to be in dependency array
 
   // Helper function to group events by location
   const groupEventsByLocation = (eventList: Event[]): Record<string, Event[]> => {

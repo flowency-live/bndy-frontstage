@@ -96,7 +96,8 @@ export const VenueMarkerLayer = ({
       });
       markersRef.current = {};
     };
-  }, [map, venues, onVenueClick, markersRef, clusterRef]);
+  }, [map, venues, onVenueClick]);
+  // Note: markersRef and clusterRef are refs and don't need to be in dependency array
 
   // This is a functional component, so no markup is returned
   return null;

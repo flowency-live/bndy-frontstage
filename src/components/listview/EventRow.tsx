@@ -35,12 +35,12 @@ export function EventRow({
           <div className="font-semibold text-[var(--foreground)] mb-1.5">{event.name}</div>
         )}
 
-        {/* Artist name - normal text with orange link */}
+        {/* Artist name - normal text with link */}
         {hasArtist && event.artistName && (
           <div className="font-medium text-[var(--foreground)]">
             <Link
               href={`/artists/${event.artistIds[0]}`}
-              className="text-[var(--primary)] hover:underline inline-flex items-center gap-0.5"
+              className="hover:underline inline-flex items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
               {event.artistName}
@@ -50,34 +50,34 @@ export function EventRow({
         )}
 
         {/* Venue name on mobile - 2 rows */}
-        <div className="sm:hidden mt-1.5 text-sm text-[var(--foreground)]/70">
+        <div className="sm:hidden mt-1.5 text-sm">
           <Link
             href={`/venues/${event.venueId}`}
-            className="text-[var(--secondary)] hover:underline inline-flex items-center gap-0.5"
+            className="text-[var(--foreground)] hover:underline inline-flex items-center gap-0.5 font-medium"
             onClick={(e) => e.stopPropagation()}
           >
             {event.venueName}
             <ExternalLink className="w-3 h-3 opacity-40" />
           </Link>
           {event.venueCity && (
-            <div className="text-xs text-[var(--foreground)]/50 mt-0.5">{event.venueCity}</div>
+            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{event.venueCity}</div>
           )}
         </div>
       </td>
 
       {/* Venue Column (desktop only) - 2 rows */}
       <td className="px-3 py-2.5 hidden sm:table-cell border-b border-gray-200 dark:border-gray-700">
-        <div className="text-sm text-[var(--foreground)]/70">
+        <div className="text-sm">
           <Link
             href={`/venues/${event.venueId}`}
-            className="text-[var(--secondary)] hover:underline inline-flex items-center gap-0.5 font-medium"
+            className="text-[var(--foreground)] hover:underline inline-flex items-center gap-0.5 font-medium"
             onClick={(e) => e.stopPropagation()}
           >
             {event.venueName}
             <ExternalLink className="w-3 h-3 opacity-40" />
           </Link>
           {event.venueCity && (
-            <div className="text-xs text-[var(--foreground)]/50 mt-0.5">{event.venueCity}</div>
+            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{event.venueCity}</div>
           )}
         </div>
       </td>
