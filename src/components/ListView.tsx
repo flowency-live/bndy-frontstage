@@ -409,14 +409,20 @@ export default function ListView() {
                         <table className="min-w-full">
                           <thead style={{ backgroundColor: 'var(--surface-2)' }} className="border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                                Date
+                              </th>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
                                 Time
                               </th>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
-                                Event
+                                Artist
                               </th>
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden sm:table-cell">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide">
                                 Venue
+                              </th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden lg:table-cell">
+                                Town
                               </th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-24">
                                 Price
