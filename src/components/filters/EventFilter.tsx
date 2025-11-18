@@ -112,7 +112,7 @@ const EventFilter = forwardRef<EventFilterRef, EventFilterProps>(({
         <input
           type="text"
           placeholder={placeholderText}
-          className="w-full p-2 pl-9 pr-8 border-2 border-gray-400 dark:border-gray-700 rounded-md bg-white/90 dark:bg-black/20 text-gray-800 dark:text-gray-200"
+          className="w-full p-2 pl-9 pr-8 border-2 border-gray-400 dark:border-gray-700 rounded-md bg-white/90 dark:bg-black/20 text-gray-800 dark:text-gray-200 placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:font-normal"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
