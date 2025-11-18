@@ -48,7 +48,7 @@ export function MapViewEventsFilter() {
   }, [handleFilterSelect]);
 
   return (
-    <div className="fixed bottom-20 md:bottom-10 left-4 z-50 flex flex-col items-center">
+    <div className="fixed bottom-[88px] md:bottom-10 left-3 md:left-4 z-50 flex flex-col items-center">
       {isExpanded && (
         <div className="map-filter-dropdown">
           {filters

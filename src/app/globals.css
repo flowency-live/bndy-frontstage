@@ -148,10 +148,10 @@ main {
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* On mobile, position footer above the mobile nav */
+/* Hide footer on mobile */
 @media (max-width: 768px) {
   .footer {
-    bottom: 64px; /* Height of mobile nav */
+    display: none;
   }
 }
 .footer p {
@@ -798,16 +798,18 @@ main {
   background-color: var(--primary, #3b82f6);
   color: white;
   border-radius: 9999px;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   z-index: 50;
   pointer-events: auto;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .map-filter-button:hover {
-  opacity: 0.9;
+  background-color: var(--primary-dark, #e86307);
 }
 
 .map-filter-dropdown {

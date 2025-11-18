@@ -131,7 +131,11 @@
       "Bash(Select-Object -Last 20)",
       "Bash(wslpath:*)",
       "Bash(Select-Object -First 50)",
-      "Bash(/tmp/events-check.json)"
+      "Bash(/tmp/events-check.json)",
+      "Bash(for dir in \"C:\\VSProjects\\bndy-serverless-api\"/*-lambda)",
+      "Bash(do if [ -f \"$dir/handler.js\" ])",
+      "Bash(then basename \"$dir\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
