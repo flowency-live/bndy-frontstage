@@ -79,11 +79,6 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
 
       // Transform: DynamoDB format → Frontstage format
       const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {
-        // Extract artist and venue names from title (format: "Artist @ Venue")
-        const titleParts = event.title?.split(' @ ') || [];
-        const extractedArtistName = titleParts[0] || '';
-        const extractedVenueName = titleParts[1] || '';
-
         const transformed = {
         id: event.id,
         name: event.title || event.name || 'Unnamed Event',
@@ -91,10 +86,10 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
         startTime: event.startTime,
         endTime: event.endTime,
         venueId: event.venueId,
-        venueName: extractedVenueName,
-        venueCity: undefined, // Backend doesn't return this
+        venueName: event.venueName || '',
+        venueCity: event.venue?.city,
         artistIds: event.artistId ? [event.artistId] : [],
-        artistName: extractedArtistName,
+        artistName: event.artistName,
         location: {
           lat: event.geoLat,
           lng: event.geoLng
