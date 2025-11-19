@@ -490,24 +490,17 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
 
   return (
     <article
-      className={`relative rounded-xl border bg-card-bg transition-all duration-200 hover:shadow-md
-                  ${isNextEvent ? 'border-l-[3px] border-l-orange-500' : 'border-border'}`}
+      className={`relative rounded-xl border border-border bg-card-bg transition-all duration-200 hover:shadow-md
+                  ${isNextEvent ? 'border-l-[3px] border-l-orange-500' : ''}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
       data-testid="event-card"
     >
-      {/* Venue City (top-right, absolute) */}
-      {event.venueCity && (
-        <div className="absolute top-2 right-2 text-xs text-muted-foreground font-medium">
-          {event.venueCity}
-        </div>
-      )}
-
       <div className="p-3 space-y-2">
         {/* Row 1: Venue + Distance Badge */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-1">
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
               <Link
                 href={`/artists/${event.artistIds[0]}`}
@@ -526,10 +519,10 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
                 {event.venueName}
               </Link>
             )}
-            {/* Venue location - show postcode if available, otherwise show a subtle indicator */}
-            {event.postcode && (
-              <p className="text-xs text-muted-foreground truncate">
-                {event.postcode}
+            {/* Venue city/location */}
+            {event.venueCity && (
+              <p className="text-xs text-muted-foreground">
+                {event.venueCity}
               </p>
             )}
           </div>
