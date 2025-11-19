@@ -24,7 +24,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Load Google Maps on mount
   useEffect(() => {
@@ -84,14 +84,16 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
         const mapCenter = map?.getCenter();
         const center = mapCenter ? { lat: mapCenter.lat(), lng: mapCenter.lng() } : undefined;
 
-        const searchResults = await searchVenues(query, center);
-        setResults(searchResults.venues);
+        const searchResults = await searchVenues(query, center || { lat: 53.0, lng: -2.0 });
+        // Combine BNDY venues with Google venues for display
+        const allVenues = [...searchResults.bndyVenues];
+        setResults(allVenues);
 
         // Clear old markers
         markers.forEach(m => m.setMap(null));
 
         // Add new markers
-        const newMarkers = searchResults.venues.map((venue, index) => {
+        const newMarkers = allVenues.map((venue: Venue, index: number) => {
           const marker = new google.maps.Marker({
             position: venue.location,
             map,
@@ -113,9 +115,9 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
         setMarkers(newMarkers);
 
         // Fit map to show all results
-        if (searchResults.venues.length > 0 && map) {
+        if (allVenues.length > 0 && map) {
           const bounds = new google.maps.LatLngBounds();
-          searchResults.venues.forEach(v => bounds.extend(v.location));
+          allVenues.forEach((v: Venue) => bounds.extend(v.location));
           map.fitBounds(bounds);
         }
       } catch (err) {

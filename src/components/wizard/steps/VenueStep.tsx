@@ -19,7 +19,7 @@ export function VenueStep({ formData, onUpdate, onNext }: VenueStepProps) {
   const [results, setResults] = useState<Venue[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -51,9 +51,10 @@ export function VenueStep({ formData, onUpdate, onNext }: VenueStepProps) {
 
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const searchResults = await searchVenues(query, formData.venueLocation || undefined);
+        const center = formData.venueLocation || { lat: 53.0, lng: -2.0 };
+        const searchResults = await searchVenues(query, center);
         // Show unified results (BNDY venues already matched to Google Places)
-        setResults(searchResults.venues);
+        setResults(searchResults.bndyVenues);
         setShowResults(true);
         setError(null);
       } catch (err) {
