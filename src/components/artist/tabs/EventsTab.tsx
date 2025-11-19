@@ -24,7 +24,7 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   const [sortMode, setSortMode] = useState<SortMode>('date');
 
   return (
-    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4">
+    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4 py-4 bg-slate-50 dark:bg-transparent">
       {/* Sort Toggle */}
       <div className="mb-3 flex justify-center">
         <div className="inline-flex gap-2 p-1.5 bg-slate-200 dark:bg-slate-800 rounded-full">
@@ -34,8 +34,8 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
               flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
               ${
                 sortMode === 'date'
-                  ? 'border-orange-500 text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? 'border-orange-500 text-foreground bg-white dark:bg-slate-700'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
               }
             `}
             aria-pressed={sortMode === 'date'}
@@ -49,8 +49,8 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
               flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
               ${
                 sortMode === 'distance'
-                  ? 'border-orange-500 text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? 'border-orange-500 text-foreground bg-white dark:bg-slate-700'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
               }
             `}
             aria-pressed={sortMode === 'distance'}

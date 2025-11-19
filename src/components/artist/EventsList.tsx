@@ -241,14 +241,16 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                           <span className="text-sm font-bold text-foreground">
                             {group.monthLabel}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            +{group.events.length - 1} more
-                          </span>
-                          {isMonthExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              +{group.events.length - 1} more
+                            </span>
+                            {isMonthExpanded ? (
+                              <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                            )}
+                          </div>
                         </button>
                         {isMonthExpanded && (
                           <div id={`month-${group.monthKey}`} className="space-y-2 pl-2">
@@ -277,14 +279,16 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                       <span className="text-sm font-bold text-foreground">
                         {group.monthLabel}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
-                      </span>
-                      {isMonthExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                        </span>
+                        {isMonthExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        )}
+                      </div>
                     </button>
                     {isMonthExpanded && (
                       <div id={`month-${group.monthKey}`} className="space-y-2 pl-2">
@@ -331,14 +335,16 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                           <span className="text-sm font-bold text-foreground">
                             {group.rangeLabel}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            +{group.events.length - 1} more
-                          </span>
-                          {isDistanceExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              +{group.events.length - 1} more
+                            </span>
+                            {isDistanceExpanded ? (
+                              <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                            )}
+                          </div>
                         </button>
                         {isDistanceExpanded && (
                           <div id={`distance-${group.rangeKey}`} className="space-y-2 pl-2">
@@ -367,14 +373,16 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                       <span className="text-sm font-bold text-foreground">
                         {group.rangeLabel}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
-                      </span>
-                      {isDistanceExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                        </span>
+                        {isDistanceExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        )}
+                      </div>
                     </button>
                     {isDistanceExpanded && (
                       <div id={`distance-${group.rangeKey}`} className="space-y-2 pl-2">
@@ -490,7 +498,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
 
   return (
     <article
-      className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-slate-50 dark:bg-slate-800/50
+      className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800/50
                   ${isNextEvent ? 'border-2 border-white dark:border-white border-l-[3px] border-l-orange-500' : 'border border-border'}`}
       tabIndex={0}
       role="article"
