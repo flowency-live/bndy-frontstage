@@ -161,8 +161,8 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
 
   return (
     <div className="h-full w-full flex flex-col">
-      {/* Search Box - at top */}
-      <div className="relative z-20 p-2 bg-background shrink-0">
+      {/* Search Box - at top with minimal padding */}
+      <div className="relative z-20 px-2 pt-2 pb-1 shrink-0">
         <input
           ref={searchInputRef}
           type="text"
@@ -172,7 +172,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       </div>
 
       {/* Map Container - fills remaining space */}
-      <div ref={mapRef} className="flex-1 w-full min-h-0" />
+      <div ref={mapRef} className="flex-1 w-full" />
 
       {/* Selected Venue Card - positioned at bottom */}
       {selectedVenue && (
