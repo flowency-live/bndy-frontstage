@@ -91,6 +91,9 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
           lng: place.geometry.location.lng(),
         },
         googlePlaceId: place.place_id,
+        validated: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       handleSelectVenue(venue);
