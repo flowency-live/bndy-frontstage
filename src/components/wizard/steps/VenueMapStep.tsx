@@ -6,7 +6,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { EventWizardFormData, Venue } from '@/lib/types';
 import { useGoogleMaps } from '@/components/providers/GoogleMapsProvider';
-import { searchVenues } from '@/lib/utils/venue-search';
 
 interface VenueMapStepProps {
   formData: EventWizardFormData;
@@ -16,15 +15,13 @@ interface VenueMapStepProps {
 
 export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) {
   const { isLoaded, loadGoogleMaps } = useGoogleMaps();
-  const [query, setQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<Venue[]>([]);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(formData.venue);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   // Load Google Maps on mount
   useEffect(() => {
@@ -66,73 +63,41 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     }
   }, [isLoaded, map]);
 
-  // Debounced search
+  // Initialize Google Places Autocomplete
   useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+    if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
 
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+    const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
+      types: ['establishment'],
+      fields: ['place_id', 'name', 'formatted_address', 'geometry', 'types'],
+    });
 
-    setIsSearching(true);
+    autocomplete.bindTo('bounds', map);
 
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const mapCenter = map?.getCenter();
-        const center = mapCenter ? { lat: mapCenter.lat(), lng: mapCenter.lng() } : undefined;
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
 
-        const searchResults = await searchVenues(query, center || { lat: 53.0, lng: -2.0 });
-        // Combine BNDY venues with Google venues for display
-        const allVenues = [...searchResults.bndyVenues];
-        setResults(allVenues);
-
-        // Clear old markers
-        markers.forEach(m => m.setMap(null));
-
-        // Add new markers
-        const newMarkers = allVenues.map((venue: Venue, index: number) => {
-          const marker = new google.maps.Marker({
-            position: venue.location,
-            map,
-            title: venue.name,
-            label: {
-              text: String(index + 1),
-              color: 'white',
-            },
-            animation: google.maps.Animation.DROP,
-          });
-
-          marker.addListener('click', () => {
-            handleSelectVenue(venue);
-          });
-
-          return marker;
-        });
-
-        setMarkers(newMarkers);
-
-        // Fit map to show all results
-        if (allVenues.length > 0 && map) {
-          const bounds = new google.maps.LatLngBounds();
-          allVenues.forEach((v: Venue) => bounds.extend(v.location));
-          map.fitBounds(bounds);
-        }
-      } catch (err) {
-        console.error('Venue search error:', err);
-      } finally {
-        setIsSearching(false);
+      if (!place.geometry || !place.geometry.location) {
+        console.log('No geometry for place');
+        return;
       }
-    }, 500);
 
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [query, map]);
+      const venue: Venue = {
+        id: place.place_id || '',
+        name: place.name || '',
+        address: place.formatted_address || '',
+        location: {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        },
+        googlePlaceId: place.place_id,
+      };
+
+      handleSelectVenue(venue);
+    });
+
+    autocompleteRef.current = autocomplete;
+  }, [isLoaded, map]);
 
   const handleSelectVenue = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
@@ -148,11 +113,13 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       map.setZoom(15);
     }
 
-    // Clear search results and markers
-    setQuery('');
-    setResults([]);
+    // Clear search input
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
+    }
+
+    // Clear old markers
     markers.forEach(m => m.setMap(null));
-    setMarkers([]);
 
     // Add a single marker for selected venue
     const marker = new google.maps.Marker({
@@ -192,19 +159,13 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   return (
     <div className="h-full w-full flex flex-col">
       {/* Search Box - at top */}
-      <div className="relative z-20 p-2 sm:p-4 bg-background shrink-0">
+      <div className="relative z-20 p-2 bg-background shrink-0">
         <input
+          ref={searchInputRef}
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for a venue..."
-          className="w-full px-4 py-3 rounded-lg bg-card border-2 border-border text-foreground placeholder-muted-foreground focus:border-orange-500 focus:outline-none shadow-lg"
+          className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
         />
-        {isSearching && (
-          <div className="px-4 py-2 text-sm text-muted-foreground">
-            Searching...
-          </div>
-        )}
       </div>
 
       {/* Map Container - fills remaining space */}
