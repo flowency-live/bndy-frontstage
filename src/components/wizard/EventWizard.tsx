@@ -85,7 +85,7 @@ export function EventWizard({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
       <WizardHeader
         currentStep={currentStep}
         totalSteps={4}
@@ -93,7 +93,7 @@ export function EventWizard({
         onBack={currentStep > 0 ? previousStep : undefined}
       />
 
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden relative">
         {renderStep()}
       </main>
 

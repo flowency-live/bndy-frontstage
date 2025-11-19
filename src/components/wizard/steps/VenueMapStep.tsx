@@ -190,28 +190,25 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* Map Container - fills all space */}
-      <div ref={mapRef} className="absolute inset-0 w-full h-full" />
-
-      {/* Search Box Overlay - positioned at top */}
-      <div className="absolute top-2 left-2 right-2 z-10 sm:top-4 sm:left-4 sm:right-4">
-        <div className="bg-card shadow-lg rounded-lg">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for a venue..."
-            className="w-full px-4 py-3 rounded-lg bg-background border-2 border-border text-foreground placeholder-muted-foreground focus:border-orange-500 focus:outline-none"
-          />
-
-          {isSearching && (
-            <div className="px-4 py-2 text-sm text-muted-foreground">
-              Searching...
-            </div>
-          )}
-        </div>
+    <div className="relative h-full w-full flex flex-col">
+      {/* Search Box - at top */}
+      <div className="relative z-20 p-2 sm:p-4 bg-background">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search for a venue..."
+          className="w-full px-4 py-3 rounded-lg bg-card border-2 border-border text-foreground placeholder-muted-foreground focus:border-orange-500 focus:outline-none shadow-lg"
+        />
+        {isSearching && (
+          <div className="px-4 py-2 text-sm text-muted-foreground">
+            Searching...
+          </div>
+        )}
       </div>
+
+      {/* Map Container - fills remaining space */}
+      <div ref={mapRef} className="flex-1 w-full relative" />
 
       {/* Selected Venue Card - positioned at bottom */}
       {selectedVenue && (
