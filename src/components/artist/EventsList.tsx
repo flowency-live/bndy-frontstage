@@ -490,8 +490,8 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
 
   return (
     <article
-      className={`relative rounded-xl border border-border bg-card-bg transition-all duration-200 hover:shadow-md
-                  ${isNextEvent ? 'border-l-[3px] border-l-orange-500' : ''}`}
+      className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-slate-50 dark:bg-slate-800/50
+                  ${isNextEvent ? 'border-2 border-white dark:border-white border-l-[3px] border-l-orange-500' : 'border border-border'}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
@@ -500,7 +500,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
       <div className="p-3 space-y-2">
         {/* Row 1: Venue + Distance Badge */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex-1 min-w-0">
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
               <Link
                 href={`/artists/${event.artistIds[0]}`}
@@ -519,16 +519,10 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
                 {event.venueName}
               </Link>
             )}
-            {/* Venue city/location */}
-            {event.venueCity && (
-              <p className="text-xs text-muted-foreground">
-                {event.venueCity}
-              </p>
-            )}
           </div>
           {distance !== null && (
             <span
-              className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 whitespace-nowrap flex-shrink-0"
+              className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded bg-orange-500 text-white dark:bg-orange-600 dark:text-white whitespace-nowrap flex-shrink-0"
               aria-label={`Distance from your location: ${formatDistance(distance)}`}
             >
               {formatDistance(distance)}
@@ -536,12 +530,19 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
           )}
         </div>
 
-        {/* Row 2: Date • Time */}
+        {/* Row 2: Date • Time + Venue City */}
         <div className="border-t border-border pt-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <time dateTime={event.date}>{formattedDate}</time>
-            <span className="text-muted-foreground">•</span>
-            <span>{event.startTime}</span>
+          <div className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
+            <div className="flex items-center gap-2">
+              <time dateTime={event.date}>{formattedDate}</time>
+              <span className="text-muted-foreground">•</span>
+              <span>{event.startTime}</span>
+            </div>
+            {event.venueCity && (
+              <span className="text-xs text-muted-foreground">
+                {event.venueCity}
+              </span>
+            )}
           </div>
         </div>
 
