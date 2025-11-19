@@ -21,7 +21,7 @@ export function WizardHeader({
   return (
     <div className="sticky top-0 z-50 bg-orange-500 text-white shadow-lg">
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-2">
         {/* Back Button */}
         {onBack && currentStep > 0 && (
           <button
@@ -68,7 +68,7 @@ export function WizardHeader({
       </div>
 
       {/* Step Indicators */}
-      <div className="flex justify-center gap-2 py-3">
+      <div className="flex justify-center gap-2 py-2">
         {Array.from({ length: totalSteps }).map((_, index) => (
           <div
             key={index}

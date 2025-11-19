@@ -163,7 +163,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   }
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="absolute inset-0 flex flex-col">
       {/* Search Box - at top with minimal padding */}
       <div className="relative z-20 px-2 pt-2 pb-1 shrink-0">
         <input
