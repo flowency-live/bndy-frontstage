@@ -63,7 +63,7 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="bg-background py-4">
+    <div className="bg-background py-2">
       <div className="container mx-auto px-4">
         <nav
           role="tablist"
@@ -90,7 +90,7 @@ export default function TabNavigation({
                 `}
               >
                 <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}

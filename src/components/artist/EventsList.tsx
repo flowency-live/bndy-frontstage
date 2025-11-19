@@ -5,7 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { getUserLocation, calculateDistance, formatDistance, Location } from "@/lib/utils/distance";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Ticket } from "lucide-react";
 
 interface EventsListProps {
   events: Event[];
@@ -205,39 +205,14 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
   };
 
   return (
-    <section className="space-y-4" aria-labelledby="events-heading">
-      <div className="flex items-center justify-between gap-4">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-foreground hover:text-primary transition-colors text-left antialiased"
-          aria-expanded={isExpanded}
-          aria-controls="events-list"
-        >
-          <span id="events-heading" className="tracking-tight">
-            Upcoming Events ({filteredEvents.length}{events.length !== filteredEvents.length ? ` of ${events.length}` : ''})
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0" aria-hidden="true" />
-          )}
-        </button>
-
-        {!hideDistanceFilter && userLocation && locationPermission === 'granted' && isExpanded && (
-          <LocationFilter
-            distanceFilter={distanceFilter}
-            onDistanceChange={setDistanceFilter}
-          />
-        )}
-      </div>
-
-      {isExpanded && (
-        <div
-          id="events-list"
-          className="space-y-3"
-          role="list"
-          aria-label={`${filteredEvents.length} upcoming events grouped by ${sortBy === 'date' ? 'month' : 'distance'}`}
-        >
+    <section className="space-y-3" aria-labelledby="events-heading">
+      <h2 id="events-heading" className="sr-only">Upcoming Events</h2>
+      <div
+        id="events-list"
+        className="space-y-3"
+        role="list"
+        aria-label={`${filteredEvents.length} upcoming events grouped by ${sortBy === 'date' ? 'month' : 'distance'}`}
+      >
           {sortBy === 'date' && monthGroups.map((group, groupIndex) => {
             const isFirstGroup = groupIndex === 0;
             const isMonthExpanded = expandedMonths.has(group.monthKey);
@@ -263,14 +238,12 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                           aria-expanded={isMonthExpanded}
                           aria-controls={`month-${group.monthKey}`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground">
-                              {group.monthLabel}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              +{group.events.length - 1} more
-                            </span>
-                          </div>
+                          <span className="text-sm font-bold text-foreground">
+                            {group.monthLabel}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            +{group.events.length - 1} more
+                          </span>
                           {isMonthExpanded ? (
                             <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                           ) : (
@@ -301,14 +274,12 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                       aria-expanded={isMonthExpanded}
                       aria-controls={`month-${group.monthKey}`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground">
-                          {group.monthLabel}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
-                        </span>
-                      </div>
+                      <span className="text-sm font-bold text-foreground">
+                        {group.monthLabel}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                      </span>
                       {isMonthExpanded ? (
                         <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                       ) : (
@@ -357,14 +328,12 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                           aria-expanded={isDistanceExpanded}
                           aria-controls={`distance-${group.rangeKey}`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground">
-                              {group.rangeLabel}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              +{group.events.length - 1} more
-                            </span>
-                          </div>
+                          <span className="text-sm font-bold text-foreground">
+                            {group.rangeLabel}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            +{group.events.length - 1} more
+                          </span>
                           {isDistanceExpanded ? (
                             <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                           ) : (
@@ -395,14 +364,12 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
                       aria-expanded={isDistanceExpanded}
                       aria-controls={`distance-${group.rangeKey}`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground">
-                          {group.rangeLabel}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
-                        </span>
-                      </div>
+                      <span className="text-sm font-bold text-foreground">
+                        {group.rangeLabel}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+                      </span>
                       {isDistanceExpanded ? (
                         <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                       ) : (
@@ -426,8 +393,7 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
               </div>
             );
           })}
-        </div>
-      )}
+      </div>
     </section>
   );
 }
@@ -531,6 +497,13 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
       data-testid="event-card"
     >
+      {/* Venue City (top-right, absolute) */}
+      {event.venueCity && (
+        <div className="absolute top-2 right-2 text-xs text-muted-foreground font-medium">
+          {event.venueCity}
+        </div>
+      )}
+
       <div className="p-3 space-y-2">
         {/* Row 1: Venue + Distance Badge */}
         <div className="flex items-start justify-between gap-2">
@@ -546,8 +519,9 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
             ) : (
               <Link
                 href={`/venues/${event.venueId}`}
-                className="text-base font-semibold text-foreground hover:text-primary transition-colors truncate block"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-venue w-fit"
                 aria-label={`View venue details for ${event.venueName}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 {event.venueName}
               </Link>
@@ -581,8 +555,9 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
         {/* Row 3: Free Entry OR Ticket Info */}
         {!event.ticketed && (
           <div className="border-t border-border pt-2">
-            <span className="text-sm font-medium" style={{ color: '#00D9FF' }}>
-              Free Entry
+            <span className="inline-flex items-center gap-1.5 text-sm font-bold text-yellow-500">
+              <Ticket className="w-4 h-4" aria-hidden="true" />
+              £ree Entry
             </span>
           </div>
         )}

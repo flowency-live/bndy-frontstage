@@ -26,7 +26,7 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   return (
     <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4">
       {/* Sort Toggle */}
-      <div className="mb-6 flex justify-center">
+      <div className="mb-3 flex justify-center">
         <div className="inline-flex gap-2 p-1.5 bg-muted dark:bg-slate-800 rounded-full">
           <button
             onClick={() => setSortMode('date')}
