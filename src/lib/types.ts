@@ -182,6 +182,16 @@ export interface EventFormData {
   dateConflicts?: DateConflict[];
 }
 
+// OLD DateConflict interface - used by existing BaseEventWizard
+export interface DateConflict {
+  type: 'venue' | 'artist' | 'exact_duplicate';
+  name: string;
+  existingEvent: {
+    name: string;
+    startTime: string;
+  };
+}
+
 export interface EventConflictCheck {
   venue: Venue;
   artists: Artist[];
@@ -276,10 +286,11 @@ export function hasSocialMedia(item: Venue | Artist): boolean {
 }
 
 // =========================================
-// EVENT WIZARD TYPES
+// EVENT WIZARD TYPES (New /new wizard)
 // =========================================
 
-export interface DateConflict {
+// NEW DateConflict interface - used by new EventWizard
+export interface WizardDateConflict {
   type: 'exact_duplicate' | 'venue' | 'artist';
   severity: 'blocking' | 'warning';
   message: string;
@@ -301,7 +312,7 @@ export interface EventWizardFormData {
   date: string;
   startTime: string;
   endTime?: string;
-  conflicts?: DateConflict[];
+  conflicts?: WizardDateConflict[];
 
   // Step 4: Details
   name: string;

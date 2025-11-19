@@ -2,7 +2,7 @@
 // TDD: Write tests FIRST for conflict detection logic
 
 import { checkEventConflicts } from './conflict-detection';
-import type { EventWizardFormData, DateConflict } from '../types';
+import type { EventWizardFormData, WizardDateConflict } from '../types';
 
 // Mock fetch for API calls
 global.fetch = jest.fn();

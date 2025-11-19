@@ -1,7 +1,7 @@
 // src/lib/utils/conflict-detection.ts
 // Conflict detection logic for event wizard (<200 LOC)
 
-import type { EventWizardFormData, DateConflict } from '../types';
+import type { EventWizardFormData, WizardDateConflict } from '../types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.bndy.co.uk';
 
@@ -20,7 +20,7 @@ interface ConflictApiResponse {
  */
 export async function checkEventConflicts(
   formData: EventWizardFormData
-): Promise<DateConflict[]> {
+): Promise<WizardDateConflict[]> {
   const { venue, artists, date, startTime, isOpenMic } = formData;
 
   const response = await fetch(`${API_BASE_URL}/api/events/check-conflicts`, {
