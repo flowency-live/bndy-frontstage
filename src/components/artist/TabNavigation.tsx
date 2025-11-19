@@ -63,7 +63,7 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="bg-background py-2">
+    <div className="bg-white dark:bg-background py-2">
       <div className="container mx-auto px-4">
         <nav
           role="tablist"

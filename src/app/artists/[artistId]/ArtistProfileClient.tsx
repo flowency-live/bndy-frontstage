@@ -29,7 +29,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   // Handle error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">Artist Not Found</h1>
           <p className="text-muted-foreground">{error}</p>
@@ -47,7 +47,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   // Handle loading state
   if (isLoading || !initialData) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white dark:bg-background">
         <div className="animate-pulse">
           {/* Banner skeleton - matches ArtistHeroBanner heights */}
           <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted mb-6"></div>
@@ -63,7 +63,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
   }
 
   return (
-    <div className="artist-profile-page bg-background min-h-screen">
+    <div className="artist-profile-page bg-white dark:bg-background min-h-screen">
       {/*
         LAYOUT STRUCTURE - DO NOT MODIFY HIERARCHY
 
