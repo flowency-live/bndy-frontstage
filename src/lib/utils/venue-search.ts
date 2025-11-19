@@ -146,27 +146,13 @@ export async function searchVenues(
   query: string,
   mapCenter: { lat: number; lng: number }
 ): Promise<SearchResult> {
-  // Search BNDY venues with nameVariants
-  const response = await fetch(`${API_BASE_URL}/api/venues/search`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query,
-      includeNameVariants: true,
-      types: ['bar', 'night_club', 'music_venue'],
-    }),
-  });
+  // TODO: Backend /api/venues/search endpoint not yet implemented
+  // For now, return empty results to prevent errors
+  // Will integrate Google Places API directly in the component
+  console.log('[venue-search] Search called for:', query, 'center:', mapCenter);
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-
-  // TODO: Integrate Google Places API when component is ready
-  // For now, return only BNDY results
-  return filterDuplicates(data.venues || [], []);
+  return {
+    bndyVenues: [],
+    googleVenues: [],
+  };
 }
