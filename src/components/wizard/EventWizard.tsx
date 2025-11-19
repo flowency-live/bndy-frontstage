@@ -85,7 +85,7 @@ export function EventWizard({
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <WizardHeader
         currentStep={currentStep}
         totalSteps={4}
@@ -99,11 +99,11 @@ export function EventWizard({
 
       {/* Cancel button - bottom of screen */}
       {onCancel && (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card p-4">
           <div className="mx-auto max-w-4xl">
             <button
               onClick={onCancel}
-              className="w-full rounded-lg border-2 border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
+              className="w-full rounded-lg border-2 border-border px-6 py-3 text-card-foreground transition-colors hover:bg-muted"
             >
               Cancel
             </button>
