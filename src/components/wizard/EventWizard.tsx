@@ -5,7 +5,7 @@
 
 import { useEventWizard } from '@/hooks/useEventWizard';
 import { WizardHeader } from './WizardHeader';
-import { VenueStep } from './steps/VenueStep';
+import { VenueMapStep } from './steps/VenueMapStep';
 import { ArtistStep } from './steps/ArtistStep';
 import { DateTimeStep } from './steps/DateTimeStep';
 import { ReviewStep } from './steps/ReviewStep';
@@ -50,7 +50,7 @@ export function EventWizard({
     switch (currentStep) {
       case 0:
         return (
-          <VenueStep
+          <VenueMapStep
             formData={formData}
             onUpdate={updateFormData}
             onNext={nextStep}
