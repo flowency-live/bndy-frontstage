@@ -68,10 +68,13 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
 
     const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
-      types: ['establishment'],
+      // Prioritize venue types - still allows other establishments but weighs these higher
+      types: ['bar', 'night_club', 'restaurant', 'cafe'],
       fields: ['place_id', 'name', 'formatted_address', 'geometry', 'types'],
+      componentRestrictions: { country: 'gb' }, // Restrict to UK
     });
 
+    // Bias results to current map location but allow searching anywhere
     autocomplete.bindTo('bounds', map);
 
     autocomplete.addListener('place_changed', () => {
