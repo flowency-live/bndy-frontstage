@@ -85,7 +85,7 @@ export function EventWizard({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
       <WizardHeader
         currentStep={currentStep}
         totalSteps={4}
@@ -93,17 +93,17 @@ export function EventWizard({
         onBack={currentStep > 0 ? previousStep : undefined}
       />
 
-      <main className="mx-auto max-w-4xl">
+      <main className="flex-1 overflow-hidden">
         {renderStep()}
       </main>
 
       {/* Cancel button - bottom of screen */}
       {onCancel && (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card p-4">
+        <div className="border-t border-border bg-card p-2 sm:p-4">
           <div className="mx-auto max-w-4xl">
             <button
               onClick={onCancel}
-              className="w-full rounded-lg border-2 border-border px-6 py-3 text-card-foreground transition-colors hover:bg-muted"
+              className="w-full rounded-lg border-2 border-border px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-card-foreground transition-colors hover:bg-muted"
             >
               Cancel
             </button>

@@ -190,12 +190,12 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   }
 
   return (
-    <div className="relative h-[calc(100vh-200px)]">
-      {/* Map Container */}
-      <div ref={mapRef} className="h-full w-full" />
+    <div className="absolute inset-0 flex flex-col overflow-hidden">
+      {/* Map Container - fills all space */}
+      <div ref={mapRef} className="absolute inset-0 w-full h-full" />
 
-      {/* Search Box Overlay */}
-      <div className="absolute top-4 left-4 right-4 z-10">
+      {/* Search Box Overlay - positioned at top */}
+      <div className="absolute top-2 left-2 right-2 z-10 sm:top-4 sm:left-4 sm:right-4">
         <div className="bg-card shadow-lg rounded-lg">
           <input
             type="text"
@@ -213,9 +213,9 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
         </div>
       </div>
 
-      {/* Selected Venue Card */}
+      {/* Selected Venue Card - positioned at bottom */}
       {selectedVenue && (
-        <div className="absolute bottom-4 left-4 right-4 z-10">
+        <div className="absolute bottom-2 left-2 right-2 z-10 sm:bottom-4 sm:left-4 sm:right-4">
           <div className="bg-card shadow-lg rounded-lg p-4 border-2 border-orange-500">
             <div className="flex items-start justify-between mb-3">
               <div>
