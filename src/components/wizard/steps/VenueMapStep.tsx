@@ -166,12 +166,12 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   return (
     <div className="absolute inset-0 flex flex-col">
       {/* Search Box - at top with minimal padding */}
-      <div className="relative z-20 px-2 pt-1 shrink-0">
+      <div className="relative z-20 px-2 pb-1 shrink-0">
         <input
           ref={searchInputRef}
           type="text"
           placeholder="Search for a venue..."
-          className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
+          className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
         />
       </div>
 
