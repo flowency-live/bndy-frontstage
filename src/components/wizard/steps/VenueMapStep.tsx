@@ -68,8 +68,9 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
 
     const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
-      // Prioritize venue types - still allows other establishments but weighs these higher
-      types: ['bar', 'night_club', 'restaurant', 'cafe'],
+      // Use 'establishment' to allow all venue types (clubs, pubs, restaurants, etc)
+      // Type filtering was too restrictive - excluded Conservative Clubs, Working Men's Clubs, etc
+      types: ['establishment'],
       fields: ['place_id', 'name', 'formatted_address', 'geometry', 'types'],
       componentRestrictions: { country: 'gb' }, // Restrict to UK
     });
