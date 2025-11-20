@@ -14,6 +14,8 @@ interface VenueMapStepProps {
 }
 
 export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) {
+  console.log('[VenueMapStep] Component mounted - CODE VERSION 7068f2d');
+
   const { isLoaded, loadGoogleMaps } = useGoogleMaps();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(formData.venue);
   const [map, setMap] = useState<google.maps.Map | null>(null);
