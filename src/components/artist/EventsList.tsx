@@ -494,8 +494,8 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
 
   return (
     <article
-      className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800/50
-                  ${isNextEvent ? 'border-2 border-white dark:border-white border-l-[3px] border-l-primary' : 'border border-border'}`}
+      className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800
+                  ${isNextEvent ? 'border-2 border-gray-200 dark:border-gray-700 border-l-[3px] border-l-primary' : 'border border-gray-200 dark:border-gray-700'}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
