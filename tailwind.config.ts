@@ -20,6 +20,7 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        "card-bg": "var(--card-bg)",
         muted: {
           DEFAULT: "var(--muted)",
           foreground: "var(--muted-foreground)",
