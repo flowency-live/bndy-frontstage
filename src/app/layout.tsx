@@ -55,24 +55,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Theme initialization script - runs before React hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const savedTheme = localStorage.getItem('bndy-theme-preference');
-                  const shouldUseDarkMode = savedTheme === null ? true : savedTheme === 'dark';
-                  if (shouldUseDarkMode) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
         {/* Enhanced mobile-specific meta tags */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
