@@ -452,11 +452,7 @@ function LocationFilter({ distanceFilter, onDistanceChange }: LocationFilterProp
         id="distance-filter-select"
         value={distanceFilter || ""}
         onChange={(e) => onDistanceChange(e.target.value ? Number(e.target.value) : null)}
-        className="px-2 py-1 bg-orange-500 text-white rounded-full text-xs font-bold border-none focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 cursor-pointer"
-        style={{
-          backgroundColor: 'rgb(249 115 22)',
-          color: 'white'
-        }}
+        className="px-2 py-1 bg-primary text-white rounded-full text-xs font-bold border-none focus:outline-none focus:ring-2 focus:ring-primary/60 focus:ring-offset-2 cursor-pointer"
         aria-label="Filter events by distance from your location"
         aria-describedby="distance-filter-description"
       >
@@ -499,7 +495,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
   return (
     <article
       className={`relative rounded-xl transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800/50
-                  ${isNextEvent ? 'border-2 border-white dark:border-white border-l-[3px] border-l-orange-500' : 'border border-border'}`}
+                  ${isNextEvent ? 'border-2 border-white dark:border-white border-l-[3px] border-l-primary' : 'border border-border'}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}

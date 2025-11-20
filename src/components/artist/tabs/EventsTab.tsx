@@ -34,7 +34,7 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
               flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
               ${
                 sortMode === 'date'
-                  ? 'border-orange-500 text-foreground bg-white dark:bg-slate-700'
+                  ? 'border-primary text-foreground bg-white dark:bg-slate-700'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
               }
             `}
@@ -49,7 +49,7 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
               flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
               ${
                 sortMode === 'distance'
-                  ? 'border-orange-500 text-foreground bg-white dark:bg-slate-700'
+                  ? 'border-primary text-foreground bg-white dark:bg-slate-700'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
               }
             `}
