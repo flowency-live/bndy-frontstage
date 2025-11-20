@@ -65,8 +65,11 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
+    console.log('[VenueMapStep] Autocomplete init effect - isLoaded:', isLoaded, 'hasInput:', !!searchInputRef.current, 'hasAutocomplete:', !!autocompleteRef.current, 'hasMap:', !!map);
+
     if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
 
+    console.log('[VenueMapStep] Creating autocomplete instance');
     const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
       // Use 'establishment' to allow all venue types (clubs, pubs, restaurants, etc)
       // Type filtering was too restrictive - excluded Conservative Clubs, Working Men's Clubs, etc
@@ -75,9 +78,11 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       componentRestrictions: { country: 'gb' }, // Restrict to UK
     });
 
+    console.log('[VenueMapStep] Autocomplete created, binding to bounds');
     // Bias results to current map location but allow searching anywhere
     autocomplete.bindTo('bounds', map);
 
+    console.log('[VenueMapStep] Adding place_changed listener');
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
 
