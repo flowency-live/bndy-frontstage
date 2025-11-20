@@ -86,6 +86,13 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
         return;
       }
 
+      // Log place types to help refine filtering
+      console.log('[VenueMapStep] Selected place:', {
+        name: place.name,
+        types: place.types,
+        placeId: place.place_id
+      });
+
       const venue: Venue = {
         id: place.place_id || '',
         name: place.name || '',
