@@ -27,7 +27,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300); // 300ms for faster response
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -176,13 +176,23 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     // Clear old markers
     markers.forEach(m => m.setMap(null));
 
-    // Add a single marker for selected venue
+    // Add a single marker for selected venue with custom cyan SVG icon
     const marker = new google.maps.Marker({
       position: venue.location,
       map,
       title: venue.name,
       icon: {
-        url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="29" viewBox="0 0 24 36">
+            <path d="M12,0 C5.3,0 0,5.3 0,12 C0,20 12,36 12,36 C12,36 24,20 24,12 C24,5.3 18.6,0 12,0 Z"
+              fill="#06B6D4"
+              stroke="#FFFFFF"
+              stroke-width="1.5" />
+            <circle cx="12" cy="12" r="3.5" fill="#FFFFFF" />
+          </svg>
+        `),
+        scaledSize: new google.maps.Size(22, 29),
+        anchor: new google.maps.Point(11, 29),
       },
     });
 
