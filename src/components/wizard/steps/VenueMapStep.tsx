@@ -1,11 +1,12 @@
 // src/components/wizard/steps/VenueMapStep.tsx
-// Google Maps interface with pin selection for venue search
+// Google Maps interface with Places Text Search for venue selection
 
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { EventWizardFormData, Venue } from '@/lib/types';
 import { useGoogleMaps } from '@/components/providers/GoogleMapsProvider';
+import { useDebounce } from 'use-debounce';
 
 interface VenueMapStepProps {
   formData: EventWizardFormData;
@@ -13,17 +14,26 @@ interface VenueMapStepProps {
   onNext: () => void;
 }
 
-export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) {
-  console.warn('[VenueMapStep] Component mounted - CODE VERSION DEBUG-001');
+interface SearchResult {
+  name: string;
+  address: string;
+  placeId: string;
+  location: { lat: number; lng: number };
+}
 
+export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) {
   const { isLoaded, loadGoogleMaps } = useGoogleMaps();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(formData.venue);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   // Load Google Maps on mount
   useEffect(() => {
@@ -65,69 +75,86 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     }
   }, [isLoaded, map]);
 
-  // Initialize Google Places Autocomplete
-  useEffect(() => {
-    console.warn('[VenueMapStep] Autocomplete init effect - isLoaded:', isLoaded, 'hasInput:', !!searchInputRef.current, 'hasAutocomplete:', !!autocompleteRef.current, 'hasMap:', !!map);
+  // Search venues using Google Places Text Search API
+  const searchVenues = useCallback(async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
 
-    if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
+    if (!isLoaded) {
+      console.warn('[VenueMapStep] Google Maps not loaded yet');
+      return;
+    }
 
-    console.warn('[VenueMapStep] Creating autocomplete instance');
-    const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
-      // Use 'establishment' to allow all venue types (clubs, pubs, restaurants, etc)
-      // Type filtering was too restrictive - excluded Conservative Clubs, Working Men's Clubs, etc
-      types: ['establishment'],
-      fields: ['place_id', 'name', 'formatted_address', 'geometry', 'types'],
-      componentRestrictions: { country: 'gb' }, // Restrict to UK
-    });
+    setIsSearching(true);
+    setShowResults(true);
 
-    console.warn('[VenueMapStep] Autocomplete created, binding to bounds');
-    // Bias results to current map location but allow searching anywhere
-    autocomplete.bindTo('bounds', map);
+    try {
+      // Use the new Place.searchByText API (same as backstage)
+      if (google.maps.places.Place && (google.maps.places.Place as any).searchByText) {
+        const request: any = {
+          textQuery: query,
+          fields: ['displayName', 'formattedAddress', 'location', 'id'],
+          maxResultCount: 20,
+          // No location bias - search UK-wide for better results
+        };
 
-    console.warn('[VenueMapStep] Adding place_changed listener');
-    console.warn('[VenueMapStep] Autocomplete object:', autocomplete);
-    console.warn('[VenueMapStep] Autocomplete addListener method:', typeof autocomplete.addListener);
+        const { places } = await (google.maps.places.Place as any).searchByText(request);
 
-    const listener = autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
+        if (!places || places.length === 0) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
 
-      console.warn('[VenueMapStep] place_changed fired');
-      console.warn('[VenueMapStep] Full place object:', place);
+        // Convert to our SearchResult format
+        const results: SearchResult[] = places.map((place: any) => ({
+          name: place.displayName || '',
+          address: place.formattedAddress || '',
+          placeId: place.id || '',
+          location: {
+            lat: place.location?.lat() || 0,
+            lng: place.location?.lng() || 0,
+          },
+        }));
 
-      if (!place.geometry || !place.geometry.location) {
-        console.warn('No geometry for place');
-        return;
+        setSearchResults(results);
+      } else {
+        console.warn('[VenueMapStep] Place.searchByText API not available');
+        setSearchResults([]);
       }
+    } catch (error) {
+      console.error('[VenueMapStep] Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [isLoaded]);
 
-      // Log place types to help refine filtering
-      console.warn('[VenueMapStep] Selected place:', {
-        name: place.name,
-        types: place.types,
-        placeId: place.place_id,
-        allFields: Object.keys(place)
-      });
+  // Trigger search when debounced term changes
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      searchVenues(debouncedSearchTerm);
+    } else {
+      setSearchResults([]);
+      setShowResults(false);
+    }
+  }, [debouncedSearchTerm, searchVenues]);
 
-      const venue: Venue = {
-        id: place.place_id || '',
-        name: place.name || '',
-        address: place.formatted_address || '',
-        location: {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        },
-        googlePlaceId: place.place_id,
-        validated: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+  const handleSelectVenue = useCallback((result: SearchResult) => {
+    const venue: Venue = {
+      id: result.placeId,
+      name: result.name,
+      address: result.address,
+      location: result.location,
+      googlePlaceId: result.placeId,
+      validated: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
-      handleSelectVenue(venue);
-    });
-
-    autocompleteRef.current = autocomplete;
-  }, [isLoaded, map]);
-
-  const handleSelectVenue = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     onUpdate({
       venue,
@@ -141,10 +168,10 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       map.setZoom(15);
     }
 
-    // Clear search input
-    if (searchInputRef.current) {
-      searchInputRef.current.value = '';
-    }
+    // Clear search
+    setSearchTerm('');
+    setShowResults(false);
+    setSearchResults([]);
 
     // Clear old markers
     markers.forEach(m => m.setMap(null));
@@ -192,8 +219,45 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
           ref={searchInputRef}
           type="text"
           placeholder="Search for a venue..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => {
+            if (searchResults.length > 0) {
+              setShowResults(true);
+            }
+          }}
           className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
         />
+
+        {/* Search Results Dropdown */}
+        {showResults && searchResults.length > 0 && (
+          <div className="absolute top-full left-2 right-2 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-64 overflow-y-auto z-30">
+            {searchResults.map((result, index) => (
+              <button
+                key={`${result.placeId}-${index}`}
+                onClick={() => handleSelectVenue(result)}
+                className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors"
+              >
+                <div className="font-medium text-gray-900 dark:text-white">{result.name}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{result.address}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* No Results Message */}
+        {showResults && !isSearching && searchTerm.length >= 2 && searchResults.length === 0 && (
+          <div className="absolute top-full left-2 right-2 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4 z-30">
+            <p className="text-center text-gray-600 dark:text-gray-400">No venues found for "{searchTerm}"</p>
+          </div>
+        )}
+
+        {/* Loading Indicator */}
+        {isSearching && (
+          <div className="absolute top-full left-2 right-2 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4 z-30">
+            <p className="text-center text-gray-600 dark:text-gray-400">Searching...</p>
+          </div>
+        )}
       </div>
 
       {/* Map Container - fills remaining space */}
