@@ -14,7 +14,7 @@ interface VenueMapStepProps {
 }
 
 export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) {
-  console.log('[VenueMapStep] Component mounted - CODE VERSION 7068f2d');
+  console.warn('[VenueMapStep] Component mounted - CODE VERSION DEBUG-001');
 
   const { isLoaded, loadGoogleMaps } = useGoogleMaps();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(formData.venue);
@@ -59,7 +59,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
           newMap.setZoom(12);
         },
         () => {
-          console.log('Geolocation permission denied, using default location');
+          console.warn('Geolocation permission denied, using default location');
         }
       );
     }
@@ -67,11 +67,11 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
-    console.log('[VenueMapStep] Autocomplete init effect - isLoaded:', isLoaded, 'hasInput:', !!searchInputRef.current, 'hasAutocomplete:', !!autocompleteRef.current, 'hasMap:', !!map);
+    console.warn('[VenueMapStep] Autocomplete init effect - isLoaded:', isLoaded, 'hasInput:', !!searchInputRef.current, 'hasAutocomplete:', !!autocompleteRef.current, 'hasMap:', !!map);
 
     if (!isLoaded || !searchInputRef.current || autocompleteRef.current || !map) return;
 
-    console.log('[VenueMapStep] Creating autocomplete instance');
+    console.warn('[VenueMapStep] Creating autocomplete instance');
     const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
       // Use 'establishment' to allow all venue types (clubs, pubs, restaurants, etc)
       // Type filtering was too restrictive - excluded Conservative Clubs, Working Men's Clubs, etc
@@ -80,24 +80,27 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       componentRestrictions: { country: 'gb' }, // Restrict to UK
     });
 
-    console.log('[VenueMapStep] Autocomplete created, binding to bounds');
+    console.warn('[VenueMapStep] Autocomplete created, binding to bounds');
     // Bias results to current map location but allow searching anywhere
     autocomplete.bindTo('bounds', map);
 
-    console.log('[VenueMapStep] Adding place_changed listener');
-    autocomplete.addListener('place_changed', () => {
+    console.warn('[VenueMapStep] Adding place_changed listener');
+    console.warn('[VenueMapStep] Autocomplete object:', autocomplete);
+    console.warn('[VenueMapStep] Autocomplete addListener method:', typeof autocomplete.addListener);
+
+    const listener = autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
 
-      console.log('[VenueMapStep] place_changed fired');
-      console.log('[VenueMapStep] Full place object:', place);
+      console.warn('[VenueMapStep] place_changed fired');
+      console.warn('[VenueMapStep] Full place object:', place);
 
       if (!place.geometry || !place.geometry.location) {
-        console.log('No geometry for place');
+        console.warn('No geometry for place');
         return;
       }
 
       // Log place types to help refine filtering
-      console.log('[VenueMapStep] Selected place:', {
+      console.warn('[VenueMapStep] Selected place:', {
         name: place.name,
         types: place.types,
         placeId: place.place_id,
