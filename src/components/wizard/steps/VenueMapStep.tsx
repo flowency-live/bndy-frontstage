@@ -81,6 +81,9 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
 
+      console.log('[VenueMapStep] place_changed fired');
+      console.log('[VenueMapStep] Full place object:', place);
+
       if (!place.geometry || !place.geometry.location) {
         console.log('No geometry for place');
         return;
@@ -90,7 +93,8 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       console.log('[VenueMapStep] Selected place:', {
         name: place.name,
         types: place.types,
-        placeId: place.place_id
+        placeId: place.place_id,
+        allFields: Object.keys(place)
       });
 
       const venue: Venue = {
