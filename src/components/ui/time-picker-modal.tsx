@@ -51,10 +51,8 @@ export default function TimePickerModal({
 
   const handleMinuteChange = (newMinute: number) => {
     setMinute(newMinute);
-  };
-
-  const handleDone = () => {
-    onSelectTime(formatTime24(hour, minute));
+    // Save time and close modal after minute selection
+    onSelectTime(formatTime24(hour, newMinute));
     onClose();
   };
 
@@ -79,7 +77,7 @@ export default function TimePickerModal({
           </div>
 
           {/* Clock Face Time Selection */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center">
             <ClockFacePicker
               hour={hour}
               minute={minute}
@@ -89,14 +87,6 @@ export default function TimePickerModal({
               onModeChange={setClockMode}
             />
           </div>
-
-          {/* Done Button */}
-          <button
-            onClick={handleDone}
-            className="w-full rounded-lg bg-orange-500 px-6 py-3 text-white font-semibold transition-colors hover:bg-orange-600"
-          >
-            Done
-          </button>
         </div>
       </div>
     </div>
