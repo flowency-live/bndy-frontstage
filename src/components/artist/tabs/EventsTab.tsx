@@ -24,20 +24,18 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   const [sortMode, setSortMode] = useState<SortMode>('date');
 
   return (
-    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4 py-4 bg-slate-50 dark:bg-transparent">
+    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" style={{ backgroundColor: 'var(--muted)' }} className="container mx-auto px-4 py-4">
       {/* Sort Toggle */}
       <div className="mb-3 flex justify-center">
-        <div className="inline-flex gap-2 p-1.5 bg-slate-200 dark:bg-slate-800 rounded-full">
+        <div style={{ backgroundColor: 'var(--muted)' }} className="inline-flex gap-2 p-1.5 rounded-full">
           <button
             onClick={() => setSortMode('date')}
-            className={`
-              flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
-              ${
-                sortMode === 'date'
-                  ? 'border-primary text-foreground bg-white dark:bg-slate-700'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
-              }
-            `}
+            style={{
+              backgroundColor: sortMode === 'date' ? 'var(--background)' : 'transparent',
+              borderColor: sortMode === 'date' ? 'var(--primary)' : 'transparent',
+              color: sortMode === 'date' ? 'var(--foreground)' : 'var(--muted-foreground)',
+            }}
+            className="flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2"
             aria-pressed={sortMode === 'date'}
           >
             <Calendar className="w-4 h-4" />
@@ -45,14 +43,12 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
           </button>
           <button
             onClick={() => setSortMode('distance')}
-            className={`
-              flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2
-              ${
-                sortMode === 'distance'
-                  ? 'border-primary text-foreground bg-white dark:bg-slate-700'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50'
-              }
-            `}
+            style={{
+              backgroundColor: sortMode === 'distance' ? 'var(--background)' : 'transparent',
+              borderColor: sortMode === 'distance' ? 'var(--primary)' : 'transparent',
+              color: sortMode === 'distance' ? 'var(--foreground)' : 'var(--muted-foreground)',
+            }}
+            className="flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2"
             aria-pressed={sortMode === 'distance'}
           >
             <MapPin className="w-4 h-4" />

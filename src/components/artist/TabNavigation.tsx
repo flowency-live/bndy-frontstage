@@ -63,31 +63,30 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="bg-white dark:bg-background py-2">
+    <div style={{ backgroundColor: 'var(--background)' }} className="py-2">
       <div className="container mx-auto px-4">
         <nav
           role="tablist"
-          className="flex gap-3 p-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"
+          style={{ backgroundColor: 'var(--muted)' }}
+          className="flex gap-3 p-1.5 rounded-full"
           aria-label="Artist profile sections"
         >
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 role="tab"
-                aria-selected={activeTab === tab.id}
+                aria-selected={isActive}
                 aria-controls={`${tab.id}-panel`}
                 onClick={() => handleTabClick(tab.id)}
-                className={`
-                  flex-1 py-2.5 px-6 font-medium text-sm transition-all rounded-full
-                  flex items-center justify-center gap-2.5 border-2
-                  ${
-                    activeTab === tab.id
-                      ? "border-primary text-foreground bg-white dark:bg-slate-700"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-700/50"
-                  }
-                `}
+                style={{
+                  backgroundColor: isActive ? 'var(--background)' : 'transparent',
+                  borderColor: isActive ? 'var(--primary)' : 'transparent',
+                  color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)',
+                }}
+                className="flex-1 py-2.5 px-6 font-medium text-sm transition-all rounded-full flex items-center justify-center gap-2.5 border-2"
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
