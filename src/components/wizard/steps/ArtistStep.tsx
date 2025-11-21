@@ -161,7 +161,7 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
   }, [formData.artists, onUpdate]);
 
   const handleOpenMic = () => {
-    onUpdate({ isOpenMic: true, artists: [] });
+    onUpdate({ isOpenMic: true });
   };
 
   const handleContinue = () => {
@@ -179,7 +179,9 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
             Select Artists
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Search for artists or mark as open mic night
+            {formData.isOpenMic
+              ? 'Search for optional host artist(s) for this open mic night'
+              : 'Search for artists or mark as open mic night'}
           </p>
         </div>
 
@@ -188,7 +190,7 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search for an artist..."
+            placeholder={formData.isOpenMic ? "Search for host artist (optional)..." : "Search for an artist..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => {
@@ -197,11 +199,10 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
               }
             }}
             className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
-            disabled={formData.isOpenMic}
           />
 
           {/* Search Results Dropdown */}
-          {showResults && searchResults.length > 0 && !formData.isOpenMic && (
+          {showResults && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto z-30">
               {searchResults.map((artist, index) => (
                 <button
@@ -254,11 +255,31 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
           )}
         </div>
 
+        {/* Open Mic Indicator */}
+        {formData.isOpenMic && (
+          <div className="mb-4 bg-blue-600 text-white p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold">Open Mic Night</div>
+                <div className="text-sm opacity-90">
+                  {formData.artists.length > 0 ? 'Hosted by selected artist(s)' : 'No host artist'}
+                </div>
+              </div>
+              <button
+                onClick={() => onUpdate({ isOpenMic: false })}
+                className="hover:opacity-75"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Selected Artists */}
         {formData.artists.length > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Selected Artists ({formData.artists.length})
+              {formData.isOpenMic ? 'Host Artist(s)' : `Selected Artists (${formData.artists.length})`}
             </h3>
             <div className="space-y-2">
               {formData.artists.map((artist) => (
@@ -289,7 +310,7 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
         )}
 
         {/* Open Mic Option */}
-        {!formData.isOpenMic && formData.artists.length === 0 && (
+        {!formData.isOpenMic && (
           <div className="mb-6">
             <button
               onClick={handleOpenMic}
@@ -297,24 +318,6 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
             >
               This is an Open Mic Night
             </button>
-          </div>
-        )}
-
-        {/* Open Mic Indicator */}
-        {formData.isOpenMic && (
-          <div className="mb-6 bg-blue-600 text-white p-4 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">Open Mic Night</div>
-                <div className="text-sm opacity-90">No specific artists required</div>
-              </div>
-              <button
-                onClick={() => onUpdate({ isOpenMic: false })}
-                className="hover:opacity-75"
-              >
-                ✕
-              </button>
-            </div>
           </div>
         )}
       </div>
