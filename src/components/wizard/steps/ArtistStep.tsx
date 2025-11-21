@@ -112,7 +112,7 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
         });
 
         // Sort by distance (closest first)
-        artistsWithDistance.sort((a, b) => {
+        artistsWithDistance.sort((a: SearchResult, b: SearchResult) => {
           const distA = a.distance ?? 999;
           const distB = b.distance ?? 999;
           return distA - distB;
