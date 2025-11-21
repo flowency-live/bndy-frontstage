@@ -31,6 +31,8 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+  const [existsInBndy, setExistsInBndy] = useState<boolean | null>(null);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -143,7 +145,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     }
   }, [debouncedSearchTerm, searchVenues]);
 
-  const handleSelectVenue = useCallback((result: SearchResult) => {
+  const handleSelectVenue = useCallback(async (result: SearchResult) => {
     const venue: Venue = {
       id: result.placeId,
       name: result.name,
@@ -161,6 +163,51 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       venueName: venue.name,
       venueLocation: venue.location,
     });
+
+    // Check if venue exists in BNDY database
+    setIsCheckingDuplicate(true);
+    setExistsInBndy(null);
+
+    try {
+      const response = await fetch('https://api.bndy.co.uk/api/venues', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const bndyVenues = await response.json();
+
+        // Normalize venue name for comparison
+        const normalizeVenueName = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizedGoogleName = normalizeVenueName(venue.name);
+
+        // Check if any BNDY venue matches this Google Place
+        const isDuplicate = bndyVenues.some((bndyVenue: any) => {
+          // Match by Google Place ID if available
+          if (bndyVenue.googlePlaceId && venue.googlePlaceId) {
+            return bndyVenue.googlePlaceId === venue.googlePlaceId;
+          }
+
+          // Fallback: match by normalized name
+          const normalizedBndyName = normalizeVenueName(bndyVenue.name);
+          return normalizedBndyName === normalizedGoogleName;
+        });
+
+        setExistsInBndy(isDuplicate);
+        console.warn('[VenueMapStep] Duplicate check:', {
+          venueName: venue.name,
+          isDuplicate,
+          googlePlaceId: venue.googlePlaceId
+        });
+      } else {
+        console.warn('[VenueMapStep] Failed to fetch BNDY venues for duplicate check');
+        setExistsInBndy(null);
+      }
+    } catch (error) {
+      console.error('[VenueMapStep] Error checking for duplicates:', error);
+      setExistsInBndy(null);
+    } finally {
+      setIsCheckingDuplicate(false);
+    }
 
     // Center map on selected venue
     if (map) {
@@ -292,6 +339,31 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
                 ✕
               </button>
             </div>
+
+            {/* DEBUG: Duplicate check indicator */}
+            {isCheckingDuplicate && (
+              <div className="mb-3 p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm">
+                <p className="text-gray-600 dark:text-gray-400">Checking BNDY database...</p>
+              </div>
+            )}
+
+            {!isCheckingDuplicate && existsInBndy !== null && (
+              <div className={`mb-3 p-2 rounded text-sm ${
+                existsInBndy
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+              }`}>
+                <p className="font-semibold">
+                  {existsInBndy ? '✓ EXISTS IN BNDY' : '✓ NEW VENUE (not in BNDY)'}
+                </p>
+                <p className="text-xs mt-1">
+                  {existsInBndy
+                    ? 'This venue is already in the BNDY database'
+                    : 'This is a new venue that will be added to BNDY'
+                  }
+                </p>
+              </div>
+            )}
 
             <button
               onClick={onNext}
