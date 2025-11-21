@@ -36,6 +36,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
 
   const mapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const bndyVenuesCacheRef = useRef<any[] | null>(null); // Cache BNDY venues
 
   // Load Google Maps on mount
   useEffect(() => {
@@ -164,44 +165,55 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       venueLocation: venue.location,
     });
 
-    // Check if venue exists in BNDY database
+    // Check if venue exists in BNDY database (with caching)
     setIsCheckingDuplicate(true);
     setExistsInBndy(null);
 
     try {
-      const response = await fetch('https://api.bndy.co.uk/api/venues', {
-        credentials: 'include',
+      // Use cached venues if available, otherwise fetch
+      let bndyVenues = bndyVenuesCacheRef.current;
+
+      if (!bndyVenues) {
+        const response = await fetch('https://api.bndy.co.uk/api/venues', {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          bndyVenues = await response.json();
+          bndyVenuesCacheRef.current = bndyVenues; // Cache for next time
+          console.warn('[VenueMapStep] Loaded and cached', bndyVenues.length, 'BNDY venues');
+        } else {
+          console.warn('[VenueMapStep] Failed to fetch BNDY venues for duplicate check');
+          setExistsInBndy(null);
+          setIsCheckingDuplicate(false);
+          return;
+        }
+      } else {
+        console.warn('[VenueMapStep] Using cached BNDY venues');
+      }
+
+      // Normalize venue name for comparison
+      const normalizeVenueName = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normalizedGoogleName = normalizeVenueName(venue.name);
+
+      // Check if any BNDY venue matches this Google Place
+      const isDuplicate = bndyVenues.some((bndyVenue: any) => {
+        // Match by Google Place ID if available
+        if (bndyVenue.googlePlaceId && venue.googlePlaceId) {
+          return bndyVenue.googlePlaceId === venue.googlePlaceId;
+        }
+
+        // Fallback: match by normalized name
+        const normalizedBndyName = normalizeVenueName(bndyVenue.name);
+        return normalizedBndyName === normalizedGoogleName;
       });
 
-      if (response.ok) {
-        const bndyVenues = await response.json();
-
-        // Normalize venue name for comparison
-        const normalizeVenueName = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normalizedGoogleName = normalizeVenueName(venue.name);
-
-        // Check if any BNDY venue matches this Google Place
-        const isDuplicate = bndyVenues.some((bndyVenue: any) => {
-          // Match by Google Place ID if available
-          if (bndyVenue.googlePlaceId && venue.googlePlaceId) {
-            return bndyVenue.googlePlaceId === venue.googlePlaceId;
-          }
-
-          // Fallback: match by normalized name
-          const normalizedBndyName = normalizeVenueName(bndyVenue.name);
-          return normalizedBndyName === normalizedGoogleName;
-        });
-
-        setExistsInBndy(isDuplicate);
-        console.warn('[VenueMapStep] Duplicate check:', {
-          venueName: venue.name,
-          isDuplicate,
-          googlePlaceId: venue.googlePlaceId
-        });
-      } else {
-        console.warn('[VenueMapStep] Failed to fetch BNDY venues for duplicate check');
-        setExistsInBndy(null);
-      }
+      setExistsInBndy(isDuplicate);
+      console.warn('[VenueMapStep] Duplicate check:', {
+        venueName: venue.name,
+        isDuplicate,
+        googlePlaceId: venue.googlePlaceId
+      });
     } catch (error) {
       console.error('[VenueMapStep] Error checking for duplicates:', error);
       setExistsInBndy(null);
