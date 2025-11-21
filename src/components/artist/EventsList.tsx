@@ -509,7 +509,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
       data-testid="event-card"
     >
       {/* Top Section: Gradient with Venue Name & Location */}
-      <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-4">
+      <div className="bg-gradient-to-r from-orange-500/50 to-cyan-500/50 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
