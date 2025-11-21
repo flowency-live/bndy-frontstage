@@ -515,8 +515,9 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
               <Link
                 href={`/artists/${event.artistIds[0]}`}
-                className="text-base font-semibold text-foreground hover:text-primary transition-colors truncate block"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-artist w-fit"
                 aria-label={`View artist details for ${event.artistName || 'artist'}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 {event.artistName || 'Unknown Artist'}
               </Link>

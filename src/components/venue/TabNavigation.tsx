@@ -33,10 +33,10 @@ export default function TabNavigation({
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("events");
 
-  // Define tabs - Events and Links only
+  // Define tabs - Events only (Links hidden for venues)
   const tabs: Tab[] = [
     { id: "events", label: "Events", icon: Calendar, visible: true },
-    { id: "links", label: "Links", icon: Link2, visible: true },
+    { id: "links", label: "Links", icon: Link2, visible: false },
   ];
 
   // Sync with URL params on mount and when search params change
@@ -85,7 +85,7 @@ export default function TabNavigation({
                 className="flex-1 py-2.5 px-6 font-medium text-sm transition-all rounded-full flex items-center justify-center gap-2.5 border-2"
               >
                 <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}
