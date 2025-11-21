@@ -64,23 +64,23 @@ export default function DatePickerModal({
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-                className="p-2 text-orange-500 hover:bg-muted rounded"
+                className="p-2 text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
               >
                 <i className="fas fa-chevron-left"></i>
               </button>
-              <span className="text-lg font-sans font-semibold text-card-foreground">
+              <span className="text-lg font-sans font-semibold text-gray-900 dark:text-white">
                 {format(currentDate, "MMMM yyyy")}
               </span>
               <button
                 onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-                className="p-2 text-orange-500 hover:bg-muted rounded"
+                className="p-2 text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
               >
                 <i className="fas fa-chevron-right"></i>
               </button>
             </div>
 
             {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
+            <div className="grid grid-cols-7 gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
               {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
                 <div key={`day-header-${index}`} className={`p-2 ${index >= 5 ? 'font-bold' : ''}`}>{day}</div>
               ))}
@@ -100,7 +100,7 @@ export default function DatePickerModal({
                 const isSelected = tempSelectedDate === dateStr;
                 const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
-                let buttonClasses = "p-2 text-sm rounded hover:bg-muted transition-colors ";
+                let buttonClasses = "p-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ";
 
                 // Weekend days are bold
                 if (isWeekend) {
@@ -108,13 +108,13 @@ export default function DatePickerModal({
                 }
 
                 if (!isCurrentMonth) {
-                  buttonClasses += "text-muted-foreground/50 ";
+                  buttonClasses += "text-gray-400 dark:text-gray-600 ";
                 } else if (isSelected) {
                   buttonClasses += "bg-orange-500 text-white ";
                 } else if (isTodayDate) {
                   buttonClasses += "bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 font-semibold ";
                 } else {
-                  buttonClasses += "text-card-foreground ";
+                  buttonClasses += "text-gray-900 dark:text-white ";
                 }
 
                 return (

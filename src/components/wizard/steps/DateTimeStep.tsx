@@ -66,53 +66,53 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
     <div className="flex min-h-[60vh] flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">When is your event?</h2>
-          <p className="mt-2 text-gray-600">Choose the date and time</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">When is your event?</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Choose the date and time</p>
         </div>
 
         {/* Date Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
           <button
             onClick={() => setShowDatePicker(true)}
-            className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-left transition-colors hover:border-orange-500"
+            className="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-left transition-colors hover:border-orange-500"
           >
             {formData.date ? (
-              <span className="text-gray-900">{formatDisplayDate(formData.date)}</span>
+              <span className="text-gray-900 dark:text-white">{formatDisplayDate(formData.date)}</span>
             ) : (
-              <span className="text-gray-400">Select date</span>
+              <span className="text-gray-400 dark:text-gray-500">Select date</span>
             )}
           </button>
         </div>
 
         {/* Start Time Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Start Time</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Time</label>
           <button
             onClick={() => setShowStartTimePicker(true)}
-            className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-left transition-colors hover:border-orange-500"
+            className="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-left transition-colors hover:border-orange-500"
           >
             {formData.startTime ? (
-              <span className="text-gray-900">{formatDisplayTime(formData.startTime)}</span>
+              <span className="text-gray-900 dark:text-white">{formatDisplayTime(formData.startTime)}</span>
             ) : (
-              <span className="text-gray-400">Select start time</span>
+              <span className="text-gray-400 dark:text-gray-500">Select start time</span>
             )}
           </button>
         </div>
 
         {/* End Time Selection (Optional) */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            End Time <span className="text-gray-400">(optional)</span>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            End Time <span className="text-gray-400 dark:text-gray-500">(optional)</span>
           </label>
           <button
             onClick={() => setShowEndTimePicker(true)}
-            className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-left transition-colors hover:border-orange-500"
+            className="w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-left transition-colors hover:border-orange-500"
           >
             {formData.endTime ? (
-              <span className="text-gray-900">{formatDisplayTime(formData.endTime)}</span>
+              <span className="text-gray-900 dark:text-white">{formatDisplayTime(formData.endTime)}</span>
             ) : (
-              <span className="text-gray-400">Select end time (optional)</span>
+              <span className="text-gray-400 dark:text-gray-500">Select end time (optional)</span>
             )}
           </button>
         </div>

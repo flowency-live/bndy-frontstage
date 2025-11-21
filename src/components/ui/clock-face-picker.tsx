@@ -102,7 +102,7 @@ export default function ClockFacePicker({
           className={`absolute w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold cursor-pointer transition-colors ${
             mode === 'hour' && ((hour === 0 && i === 12) || (hour > 0 && hour <= 12 && hour === i) || (hour > 12 && hour - 12 === i))
               ? 'bg-orange-500 text-white'
-              : 'text-card-foreground hover:bg-muted'
+              : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           style={{
             left: `calc(50% + ${x}px - 16px)`,
@@ -135,7 +135,7 @@ export default function ClockFacePicker({
           className={`absolute w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold cursor-pointer transition-colors ${
             mode === 'minute' && minute === i
               ? 'bg-orange-500 text-white'
-              : 'text-card-foreground hover:bg-muted'
+              : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           style={{
             left: `calc(50% + ${x}px - 16px)`,
@@ -160,7 +160,7 @@ export default function ClockFacePicker({
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             mode === 'hour'
               ? 'bg-orange-500 text-white'
-              : 'bg-muted text-muted-foreground hover:text-card-foreground'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           Hour
@@ -171,7 +171,7 @@ export default function ClockFacePicker({
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             mode === 'minute'
               ? 'bg-orange-500 text-white'
-              : 'bg-muted text-muted-foreground hover:text-card-foreground'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           Minute
@@ -182,7 +182,7 @@ export default function ClockFacePicker({
       <div className="relative">
         <div
           ref={clockRef}
-          className="relative w-48 h-48 rounded-full border-4 border-border bg-card cursor-pointer select-none"
+          className="relative w-48 h-48 rounded-full border-4 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer select-none"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -236,7 +236,7 @@ export default function ClockFacePicker({
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               hour < 12
                 ? 'bg-orange-500 text-white'
-                : 'bg-muted text-muted-foreground hover:text-card-foreground'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             AM
@@ -250,7 +250,7 @@ export default function ClockFacePicker({
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               hour >= 12
                 ? 'bg-orange-500 text-white'
-                : 'bg-muted text-muted-foreground hover:text-card-foreground'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             PM
