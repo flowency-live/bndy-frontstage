@@ -96,7 +96,9 @@ export function ReviewStep({ formData, onUpdate, onSubmit, onNavigateToStep }: R
               onClick={() => onNavigateToStep(0)}
               className="neon-venue px-3 py-1.5 rounded-md text-sm font-bold cursor-pointer"
             >
-              {formData.venue?.name || 'Not set'}
+              {formData.venue
+                ? `${formData.venue.name}${formData.venue.city ? `, ${formData.venue.city}` : ''}`
+                : 'Not set'}
             </button>
           </div>
 
