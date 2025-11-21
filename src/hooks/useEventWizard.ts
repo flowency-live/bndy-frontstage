@@ -9,7 +9,7 @@ interface UseEventWizardProps {
   initialArtist?: Artist;
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const getInitialFormData = (
   initialVenue?: Venue,
@@ -66,7 +66,7 @@ export function useEventWizard(props?: UseEventWizardProps) {
   }, []);
 
   const getStepTitle = useCallback((step: number): string => {
-    const titles = ['Choose Venue', 'Select Artists', 'Date & Time', 'Review & Publish'];
+    const titles = ['Choose Venue', 'Select Artists', 'Date & Time', 'More Details', 'Review & Publish'];
     return titles[step] || '';
   }, []);
 
@@ -79,7 +79,9 @@ export function useEventWizard(props?: UseEventWizardProps) {
           return formData.artists.length > 0 || formData.isOpenMic;
         case 2: // Date/Time
           return formData.date !== '';
-        case 3: // Review
+        case 3: // More Details
+          return true; // Optional step, always accessible
+        case 4: // Review
           return true; // Always accessible
         default:
           return false;

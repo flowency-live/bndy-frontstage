@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import type { EventWizardFormData } from '@/lib/types';
 import DatePickerModal from '@/components/ui/date-picker-modal';
 import TimePickerModal from '@/components/ui/time-picker-modal';
-// import { checkEventConflicts } from '@/lib/utils/conflict-detection'; // Temporarily disabled
+import { checkEventConflicts } from '@/lib/utils/conflict-detection';
 
 interface DateTimeStepProps {
   formData: EventWizardFormData;
@@ -23,31 +23,22 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
 
   // Check for conflicts whenever date/time changes
-  // NOTE: Conflict checking temporarily disabled - API endpoint not yet implemented
   useEffect(() => {
-    // Skip conflict checking for now
-    if (formData.date && formData.startTime && formData.venue && formData.artists.length > 0) {
-      // Clear any existing conflicts
-      if (formData.conflicts && formData.conflicts.length > 0) {
-        onUpdate({ conflicts: [] });
-      }
+    if (formData.date && formData.startTime && formData.venue && (formData.artists.length > 0 || formData.isOpenMic)) {
+      setIsCheckingConflicts(true);
+      checkEventConflicts(formData)
+        .then((conflicts) => {
+          onUpdate({ conflicts });
+        })
+        .catch((error) => {
+          console.error('Failed to check conflicts:', error);
+          onUpdate({ conflicts: [] });
+        })
+        .finally(() => {
+          setIsCheckingConflicts(false);
+        });
     }
-    // Uncomment when /api/events/check-conflicts endpoint is ready:
-    // if (formData.date && formData.startTime && formData.venue && formData.artists.length > 0) {
-    //   setIsCheckingConflicts(true);
-    //   checkEventConflicts(formData)
-    //     .then((conflicts) => {
-    //       onUpdate({ conflicts });
-    //     })
-    //     .catch((error) => {
-    //       console.error('Failed to check conflicts:', error);
-    //       onUpdate({ conflicts: [] });
-    //     })
-    //     .finally(() => {
-    //       setIsCheckingConflicts(false);
-    //     });
-    // }
-  }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.conflicts, onUpdate]);
+  }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
 
   const formatDisplayDate = (dateStr: string) => {
     try {
@@ -128,50 +119,57 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
 
         {/* Conflict Warnings */}
         {isCheckingConflicts && (
-          <div className="rounded-lg bg-gray-100 p-4 text-center text-sm text-gray-600">
-            Checking for conflicts...
+          <div className="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-center text-sm text-gray-600 dark:text-gray-300 animate-pulse">
+            <div className="inline-flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              Checking for conflicts...
+            </div>
           </div>
         )}
 
         {!isCheckingConflicts && formData.conflicts && formData.conflicts.length > 0 && (
           <div
-            className={`rounded-lg p-4 ${
+            className={`rounded-xl p-4 shadow-lg ${
               hasBlockingConflict
-                ? 'border-2 border-red-500 bg-red-50'
-                : 'border-2 border-yellow-500 bg-yellow-50'
+                ? 'bg-red-50 dark:bg-red-900/20 border-2 border-red-500 dark:border-red-400'
+                : 'bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500 dark:border-yellow-400'
             }`}
           >
-            <div className="flex items-start gap-2">
-              <div className="flex-shrink-0">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
                 {hasBlockingConflict ? (
-                  <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
                 ) : (
-                  <svg className="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
                 )}
               </div>
               <div className="flex-1">
-                <h3 className={`font-semibold ${hasBlockingConflict ? 'text-red-800' : 'text-yellow-800'}`}>
-                  {hasBlockingConflict ? 'Event Already Exists' : 'Potential Conflict'}
+                <h3 className={`font-bold text-sm ${hasBlockingConflict ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'}`}>
+                  {hasBlockingConflict ? 'Event Already Exists' : 'Heads Up!'}
                 </h3>
-                <ul className="mt-2 space-y-1 text-sm">
+                <div className="mt-1.5 space-y-1">
                   {formData.conflicts.map((conflict, index) => (
-                    <li key={index} className={hasBlockingConflict ? 'text-red-700' : 'text-yellow-700'}>
+                    <p key={index} className={`text-sm ${hasBlockingConflict ? 'text-red-700 dark:text-red-200' : 'text-yellow-700 dark:text-yellow-200'}`}>
                       {conflict.message}
-                    </li>
+                    </p>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           </div>

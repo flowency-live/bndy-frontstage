@@ -8,6 +8,7 @@ import { WizardHeader } from './WizardHeader';
 import { VenueMapStep } from './steps/VenueMapStep';
 import { ArtistStep } from './steps/ArtistStep';
 import { DateTimeStep } from './steps/DateTimeStep';
+import { MoreDetailsStep } from './steps/MoreDetailsStep';
 import { ReviewStep } from './steps/ReviewStep';
 import type { Venue, Artist } from '@/lib/types';
 
@@ -75,6 +76,14 @@ export function EventWizard({
         );
       case 3:
         return (
+          <MoreDetailsStep
+            formData={formData}
+            onUpdate={updateFormData}
+            onNext={nextStep}
+          />
+        );
+      case 4:
+        return (
           <ReviewStep
             formData={formData}
             onUpdate={updateFormData}
@@ -91,7 +100,7 @@ export function EventWizard({
     <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden m-0 p-0">
       <WizardHeader
         currentStep={currentStep}
-        totalSteps={4}
+        totalSteps={5}
         title={getStepTitle(currentStep)}
         onBack={currentStep > 0 ? previousStep : undefined}
       />
