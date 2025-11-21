@@ -494,9 +494,9 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
 
   return (
     <article
-      style={{ backgroundColor: 'var(--card-bg)' }}
-      className={`relative rounded-xl transition-all duration-200 hover:shadow-md
-                  ${isNextEvent ? 'border-2 border-l-[3px] border-l-primary' : 'border'}`}
+      style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border)' }}
+      className={`relative rounded-xl transition-all duration-200 hover:shadow-lg border-2 shadow-md
+                  ${isNextEvent ? 'border-l-[4px] border-l-primary' : ''}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
