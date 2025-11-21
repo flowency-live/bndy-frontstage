@@ -205,69 +205,63 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
           {/* Search Results Tiles */}
           {showResults && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-96 overflow-y-auto z-30 p-3">
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                 {searchResults.map((artist, index) => {
                   const isSelected = formData.artists.some(a => a.id === artist.id);
                   const isNearVenue = artist.distance === 0;
 
                   return (
-                    <button
-                      key={`${artist.id}-${index}`}
-                      onClick={() => handleSelectArtist(artist)}
-                      disabled={isSelected}
-                      className="group relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {/* Artist Image or Initials */}
-                      {artist.profileImageUrl ? (
-                        <Image
-                          src={artist.profileImageUrl}
-                          alt={`${artist.name} profile picture`}
-                          fill
-                          className="object-cover transition-opacity duration-300"
-                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16.66vw"
-                        />
-                      ) : (
-                        <div
-                          className="absolute inset-0 flex items-center justify-center text-white font-bold text-lg"
-                          style={{ backgroundColor: artist.displayColour || '#3b82f6' }}
-                        >
-                          {artist.name.substring(0, 2).toUpperCase()}
-                        </div>
-                      )}
-
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2">
-                        <div className="text-white text-xs font-semibold truncate">
-                          {artist.name}
-                        </div>
-                        {artist.location && (
-                          <div className="text-white/80 text-[10px] truncate">
-                            {artist.location}
+                    <div key={`${artist.id}-${index}`} className="flex flex-col">
+                      <button
+                        onClick={() => handleSelectArtist(artist)}
+                        disabled={isSelected}
+                        className="group relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-1"
+                      >
+                        {/* Artist Image or Initials */}
+                        {artist.profileImageUrl ? (
+                          <Image
+                            src={artist.profileImageUrl}
+                            alt={`${artist.name} profile picture`}
+                            fill
+                            className="object-cover transition-opacity duration-300"
+                            sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16.66vw"
+                          />
+                        ) : (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center text-white font-bold text-lg"
+                            style={{ backgroundColor: artist.displayColour || '#3b82f6' }}
+                          >
+                            {artist.name.substring(0, 2).toUpperCase()}
                           </div>
                         )}
+
+                        {/* Near Venue Badge */}
+                        {isNearVenue && (
+                          <div className="absolute top-1 right-1 bg-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                            Near
+                          </div>
+                        )}
+
+                        {/* Selected Checkmark */}
+                        {isSelected && (
+                          <div className="absolute top-1 left-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* Selection Border */}
+                        {isSelected && (
+                          <div className="absolute inset-0 border-3 border-green-500 rounded-md pointer-events-none"></div>
+                        )}
+                      </button>
+
+                      {/* Artist Name */}
+                      <div className="text-center text-xs font-medium text-gray-900 dark:text-white truncate px-1">
+                        {artist.name}
                       </div>
-
-                      {/* Near Venue Badge */}
-                      {isNearVenue && (
-                        <div className="absolute top-1 right-1 bg-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                          Near
-                        </div>
-                      )}
-
-                      {/* Selected Checkmark */}
-                      {isSelected && (
-                        <div className="absolute top-1 left-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-
-                      {/* Selection Border */}
-                      {isSelected && (
-                        <div className="absolute inset-0 border-3 border-green-500 rounded-md pointer-events-none"></div>
-                      )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

@@ -145,7 +145,12 @@
       "Bash(aws amplify get-app:*)",
       "Bash(aws amplify get-domain-association:*)",
       "Bash(aws amplify list-domain-associations:*)",
-      "Bash(aws amplify list-branches:*)"
+      "Bash(aws amplify list-branches:*)",
+      "Bash(Select-String -Pattern \"events\" -Context 2,2)",
+      "Bash(MSYS_NO_PATHCONV=1 aws dynamodb scan:*)",
+      "Bash(Select-String \"VenueMapStep\" -Context 0,2)",
+      "Bash(npx stylelint:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []

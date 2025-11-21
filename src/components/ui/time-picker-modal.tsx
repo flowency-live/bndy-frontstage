@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import ClockFacePicker from "@/components/ui/clock-face-picker";
 
 interface TimePickerModalProps {
@@ -17,9 +16,9 @@ export default function TimePickerModal({
   onSelectTime,
   title,
 }: TimePickerModalProps) {
-  // Parse initial time or default to 7:00 PM
+  // Parse initial time or default to 9:00 PM
   const parseTime = (timeStr?: string) => {
-    if (!timeStr) return { hour: 19, minute: 0 }; // 7:00 PM
+    if (!timeStr) return { hour: 21, minute: 0 }; // 9:00 PM
     const [hours, minutes] = timeStr.split(":").map(Number);
     return { hour: hours, minute: minutes };
   };
@@ -49,12 +48,14 @@ export default function TimePickerModal({
 
   const handleMinuteChange = (newMinute: number) => {
     setMinute(newMinute);
-    // Don't auto-close - let user confirm time selection
+    // Auto-close after minute selection
+    onSelectTime(formatTime24(hour, newMinute));
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl max-w-sm w-full animate-slide-up">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full animate-slide-up">
         <div className="bg-orange-500 text-white p-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-serif">{title}</h3>
@@ -67,13 +68,13 @@ export default function TimePickerModal({
         <div className="p-6">
           {/* Digital time display */}
           <div className="text-center mb-6">
-            <div className="text-3xl font-sans font-bold text-card-foreground mb-2">
+            <div className="text-3xl font-sans font-bold text-gray-900 dark:text-white mb-2">
               {formatTime12(hour, minute)}
             </div>
           </div>
 
           {/* Clock Face Time Selection */}
-          <div className="mb-6 flex justify-center">
+          <div className="flex justify-center">
             <ClockFacePicker
               hour={hour}
               minute={minute}
@@ -82,26 +83,6 @@ export default function TimePickerModal({
               mode={clockMode}
               onModeChange={setClockMode}
             />
-          </div>
-
-          {/* Confirm button */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                onSelectTime(formatTime24(hour, minute));
-                onClose();
-              }}
-              className="flex-1 bg-orange-500 hover:bg-orange-600"
-            >
-              Confirm
-            </Button>
           </div>
         </div>
       </div>
