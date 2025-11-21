@@ -29,6 +29,7 @@ export function EventWizard({
     formData,
     nextStep,
     previousStep,
+    goToStep,
     updateFormData,
     getStepTitle,
   } = useEventWizard({ initialVenue, initialArtist });
@@ -76,7 +77,9 @@ export function EventWizard({
         return (
           <ReviewStep
             formData={formData}
+            onUpdate={updateFormData}
             onSubmit={handleSubmit}
+            onNavigateToStep={goToStep}
           />
         );
       default:

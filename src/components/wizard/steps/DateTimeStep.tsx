@@ -217,6 +217,7 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
         selectedTime={formData.endTime}
         onSelectTime={(time) => onUpdate({ endTime: time })}
         title="Select End Time"
+        defaultTime="00:00"
       />
     </div>
   );
