@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import type { EventWizardFormData } from '@/lib/types';
 import DatePickerModal from '@/components/ui/date-picker-modal';
 import TimePickerModal from '@/components/ui/time-picker-modal';
-import { checkEventConflicts } from '@/lib/utils/conflict-detection';
+// import { checkEventConflicts } from '@/lib/utils/conflict-detection'; // Temporarily disabled
 
 interface DateTimeStepProps {
   formData: EventWizardFormData;
@@ -23,22 +23,31 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
 
   // Check for conflicts whenever date/time changes
+  // NOTE: Conflict checking temporarily disabled - API endpoint not yet implemented
   useEffect(() => {
+    // Skip conflict checking for now
     if (formData.date && formData.startTime && formData.venue && formData.artists.length > 0) {
-      setIsCheckingConflicts(true);
-      checkEventConflicts(formData)
-        .then((conflicts) => {
-          onUpdate({ conflicts });
-        })
-        .catch((error) => {
-          console.error('Failed to check conflicts:', error);
-          onUpdate({ conflicts: [] });
-        })
-        .finally(() => {
-          setIsCheckingConflicts(false);
-        });
+      // Clear any existing conflicts
+      if (formData.conflicts && formData.conflicts.length > 0) {
+        onUpdate({ conflicts: [] });
+      }
     }
-  }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length]);
+    // Uncomment when /api/events/check-conflicts endpoint is ready:
+    // if (formData.date && formData.startTime && formData.venue && formData.artists.length > 0) {
+    //   setIsCheckingConflicts(true);
+    //   checkEventConflicts(formData)
+    //     .then((conflicts) => {
+    //       onUpdate({ conflicts });
+    //     })
+    //     .catch((error) => {
+    //       console.error('Failed to check conflicts:', error);
+    //       onUpdate({ conflicts: [] });
+    //     })
+    //     .finally(() => {
+    //       setIsCheckingConflicts(false);
+    //     });
+    // }
+  }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.conflicts, onUpdate]);
 
   const formatDisplayDate = (dateStr: string) => {
     try {
