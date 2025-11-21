@@ -350,8 +350,8 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
             {!isCheckingDuplicate && existsInBndy !== null && (
               <div className={`mb-3 p-2 rounded text-sm ${
                 existsInBndy
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
-                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-blue-600 text-white'
               }`}>
                 <p className="font-semibold">
                   {existsInBndy ? '✓ EXISTS IN BNDY' : '✓ NEW VENUE (not in BNDY)'}
