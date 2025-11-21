@@ -7,6 +7,7 @@ interface TimePickerModalProps {
   selectedTime?: string;
   onSelectTime: (time: string) => void;
   title: string;
+  defaultTime?: string; // Optional venue default time
 }
 
 export default function TimePickerModal({
@@ -15,11 +16,13 @@ export default function TimePickerModal({
   selectedTime,
   onSelectTime,
   title,
+  defaultTime,
 }: TimePickerModalProps) {
-  // Parse initial time or default to 9:00 PM
+  // Parse initial time or use venue default, fallback to 9:00 PM
   const parseTime = (timeStr?: string) => {
-    if (!timeStr) return { hour: 21, minute: 0 }; // 9:00 PM
-    const [hours, minutes] = timeStr.split(":").map(Number);
+    const timeToUse = timeStr || defaultTime;
+    if (!timeToUse) return { hour: 21, minute: 0 }; // 9:00 PM fallback
+    const [hours, minutes] = timeToUse.split(":").map(Number);
     return { hour: hours, minute: minutes };
   };
 

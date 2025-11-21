@@ -198,6 +198,7 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
         selectedTime={formData.startTime}
         onSelectTime={(time) => onUpdate({ startTime: time })}
         title="Select Start Time"
+        defaultTime={formData.venue?.standardStartTime}
       />
 
       {/* End Time Picker Modal */}
