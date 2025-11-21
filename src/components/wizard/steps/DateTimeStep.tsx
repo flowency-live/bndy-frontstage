@@ -203,9 +203,14 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
       {/* Start Time Picker Modal */}
       <TimePickerModal
         isOpen={showStartTimePicker}
-        onClose={() => setShowStartTimePicker(false)}
+        onClose={() => {
+          setShowStartTimePicker(false);
+          setShowEndTimePicker(false);
+        }}
         selectedTime={formData.startTime}
-        onSelectTime={(time) => onUpdate({ startTime: time })}
+        onSelectTime={(time) => {
+          onUpdate({ startTime: time });
+        }}
         title="Select Start Time"
         defaultTime={formData.venue?.standardStartTime}
       />
@@ -213,9 +218,13 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
       {/* End Time Picker Modal */}
       <TimePickerModal
         isOpen={showEndTimePicker}
-        onClose={() => setShowEndTimePicker(false)}
+        onClose={() => {
+          setShowEndTimePicker(false);
+        }}
         selectedTime={formData.endTime}
-        onSelectTime={(time) => onUpdate({ endTime: time })}
+        onSelectTime={(time) => {
+          onUpdate({ endTime: time });
+        }}
         title="Select End Time"
         defaultTime="00:00"
       />
