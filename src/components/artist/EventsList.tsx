@@ -501,79 +501,82 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
   return (
     <article
       style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border)' }}
-      className={`relative rounded-xl transition-all duration-200 hover:shadow-lg border-2 shadow-md
+      className={`relative rounded-xl transition-all duration-200 hover:shadow-lg border-2 shadow-md overflow-hidden
                   ${isNextEvent ? 'border-l-[4px] border-l-primary' : ''}`}
       tabIndex={0}
       role="article"
       aria-label={`Event: ${event.name} on ${formattedDate}${distance ? `, ${formatDistance(distance)} away` : ''}`}
       data-testid="event-card"
     >
-      <div className="p-3 space-y-2">
-        {/* Row 1: Venue + Distance Badge */}
+      {/* Top Section: Gradient with Venue Name & Location */}
+      <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
               <Link
                 href={`/artists/${event.artistIds[0]}`}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-artist w-fit"
+                className="text-lg font-bold text-white hover:text-white/90 transition-colors truncate block"
                 aria-label={`View artist details for ${event.artistName || 'artist'}`}
-                onClick={(e) => e.stopPropagation()}
               >
                 {event.artistName || 'Unknown Artist'}
               </Link>
             ) : (
               <Link
                 href={`/venues/${event.venueId}`}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs neon-venue w-fit"
+                className="text-lg font-bold text-white hover:text-white/90 transition-colors truncate block"
                 aria-label={`View venue details for ${event.venueName}`}
-                onClick={(e) => e.stopPropagation()}
               >
-                {event.venueName}
+                <span className="inline-flex items-center gap-1.5">
+                  {event.venueName}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </span>
               </Link>
+            )}
+            {event.venueCity && (
+              <div className="flex items-center gap-1 mt-1 text-sm text-white/90">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>{event.venueCity}</span>
+              </div>
             )}
           </div>
           {distance !== null && (
             <span
-              className="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded bg-orange-500 text-white dark:bg-orange-600 dark:text-white whitespace-nowrap flex-shrink-0"
+              className="inline-flex items-center px-3 py-1 text-sm font-bold rounded-full bg-white/20 text-white backdrop-blur-sm whitespace-nowrap flex-shrink-0"
               aria-label={`Distance from your location: ${formatDistance(distance)}`}
             >
               {formatDistance(distance)}
             </span>
           )}
         </div>
+      </div>
 
-        {/* Row 2: Date • Time + Venue City */}
-        <div className="border-t border-border pt-2">
-          <div className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
-            <div className="flex items-center gap-2">
-              <time dateTime={event.date}>{formattedDate}</time>
-              <span className="text-muted-foreground">•</span>
-              <span>{event.startTime}</span>
-            </div>
-            {event.venueCity && (
-              <span className="text-xs text-muted-foreground">
-                {event.venueCity}
-              </span>
+      {/* Bottom Section: Date, Time & Ticket Info */}
+      <div className="p-4 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <time dateTime={event.date}>{formattedDate}</time>
+            <span className="text-muted-foreground">•</span>
+            <span>{event.startTime}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+            <Ticket className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            {!event.ticketed ? (
+              <span className="text-primary">Free Entry</span>
+            ) : event.ticketinformation ? (
+              <span>{event.ticketinformation}</span>
+            ) : (
+              <span>Ticketed</span>
             )}
           </div>
         </div>
-
-        {/* Row 3: Free Entry OR Ticket Info */}
-        {!event.ticketed && (
-          <div className="border-t border-border pt-2">
-            <span className="inline-flex items-center gap-1.5 text-sm font-bold text-yellow-500">
-              <Ticket className="w-4 h-4" aria-hidden="true" />
-              £ree Entry
-            </span>
-          </div>
-        )}
-        {event.ticketed && event.ticketinformation && (
-          <div className="border-t border-border pt-2">
-            <span className="text-xs text-muted-foreground">
-              {event.ticketinformation}
-            </span>
-          </div>
-        )}
       </div>
     </article>
   );
