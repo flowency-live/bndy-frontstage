@@ -218,10 +218,16 @@ export default function EventsList({ events, artistLocation, hideDistanceFilter 
             const isMonthExpanded = expandedMonths.has(group.monthKey);
             const firstEventInGroup = group.events[0];
 
+            // Check if first event is within current or next month
+            const now = new Date();
+            const currentMonth = format(now, 'yyyy-MM');
+            const nextMonth = format(new Date(now.getFullYear(), now.getMonth() + 1, 1), 'yyyy-MM');
+            const shouldAutoExpandFirst = isFirstGroup && (group.monthKey === currentMonth || group.monthKey === nextMonth);
+
             return (
               <div key={group.monthKey} className="space-y-2">
-                {/* Month Header - always show first event of first month, collapsed for others */}
-                {isFirstGroup ? (
+                {/* Month Header - auto-expand first event only if within current or next month */}
+                {shouldAutoExpandFirst ? (
                   // First month: show next event as full card, then collapsed month header if more events
                   <>
                     <EventCard
