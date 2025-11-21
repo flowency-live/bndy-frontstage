@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import type { EventWizardFormData, Artist } from '@/lib/types';
 import { useDebounce } from 'use-debounce';
 
@@ -201,40 +202,75 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
             className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-orange-500 focus:outline-none shadow-md caret-gray-900 dark:caret-white"
           />
 
-          {/* Search Results Dropdown */}
+          {/* Search Results Tiles */}
           {showResults && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto z-30">
-              {searchResults.map((artist, index) => (
-                <button
-                  key={`${artist.id}-${index}`}
-                  onClick={() => handleSelectArtist(artist)}
-                  disabled={formData.artists.some(a => a.id === artist.id)}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {artist.name}
-                      </div>
-                      {artist.location && (
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {artist.location}
-                          {artist.distance === 0 && (
-                            <span className="ml-2 text-xs text-cyan-600 dark:text-cyan-400 font-medium">
-                              Near venue
-                            </span>
-                          )}
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-96 overflow-y-auto z-30 p-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {searchResults.map((artist, index) => {
+                  const isSelected = formData.artists.some(a => a.id === artist.id);
+                  const isNearVenue = artist.distance === 0;
+
+                  return (
+                    <button
+                      key={`${artist.id}-${index}`}
+                      onClick={() => handleSelectArtist(artist)}
+                      disabled={isSelected}
+                      className="group relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {/* Artist Image or Initials */}
+                      {artist.profileImageUrl ? (
+                        <Image
+                          src={artist.profileImageUrl}
+                          alt={`${artist.name} profile picture`}
+                          fill
+                          className="object-cover transition-opacity duration-300"
+                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16.66vw"
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0 flex items-center justify-center text-white font-bold text-lg"
+                          style={{ backgroundColor: artist.displayColour || '#3b82f6' }}
+                        >
+                          {artist.name.substring(0, 2).toUpperCase()}
                         </div>
                       )}
-                    </div>
-                    {formData.artists.some(a => a.id === artist.id) && (
-                      <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                        Selected
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
+
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2">
+                        <div className="text-white text-xs font-semibold truncate">
+                          {artist.name}
+                        </div>
+                        {artist.location && (
+                          <div className="text-white/80 text-[10px] truncate">
+                            {artist.location}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Near Venue Badge */}
+                      {isNearVenue && (
+                        <div className="absolute top-1 right-1 bg-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                          Near
+                        </div>
+                      )}
+
+                      {/* Selected Checkmark */}
+                      {isSelected && (
+                        <div className="absolute top-1 left-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+
+                      {/* Selection Border */}
+                      {isSelected && (
+                        <div className="absolute inset-0 border-3 border-green-500 rounded-md pointer-events-none"></div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -278,30 +314,53 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
         {/* Selected Artists */}
         {formData.artists.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               {formData.isOpenMic ? 'Host Artist(s)' : `Selected Artists (${formData.artists.length})`}
             </h3>
-            <div className="space-y-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {formData.artists.map((artist) => (
                 <div
                   key={artist.id}
-                  className="flex items-center justify-between bg-white dark:bg-gray-800 border-2 border-cyan-500 rounded-lg p-3"
+                  className="group relative aspect-square rounded-md overflow-hidden bg-muted shadow-md border-2 border-cyan-500"
                 >
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
+                  {/* Artist Image or Initials */}
+                  {artist.profileImageUrl ? (
+                    <Image
+                      src={artist.profileImageUrl}
+                      alt={`${artist.name} profile picture`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16.66vw"
+                    />
+                  ) : (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: artist.displayColour || '#3b82f6' }}
+                    >
+                      {artist.name.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+
+                  {/* Info Overlay (Always Visible) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-2">
+                    <div className="text-white text-xs font-semibold truncate">
                       {artist.name}
                     </div>
                     {artist.location && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-white/80 text-[10px] truncate">
                         {artist.location}
                       </div>
                     )}
                   </div>
+
+                  {/* Remove Button */}
                   <button
                     onClick={() => handleRemoveArtist(artist.id)}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md transition-colors z-10"
                   >
-                    ✕
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
                   </button>
                 </div>
               ))}
