@@ -4,6 +4,7 @@
 'use client';
 
 import { useEventWizard } from '@/hooks/useEventWizard';
+import { useToast } from '@/components/ui/use-toast';
 import { WizardHeader } from './WizardHeader';
 import { VenueMapStep } from './steps/VenueMapStep';
 import { ArtistStep } from './steps/ArtistStep';
@@ -35,6 +36,8 @@ export function EventWizard({
     getStepTitle,
   } = useEventWizard({ initialVenue, initialArtist });
 
+  const { toast } = useToast();
+
   const handleSubmit = async () => {
     try {
       console.log('Creating event:', formData);
@@ -47,16 +50,13 @@ export function EventWizard({
         },
         body: JSON.stringify({
           venueId: formData.venue?.id,
-          artistIds: formData.artists.map(a => a.id),
+          artistId: formData.artists[0]?.id,
           date: formData.date,
           startTime: formData.startTime,
           endTime: formData.endTime,
-          name: formData.name,
-          description: formData.description,
-          ticketinformation: formData.ticketinformation,
-          ticketUrl: formData.ticketUrl,
-          eventUrl: formData.eventUrl,
-          isOpenMic: formData.isOpenMic,
+          title: formData.name,
+          isPublic: true,
+          source: 'community',
         }),
       });
 
@@ -66,10 +66,20 @@ export function EventWizard({
       }
 
       const data = await response.json();
+
+      toast({
+        title: 'Event created!',
+        description: `${formData.artists[0]?.name} at ${formData.venue?.name}`,
+      });
+
       onSuccess?.(data.id);
     } catch (error) {
       console.error('Failed to create event:', error);
-      alert('Failed to create event: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast({
+        variant: 'destructive',
+        title: 'Failed to create event',
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   };
 
