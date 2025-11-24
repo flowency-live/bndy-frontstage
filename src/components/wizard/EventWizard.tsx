@@ -72,6 +72,7 @@ export function EventWizard({
             formData={formData}
             onUpdate={updateFormData}
             onNext={nextStep}
+            onSkipToReview={() => goToStep(4)}
           />
         );
       case 3:

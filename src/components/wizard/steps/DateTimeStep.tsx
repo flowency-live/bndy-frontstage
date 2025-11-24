@@ -14,9 +14,10 @@ interface DateTimeStepProps {
   formData: EventWizardFormData;
   onUpdate: (data: Partial<EventWizardFormData>) => void;
   onNext: () => void;
+  onSkipToReview?: () => void;
 }
 
-export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) {
+export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: DateTimeStepProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
@@ -175,18 +176,31 @@ export function DateTimeStep({ formData, onUpdate, onNext }: DateTimeStepProps) 
           </div>
         )}
 
-        {/* Continue Button */}
-        <button
-          onClick={onNext}
-          disabled={!isComplete || hasBlockingConflict}
-          className={`w-full rounded-lg px-6 py-4 font-semibold text-white transition-colors ${
-            !isComplete || hasBlockingConflict
-              ? 'cursor-not-allowed bg-gray-300'
-              : 'bg-orange-500 hover:bg-orange-600'
-          }`}
-        >
-          {hasBlockingConflict ? 'Cannot Continue - Event Exists' : 'Continue'}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={onNext}
+            disabled={!isComplete || hasBlockingConflict}
+            className={`flex-1 rounded-lg px-6 py-4 font-semibold transition-colors ${
+              !isComplete || hasBlockingConflict
+                ? 'cursor-not-allowed bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            Add Details
+          </button>
+          <button
+            onClick={onSkipToReview}
+            disabled={!isComplete || hasBlockingConflict}
+            className={`flex-1 rounded-lg px-6 py-4 font-semibold text-white transition-colors ${
+              !isComplete || hasBlockingConflict
+                ? 'cursor-not-allowed bg-gray-300'
+                : 'bg-orange-500 hover:bg-orange-600'
+            }`}
+          >
+            {hasBlockingConflict ? 'Event Exists' : 'Review & Publish'}
+          </button>
+        </div>
       </div>
 
       {/* Date Picker Modal */}

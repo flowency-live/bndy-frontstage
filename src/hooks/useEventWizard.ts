@@ -34,9 +34,9 @@ const getInitialFormData = (
 });
 
 const getInitialStep = (initialVenue?: Venue, initialArtist?: Artist): number => {
-  if (initialVenue && initialArtist) return 2; // Date/Time step
-  if (initialVenue) return 1; // Artist step
-  return 0; // Venue step
+  if (initialVenue && initialArtist) return 2; // Skip to Date/Time step
+  if (initialVenue) return 1; // Skip to Artist step
+  return 0; // Start at Venue step
 };
 
 export function useEventWizard(props?: UseEventWizardProps) {
