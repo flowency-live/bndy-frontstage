@@ -37,14 +37,38 @@ export function EventWizard({
 
   const handleSubmit = async () => {
     try {
-      // TODO: Implement API call to create event
       console.log('Creating event:', formData);
 
-      // Mock success
-      const mockEventId = 'event-' + Date.now();
-      onSuccess?.(mockEventId);
+      // Call community event creation endpoint
+      const response = await fetch('https://api.bndy.co.uk/api/events/community', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          venueId: formData.venue?.id,
+          artistIds: formData.artists.map(a => a.id),
+          date: formData.date,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          title: formData.title,
+          description: formData.description,
+          ticketPrice: formData.ticketPrice,
+          ticketUrl: formData.ticketUrl,
+          isOpenMic: formData.isOpenMic,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create event');
+      }
+
+      const data = await response.json();
+      onSuccess?.(data.id);
     } catch (error) {
       console.error('Failed to create event:', error);
+      alert('Failed to create event: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
