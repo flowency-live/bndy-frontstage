@@ -21,7 +21,7 @@ export const MapControls = ({ map, userLocation }: MapControlsProps) => {
     if (!containerRef.current) {
       // Create a container for our control
       const controlContainer = document.createElement('div');
-      controlContainer.className = 'leaflet-bottom leaflet-right';
+      controlContainer.className = 'leaflet-top leaflet-right';
       controlContainer.id = 'custom-map-controls-container';
       
       // Ensure we don't have an existing container
