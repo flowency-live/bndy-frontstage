@@ -40,14 +40,8 @@ export function DateTimeStep({ formData, onUpdate, onNext, onQuickCreate }: Date
           onUpdate({ conflicts });
         })
         .catch((error) => {
-          // 403 means user not authenticated - skip conflict check for community events
-          if (error.message?.includes('403')) {
-            console.log('[DateTimeStep] Skipping conflict check (unauthenticated user)');
-            onUpdate({ conflicts: [] });
-          } else {
-            console.error('Failed to check conflicts:', error);
-            onUpdate({ conflicts: [] });
-          }
+          console.error('Failed to check conflicts:', error);
+          onUpdate({ conflicts: [] });
         })
         .finally(() => {
           setIsCheckingConflicts(false);
