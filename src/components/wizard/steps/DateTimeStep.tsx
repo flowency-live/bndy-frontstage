@@ -23,23 +23,32 @@ export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: Dat
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
 
-  // Check for conflicts whenever date/time changes
+  // Set default start time on mount if not already set
   useEffect(() => {
-    if (formData.date && formData.startTime && formData.venue && (formData.artists.length > 0 || formData.isOpenMic)) {
-      setIsCheckingConflicts(true);
-      checkEventConflicts(formData)
-        .then((conflicts) => {
-          onUpdate({ conflicts });
-        })
-        .catch((error) => {
-          console.error('Failed to check conflicts:', error);
-          onUpdate({ conflicts: [] });
-        })
-        .finally(() => {
-          setIsCheckingConflicts(false);
-        });
+    if (!formData.startTime && formData.venue) {
+      const defaultTime = formData.venue.standardStartTime || '21:00';
+      onUpdate({ startTime: defaultTime });
     }
-  }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
+  }, [formData.venue, formData.startTime, onUpdate]);
+
+  // CONFLICT CHECKING TEMPORARILY DISABLED - API endpoint doesn't exist yet
+  // Will be re-enabled once /api/events/check-conflicts is implemented
+  // useEffect(() => {
+  //   if (formData.date && formData.startTime && formData.venue && (formData.artists.length > 0 || formData.isOpenMic)) {
+  //     setIsCheckingConflicts(true);
+  //     checkEventConflicts(formData)
+  //       .then((conflicts) => {
+  //         onUpdate({ conflicts });
+  //       })
+  //       .catch((error) => {
+  //         console.error('Failed to check conflicts:', error);
+  //         onUpdate({ conflicts: [] });
+  //       })
+  //       .finally(() => {
+  //         setIsCheckingConflicts(false);
+  //       });
+  //   }
+  // }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
 
   const formatDisplayDate = (dateStr: string) => {
     try {
@@ -217,11 +226,11 @@ export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: Dat
         isOpen={showStartTimePicker}
         onClose={() => {
           setShowStartTimePicker(false);
-          setShowEndTimePicker(false);
         }}
         selectedTime={formData.startTime}
         onSelectTime={(time) => {
           onUpdate({ startTime: time });
+          setShowStartTimePicker(false);
         }}
         title="Select Start Time"
         defaultTime={formData.venue?.standardStartTime}
