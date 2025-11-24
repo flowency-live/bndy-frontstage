@@ -72,29 +72,29 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
       let dragStartTime = 0;
       map.on('dragstart', () => {
         dragStartTime = performance.now();
-        console.log('[PERF_DEBUG] Drag started');
+        console.warn('[PERF_DEBUG] Drag started');
       });
 
       map.on('drag', () => {
         const dragTime = performance.now() - dragStartTime;
-        console.log(`[PERF_DEBUG] Drag event - ${dragTime.toFixed(2)}ms since start`);
+        console.warn(`[PERF_DEBUG] Drag event - ${dragTime.toFixed(2)}ms since start`);
       });
 
       map.on('dragend', () => {
         const totalDragTime = performance.now() - dragStartTime;
-        console.log(`[PERF_DEBUG] Drag ended - Total: ${totalDragTime.toFixed(2)}ms`);
+        console.warn(`[PERF_DEBUG] Drag ended - Total: ${totalDragTime.toFixed(2)}ms`);
       });
 
       map.on('movestart', () => {
-        console.log('[PERF_DEBUG] Move started');
+        console.warn('[PERF_DEBUG] Move started');
       });
 
       map.on('move', () => {
-        console.log('[PERF_DEBUG] Move event');
+        console.warn('[PERF_DEBUG] Move event');
       });
 
       map.on('moveend', () => {
-        console.log('[PERF_DEBUG] Move ended');
+        console.warn('[PERF_DEBUG] Move ended');
       });
       // [/PERF_DEBUG - REMOVE]
 

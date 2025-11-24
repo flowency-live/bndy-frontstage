@@ -32,18 +32,18 @@ export const VenueMarkerLayer = ({
   useEffect(() => {
     // [PERF_DEBUG - REMOVE] Track effect execution
     const effectStartTime = performance.now();
-    console.log('[PERF_DEBUG] VenueMarkerLayer effect started', {
+    console.warn('[PERF_DEBUG] VenueMarkerLayer effect started', {
       venuesCount: venues.length
     });
 
     if (!map) {
-      console.log('[PERF_DEBUG] VenueMarkerLayer - no map, returning');
+      console.warn('[PERF_DEBUG] VenueMarkerLayer - no map, returning');
       return;
     }
 
     // Initialize cluster group once
     if (!clusterRef.current) {
-      console.log('[PERF_DEBUG] VenueMarkerLayer - initializing cluster group');
+      console.warn('[PERF_DEBUG] VenueMarkerLayer - initializing cluster group');
       const clusterGroup = L.markerClusterGroup({
         maxClusterRadius: 30,
         iconCreateFunction: createVenueClusterIcon,
@@ -118,7 +118,7 @@ export const VenueMarkerLayer = ({
 
     // [PERF_DEBUG - REMOVE] Log effect completion
     const effectEndTime = performance.now();
-    console.log(`[PERF_DEBUG] VenueMarkerLayer effect completed in ${(effectEndTime - effectStartTime).toFixed(2)}ms`, {
+    console.warn(`[PERF_DEBUG] VenueMarkerLayer effect completed in ${(effectEndTime - effectStartTime).toFixed(2)}ms`, {
       markersAdded: currentVenueIds.size - previousVenueIds.size,
       markersRemoved: previousVenueIds.size - currentVenueIds.size,
       totalMarkers: Object.keys(markersRef.current).length

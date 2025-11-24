@@ -34,19 +34,19 @@ export const EventMarkerLayer = ({
   useEffect(() => {
     // [PERF_DEBUG - REMOVE] Track effect execution
     const effectStartTime = performance.now();
-    console.log('[PERF_DEBUG] EventMarkerLayer effect started', {
+    console.warn('[PERF_DEBUG] EventMarkerLayer effect started', {
       eventsCount: events.length,
       hasEventGroups: Object.keys(eventGroups).length > 0
     });
 
     if (!map) {
-      console.log('[PERF_DEBUG] EventMarkerLayer - no map, returning');
+      console.warn('[PERF_DEBUG] EventMarkerLayer - no map, returning');
       return;
     }
 
     // Initialize cluster group once
     if (!clusterRef.current) {
-      console.log('[PERF_DEBUG] EventMarkerLayer - initializing cluster group');
+      console.warn('[PERF_DEBUG] EventMarkerLayer - initializing cluster group');
       const clusterGroup = L.markerClusterGroup({
         maxClusterRadius: 40,
         iconCreateFunction: createEventClusterIcon,
@@ -136,7 +136,7 @@ export const EventMarkerLayer = ({
 
     // [PERF_DEBUG - REMOVE] Log effect completion
     const effectEndTime = performance.now();
-    console.log(`[PERF_DEBUG] EventMarkerLayer effect completed in ${(effectEndTime - effectStartTime).toFixed(2)}ms`, {
+    console.warn(`[PERF_DEBUG] EventMarkerLayer effect completed in ${(effectEndTime - effectStartTime).toFixed(2)}ms`, {
       markersAdded: currentLocationKeys.size - previousLocationKeys.size,
       markersRemoved: previousLocationKeys.size - currentLocationKeys.size,
       totalMarkers: Object.keys(markersRef.current).length

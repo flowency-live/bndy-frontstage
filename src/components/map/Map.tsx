@@ -76,7 +76,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   const renderCountRef = useRef(0);
   useEffect(() => {
     renderCountRef.current++;
-    console.log(`[PERF_DEBUG] Map component render #${renderCountRef.current}`, {
+    console.warn(`[PERF_DEBUG] Map component render #${renderCountRef.current}`, {
       filterType,
       filterId,
       mapMode: useViewToggle().mapMode
