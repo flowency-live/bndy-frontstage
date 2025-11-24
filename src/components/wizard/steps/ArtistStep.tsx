@@ -131,7 +131,6 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                 {searchResults.map((artist, index) => {
                   const isSelected = formData.artists.some(a => a.id === artist.id);
-                  const isNearVenue = artist.distance === 0;
 
                   return (
                     <div key={`${artist.id}-${index}`} className="flex flex-col">
@@ -155,13 +154,6 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
                             style={{ backgroundColor: artist.displayColour || '#3b82f6' }}
                           >
                             {artist.name.substring(0, 2).toUpperCase()}
-                          </div>
-                        )}
-
-                        {/* Near Venue Badge */}
-                        {isNearVenue && (
-                          <div className="absolute top-1 right-1 bg-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                            Near
                           </div>
                         )}
 
