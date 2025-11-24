@@ -31,6 +31,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [venueStatus, setVenueStatus] = useState<'checking' | 'existing' | 'new' | null>(null);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -143,7 +144,7 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
     }
   }, [debouncedSearchTerm, searchVenues]);
 
-  const handleSelectVenue = useCallback((result: SearchResult) => {
+  const handleSelectVenue = useCallback(async (result: SearchResult) => {
     const venue: Venue = {
       id: result.placeId,
       name: result.name,
@@ -161,6 +162,32 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       venueName: venue.name,
       venueLocation: venue.location,
     });
+
+    // Check if venue exists in bndy-venues (DEBUG)
+    setVenueStatus('checking');
+    try {
+      const response = await fetch('https://api.bndy.co.uk/api/venues/find-or-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: venue.name,
+          address: venue.address,
+          googlePlaceId: venue.googlePlaceId,
+          latitude: venue.location.lat,
+          longitude: venue.location.lng,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setVenueStatus(data.matchMethod === 'google_place_id' ? 'existing' : 'new');
+      } else {
+        setVenueStatus(null);
+      }
+    } catch (error) {
+      console.error('Failed to check venue status:', error);
+      setVenueStatus(null);
+    }
 
     // Center map on selected venue
     if (map) {
@@ -276,18 +303,29 @@ export function VenueMapStep({ formData, onUpdate, onNext }: VenueMapStepProps) 
       {/* Selected Venue Card - positioned at bottom */}
       {selectedVenue && (
         <div className="absolute bottom-2 left-2 right-2 z-10 sm:bottom-4 sm:left-4 sm:right-4">
-          <div className="bg-card shadow-lg rounded-lg p-4 border-2 border-orange-500">
+          <div className="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-4 border-2 border-orange-500">
             <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="font-semibold text-lg text-card-foreground">{selectedVenue.name}</h3>
-                <p className="text-sm text-muted-foreground">{selectedVenue.address}</p>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{selectedVenue.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{selectedVenue.address}</p>
                 {selectedVenue.city && (
-                  <p className="text-sm text-muted-foreground">{selectedVenue.city}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedVenue.city}</p>
+                )}
+                {/* DEBUG: Venue status */}
+                {venueStatus && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium" style={{
+                    backgroundColor: venueStatus === 'existing' ? '#dcfce7' : venueStatus === 'new' ? '#fef3c7' : '#e5e7eb',
+                    color: venueStatus === 'existing' ? '#166534' : venueStatus === 'new' ? '#92400e' : '#374151'
+                  }}>
+                    {venueStatus === 'checking' && '🔍 Checking...'}
+                    {venueStatus === 'existing' && '✓ Existing BNDY venue'}
+                    {venueStatus === 'new' && '⚡ New venue (will be created)'}
+                  </div>
                 )}
               </div>
               <button
                 onClick={handleClearSelection}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white ml-2"
               >
                 ✕
               </button>
