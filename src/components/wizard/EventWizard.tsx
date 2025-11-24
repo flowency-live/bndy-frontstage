@@ -51,10 +51,11 @@ export function EventWizard({
           date: formData.date,
           startTime: formData.startTime,
           endTime: formData.endTime,
-          title: formData.title,
+          name: formData.name,
           description: formData.description,
-          ticketPrice: formData.ticketPrice,
+          ticketinformation: formData.ticketinformation,
           ticketUrl: formData.ticketUrl,
+          eventUrl: formData.eventUrl,
           isOpenMic: formData.isOpenMic,
         }),
       });
