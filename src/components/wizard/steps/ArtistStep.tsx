@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import type { EventWizardFormData, Artist } from '@/lib/types';
 import { useDebounce } from 'use-debounce';
+import { getCachedArtists, searchCachedArtists } from '@/lib/services/artist-cache-service';
 
 interface ArtistStepProps {
   formData: EventWizardFormData;
@@ -14,40 +15,34 @@ interface ArtistStepProps {
   onNext: () => void;
 }
 
-interface SearchResult extends Artist {
-  distance?: number; // Distance in km from venue
-}
-
-// Haversine formula to calculate distance between two coordinates in km
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 150); // Reduced from 300ms since search is now instant
+  const [searchResults, setSearchResults] = useState<Artist[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingCache, setIsLoadingCache] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [cachedArtists, setCachedArtists] = useState<Artist[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Search artists with location-based weighting
-  const searchArtists = useCallback(async (query: string) => {
+  // Load artists into cache on mount
+  useEffect(() => {
+    setIsLoadingCache(true);
+    getCachedArtists()
+      .then(artists => {
+        setCachedArtists(artists);
+        console.log('[ArtistStep] Loaded', artists.length, 'artists into cache');
+      })
+      .catch(error => {
+        console.error('[ArtistStep] Failed to load artists:', error);
+      })
+      .finally(() => {
+        setIsLoadingCache(false);
+      });
+  }, []);
+
+  // Search cached artists instantly (no API call)
+  const searchArtists = useCallback((query: string) => {
     if (!query || query.length < 2) {
       setSearchResults([]);
       setShowResults(false);
@@ -58,79 +53,21 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
     setShowResults(true);
 
     try {
-      const response = await fetch(
-        `https://api.bndy.co.uk/api/artists/search?name=${encodeURIComponent(query)}`,
-        {
-          credentials: 'include',
-        }
+      // Search cached artists with location weighting
+      const results = searchCachedArtists(
+        cachedArtists,
+        query,
+        formData.venue?.city
       );
 
-      if (!response.ok) {
-        console.error('[ArtistStep] Search failed:', response.status);
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-
-      const data = await response.json();
-      const artists = data.matches || [];
-
-      if (artists.length === 0) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-
-      // If venue is selected, calculate distances and sort by proximity
-      if (formData.venue?.location) {
-        const venueLocation = formData.venue.location;
-
-        // Calculate distance for each artist
-        const artistsWithDistance = artists.map((artist: Artist) => {
-          // Try to parse location string if it exists
-          // Backend returns location as a string like "Manchester" or "Stoke on Trent"
-          // For now, we'll just mark artists with matching location text
-          let distance: number | undefined;
-
-          if (artist.location && formData.venue?.city) {
-            // Simple text match for location weighting
-            const artistLocation = artist.location.toLowerCase().trim();
-            const venueCity = formData.venue.city.toLowerCase().trim();
-
-            if (artistLocation.includes(venueCity) || venueCity.includes(artistLocation)) {
-              distance = 0; // Same location - highest priority
-            } else {
-              distance = 999; // Different location - lower priority
-            }
-          } else {
-            distance = 999; // No location data - lowest priority
-          }
-
-          return {
-            ...artist,
-            distance,
-          } as SearchResult;
-        });
-
-        // Sort by distance (closest first)
-        artistsWithDistance.sort((a: SearchResult, b: SearchResult) => {
-          const distA = a.distance ?? 999;
-          const distB = b.distance ?? 999;
-          return distA - distB;
-        });
-
-        setSearchResults(artistsWithDistance);
-      } else {
-        // No venue selected - just return results as-is
-        setSearchResults(artists);
-      }
+      setSearchResults(results);
     } catch (error) {
       console.error('[ArtistStep] Search error:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, [formData.venue]);
+  }, [cachedArtists, formData.venue?.city]);
 
   // Trigger search when debounced term changes
   useEffect(() => {
