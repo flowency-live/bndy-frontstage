@@ -50,13 +50,14 @@ export function EventWizard({
         },
         body: JSON.stringify({
           venueId: formData.venue?.id,
-          artistId: formData.artists[0]?.id,
+          artistIds: formData.artists.map(a => a.id),
           date: formData.date,
           startTime: formData.startTime,
           endTime: formData.endTime,
           title: formData.name,
           isPublic: true,
           source: 'community',
+          isOpenMic: formData.isOpenMic,
         }),
       });
 
