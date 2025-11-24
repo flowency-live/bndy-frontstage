@@ -40,14 +40,39 @@ export function DateTimeStep({ formData, onUpdate, onNext, onQuickCreate }: Date
           onUpdate({ conflicts });
         })
         .catch((error) => {
-          console.error('Failed to check conflicts:', error);
-          onUpdate({ conflicts: [] });
+          // 403 means user not authenticated - skip conflict check for community events
+          if (error.message?.includes('403')) {
+            console.log('[DateTimeStep] Skipping conflict check (unauthenticated user)');
+            onUpdate({ conflicts: [] });
+          } else {
+            console.error('Failed to check conflicts:', error);
+            onUpdate({ conflicts: [] });
+          }
         })
         .finally(() => {
           setIsCheckingConflicts(false);
         });
     }
   }, [formData.date, formData.startTime, formData.endTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
+
+  // Generate event title: "Artist @ Venue - Date, Time"
+  const generateEventTitle = () => {
+    if (!formData.venue) return '';
+
+    const artistPart = formData.isOpenMic
+      ? 'Open Mic'
+      : formData.artists.length > 0
+        ? formData.artists[0].name
+        : '';
+
+    const venuePart = formData.venue.name;
+    const datePart = formData.date ? formatDisplayDate(formData.date) : '';
+    const timePart = formData.startTime ? formatDisplayTime(formData.startTime) : '';
+
+    if (!artistPart || !datePart || !timePart) return '';
+
+    return `${artistPart} @ ${venuePart} - ${datePart}, ${timePart}`;
+  };
 
   const formatDisplayDate = (dateStr: string) => {
     try {
@@ -70,6 +95,7 @@ export function DateTimeStep({ formData, onUpdate, onNext, onQuickCreate }: Date
 
   const hasBlockingConflict = formData.conflicts?.some((c) => c.severity === 'blocking');
   const isComplete = formData.date && formData.startTime;
+  const eventTitle = generateEventTitle();
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center p-6">
@@ -181,6 +207,14 @@ export function DateTimeStep({ formData, onUpdate, onNext, onQuickCreate }: Date
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Show what will be created */}
+        {eventTitle && (
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700 p-4">
+            <div className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">Creating:</div>
+            <div className="text-blue-900 dark:text-blue-100 font-semibold">{eventTitle}</div>
           </div>
         )}
 

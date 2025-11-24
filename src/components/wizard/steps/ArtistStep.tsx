@@ -7,7 +7,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import type { EventWizardFormData, Artist } from '@/lib/types';
 import { useDebounce } from 'use-debounce';
-import { getCachedArtists, searchCachedArtists } from '@/lib/services/artist-cache-service';
 
 interface ArtistStepProps {
   formData: EventWizardFormData;
@@ -17,32 +16,14 @@ interface ArtistStepProps {
 
 export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 150); // Reduced from 300ms since search is now instant
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [isLoadingCache, setIsLoadingCache] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [cachedArtists, setCachedArtists] = useState<Artist[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load artists into cache on mount
-  useEffect(() => {
-    setIsLoadingCache(true);
-    getCachedArtists()
-      .then(artists => {
-        setCachedArtists(artists);
-        console.log('[ArtistStep] Loaded', artists.length, 'artists into cache');
-      })
-      .catch(error => {
-        console.error('[ArtistStep] Failed to load artists:', error);
-      })
-      .finally(() => {
-        setIsLoadingCache(false);
-      });
-  }, []);
-
-  // Search cached artists instantly (no API call)
-  const searchArtists = useCallback((query: string) => {
+  // Search artists via API (will use GSI Query for fast results)
+  const searchArtists = useCallback(async (query: string) => {
     if (!query || query.length < 2) {
       setSearchResults([]);
       setShowResults(false);
@@ -53,21 +34,26 @@ export function ArtistStep({ formData, onUpdate, onNext }: ArtistStepProps) {
     setShowResults(true);
 
     try {
-      // Search cached artists with location weighting
-      const results = searchCachedArtists(
-        cachedArtists,
-        query,
-        formData.venue?.city
+      const response = await fetch(
+        `https://api.bndy.co.uk/api/artists/search?name=${encodeURIComponent(query)}`,
+        { credentials: 'include' }
       );
 
-      setSearchResults(results);
+      if (!response.ok) {
+        console.error('[ArtistStep] Search failed:', response.status);
+        setSearchResults([]);
+        return;
+      }
+
+      const data = await response.json();
+      setSearchResults(data.matches || []);
     } catch (error) {
       console.error('[ArtistStep] Search error:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, [cachedArtists, formData.venue?.city]);
+  }, []);
 
   // Trigger search when debounced term changes
   useEffect(() => {
