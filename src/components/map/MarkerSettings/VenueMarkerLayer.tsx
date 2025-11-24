@@ -30,12 +30,20 @@ export const VenueMarkerLayer = ({
 
   // Add venue markers to the map with differential updates
   useEffect(() => {
+    // [PERF_DEBUG - REMOVE] Track effect execution
+    const effectStartTime = performance.now();
+    console.log('[PERF_DEBUG] VenueMarkerLayer effect started', {
+      venuesCount: venues.length
+    });
+
     if (!map) {
+      console.log('[PERF_DEBUG] VenueMarkerLayer - no map, returning');
       return;
     }
 
     // Initialize cluster group once
     if (!clusterRef.current) {
+      console.log('[PERF_DEBUG] VenueMarkerLayer - initializing cluster group');
       const clusterGroup = L.markerClusterGroup({
         maxClusterRadius: 30,
         iconCreateFunction: createVenueClusterIcon,
@@ -107,6 +115,15 @@ export const VenueMarkerLayer = ({
     // Update previous state
     previousVenueIdsRef.current = currentVenueIds;
     isInitializedRef.current = true;
+
+    // [PERF_DEBUG - REMOVE] Log effect completion
+    const effectEndTime = performance.now();
+    console.log(`[PERF_DEBUG] VenueMarkerLayer effect completed in ${(effectEndTime - effectStartTime).toFixed(2)}ms`, {
+      markersAdded: currentVenueIds.size - previousVenueIds.size,
+      markersRemoved: previousVenueIds.size - currentVenueIds.size,
+      totalMarkers: Object.keys(markersRef.current).length
+    });
+    // [/PERF_DEBUG - REMOVE]
 
     // Cleanup function only runs on unmount
     return () => {

@@ -72,6 +72,17 @@ interface MapProps {
 }
 
 const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapProps) => {
+  // [PERF_DEBUG - REMOVE] Track component renders
+  const renderCountRef = useRef(0);
+  useEffect(() => {
+    renderCountRef.current++;
+    console.log(`[PERF_DEBUG] Map component render #${renderCountRef.current}`, {
+      filterType,
+      filterId,
+      mapMode: useViewToggle().mapMode
+    });
+  });
+  // [/PERF_DEBUG - REMOVE]
 
   const {
     userLocation,
