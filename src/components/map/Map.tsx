@@ -72,6 +72,12 @@ interface MapProps {
 }
 
 const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapProps) => {
+  const {
+    userLocation,
+    dateRange,
+  } = useEvents();
+  const { isDarkMode, mapMode } = useViewToggle();
+
   // [PERF_DEBUG - REMOVE] Track component renders
   const renderCountRef = useRef(0);
   useEffect(() => {
@@ -79,16 +85,10 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     console.warn(`[PERF_DEBUG] Map component render #${renderCountRef.current}`, {
       filterType,
       filterId,
-      mapMode: useViewToggle().mapMode
+      mapMode
     });
   });
   // [/PERF_DEBUG - REMOVE]
-
-  const {
-    userLocation,
-    dateRange,
-  } = useEvents();
-  const { isDarkMode, mapMode } = useViewToggle();
 
   // Calculate date range for queries using centralized utility
   const { startDate, endDate } = useMemo(() => {
