@@ -14,10 +14,10 @@ interface DateTimeStepProps {
   formData: EventWizardFormData;
   onUpdate: (data: Partial<EventWizardFormData>) => void;
   onNext: () => void;
-  onSkipToReview?: () => void;
+  onQuickCreate?: () => void;
 }
 
-export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: DateTimeStepProps) {
+export function DateTimeStep({ formData, onUpdate, onNext, onQuickCreate }: DateTimeStepProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
@@ -31,24 +31,23 @@ export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: Dat
     }
   }, [formData.venue, formData.startTime, onUpdate]);
 
-  // CONFLICT CHECKING TEMPORARILY DISABLED - API endpoint doesn't exist yet
-  // Will be re-enabled once /api/events/check-conflicts is implemented
-  // useEffect(() => {
-  //   if (formData.date && formData.startTime && formData.venue && (formData.artists.length > 0 || formData.isOpenMic)) {
-  //     setIsCheckingConflicts(true);
-  //     checkEventConflicts(formData)
-  //       .then((conflicts) => {
-  //         onUpdate({ conflicts });
-  //       })
-  //       .catch((error) => {
-  //         console.error('Failed to check conflicts:', error);
-  //         onUpdate({ conflicts: [] });
-  //       })
-  //       .finally(() => {
-  //         setIsCheckingConflicts(false);
-  //       });
-  //   }
-  // }, [formData.date, formData.startTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
+  // Check for conflicts whenever date is set (we have venue, artist, date, and default start time)
+  useEffect(() => {
+    if (formData.date && formData.startTime && formData.venue && (formData.artists.length > 0 || formData.isOpenMic)) {
+      setIsCheckingConflicts(true);
+      checkEventConflicts(formData)
+        .then((conflicts) => {
+          onUpdate({ conflicts });
+        })
+        .catch((error) => {
+          console.error('Failed to check conflicts:', error);
+          onUpdate({ conflicts: [] });
+        })
+        .finally(() => {
+          setIsCheckingConflicts(false);
+        });
+    }
+  }, [formData.date, formData.startTime, formData.endTime, formData.venue?.id, formData.artists.length, formData.isOpenMic, onUpdate]);
 
   const formatDisplayDate = (dateStr: string) => {
     try {
@@ -186,28 +185,31 @@ export function DateTimeStep({ formData, onUpdate, onNext, onSkipToReview }: Dat
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="space-y-3">
+          {/* Primary Action: Quick Create */}
           <button
-            onClick={onNext}
+            onClick={onQuickCreate}
             disabled={!isComplete || hasBlockingConflict}
-            className={`flex-1 rounded-lg px-6 py-4 font-semibold transition-colors ${
+            className={`w-full rounded-lg px-6 py-4 font-semibold text-white transition-colors ${
               !isComplete || hasBlockingConflict
-                ? 'cursor-not-allowed bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            Add Details
-          </button>
-          <button
-            onClick={onSkipToReview}
-            disabled={!isComplete || hasBlockingConflict}
-            className={`flex-1 rounded-lg px-6 py-4 font-semibold text-white transition-colors ${
-              !isComplete || hasBlockingConflict
-                ? 'cursor-not-allowed bg-gray-300'
+                ? 'cursor-not-allowed bg-gray-300 dark:bg-gray-700'
                 : 'bg-orange-500 hover:bg-orange-600'
             }`}
           >
-            {hasBlockingConflict ? 'Event Exists' : 'Review & Publish'}
+            {hasBlockingConflict ? 'Cannot Create - Event Exists' : 'Quick Create Event'}
+          </button>
+
+          {/* Secondary Action: Add More Details */}
+          <button
+            onClick={onNext}
+            disabled={!isComplete || hasBlockingConflict}
+            className={`w-full rounded-lg px-6 py-3 font-medium transition-colors ${
+              !isComplete || hasBlockingConflict
+                ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-2 border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            Add More Details (optional)
           </button>
         </div>
       </div>

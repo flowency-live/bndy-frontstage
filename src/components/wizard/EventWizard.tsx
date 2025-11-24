@@ -72,7 +72,7 @@ export function EventWizard({
             formData={formData}
             onUpdate={updateFormData}
             onNext={nextStep}
-            onSkipToReview={() => goToStep(4)}
+            onQuickCreate={handleSubmit}
           />
         );
       case 3:

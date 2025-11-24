@@ -17,23 +17,31 @@ interface ConflictApiResponse {
 /**
  * Check for event conflicts
  * Returns array of conflicts (empty if none)
+ * Calls /api/artists/:artistId/events/check-conflicts endpoint
  */
 export async function checkEventConflicts(
   formData: EventWizardFormData
 ): Promise<WizardDateConflict[]> {
-  const { venue, artists, date, startTime, isOpenMic } = formData;
+  const { venue, artists, date, startTime, endTime, isOpenMic } = formData;
 
-  const response = await fetch(`${API_BASE_URL}/api/events/check-conflicts`, {
+  // Need at least one artist to check conflicts
+  if (!artists || artists.length === 0) {
+    return [];
+  }
+
+  const artistId = artists[0].id; // Use first artist for conflict checking
+
+  const response = await fetch(`${API_BASE_URL}/api/artists/${artistId}/events/check-conflicts`, {
     method: 'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      venueId: venue?.id,
-      artistIds: artists.map((a) => a.id),
       date,
       startTime,
+      endTime: endTime || '00:00',
+      venueId: venue?.id,
       isOpenMic,
     }),
   });
@@ -42,28 +50,36 @@ export async function checkEventConflicts(
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
 
-  const data: ConflictApiResponse = await response.json();
+  const data = await response.json();
 
-  return data.conflicts.map((conflict) => {
-    if (conflict.type === 'exact_duplicate') {
+  // Backend returns array of conflicting events
+  // Convert to our wizard conflict format
+  if (!data.conflicts || data.conflicts.length === 0) {
+    return [];
+  }
+
+  return data.conflicts.map((event: any) => {
+    // Check if exact duplicate (same venue, date, time)
+    const isExactDuplicate = event.venueId === venue?.id &&
+                            event.date === date &&
+                            event.startTime === startTime;
+
+    if (isExactDuplicate) {
       return {
-        type: 'exact_duplicate',
+        type: 'exact_duplicate' as const,
         severity: 'blocking' as const,
-        message: 'This exact event already exists. Please modify the details.',
-        conflictingEventId: conflict.eventId,
-      };
-    } else if (conflict.type === 'venue') {
-      return {
-        type: 'venue',
-        severity: 'warning' as const,
-        message: `${venue?.name || 'This venue'} has another event at this time. Continue anyway?`,
-      };
-    } else {
-      return {
-        type: 'artist',
-        severity: 'warning' as const,
-        message: `${conflict.artistName || 'This artist'} has another event at this time. Continue anyway?`,
+        message: 'This exact event already exists at this venue and time.',
+        conflictingEventId: event.id,
       };
     }
+
+    // Otherwise it's a scheduling conflict (artist double-booked or unavailable)
+    return {
+      type: 'artist' as const,
+      severity: 'warning' as const,
+      message: event.isUnavailability
+        ? `A band member is unavailable at this time${event.unavailabilityReason ? ': ' + event.unavailabilityReason : ''}`
+        : `${artists[0].name} has another event at this time`,
+    };
   });
 }
