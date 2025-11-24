@@ -78,18 +78,6 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
   } = useEvents();
   const { isDarkMode, mapMode } = useViewToggle();
 
-  // [PERF_DEBUG - REMOVE] Track component renders
-  const renderCountRef = useRef(0);
-  useEffect(() => {
-    renderCountRef.current++;
-    console.warn(`[PERF_DEBUG] Map component render #${renderCountRef.current}`, {
-      filterType,
-      filterId,
-      mapMode
-    });
-  });
-  // [/PERF_DEBUG - REMOVE]
-
   // Calculate date range for queries using centralized utility
   const { startDate, endDate } = useMemo(() => {
     return getFormattedDateRange(dateRange as DateRangeFilter);

@@ -21,15 +21,19 @@ export const MapControls = ({ map, userLocation }: MapControlsProps) => {
     if (!containerRef.current) {
       // Create a container for our control
       const controlContainer = document.createElement('div');
-      controlContainer.className = 'leaflet-top leaflet-right';
+      // Position below search bar with custom styling
+      controlContainer.style.position = 'absolute';
+      controlContainer.style.top = '180px'; // Below search bar and mode toggle
+      controlContainer.style.right = '10px';
+      controlContainer.style.zIndex = '1000';
       controlContainer.id = 'custom-map-controls-container';
-      
+
       // Ensure we don't have an existing container
       const existingContainer = document.getElementById('custom-map-controls-container');
       if (existingContainer) {
         existingContainer.remove();
       }
-      
+
       // Add our container to the map container
       map.getContainer().appendChild(controlContainer);
       containerRef.current = controlContainer;

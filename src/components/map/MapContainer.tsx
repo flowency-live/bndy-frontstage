@@ -69,27 +69,6 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         boxZoom: true,
       });
 
-      // [PERF_DEBUG - REMOVE] Performance profiling for drag events
-      let dragStartTime = 0;
-      let dragEventCount = 0;
-
-      map.on('dragstart', () => {
-        dragStartTime = performance.now();
-        dragEventCount = 0;
-        console.warn('[PERF_DEBUG] Drag started');
-      });
-
-      map.on('drag', () => {
-        dragEventCount++;
-        // Don't log every drag event - just count them
-      });
-
-      map.on('dragend', () => {
-        const totalDragTime = performance.now() - dragStartTime;
-        console.warn(`[PERF_DEBUG] Drag ended - Total: ${totalDragTime.toFixed(2)}ms, Events: ${dragEventCount}`);
-      });
-      // [/PERF_DEBUG - REMOVE]
-
       // Add tile layer (consistent blue-gray style, not affected by theme)
       L.tileLayer(tileLayer.url, {
         maxZoom: 19,
