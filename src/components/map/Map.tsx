@@ -303,6 +303,7 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
 
 
   // Handle event marker click: sort events and open overlay
+  // Stable callback - no external dependencies
   const handleEventClick = useCallback((events: Event[]) => {
     const sortedEvents = [...events].sort((a, b) => {
       const dateA = new Date(a.date);
@@ -319,15 +320,16 @@ const Map = ({ filterType, filterId, entityExists = false, onClearSearch }: MapP
     setShowEventOverlay(true);
     setShowVenueOverlay(false);
     setSelectedVenue(null);
-  }, []);
+  }, []); // Empty deps - uses only state setters which are stable
 
   // Handle venue marker click: open overlay
+  // Stable callback - no external dependencies
   const handleVenueClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     setShowVenueOverlay(true);
     setShowEventOverlay(false);
     setSelectedEvents([]);
-  }, []);
+  }, []); // Empty deps - uses only state setters which are stable
 
   // Handle event overlay close
   const handleEventOverlayClose = useCallback(() => {

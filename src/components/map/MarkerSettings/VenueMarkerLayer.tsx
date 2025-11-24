@@ -20,37 +20,67 @@ export const VenueMarkerLayer = ({
   clusterRef,
 }: VenueMarkerLayerProps) => {
   const isInitializedRef = useRef(false);
+  const previousVenueIdsRef = useRef<Set<string>>(new Set());
+  const onVenueClickRef = useRef(onVenueClick);
 
-  // Add venue markers to the map
+  // Keep callback ref updated without triggering re-renders
   useEffect(() => {
-    if (!map || !venues.length) {
+    onVenueClickRef.current = onVenueClick;
+  }, [onVenueClick]);
+
+  // Add venue markers to the map with differential updates
+  useEffect(() => {
+    if (!map) {
       return;
     }
 
-    // Clear existing markers
-    if (clusterRef.current) {
-      map.removeLayer(clusterRef.current);
-      clusterRef.current = null;
+    // Initialize cluster group once
+    if (!clusterRef.current) {
+      const clusterGroup = L.markerClusterGroup({
+        maxClusterRadius: 30,
+        iconCreateFunction: createVenueClusterIcon,
+        zoomToBoundsOnClick: true,
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: false,
+        disableClusteringAtZoom: 12,
+        // Performance optimizations
+        animate: false, // Disable animation for instant updates
+        animateAddingMarkers: false,
+        removeOutsideVisibleBounds: true, // Remove markers outside viewport
+        chunkedLoading: true, // Load markers in chunks
+      });
+      map.addLayer(clusterGroup);
+      clusterRef.current = clusterGroup;
     }
 
-    Object.values(markersRef.current).forEach((marker) => {
-      marker.remove();
-    });
-    markersRef.current = {};
+    const clusterGroup = clusterRef.current;
 
-    // Create a cluster group for venues
-    const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 30,
-      iconCreateFunction: createVenueClusterIcon,
-      zoomToBoundsOnClick: true,
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: false,
-      disableClusteringAtZoom: 12,
+    // Get current venue IDs
+    const currentVenueIds = new Set(
+      venues
+        .filter(v => v.location && v.location.lat && v.location.lng)
+        .map(v => v.id)
+    );
+    const previousVenueIds = previousVenueIdsRef.current;
+
+    // Remove markers for venues that no longer exist
+    previousVenueIds.forEach(venueId => {
+      if (!currentVenueIds.has(venueId)) {
+        const marker = markersRef.current[venueId];
+        if (marker) {
+          clusterGroup.removeLayer(marker);
+          marker.remove();
+          delete markersRef.current[venueId];
+        }
+      }
     });
 
-    // Create markers for all venues
+    // Add markers for new venues
     venues.forEach((venue) => {
       if (!venue.location || !venue.location.lat || !venue.location.lng) return;
+
+      // Skip if marker already exists
+      if (markersRef.current[venue.id]) return;
 
       // Create marker with simple venue icon (no event count badge)
       const marker = L.marker(
@@ -62,16 +92,11 @@ export const VenueMarkerLayer = ({
         }
       );
 
-      // Add click handler for venue
+      // Add click handler using ref to avoid stale closures
       marker.on("click", (e) => {
-        // Prevent default behavior
         L.DomEvent.stopPropagation(e);
-
-        // Center map on marker
         map?.panTo([venue.location!.lat, venue.location!.lng]);
-
-        // When venue is clicked, show venue overlay
-        onVenueClick(venue);
+        onVenueClickRef.current(venue);
       });
 
       // Add to cluster group and track for cleanup
@@ -79,13 +104,11 @@ export const VenueMarkerLayer = ({
       markersRef.current[venue.id] = marker;
     });
 
-    // Add the cluster group to the map
-    map.addLayer(clusterGroup);
-    clusterRef.current = clusterGroup;
-
+    // Update previous state
+    previousVenueIdsRef.current = currentVenueIds;
     isInitializedRef.current = true;
 
-    // Cleanup function
+    // Cleanup function only runs on unmount
     return () => {
       if (clusterRef.current) {
         map.removeLayer(clusterRef.current);
@@ -95,9 +118,10 @@ export const VenueMarkerLayer = ({
         marker.remove();
       });
       markersRef.current = {};
+      previousVenueIdsRef.current = new Set();
     };
-  }, [map, venues, onVenueClick]);
-  // Note: markersRef and clusterRef are refs and don't need to be in dependency array
+  }, [map, venues]);
+  // Removed onVenueClick from deps - using ref instead
 
   // This is a functional component, so no markup is returned
   return null;

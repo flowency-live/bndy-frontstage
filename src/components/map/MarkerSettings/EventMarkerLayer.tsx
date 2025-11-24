@@ -22,94 +22,125 @@ export const EventMarkerLayer = ({
   clusterRef
 }: EventMarkerLayerProps) => {
   const isInitializedRef = useRef(false);
+  const previousLocationGroupsRef = useRef<Record<string, Event[]>>({});
+  const onEventClickRef = useRef(onEventClick);
 
-  // Add event markers to the map
+  // Keep callback ref updated without triggering re-renders
   useEffect(() => {
-    if (!map || events.length === 0) {
+    onEventClickRef.current = onEventClick;
+  }, [onEventClick]);
+
+  // Add event markers to the map with differential updates
+  useEffect(() => {
+    if (!map) {
       return;
     }
 
-    // Clear existing markers
-    if (clusterRef.current) {
-      map.removeLayer(clusterRef.current);
-      clusterRef.current = null;
+    // Initialize cluster group once
+    if (!clusterRef.current) {
+      const clusterGroup = L.markerClusterGroup({
+        maxClusterRadius: 40,
+        iconCreateFunction: createEventClusterIcon,
+        zoomToBoundsOnClick: true,
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: false,
+        disableClusteringAtZoom: 12,
+        // Performance optimizations
+        animate: false, // Disable animation for instant updates
+        animateAddingMarkers: false,
+        removeOutsideVisibleBounds: true, // Remove markers outside viewport
+        chunkedLoading: true, // Load markers in chunks
+      });
+      map.addLayer(clusterGroup);
+      clusterRef.current = clusterGroup;
     }
 
-    Object.values(markersRef.current).forEach(marker => {
-      marker.remove();
-    });
-    markersRef.current = {};
+    const clusterGroup = clusterRef.current;
 
-    // Create a cluster group for events
-    const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 40,
-      iconCreateFunction: createEventClusterIcon,
-      zoomToBoundsOnClick: true,
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: false,
-      disableClusteringAtZoom: 12
-    });
-    
     // Use provided eventGroups if available, otherwise group events by location
-    const locationGroups = Object.keys(eventGroups).length > 0 
-      ? eventGroups 
+    const currentLocationGroups = Object.keys(eventGroups).length > 0
+      ? eventGroups
       : groupEventsByLocation(events);
-    
-    // Create a marker for each location group
-    Object.entries(locationGroups).forEach(([locationKey, eventsAtLocation]) => {
-      if (!eventsAtLocation.length) return;
-      
-      // Use the first event for the marker position
-      const event = eventsAtLocation[0];
-      
-      if (!event.location || !event.location.lat || !event.location.lng) return;
-      
-      // Create marker with event icon - use count if multiple events
-      const useCount = eventsAtLocation.length > 1;
-      const marker = L.marker([event.location.lat, event.location.lng], { 
-        icon: createEventMarkerIcon(useCount ? eventsAtLocation.length : undefined)
-      });
-      
-      // Add click handler for detailed info
-      marker.on('click', (e) => {
-        // Stop propagation to prevent default behavior
-        L.DomEvent.stopPropagation(e);
-        
-        // Center map on marker
-        map?.panTo([event.location!.lat, event.location!.lng]);
-        
-        // Set all events at this location to the overlay
-        onEventClick(eventsAtLocation);
-      });
-      
-      // Add to cluster group
-      clusterGroup.addLayer(marker);
-      
-      // Store marker reference for cleanup
-      markersRef.current[locationKey] = marker;
-    });
-    
-    // Add the cluster group to the map
-    map.addLayer(clusterGroup);
-    clusterRef.current = clusterGroup;
 
+    const previousLocationGroups = previousLocationGroupsRef.current;
+
+    // Determine which markers to remove, update, or add
+    const currentLocationKeys = new Set(Object.keys(currentLocationGroups));
+    const previousLocationKeys = new Set(Object.keys(previousLocationGroups));
+
+    // Remove markers that no longer exist
+    previousLocationKeys.forEach(locationKey => {
+      if (!currentLocationKeys.has(locationKey)) {
+        const marker = markersRef.current[locationKey];
+        if (marker) {
+          clusterGroup.removeLayer(marker);
+          marker.remove();
+          delete markersRef.current[locationKey];
+        }
+      }
+    });
+
+    // Add or update markers
+    Object.entries(currentLocationGroups).forEach(([locationKey, eventsAtLocation]) => {
+      if (!eventsAtLocation.length) return;
+
+      const event = eventsAtLocation[0];
+      if (!event.location || !event.location.lat || !event.location.lng) return;
+
+      const existingMarker = markersRef.current[locationKey];
+      const previousEvents = previousLocationGroups[locationKey];
+
+      // Check if marker needs update (count changed)
+      const needsUpdate = !existingMarker ||
+        !previousEvents ||
+        previousEvents.length !== eventsAtLocation.length;
+
+      if (needsUpdate) {
+        // Remove old marker if exists
+        if (existingMarker) {
+          clusterGroup.removeLayer(existingMarker);
+          existingMarker.remove();
+        }
+
+        // Create new marker
+        const useCount = eventsAtLocation.length > 1;
+        const marker = L.marker([event.location.lat, event.location.lng], {
+          icon: createEventMarkerIcon(useCount ? eventsAtLocation.length : undefined)
+        });
+
+        // Add click handler using ref to avoid stale closures
+        marker.on('click', (e) => {
+          L.DomEvent.stopPropagation(e);
+          map?.panTo([event.location!.lat, event.location!.lng]);
+          onEventClickRef.current(eventsAtLocation);
+        });
+
+        // Add to cluster group
+        clusterGroup.addLayer(marker);
+        markersRef.current[locationKey] = marker;
+      }
+    });
+
+    // Update previous state
+    previousLocationGroupsRef.current = currentLocationGroups;
     isInitializedRef.current = true;
 
-    // Cleanup function
+    // Cleanup function only runs on unmount
     return () => {
       if (clusterRef.current) {
         map.removeLayer(clusterRef.current);
         clusterRef.current = null;
       }
-      
+
       Object.values(markersRef.current).forEach(marker => {
         marker.remove();
       });
-      
+
       markersRef.current = {};
+      previousLocationGroupsRef.current = {};
     };
-  }, [map, events, eventGroups, onEventClick]);
-  // Note: markersRef and clusterRef are refs and don't need to be in dependency array
+  }, [map, events, eventGroups]);
+  // Removed onEventClick from deps - using ref instead
 
   // Helper function to group events by location
   const groupEventsByLocation = (eventList: Event[]): Record<string, Event[]> => {
