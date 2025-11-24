@@ -58,7 +58,8 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
         fadeAnimation: false,        // Disable tile fade-in for instant rendering
         markerZoomAnimation: false,  // Disable marker zoom animation for snappier feel
 
-        preferCanvas: false,         // Use SVG for better quality at current scale
+        preferCanvas: true,          // Use Canvas for better performance with many markers
+        renderer: L.canvas({ tolerance: 5 }), // Canvas renderer with increased click tolerance
 
         // Interaction settings
         dragging: true,
@@ -70,31 +71,22 @@ export const MapContainer = forwardRef<L.Map | null, MapContainerProps>(
 
       // [PERF_DEBUG - REMOVE] Performance profiling for drag events
       let dragStartTime = 0;
+      let dragEventCount = 0;
+
       map.on('dragstart', () => {
         dragStartTime = performance.now();
+        dragEventCount = 0;
         console.warn('[PERF_DEBUG] Drag started');
       });
 
       map.on('drag', () => {
-        const dragTime = performance.now() - dragStartTime;
-        console.warn(`[PERF_DEBUG] Drag event - ${dragTime.toFixed(2)}ms since start`);
+        dragEventCount++;
+        // Don't log every drag event - just count them
       });
 
       map.on('dragend', () => {
         const totalDragTime = performance.now() - dragStartTime;
-        console.warn(`[PERF_DEBUG] Drag ended - Total: ${totalDragTime.toFixed(2)}ms`);
-      });
-
-      map.on('movestart', () => {
-        console.warn('[PERF_DEBUG] Move started');
-      });
-
-      map.on('move', () => {
-        console.warn('[PERF_DEBUG] Move event');
-      });
-
-      map.on('moveend', () => {
-        console.warn('[PERF_DEBUG] Move ended');
+        console.warn(`[PERF_DEBUG] Drag ended - Total: ${totalDragTime.toFixed(2)}ms, Events: ${dragEventCount}`);
       });
       // [/PERF_DEBUG - REMOVE]
 
