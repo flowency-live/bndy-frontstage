@@ -42,14 +42,40 @@ export function EventWizard({
     try {
       console.log('Creating event:', formData);
 
-      // Call community event creation endpoint
-      const response = await fetch('https://api.bndy.co.uk/api/events/community', {
+      if (!formData.venue) {
+        throw new Error('Venue is required');
+      }
+
+      // Step 1: Find or create venue in bndy-venues
+      const venueResponse = await fetch('https://api.bndy.co.uk/api/venues/find-or-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          venueId: formData.venue?.id,
+          name: formData.venue.name,
+          address: formData.venue.address,
+          googlePlaceId: formData.venue.googlePlaceId,
+          latitude: formData.venue.location?.lat,
+          longitude: formData.venue.location?.lng,
+        }),
+      });
+
+      if (!venueResponse.ok) {
+        throw new Error('Failed to find or create venue');
+      }
+
+      const venue = await venueResponse.json();
+      const venueId = venue.id;
+
+      // Step 2: Create event with bndy-venues ID
+      const eventResponse = await fetch('https://api.bndy.co.uk/api/events/community', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          venueId: venueId,
           artistIds: formData.artists.map(a => a.id),
           date: formData.date,
           startTime: formData.startTime,
@@ -61,16 +87,16 @@ export function EventWizard({
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!eventResponse.ok) {
+        const error = await eventResponse.json();
         throw new Error(error.error || 'Failed to create event');
       }
 
-      const data = await response.json();
+      const data = await eventResponse.json();
 
       toast({
         title: 'Event created!',
-        description: `${formData.artists[0]?.name} at ${formData.venue?.name}`,
+        description: `${formData.artists[0]?.name} at ${formData.venue.name}`,
       });
 
       onSuccess?.(data.id);
