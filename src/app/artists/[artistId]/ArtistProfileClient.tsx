@@ -34,13 +34,9 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
 
       setLoadingAvailability(true);
       try {
-        // Get next 3 months of availability
-        const today = new Date().toISOString().split('T')[0];
-        const threeMonthsLater = new Date();
-        threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
-        const endDate = threeMonthsLater.toISOString().split('T')[0];
-
-        const availabilityData = await getArtistAvailability(artistId, today, endDate);
+        // Get all future availability (no date range limit)
+        // Backend already filters to future dates only
+        const availabilityData = await getArtistAvailability(artistId);
         setAvailability(availabilityData);
       } catch (error) {
         console.error('Failed to load availability:', error);
