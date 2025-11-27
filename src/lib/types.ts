@@ -59,6 +59,7 @@ export interface Artist {
   bio?: string;  // Backend uses 'bio' not 'description'
   location?: string;
   displayColour?: string;  // Color for artist tiles when no profile image exists
+  publishAvailability?: boolean;  // Whether to display availability tab publicly
   // Legacy fields from backend
   facebookUrl?: string;
   instagramUrl?: string;
