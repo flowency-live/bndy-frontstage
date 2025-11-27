@@ -37,11 +37,11 @@ export default function TabNavigation({
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("events");
 
-  // Define tabs - Events, Availability (conditional), and Links
+  // Define tabs - Events, Availability (conditional), and Links (hidden for now)
   const tabs: Tab[] = [
     { id: "events", label: "Events", icon: Calendar, visible: true },
     { id: "availability", label: "Availability", icon: CalendarCheck, visible: publishAvailability === true },
-    { id: "links", label: "Links", icon: Link2, visible: true },
+    { id: "links", label: "Links", icon: Link2, visible: false },
   ];
 
   // Sync with URL params on mount and when search params change
