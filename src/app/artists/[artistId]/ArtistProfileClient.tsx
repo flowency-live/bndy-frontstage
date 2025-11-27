@@ -10,6 +10,9 @@ import ArtistInfo from "@/components/artist/ArtistInfo";
 import TabNavigation from "@/components/artist/TabNavigation";
 import EventsTab from "@/components/artist/tabs/EventsTab";
 import LinksTab from "@/components/artist/tabs/LinksTab";
+import AvailabilityTab from "@/components/artist/tabs/AvailabilityTab";
+import { getArtistAvailability } from "@/lib/services/artist-service";
+import type { Event } from "@/lib/types";
 
 interface ArtistProfileClientProps {
   initialData: ArtistProfileData | null;
@@ -19,12 +22,36 @@ interface ArtistProfileClientProps {
 
 export default function ArtistProfileClient({ initialData, error, artistId }: ArtistProfileClientProps) {
   const [isLoading] = useState(false);
+  const [availability, setAvailability] = useState<Event[]>([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as "events" | "links") || "events";
+  const activeTab = (searchParams.get("tab") as "events" | "links" | "availability") || "events";
 
-  // Simple logging (client-side only to avoid hydration issues)
+  // Fetch availability if artist publishes it
   useEffect(() => {
-  }, [artistId, initialData, error]);
+    async function fetchAvailability() {
+      if (!artistId || !initialData?.publishAvailability) return;
+
+      setLoadingAvailability(true);
+      try {
+        // Get next 3 months of availability
+        const today = new Date().toISOString().split('T')[0];
+        const threeMonthsLater = new Date();
+        threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+        const endDate = threeMonthsLater.toISOString().split('T')[0];
+
+        const availabilityData = await getArtistAvailability(artistId, today, endDate);
+        setAvailability(availabilityData);
+      } catch (error) {
+        console.error('Failed to load availability:', error);
+        setAvailability([]);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    }
+
+    fetchAvailability();
+  }, [artistId, initialData?.publishAvailability]);
 
   // Handle error state
   if (error) {
@@ -102,7 +129,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       <TabNavigation
         artistId={initialData.id}
         hasVideos={false}
-        publishAvailability={false}
+        publishAvailability={initialData.publishAvailability}
       />
 
       {/* Tab Content */}
@@ -111,6 +138,12 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
           <EventsTab
             events={initialData.upcomingEvents}
             artistLocation={initialData.location}
+          />
+        </div>
+        <div className={activeTab === "availability" ? "block" : "hidden"}>
+          <AvailabilityTab
+            availability={availability}
+            loading={loadingAvailability}
           />
         </div>
         <div className={activeTab === "links" ? "block" : "hidden"}>

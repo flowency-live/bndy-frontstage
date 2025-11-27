@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Link2 } from "lucide-react";
+import { Calendar, Link2, CalendarCheck } from "lucide-react";
 
 interface TabNavigationProps {
   artistId: string;
@@ -10,7 +10,7 @@ interface TabNavigationProps {
   publishAvailability?: boolean;
 }
 
-type TabType = "events" | "links";
+type TabType = "events" | "links" | "availability";
 
 interface Tab {
   id: TabType;
@@ -37,9 +37,10 @@ export default function TabNavigation({
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("events");
 
-  // Define tabs - Events and Links only
+  // Define tabs - Events, Availability (conditional), and Links
   const tabs: Tab[] = [
     { id: "events", label: "Events", icon: Calendar, visible: true },
+    { id: "availability", label: "Availability", icon: CalendarCheck, visible: publishAvailability === true },
     { id: "links", label: "Links", icon: Link2, visible: true },
   ];
 

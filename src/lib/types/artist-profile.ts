@@ -11,6 +11,7 @@ export interface ArtistProfileData {
   location?: string;
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
   upcomingEvents: Event[];
+  publishAvailability?: boolean; // Whether to display availability tab publicly
 }
 
 export interface ArtistProfileMetaTags {

@@ -109,6 +109,44 @@ export async function createArtist(
 }
 
 /**
+ * Get artist availability from DynamoDB API - Service Layer Function
+ */
+export async function getArtistAvailability(
+  artistId: string,
+  startDate?: string,
+  endDate?: string
+): Promise<Event[]> {
+  if (!artistId) return [];
+
+  try {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    const queryString = params.toString();
+    const url = `/api/artists/${artistId}/public-availability${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return [];
+      throw new Error(`Failed to fetch artist availability: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.availability || [];
+  } catch (error) {
+    console.error('Error fetching artist availability:', error);
+    return [];
+  }
+}
+
+/**
  * Search for artists - Calls DynamoDB fuzzy search API
  */
 export async function searchArtists(searchTerm: string, location?: string): Promise<Artist[]> {

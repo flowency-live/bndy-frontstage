@@ -71,7 +71,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     artistType: artistData.artistType || artistData.artist_type,
     location: artistData.location,
     socialMediaUrls: getSocialMediaURLs(artistData),
-    upcomingEvents: upcomingEvents
+    upcomingEvents: upcomingEvents,
+    publishAvailability: artistData.publishAvailability || false
   };
 
   return <ArtistProfileClient initialData={profileData} artistId={artistId} />;
