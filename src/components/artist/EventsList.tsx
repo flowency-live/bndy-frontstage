@@ -515,7 +515,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
             {linkToArtist && event.artistIds && event.artistIds.length > 0 ? (
               <Link
                 href={`/artists/${event.artistIds[0]}`}
-                className="text-lg font-bold text-white hover:text-white/90 transition-colors truncate block"
+                className="text-lg font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white/90 transition-colors truncate block"
                 aria-label={`View artist details for ${event.artistName || 'artist'}`}
               >
                 {event.artistName || 'Unknown Artist'}
@@ -523,7 +523,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
             ) : (
               <Link
                 href={`/venues/${event.venueId}`}
-                className="text-lg font-bold text-white hover:text-white/90 transition-colors truncate block"
+                className="text-lg font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white/90 transition-colors truncate block"
                 aria-label={`View venue details for ${event.venueName}`}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -535,7 +535,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
               </Link>
             )}
             {event.venueCity && (
-              <div className="flex items-center gap-1 mt-1 text-sm text-white/90">
+              <div className="flex items-center gap-1 mt-1 text-sm text-gray-800 dark:text-white/90">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -546,7 +546,7 @@ function EventCard({ event, userLocation, linkToArtist = false, isNextEvent = fa
           </div>
           {distance !== null && (
             <span
-              className="inline-flex items-center px-3 py-1 text-sm font-bold rounded-full bg-white/20 text-white backdrop-blur-sm whitespace-nowrap flex-shrink-0"
+              className="inline-flex items-center px-3 py-1 text-sm font-bold rounded-full bg-white/20 text-gray-900 dark:text-white backdrop-blur-sm whitespace-nowrap flex-shrink-0"
               aria-label={`Distance from your location: ${formatDistance(distance)}`}
             >
               {formatDistance(distance)}
