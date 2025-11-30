@@ -224,6 +224,18 @@ export interface ImportMatch<T> {
   data?: Partial<T>;
 }
 
+// Helper function to detect platform from URL
+function detectPlatformFromUrl(url: string): SocialPlatform | null {
+  const urlLower = url.toLowerCase();
+  if (urlLower.includes('facebook.com')) return 'facebook';
+  if (urlLower.includes('instagram.com')) return 'instagram';
+  if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+  if (urlLower.includes('spotify.com')) return 'spotify';
+  if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'x';
+  // If no social platform detected, treat as website
+  return 'website';
+}
+
 // Added helper functions to handle social media URLs for legacy properties
 export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
   // Initialize an empty array
@@ -235,7 +247,23 @@ export function getSocialMediaURLs(item: Venue | Artist): SocialMediaURL[] {
                [];
 
   if (urls && urls.length > 0) {
-    return urls;
+    // Parse URLs - backend may return either strings or objects
+    for (const url of urls) {
+      if (typeof url === 'string') {
+        // Backend returned a URL string - detect platform and convert
+        const platform = detectPlatformFromUrl(url);
+        if (platform) {
+          socialMediaUrls.push({ platform, url });
+        }
+      } else if (typeof url === 'object' && url.platform && url.url) {
+        // Backend returned proper object format - use as-is
+        socialMediaUrls.push(url);
+      }
+    }
+
+    if (socialMediaUrls.length > 0) {
+      return socialMediaUrls;
+    }
   }
 
   // Handle legacy venue social properties

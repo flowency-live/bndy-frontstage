@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Event, Venue } from "@/lib/types";
+import { Event, Venue, getSocialMediaURLs } from "@/lib/types";
 import Link from "next/link";
 import VenueHeroBanner from "@/components/venue/VenueHeroBanner";
 import VenueInfo from "@/components/venue/VenueInfo";
@@ -66,7 +66,7 @@ export default function VenueProfileClient({ initialData, events, error, venueId
     <div className="venue-profile-page bg-background min-h-screen">
       {/* Hero Banner with transparent controls and social icons */}
       <VenueHeroBanner
-        socialMediaUrls={initialData.socialMediaUrls}
+        socialMediaUrls={getSocialMediaURLs(initialData)}
         venueId={initialData.id}
         venueName={initialData.name}
       />
