@@ -1,5 +1,6 @@
 // app/layout.tsx - Updated
 import type { Metadata } from "next";
+import { Instrument_Serif, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,6 +8,22 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+
+// Display font - elegant serif for headings
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-display",
+  display: "swap",
+});
+
+// Body font - clean sans-serif for readability
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "bndy.live",
@@ -53,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${instrumentSerif.variable} ${instrumentSans.variable}`}>
       <head>
         {/* Enhanced mobile-specific meta tags */}
         <meta name="mobile-web-app-capable" content="yes" />

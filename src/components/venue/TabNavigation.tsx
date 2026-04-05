@@ -59,12 +59,11 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div style={{ backgroundColor: 'var(--background)' }} className="py-4">
+    <div className="border-b border-border bg-background">
       <div className="container mx-auto px-4">
         <nav
           role="tablist"
-          style={{ backgroundColor: 'var(--muted)' }}
-          className="flex gap-3 p-1.5 rounded-full"
+          className="flex gap-8"
           aria-label="Venue profile sections"
         >
           {visibleTabs.map((tab) => {
@@ -77,15 +76,17 @@ export default function TabNavigation({
                 aria-selected={isActive}
                 aria-controls={`${tab.id}-panel`}
                 onClick={() => handleTabClick(tab.id)}
-                style={{
-                  backgroundColor: isActive ? 'var(--background)' : 'transparent',
-                  borderColor: isActive ? 'var(--primary)' : 'transparent',
-                  color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)',
-                }}
-                className="flex-1 py-2.5 px-6 font-medium text-sm transition-all rounded-full flex items-center justify-center gap-2.5 border-2"
+                className={`relative py-3 font-medium text-sm transition-colors flex items-center gap-2 ${
+                  isActive
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary" />
+                )}
               </button>
             );
           })}

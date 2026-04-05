@@ -24,21 +24,18 @@ type ViewMode = 'date' | 'distance' | 'map';
 export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('date');
 
-  const getButtonStyle = (mode: ViewMode) => ({
-    backgroundColor: viewMode === mode ? 'var(--background)' : 'transparent',
-    borderColor: viewMode === mode ? 'var(--primary)' : 'transparent',
-    color: viewMode === mode ? 'var(--foreground)' : 'var(--muted-foreground)',
-  });
-
   return (
-    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" style={{ backgroundColor: 'var(--muted)' }} className="container mx-auto px-4 py-4">
+    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4 py-4 bg-muted">
       {/* View Toggle */}
-      <div className="mb-3 flex justify-center">
-        <div style={{ backgroundColor: 'var(--muted)' }} className="inline-flex gap-2 p-1.5 rounded-full">
+      <div className="mb-4 flex justify-center">
+        <div className="inline-flex gap-1 p-1 rounded-lg bg-background border border-border">
           <button
             onClick={() => setViewMode('date')}
-            style={getButtonStyle('date')}
-            className="flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2"
+            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
+              viewMode === 'date'
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
             aria-pressed={viewMode === 'date'}
           >
             <Calendar className="w-4 h-4" />
@@ -46,8 +43,11 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
           </button>
           <button
             onClick={() => setViewMode('distance')}
-            style={getButtonStyle('distance')}
-            className="flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2"
+            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
+              viewMode === 'distance'
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
             aria-pressed={viewMode === 'distance'}
           >
             <MapPin className="w-4 h-4" />
@@ -55,8 +55,11 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
           </button>
           <button
             onClick={() => setViewMode('map')}
-            style={getButtonStyle('map')}
-            className="flex items-center gap-2 px-4 py-2 font-medium text-sm transition-all rounded-full border-2"
+            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
+              viewMode === 'map'
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
             aria-pressed={viewMode === 'map'}
           >
             <Map className="w-4 h-4" />

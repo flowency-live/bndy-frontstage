@@ -64,7 +64,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
         {/* Artist Name, Location, Bio - Below Avatar */}
         <div className="w-full mt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl text-foreground mb-2 leading-tight tracking-tight">
             {artist.name}
           </h1>
 
@@ -78,7 +78,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
                 </>
               )}
               {artist.artistType && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#4A90E2] text-white border border-[#4A90E2]/30">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/30">
                   {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
                 </span>
               )}

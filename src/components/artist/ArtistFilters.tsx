@@ -38,13 +38,13 @@ function CustomSelect({ value, onChange, options, placeholder, className = '' }:
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 text-left flex items-center justify-between"
+        className="w-full px-3 py-2 pr-8 text-sm border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors cursor-pointer hover:bg-muted/50 text-left flex items-center justify-between"
       >
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className={`w-4 h-4 ml-2 flex-shrink-0 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full max-w-[calc(100vw-2rem)] bg-background border-2 border-primary rounded-lg shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-50 mt-1 w-full max-w-[calc(100vw-2rem)] bg-background border border-border rounded-md shadow-card max-h-64 overflow-y-auto">
           {options.map(option => (
             <button
               key={option.value}
@@ -53,8 +53,8 @@ function CustomSelect({ value, onChange, options, placeholder, className = '' }:
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition-colors flex items-center justify-between ${
-                value === option.value ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
+              className={`w-full px-3 py-2 text-sm text-left hover:bg-muted/50 transition-colors flex items-center justify-between ${
+                value === option.value ? 'bg-muted text-foreground font-medium' : 'text-foreground'
               }`}
             >
               <span>{option.label}</span>
@@ -170,7 +170,7 @@ export default function ArtistFilters({
           <button
             type="button"
             onClick={() => setGenreDropdownOpen(!genreDropdownOpen)}
-            className="w-full px-3 py-2 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer hover:border-primary/50 text-left flex items-center justify-between"
+            className="w-full px-3 py-2 pr-8 text-sm border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors cursor-pointer hover:bg-muted/50 text-left flex items-center justify-between"
           >
             <span className="truncate">
               {genreArray.length === 0 ? 'All Genres' : `${genreArray.length} Genre${genreArray.length > 1 ? 's' : ''}`}
@@ -178,23 +178,23 @@ export default function ArtistFilters({
             <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 text-muted-foreground" />
           </button>
           {genreArray.length > 0 && (
-            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold pointer-events-none">
+            <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium pointer-events-none">
               {genreArray.length}
             </div>
           )}
           {genreDropdownOpen && (
-            <div className="absolute z-50 mt-1 w-full bg-background border-2 border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-50 mt-1 w-full bg-background border border-border rounded-md shadow-card max-h-64 overflow-y-auto">
               <div className="p-2">
                 {availableGenres.map(genre => (
                   <label
                     key={genre}
-                    className="flex items-center px-2 py-1.5 hover:bg-muted rounded cursor-pointer text-sm"
+                    className="flex items-center px-2 py-1.5 hover:bg-muted/50 rounded cursor-pointer text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={genreArray.includes(genre)}
                       onChange={() => toggleGenre(genre)}
-                      className="mr-2 rounded border-input text-primary focus:ring-primary"
+                      className="mr-2 rounded border-border text-primary focus:ring-primary/50"
                     />
                     <span className="text-foreground">{genre}</span>
                   </label>
@@ -260,7 +260,7 @@ export default function ArtistFilters({
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
-            className="px-3 py-2 text-sm border-2 border-border bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-lg whitespace-nowrap transition-all"
+            className="px-3 py-2 text-sm border border-border bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-md whitespace-nowrap transition-colors"
             title="Clear filters"
           >
             <X className="w-4 h-4 inline mr-1" />
@@ -278,7 +278,7 @@ export default function ArtistFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search artists by name..."
-            className="w-full px-3 py-2 pl-10 pr-8 text-sm border-2 border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
+            className="w-full px-3 py-2 pl-10 pr-8 text-sm border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors hover:bg-muted/30"
           />
           {searchQuery && (
             <button

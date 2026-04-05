@@ -24,7 +24,7 @@ export default function GenreBadges({ genres }: GenreBadgesProps) {
         {genres.map((genre, index) => (
           <span
             key={index}
-            className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full text-white bg-primary"
+            className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full text-primary bg-primary/10 border border-primary/30"
           >
             {genre}
           </span>

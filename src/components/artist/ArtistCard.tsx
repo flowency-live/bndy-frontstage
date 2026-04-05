@@ -60,15 +60,11 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
     <Link
       href={`/artists/${artist.id}`}
       className="group block"
-      onClick={() => {
-      }}
     >
-      <div className="relative aspect-square rounded-md overflow-hidden bg-muted shadow-sm hover:shadow-md transition-all duration-200 sm:group-hover:scale-105">
+      <div className="relative aspect-square rounded-lg overflow-hidden bg-muted shadow-subtle hover:shadow-card transition-all duration-300 sm:group-hover:scale-[1.02]">
         {/* Loading skeleton */}
         {artist.profileImageUrl && !imageError && !imageLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/50 to-muted animate-pulse">
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-background/40 to-transparent" />
-          </div>
+          <div className="absolute inset-0 bg-muted animate-pulse" />
         )}
 
         {/* Artist Image or Fallback */}
@@ -77,7 +73,7 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
             src={artist.profileImageUrl}
             alt={`${artist.name} profile picture`}
             fill
-            className={`object-cover transition-opacity duration-300 ${
+            className={`object-cover transition-all duration-300 group-hover:brightness-90 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -97,32 +93,24 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
           </div>
         )}
 
-        {/* Overlay with artist info */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-white font-semibold text-lg leading-tight mb-1">
+        {/* Hover overlay with artist info */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute bottom-0 left-0 right-0 p-3">
+            <h3 className="text-white font-semibold text-sm leading-tight mb-0.5">
               {artist.name}
             </h3>
             {artist.location && (
-              <p className="text-white/80 text-sm">
+              <p className="text-white/70 text-xs">
                 {artist.location}
-              </p>
-            )}
-            {artist.artist_type && (
-              <p className="text-white/70 text-xs capitalize mt-1">
-                {artist.artist_type}
               </p>
             )}
           </div>
         </div>
-
-        {/* Always visible artist name at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-3 group-hover:bg-transparent transition-colors duration-200">
-          <h3 className="text-white font-medium text-sm leading-tight group-hover:opacity-0 transition-opacity duration-200">
-            {artist.name}
-          </h3>
-        </div>
       </div>
+      {/* Artist name below card */}
+      <p className="mt-2 text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+        {artist.name}
+      </p>
     </Link>
   );
 }

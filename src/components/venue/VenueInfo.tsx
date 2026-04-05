@@ -78,7 +78,7 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
 
         {/* Venue Name */}
         <div className="mt-4">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl text-foreground leading-tight tracking-tight">
             {venue.name}
           </h1>
         </div>
@@ -91,13 +91,13 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           </div>
         )}
 
-        {/* Facilities Badges - Cyan for venues */}
+        {/* Facilities Badges - Cyan outline for venues */}
         {venue.facilities && venue.facilities.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {venue.facilities.map((facility, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500 text-white whitespace-nowrap"
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-secondary bg-secondary/10 border border-secondary/30 whitespace-nowrap"
               >
                 {facility}
               </span>

@@ -341,15 +341,15 @@ export default function ArtistBrowseClient() {
 
       {/* Artist Grid - Grouped */}
       {displayedArtists.length > 0 ? (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {Object.entries(groupedArtists).map(([groupKey, artists]) => (
             <div key={groupKey}>
               {/* Group Header */}
-              <h2 className="text-xl font-semibold text-foreground mb-4 pb-2 border-b border-border">
+              <h2 className="font-display text-2xl text-foreground mb-6 tracking-tight">
                 {groupKey}
               </h2>
               {/* Group Grid */}
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-5 md:gap-6">
                 {artists.map(artist => (
                   <ArtistCard key={artist.id} artist={artist} />
                 ))}
