@@ -64,7 +64,7 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
 
         {/* Artist Name, Location, Bio - Below Avatar */}
         <div className="w-full mt-4">
-          <h1 className="font-display text-2xl sm:text-3xl text-foreground mb-2 leading-tight tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
             {artist.name}
           </h1>
 

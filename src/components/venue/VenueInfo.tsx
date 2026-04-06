@@ -78,7 +78,7 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
 
         {/* Venue Name */}
         <div className="mt-4">
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl text-foreground leading-tight tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">
             {venue.name}
           </h1>
         </div>
