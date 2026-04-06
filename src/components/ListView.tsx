@@ -12,6 +12,7 @@ import EventInfoOverlay from "./overlays/EventInfoOverlay";
 import { EventSectionHeader } from "./listview/EventSectionHeader";
 import type { Event } from "@/lib/types";
 import { AddEventButton } from "./events/AddEventButton";
+import { getEventGroup, createEmptyGroups, GROUP_ORDER, type EventGroup } from "@/lib/utils/event-grouping";
 
 export default function ListView() {
   const {
@@ -133,70 +134,27 @@ export default function ListView() {
     });
   }, [events, searchResults, searchTerm]);
 
-  // Group events by date category
+  // Group events by date category using centralized utility
   useEffect(() => {
     if (!filteredEvents.length) {
-      setGroupedEvents({
-        'today': [],
-        'tomorrow': [],
-        'thisWeek': [],
-        'nextWeek': [],
-        'thisMonth': [],
-        'future': []
-      });
+      setGroupedEvents(createEmptyGroups());
       return;
     }
 
-    const grouped: Record<string, Event[]> = {
-      'today': [],
-      'tomorrow': [],
-      'thisWeek': [],
-      'nextWeek': [],
-      'thisMonth': [],
-      'future': []
-    };
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const nextDay = new Date(tomorrow);
-    nextDay.setDate(tomorrow.getDate() + 1);
-
-    const endOfWeek = new Date(today);
-    const daysUntilEndOfWeek = 6 - today.getDay();
-    endOfWeek.setDate(today.getDate() + daysUntilEndOfWeek);
-
-    const startOfNextWeek = new Date(endOfWeek);
-    startOfNextWeek.setDate(endOfWeek.getDate() + 1);
-    const endOfNextWeek = new Date(startOfNextWeek);
-    endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
-
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const grouped: Record<EventGroup, Event[]> = createEmptyGroups();
 
     filteredEvents.forEach(event => {
       const eventDate = new Date(event.date);
+      const group = getEventGroup(eventDate);
 
-      if (eventDate < today) {
-        // Skip past events
-        return;
-      } else if (eventDate.getTime() === today.getTime()) {
-        grouped.today.push(event);
-      } else if (eventDate.getTime() === tomorrow.getTime()) {
-        grouped.tomorrow.push(event);
-      } else if (eventDate > tomorrow && eventDate <= endOfWeek) {
-        grouped.thisWeek.push(event);
-      } else if (eventDate >= startOfNextWeek && eventDate <= endOfNextWeek) {
-        grouped.nextWeek.push(event);
-      } else if (eventDate <= endOfMonth) {
-        grouped.thisMonth.push(event);
-      } else {
-        grouped.future.push(event);
+      if (group) {
+        grouped[group].push(event);
       }
+      // Past events (group === null) are skipped
     });
 
     // Sort each group by date and time
-    Object.keys(grouped).forEach(key => {
+    GROUP_ORDER.forEach(key => {
       grouped[key].sort((a, b) => {
         const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
         if (dateCompare !== 0) return dateCompare;
@@ -257,8 +215,8 @@ export default function ListView() {
       'tomorrow': `Tomorrow - ${formatDateString(tomorrow)}`,
       'thisWeek': 'This Week',
       'nextWeek': 'Next Week',
-      'thisMonth': 'This Month',
-      'future': 'Future Events'
+      'comingSoon': 'Coming Soon',
+      'futureEvents': 'Future Events'
     };
 
     return `${titles[section]} (${count})`;
@@ -416,7 +374,7 @@ export default function ListView() {
                     ) : (
                       // List view for other sections
                       <div className="overflow-x-auto">
-                        <table className="min-w-full">
+                        <table className="min-w-full md:table-fixed">
                           <thead style={{ backgroundColor: 'var(--surface-2)' }} className="border-b-2 border-gray-200 dark:border-gray-700">
                             <tr>
                               {/* Mobile: 3 columns */}
@@ -430,20 +388,20 @@ export default function ListView() {
                                 Location
                               </th>
 
-                              {/* Desktop: 6 columns */}
-                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              {/* Desktop: 6 columns with fixed widths for alignment across sections */}
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-28 hidden md:table-cell">
                                 Date
                               </th>
-                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-20 hidden md:table-cell">
                                 Time
                               </th>
-                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-56 hidden md:table-cell">
                                 Artist
                               </th>
-                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-56 hidden md:table-cell">
                                 Venue
                               </th>
-                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide hidden md:table-cell">
+                              <th className="px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-36 hidden md:table-cell">
                                 Town
                               </th>
                               <th className="px-2 py-2 text-center text-xs font-semibold text-[var(--foreground)]/70 uppercase tracking-wide w-24 hidden md:table-cell">
@@ -455,7 +413,7 @@ export default function ListView() {
                             {events.map((event) => (
                               <tr
                                 key={event.id}
-                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
+                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 onClick={() => handleEventClick(event)}
                               >
                                 <EventRow event={event} showFullDate={section !== 'today' && section !== 'tomorrow'} />
