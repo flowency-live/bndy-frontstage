@@ -912,7 +912,21 @@ main {
   align-items: center;
 }
 
-.event-cluster-icon,
+.event-cluster-icon {
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Legacy venue cluster (kept for backwards compatibility) */
 .venue-cluster-icon {
   color: white;
   border-radius: 50%;
@@ -925,6 +939,65 @@ main {
   font-size: 14px;
   border: 2px solid white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* ======================================================
+   Refined Venue Marker - Small Dot Design
+   Minimal footprint to not obscure map labels
+   ====================================================== */
+.venue-marker {
+  cursor: pointer;
+  transition: transform 0.15s ease-out;
+}
+
+.venue-marker:hover {
+  transform: scale(1.3);
+  z-index: 1000 !important;
+}
+
+/* ======================================================
+   Refined Venue Cluster Pill - Glass Effect Design
+   Smaller, semi-transparent to not obscure map labels
+   ====================================================== */
+.leaflet-venue-cluster-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.venue-cluster-pill {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, rgba(255, 20, 147, 0.85) 0%, rgba(199, 21, 133, 0.85) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 2px 4px rgba(199, 21, 133, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.venue-cluster-pill.venue-cluster-small {
+  min-width: 22px;
+}
+
+.venue-cluster-pill.venue-cluster-medium {
+  min-width: 28px;
+  font-size: 11px;
+}
+
+.venue-cluster-pill.venue-cluster-large {
+  min-width: 34px;
+  font-size: 10px;
+  padding: 0 6px;
 }
 
 /* Map control buttons styling */
@@ -2706,8 +2779,13 @@ select:focus-visible {
    ====================================================== */
 
 /* Map tiles - CARTO Voyager with blue enhancement to match Google Maps
-   Stronger saturation and cooling for visible blue water effect */
+   Stronger saturation and cooling for visible blue water effect
+   GPU-optimized for smooth panning */
 .leaflet-tile-pane {
   filter: saturate(1.4) hue-rotate(10deg) brightness(1.03) contrast(0.95) !important;
-  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, filter;
+  contain: layout style;
 }

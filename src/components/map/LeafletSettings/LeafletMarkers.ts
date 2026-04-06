@@ -61,7 +61,8 @@ export function createEventMarkerIcon(count?: number): L.DivIcon {
 }
 
 /**
- * Creates a custom marker icon for venues (simplified - no event count).
+ * Creates a refined small dot marker for venues.
+ * Designed to be unobtrusive and not block map labels.
  */
 export function createVenueMarkerIcon(): L.DivIcon {
   const cacheKey = 'venue-marker';
@@ -71,18 +72,29 @@ export function createVenueMarkerIcon(): L.DivIcon {
     return markerIconCache.get(cacheKey)!;
   }
 
-  // Hot pink color for venue markers
-  const color = '#FF1493';
-
-  // Create the SVG for the marker (no count, no fading)
-  const markerSvg = createMapPinSVG(color, undefined, false);
+  // Small dot marker SVG - 14x14 circle with subtle glow
+  const markerSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+      <defs>
+        <filter id="venue-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="1" flood-color="#FF1493" flood-opacity="0.4"/>
+        </filter>
+      </defs>
+      <!-- Outer ring -->
+      <circle cx="7" cy="7" r="6" fill="none" stroke="#FFFFFF" stroke-width="1.5" filter="url(#venue-glow)"/>
+      <!-- Inner fill -->
+      <circle cx="7" cy="7" r="4.5" fill="#FF1493" opacity="0.9"/>
+      <!-- Highlight dot -->
+      <circle cx="5.5" cy="5.5" r="1.2" fill="#FFFFFF" opacity="0.6"/>
+    </svg>
+  `;
 
   const icon = L.divIcon({
     className: 'venue-marker',
     html: markerSvg,
-    iconSize: [22, 29],
-    iconAnchor: [11, 29], // Bottom tip of the teardrop
-    popupAnchor: [0, -27] // Popup appears above the marker
+    iconSize: [14, 14],
+    iconAnchor: [7, 7], // Center of the dot
+    popupAnchor: [0, -10] // Popup appears above the marker
   });
 
   // Store in cache
@@ -148,26 +160,26 @@ export function createEventClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
 }
 
 /**
- * Creates a custom cluster icon for venues.
+ * Creates a refined cluster icon for venues.
+ * Smaller, pill-shaped with glass effect to minimize map obstruction.
  */
 export function createVenueClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   const count = cluster.getChildCount();
-  
-  // Get color based on cluster size
-  const getVenueClusterColor = (count: number) => {
-    if (count < 10) return "#FF1493"; // Pink for small clusters
-    if (count < 50) return "#E0115F"; // Deeper pink for medium clusters
-    return "#C71585"; // Magenta for large clusters
-  };
 
-  // Create cluster HTML with class-based styling
+  // Determine size class based on count (affects pill width)
+  const sizeClass = count < 10 ? 'small' : count < 100 ? 'medium' : 'large';
+
+  // Create refined cluster HTML with glass effect styling
   const html = `
-    <div class="venue-cluster-icon" style="background-color: ${getVenueClusterColor(count)};">${count}</div>
+    <div class="venue-cluster-pill venue-cluster-${sizeClass}">${count}</div>
   `;
+
+  // Dynamic width based on digit count
+  const width = count < 10 ? 24 : count < 100 ? 30 : 36;
 
   return L.divIcon({
     html: html,
-    className: 'leaflet-cluster-icon-container',
-    iconSize: L.point(40, 40)
+    className: 'leaflet-venue-cluster-container',
+    iconSize: L.point(width, 22)
   });
 }
