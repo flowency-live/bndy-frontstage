@@ -1,7 +1,8 @@
 // src/components/MapView.tsx
 "use client";
 
-import Map from "./map/Map";
+// Using Mapbox GL JS for WebGL-based rendering (feature/mapbox-gl-migration branch)
+import Map from "./mapbox/MapboxMap";
 import EventFilter from "./filters/EventFilter";
 import { MapViewEventsFilter } from "./filters/MapViewEventsFilter";
 import { useState, useRef, useEffect } from "react";

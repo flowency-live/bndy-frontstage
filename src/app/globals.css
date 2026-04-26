@@ -902,7 +902,14 @@ main {
     transform: scale(0.7);
     opacity: 0;
   }
-} 
+}
+
+/* Mapbox user location marker - uses same animations as Leaflet version */
+.mapbox-user-location-marker {
+  position: relative;
+  width: 0;
+  height: 0;
+}
 
 
 /* Cluster icon styles */
