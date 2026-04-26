@@ -8,6 +8,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import { MapboxProvider } from "@/context/MapboxContext";
 
 // Display font - elegant serif for headings
 const instrumentSerif = Instrument_Serif({
@@ -89,13 +90,16 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 mobile-optimized keyboard-safe">
         <Providers>
           <ViewToggleProvider>
-            <ServiceWorkerRegistration />
-            <Header />
-            <main className="flex-1 mt-[88px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
-              {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
+            {/* MapboxProvider at layout level - map survives route navigation */}
+            <MapboxProvider>
+              <ServiceWorkerRegistration />
+              <Header />
+              <main className="flex-1 mt-[88px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+                {children}
+              </main>
+              <Footer />
+              <MobileBottomNav />
+            </MapboxProvider>
           </ViewToggleProvider>
         </Providers>
       </body>
