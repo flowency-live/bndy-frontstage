@@ -78,14 +78,31 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
       }
 
       mapRef.current = existingMap;
-      setIsMapReady(true);
+
+      // Check if style is already loaded before setting ready
+      if (existingMap.isStyleLoaded()) {
+        setIsMapReady(true);
+      } else {
+        // Wait for style to finish loading
+        existingMap.once("style.load", () => {
+          console.log("[MapboxProvider] Style loaded on existing map");
+          setIsMapReady(true);
+        });
+      }
       return existingMap;
     }
 
     // Check for existing ref instance
     if (mapRef.current) {
       console.log("[MapboxProvider] Reusing ref map instance");
-      setIsMapReady(true);
+      // Check if style is already loaded
+      if (mapRef.current.isStyleLoaded()) {
+        setIsMapReady(true);
+      } else {
+        mapRef.current.once("style.load", () => {
+          setIsMapReady(true);
+        });
+      }
       return mapRef.current;
     }
 

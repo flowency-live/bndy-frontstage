@@ -95,6 +95,15 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
   useEffect(() => {
     if (!map || !isMapReady || isInitializedRef.current) return;
 
+    // Wait for style to be fully loaded before adding layers
+    const setupWhenReady = () => {
+      if (!map.isStyleLoaded()) {
+        map.once("style.load", setupLayers);
+        return;
+      }
+      setupLayers();
+    };
+
     const setupLayers = async () => {
       try {
         // Add marker images first
@@ -201,7 +210,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
       }
     };
 
-    setupLayers();
+    setupWhenReady();
 
     // Cleanup
     return () => {

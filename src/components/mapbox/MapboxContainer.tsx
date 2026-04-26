@@ -62,19 +62,19 @@ export function MapboxContainer({ userLocation, isDarkMode, className, onMapRead
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    // Mapbox style switching - doesn't count as new load
-    const newStyle = isDarkMode
-      ? "mapbox://styles/mapbox/dark-v11"
-      : "mapbox://styles/mapbox/streets-v12";
-
-    // Only change if different (setStyle is expensive)
-    const currentStyle = map.getStyle();
-    if (currentStyle?.name !== newStyle) {
-      // Note: setStyle removes all custom layers/sources
-      // We'll need to re-add markers after style change
-      // For now, keeping consistent style
-      // map.setStyle(newStyle);
+    // Ensure style is fully loaded before accessing it
+    if (!map.isStyleLoaded()) {
+      return;
     }
+
+    // Mapbox style switching - doesn't count as new load
+    // Note: setStyle removes all custom layers/sources
+    // We'll need to re-add markers after style change
+    // For now, keeping consistent style to avoid complexity
+    // const newStyle = isDarkMode
+    //   ? "mapbox://styles/mapbox/dark-v11"
+    //   : "mapbox://styles/mapbox/streets-v12";
+    // map.setStyle(newStyle);
   }, [map, isMapReady, isDarkMode]);
 
   // Render static fallback for bots
