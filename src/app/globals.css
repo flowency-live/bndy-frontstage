@@ -3200,6 +3200,12 @@ select:focus-visible {
   animation: shimmer 1.5s infinite;
 }
 
+/* Event overlay holographic effect */
+@keyframes holographic {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
 /* Mobile layout */
 @media (max-width: 720px) {
   .lv-section-name {

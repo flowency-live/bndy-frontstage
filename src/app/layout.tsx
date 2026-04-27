@@ -1,6 +1,6 @@
 // app/layout.tsx - Updated
 import type { Metadata } from "next";
-import { Anton, Archivo, JetBrains_Mono } from "next/font/google";
+import { Anton, Archivo, JetBrains_Mono, Bebas_Neue, Caveat, Bungee, Permanent_Marker, Special_Elite } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -31,6 +31,42 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-mono",
+  display: "swap",
+});
+
+// Overlay fonts for event info cards
+const bebasNeue = Bebas_Neue({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-bebas",
+  display: "swap",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-caveat",
+  display: "swap",
+});
+
+const bungee = Bungee({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-bungee",
+  display: "swap",
+});
+
+const permanentMarker = Permanent_Marker({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-marker",
+  display: "swap",
+});
+
+const specialElite = Special_Elite({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-typewriter",
   display: "swap",
 });
 
@@ -79,7 +115,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${anton.variable} ${archivo.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${anton.variable} ${archivo.variable} ${jetbrainsMono.variable} ${bebasNeue.variable} ${caveat.variable} ${bungee.variable} ${permanentMarker.variable} ${specialElite.variable}`}>
       <head>
         {/* Enhanced mobile-specific meta tags */}
         <meta name="mobile-web-app-capable" content="yes" />
