@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { Event } from "@/lib/types";
 import { useMapbox } from "@/context/MapboxContext";
@@ -10,6 +10,7 @@ interface EventMarkerLayerProps {
   events: Event[];
   eventGroups: Record<string, Event[]>;
   onEventClick: (events: Event[]) => void;
+  visible: boolean;
 }
 
 const EVENT_SOURCE_ID = "events";
@@ -19,9 +20,12 @@ const EVENT_UNCLUSTERED_LAYER = "event-unclustered";
 
 /**
  * EventMarkerLayer - Renders event markers with clustering on Mapbox
+ *
+ * IMPORTANT: This component stays mounted. Visibility is controlled by prop.
  */
-export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMarkerLayerProps) {
+export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }: EventMarkerLayerProps) {
   const { map, isMapReady } = useMapbox();
+  const initializedRef = useRef(false);
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
 
@@ -34,178 +38,136 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     eventGroupsRef.current = eventGroups;
   }, [eventGroups]);
 
-  // Create layers once per map instance
+  // Initialize layers and handlers ONCE
   useEffect(() => {
-    if (!map || !isMapReady) return;
+    if (!map || !isMapReady || initializedRef.current) return;
 
-    const initLayers = async () => {
-      // Skip if already initialized
-      if (map.getSource(EVENT_SOURCE_ID)) return;
-
+    const init = async () => {
       try {
+        // Wait for style
+        if (!map.isStyleLoaded()) {
+          await new Promise<void>(resolve => map.once("style.load", () => resolve()));
+        }
+
         await addMarkerImagesToMap(map);
 
-        map.addSource(EVENT_SOURCE_ID, {
-          type: "geojson",
-          data: eventsToGeoJSON(events),
-          cluster: true,
-          clusterMaxZoom: 11,
-          clusterRadius: 40,
-        });
+        // Create source if doesn't exist
+        if (!map.getSource(EVENT_SOURCE_ID)) {
+          map.addSource(EVENT_SOURCE_ID, {
+            type: "geojson",
+            data: eventsToGeoJSON(events),
+            cluster: true,
+            clusterMaxZoom: 11,
+            clusterRadius: 40,
+          });
 
-        map.addLayer({
-          id: EVENT_CLUSTERS_LAYER,
-          type: "circle",
-          source: EVENT_SOURCE_ID,
-          filter: ["has", "point_count"],
-          paint: {
-            "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
-            "circle-color": ["step", ["get", "point_count"], "#F97316", 10, "#EA580C", 50, "#C2410C"],
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#FFFFFF",
-          },
-        });
+          map.addLayer({
+            id: EVENT_CLUSTERS_LAYER,
+            type: "circle",
+            source: EVENT_SOURCE_ID,
+            filter: ["has", "point_count"],
+            paint: {
+              "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
+              "circle-color": ["step", ["get", "point_count"], "#F97316", 10, "#EA580C", 50, "#C2410C"],
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#FFFFFF",
+            },
+          });
 
-        map.addLayer({
-          id: EVENT_CLUSTER_COUNT_LAYER,
-          type: "symbol",
-          source: EVENT_SOURCE_ID,
-          filter: ["has", "point_count"],
-          layout: {
-            "text-field": ["get", "point_count_abbreviated"],
-            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-            "text-size": 12,
-            "text-allow-overlap": true,
-          },
-          paint: { "text-color": "#FFFFFF" },
-        });
+          map.addLayer({
+            id: EVENT_CLUSTER_COUNT_LAYER,
+            type: "symbol",
+            source: EVENT_SOURCE_ID,
+            filter: ["has", "point_count"],
+            layout: {
+              "text-field": ["get", "point_count_abbreviated"],
+              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+              "text-size": 12,
+              "text-allow-overlap": true,
+            },
+            paint: { "text-color": "#FFFFFF" },
+          });
 
-        map.addLayer({
-          id: EVENT_UNCLUSTERED_LAYER,
-          type: "circle",
-          source: EVENT_SOURCE_ID,
-          filter: ["!", ["has", "point_count"]],
-          paint: {
-            "circle-radius": 8,
-            "circle-color": "#F97316",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#FFFFFF",
-          },
-        });
+          map.addLayer({
+            id: EVENT_UNCLUSTERED_LAYER,
+            type: "circle",
+            source: EVENT_SOURCE_ID,
+            filter: ["!", ["has", "point_count"]],
+            paint: {
+              "circle-radius": 8,
+              "circle-color": "#F97316",
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#FFFFFF",
+            },
+          });
 
-        console.log("[EventMarkerLayer] Layers created");
-      } catch (error) {
-        console.error("[EventMarkerLayer] Failed to create layers:", error);
-      }
-    };
+          console.log("[EventMarkerLayer] Layers created");
+        }
 
-    if (map.isStyleLoaded()) {
-      initLayers();
-    } else {
-      map.once("style.load", initLayers);
-    }
-  }, [map, isMapReady]);
+        // Add click handlers (using refs so they stay current)
+        map.on("click", EVENT_CLUSTERS_LAYER, (e) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_CLUSTERS_LAYER] });
+          if (features.length === 0) return;
 
-  // Manage click handlers - add on mount, remove on unmount
-  useEffect(() => {
-    if (!map || !isMapReady) return;
-
-    const handleClusterClick = (e: mapboxgl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_CLUSTERS_LAYER] });
-      if (features.length === 0) return;
-
-      const clusterId = features[0].properties?.cluster_id;
-      const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
-
-      if (source && clusterId !== undefined) {
-        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
-          const geometry = features[0].geometry;
-          if (geometry.type === "Point") {
-            map.easeTo({
-              center: geometry.coordinates as [number, number],
-              zoom: zoom ?? 12,
+          const clusterId = features[0].properties?.cluster_id;
+          const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+          if (source && clusterId !== undefined) {
+            source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+              if (err) return;
+              const geometry = features[0].geometry;
+              if (geometry.type === "Point") {
+                map.easeTo({ center: geometry.coordinates as [number, number], zoom: zoom ?? 12 });
+              }
             });
           }
         });
+
+        map.on("click", EVENT_UNCLUSTERED_LAYER, (e) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_UNCLUSTERED_LAYER] });
+          if (features.length === 0) return;
+
+          const geometry = features[0].geometry;
+          if (geometry.type === "Point") {
+            const [lng, lat] = geometry.coordinates;
+            const locationKey = `${lat},${lng}`;
+            const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
+
+            console.log("[EventMarkerLayer] Click - locationKey:", locationKey, "events:", eventsAtLocation.length);
+
+            if (eventsAtLocation.length > 0) {
+              map.easeTo({ center: [lng, lat], duration: 300 });
+              onEventClickRef.current(eventsAtLocation);
+            }
+          }
+        });
+
+        // Cursor handlers
+        map.on("mouseenter", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
+
+        initializedRef.current = true;
+        console.log("[EventMarkerLayer] Initialized");
+      } catch (error) {
+        console.error("[EventMarkerLayer] Init failed:", error);
       }
     };
 
-    const handleMarkerClick = (e: mapboxgl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_UNCLUSTERED_LAYER] });
-      if (features.length === 0) return;
-
-      const geometry = features[0].geometry;
-      if (geometry.type === "Point") {
-        const [lng, lat] = geometry.coordinates;
-        const locationKey = `${lat},${lng}`;
-        const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
-
-        if (eventsAtLocation.length > 0) {
-          map.easeTo({ center: [lng, lat], duration: 300 });
-          onEventClickRef.current(eventsAtLocation);
-        }
-      }
-    };
-
-    const handleMouseEnter = () => { map.getCanvas().style.cursor = "pointer"; };
-    const handleMouseLeave = () => { map.getCanvas().style.cursor = ""; };
-
-    // Wait for layers to exist
-    const addHandlers = () => {
-      if (!map.getLayer(EVENT_CLUSTERS_LAYER)) {
-        setTimeout(addHandlers, 50);
-        return;
-      }
-
-      map.on("click", EVENT_CLUSTERS_LAYER, handleClusterClick);
-      map.on("click", EVENT_UNCLUSTERED_LAYER, handleMarkerClick);
-      map.on("mouseenter", EVENT_CLUSTERS_LAYER, handleMouseEnter);
-      map.on("mouseleave", EVENT_CLUSTERS_LAYER, handleMouseLeave);
-      map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, handleMouseEnter);
-      map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, handleMouseLeave);
-      console.log("[EventMarkerLayer] Handlers attached");
-    };
-
-    addHandlers();
-
-    return () => {
-      map.off("click", EVENT_CLUSTERS_LAYER, handleClusterClick);
-      map.off("click", EVENT_UNCLUSTERED_LAYER, handleMarkerClick);
-      map.off("mouseenter", EVENT_CLUSTERS_LAYER, handleMouseEnter);
-      map.off("mouseleave", EVENT_CLUSTERS_LAYER, handleMouseLeave);
-      map.off("mouseenter", EVENT_UNCLUSTERED_LAYER, handleMouseEnter);
-      map.off("mouseleave", EVENT_UNCLUSTERED_LAYER, handleMouseLeave);
-      console.log("[EventMarkerLayer] Handlers removed");
-    };
+    init();
   }, [map, isMapReady]);
 
-  // Manage visibility - show on mount, hide on unmount
+  // Control visibility via prop
   useEffect(() => {
     if (!map || !isMapReady) return;
+    if (!map.getLayer(EVENT_CLUSTERS_LAYER)) return;
 
-    const showLayers = () => {
-      if (!map.getLayer(EVENT_CLUSTERS_LAYER)) {
-        setTimeout(showLayers, 50);
-        return;
-      }
-      map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
-      map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
-      map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
-      console.log("[EventMarkerLayer] Visible");
-    };
-
-    showLayers();
-
-    return () => {
-      if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "none");
-        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "none");
-        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "none");
-        console.log("[EventMarkerLayer] Hidden");
-      }
-    };
-  }, [map, isMapReady]);
+    const visibility = visible ? "visible" : "none";
+    map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
+    map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
+    map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+    console.log("[EventMarkerLayer] Visibility:", visibility);
+  }, [map, isMapReady, visible]);
 
   // Update data when events change
   useEffect(() => {
@@ -214,7 +176,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
     if (source) {
       source.setData(eventsToGeoJSON(events));
-      console.log(`[EventMarkerLayer] Data updated: ${events.length} events`);
+      console.log("[EventMarkerLayer] Data updated:", events.length, "events");
     }
   }, [map, isMapReady, events]);
 

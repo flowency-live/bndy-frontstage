@@ -295,20 +295,19 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
           <UserLocationMarker userLocation={userLocation} />
           <MapboxControls userLocation={userLocation} />
 
-          {mapMode === "events" && (
-            <EventMarkerLayer
-              events={filteredEvents}
-              eventGroups={eventLocationGroups}
-              onEventClick={handleEventClick}
-            />
-          )}
+          {/* Both layers stay mounted - visibility controlled by prop */}
+          <EventMarkerLayer
+            events={filteredEvents}
+            eventGroups={eventLocationGroups}
+            onEventClick={handleEventClick}
+            visible={mapMode === "events"}
+          />
 
-          {mapMode === "venues" && (
-            <VenueMarkerLayer
-              venues={filteredVenues}
-              onVenueClick={handleVenueClick}
-            />
-          )}
+          <VenueMarkerLayer
+            venues={filteredVenues}
+            onVenueClick={handleVenueClick}
+            visible={mapMode === "venues"}
+          />
         </>
       )}
 
