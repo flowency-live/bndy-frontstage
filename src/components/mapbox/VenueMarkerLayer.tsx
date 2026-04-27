@@ -18,11 +18,6 @@ const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
 
 /**
  * VenueMarkerLayer - Renders venue markers with clustering on Mapbox
- *
- * Uses Mapbox's built-in clustering which is more performant than
- * leaflet.markercluster for large datasets.
- *
- * CRITICAL: This does NOT create new map loads - it only updates data sources.
  */
 export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps) {
   const { map, isMapReady } = useMapbox();
@@ -41,23 +36,93 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
     venueMapRef.current = venueMap;
   }, [venues]);
 
-  // Handle click on venue marker or cluster
-  const handleMapClick = useCallback((e: mapboxgl.MapMouseEvent) => {
-    if (!map) return;
+  // Create layers once per map instance
+  useEffect(() => {
+    if (!map || !isMapReady) return;
 
-    // Check for cluster click first
-    const clusterFeatures = map.queryRenderedFeatures(e.point, {
-      layers: [VENUE_CLUSTERS_LAYER],
-    });
+    const initLayers = async () => {
+      // Skip if already initialized
+      if (map.getSource(VENUE_SOURCE_ID)) return;
 
-    if (clusterFeatures.length > 0) {
-      const clusterId = clusterFeatures[0].properties?.cluster_id;
+      try {
+        await addMarkerImagesToMap(map);
+
+        map.addSource(VENUE_SOURCE_ID, {
+          type: "geojson",
+          data: venuesToGeoJSON(venues),
+          cluster: true,
+          clusterMaxZoom: 11,
+          clusterRadius: 30,
+        });
+
+        map.addLayer({
+          id: VENUE_CLUSTERS_LAYER,
+          type: "circle",
+          source: VENUE_SOURCE_ID,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-radius": ["step", ["get", "point_count"], 15, 10, 18, 50, 22],
+            "circle-color": ["step", ["get", "point_count"], "#FF1493", 10, "#E0115F", 50, "#C71585"],
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#FFFFFF",
+          },
+        });
+
+        map.addLayer({
+          id: VENUE_CLUSTER_COUNT_LAYER,
+          type: "symbol",
+          source: VENUE_SOURCE_ID,
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+            "text-size": 12,
+            "text-allow-overlap": true,
+          },
+          paint: { "text-color": "#FFFFFF" },
+        });
+
+        map.addLayer({
+          id: VENUE_UNCLUSTERED_LAYER,
+          type: "circle",
+          source: VENUE_SOURCE_ID,
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#FF1493",
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": "#FFFFFF",
+          },
+        });
+
+        console.log("[VenueMarkerLayer] Layers created");
+      } catch (error) {
+        console.error("[VenueMarkerLayer] Failed to create layers:", error);
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      initLayers();
+    } else {
+      map.once("style.load", initLayers);
+    }
+  }, [map, isMapReady]);
+
+  // Manage click handlers - add on mount, remove on unmount
+  useEffect(() => {
+    if (!map || !isMapReady) return;
+
+    const handleClusterClick = (e: mapboxgl.MapMouseEvent) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: [VENUE_CLUSTERS_LAYER] });
+      if (features.length === 0) return;
+
+      const clusterId = features[0].properties?.cluster_id;
       const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
 
       if (source && clusterId !== undefined) {
         source.getClusterExpansionZoom(clusterId, (err, zoom) => {
           if (err) return;
-          const geometry = clusterFeatures[0].geometry;
+          const geometry = features[0].geometry;
           if (geometry.type === "Point") {
             map.easeTo({
               center: geometry.coordinates as [number, number],
@@ -66,184 +131,93 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
           }
         });
       }
-      return;
-    }
+    };
 
-    // Check for unclustered venue click
-    const venueFeatures = map.queryRenderedFeatures(e.point, {
-      layers: [VENUE_UNCLUSTERED_LAYER],
-    });
+    const handleMarkerClick = (e: mapboxgl.MapMouseEvent) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: [VENUE_UNCLUSTERED_LAYER] });
+      if (features.length === 0) return;
 
-    if (venueFeatures.length > 0) {
-      const venueId = venueFeatures[0].properties?.id;
+      const venueId = features[0].properties?.id;
       const venue = venueMapRef.current.get(venueId);
+
       if (venue) {
-        // Pan to venue
         if (venue.location) {
-          map.easeTo({
-            center: [venue.location.lng, venue.location.lat],
-            duration: 300,
-          });
+          map.easeTo({ center: [venue.location.lng, venue.location.lat], duration: 300 });
         }
         onVenueClickRef.current(venue);
       }
-    }
-  }, [map]);
+    };
 
-  // Initialize layers when map is ready (runs once per map instance)
-  useEffect(() => {
-    if (!map || !isMapReady) return;
+    const handleMouseEnter = () => { map.getCanvas().style.cursor = "pointer"; };
+    const handleMouseLeave = () => { map.getCanvas().style.cursor = ""; };
 
-    // Check if already initialized on this map instance
-    const mapAny = map as mapboxgl.Map & { __venueLayersInit?: boolean };
-    if (mapAny.__venueLayersInit) {
-      console.log("[VenueMarkerLayer] Layers already exist, skipping init");
-      return;
-    }
-
-    // Wait for style to be fully loaded before adding layers
-    const setupWhenReady = () => {
-      if (!map.isStyleLoaded()) {
-        map.once("style.load", setupLayers);
+    // Wait for layers to exist
+    const addHandlers = () => {
+      if (!map.getLayer(VENUE_CLUSTERS_LAYER)) {
+        setTimeout(addHandlers, 50);
         return;
       }
-      setupLayers();
+
+      map.on("click", VENUE_CLUSTERS_LAYER, handleClusterClick);
+      map.on("click", VENUE_UNCLUSTERED_LAYER, handleMarkerClick);
+      map.on("mouseenter", VENUE_CLUSTERS_LAYER, handleMouseEnter);
+      map.on("mouseleave", VENUE_CLUSTERS_LAYER, handleMouseLeave);
+      map.on("mouseenter", VENUE_UNCLUSTERED_LAYER, handleMouseEnter);
+      map.on("mouseleave", VENUE_UNCLUSTERED_LAYER, handleMouseLeave);
+      console.log("[VenueMarkerLayer] Handlers attached");
     };
 
-    const setupLayers = async () => {
-      try {
-        // Add marker images first
-        await addMarkerImagesToMap(map);
+    addHandlers();
 
-        // Add source with clustering enabled
-        if (!map.getSource(VENUE_SOURCE_ID)) {
-          map.addSource(VENUE_SOURCE_ID, {
-            type: "geojson",
-            data: venuesToGeoJSON(venues),
-            cluster: true,
-            clusterMaxZoom: 11,
-            clusterRadius: 30,
-          });
-        }
-
-        // Cluster circles layer
-        if (!map.getLayer(VENUE_CLUSTERS_LAYER)) {
-          map.addLayer({
-            id: VENUE_CLUSTERS_LAYER,
-            type: "circle",
-            source: VENUE_SOURCE_ID,
-            filter: ["has", "point_count"],
-            paint: {
-              "circle-radius": ["step", ["get", "point_count"], 15, 10, 18, 50, 22],
-              "circle-color": ["step", ["get", "point_count"], "#FF1493", 10, "#E0115F", 50, "#C71585"],
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#FFFFFF",
-            },
-          });
-        }
-
-        // Cluster count text layer
-        if (!map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
-          map.addLayer({
-            id: VENUE_CLUSTER_COUNT_LAYER,
-            type: "symbol",
-            source: VENUE_SOURCE_ID,
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": ["get", "point_count_abbreviated"],
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-              "text-size": 12,
-              "text-allow-overlap": true,
-            },
-            paint: { "text-color": "#FFFFFF" },
-          });
-        }
-
-        // Unclustered venue markers
-        if (!map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
-          map.addLayer({
-            id: VENUE_UNCLUSTERED_LAYER,
-            type: "circle",
-            source: VENUE_SOURCE_ID,
-            filter: ["!", ["has", "point_count"]],
-            paint: {
-              "circle-radius": 6,
-              "circle-color": "#FF1493",
-              "circle-stroke-width": 1.5,
-              "circle-stroke-color": "#FFFFFF",
-            },
-          });
-        }
-
-        // Add click handlers
-        map.on("click", VENUE_CLUSTERS_LAYER, handleMapClick);
-        map.on("click", VENUE_UNCLUSTERED_LAYER, handleMapClick);
-
-        // Change cursor on hover
-        map.on("mouseenter", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
-        map.on("mouseenter", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
-
-        mapAny.__venueLayersInit = true;
-        console.log("[VenueMarkerLayer] Layers initialized");
-      } catch (error) {
-        console.error("[VenueMarkerLayer] Failed to initialize:", error);
-      }
+    return () => {
+      map.off("click", VENUE_CLUSTERS_LAYER, handleClusterClick);
+      map.off("click", VENUE_UNCLUSTERED_LAYER, handleMarkerClick);
+      map.off("mouseenter", VENUE_CLUSTERS_LAYER, handleMouseEnter);
+      map.off("mouseleave", VENUE_CLUSTERS_LAYER, handleMouseLeave);
+      map.off("mouseenter", VENUE_UNCLUSTERED_LAYER, handleMouseEnter);
+      map.off("mouseleave", VENUE_UNCLUSTERED_LAYER, handleMouseLeave);
+      console.log("[VenueMarkerLayer] Handlers removed");
     };
-
-    setupWhenReady();
   }, [map, isMapReady]);
 
-  // Manage layer visibility on mount/unmount (separate from initialization)
+  // Manage visibility - show on mount, hide on unmount
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    // Show layers when component mounts
     const showLayers = () => {
-      if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
-        map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "visible");
+      if (!map.getLayer(VENUE_CLUSTERS_LAYER)) {
+        setTimeout(showLayers, 50);
+        return;
       }
-      if (map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
-        map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "visible");
-      }
-      if (map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
-        map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "visible");
-      }
-      console.log("[VenueMarkerLayer] Layers set to visible");
+      map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "visible");
+      map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "visible");
+      map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "visible");
+      console.log("[VenueMarkerLayer] Visible");
     };
 
-    // Wait a tick to ensure layers exist after init effect
-    const timeoutId = setTimeout(showLayers, 0);
+    showLayers();
 
-    // Hide layers when component unmounts (mode switch)
     return () => {
-      clearTimeout(timeoutId);
       if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
         map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "none");
-      }
-      if (map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
         map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "none");
-      }
-      if (map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
         map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "none");
+        console.log("[VenueMarkerLayer] Hidden");
       }
-      console.log("[VenueMarkerLayer] Layers hidden");
     };
   }, [map, isMapReady]);
 
-  // Update data when venues change (NO new map load!)
+  // Update data when venues change
   useEffect(() => {
     if (!map || !isMapReady) return;
 
     const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
     if (source) {
       source.setData(venuesToGeoJSON(venues));
-      console.log(`[VenueMarkerLayer] Updated ${venues.length} venues (no map reload)`);
+      console.log(`[VenueMarkerLayer] Data updated: ${venues.length} venues`);
     }
   }, [map, isMapReady, venues]);
 
-  // This component doesn't render anything - it manages map layers
   return null;
 }
 
