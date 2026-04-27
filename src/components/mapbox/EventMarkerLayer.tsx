@@ -29,13 +29,18 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
   const { map, isMapReady } = useMapbox();
   const isInitializedRef = useRef(false);
   const onEventClickRef = useRef(onEventClick);
+  const eventGroupsRef = useRef(eventGroups);
 
-  // Keep callback ref updated
+  // Keep refs updated
   useEffect(() => {
     onEventClickRef.current = onEventClick;
   }, [onEventClick]);
 
-  // Handle click on event marker or cluster
+  useEffect(() => {
+    eventGroupsRef.current = eventGroups;
+  }, [eventGroups]);
+
+  // Handle click on event marker or cluster - uses refs so callback is stable
   const handleMapClick = useCallback((e: mapboxgl.MapMouseEvent) => {
     if (!map) return;
 
@@ -76,8 +81,8 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
         const [lng, lat] = geometry.coordinates;
         const locationKey = `${lat},${lng}`;
 
-        // Get all events at this location
-        const eventsAtLocation = eventGroups[locationKey] || [];
+        // Get all events at this location - use ref for current value
+        const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
 
         if (eventsAtLocation.length > 0) {
           // Pan to event
@@ -89,7 +94,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
         }
       }
     }
-  }, [map, eventGroups]);
+  }, [map]);
 
   // Initialize layers when map is ready
   useEffect(() => {
@@ -235,25 +240,9 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     // Only depend on map/isMapReady - events and click handlers are handled by separate effects
   }, [map, isMapReady]);
 
-  // Update click handler when eventGroups changes
-  useEffect(() => {
-    if (!map || !isMapReady || !isInitializedRef.current) return;
-
-    // Remove old handlers and add new ones with updated eventGroups
-    map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
-    map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
-    map.on("click", EVENT_CLUSTERS_LAYER, handleMapClick);
-    map.on("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
-
-    return () => {
-      map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
-      map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
-    };
-  }, [map, isMapReady, handleMapClick]);
-
   // Update data when events change (NO new map load!)
   useEffect(() => {
-    if (!map || !isMapReady || !isInitializedRef.current) return;
+    if (!map || !isMapReady) return;
 
     const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
     if (source) {

@@ -237,7 +237,7 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
 
   // Update data when venues change (NO new map load!)
   useEffect(() => {
-    if (!map || !isMapReady || !isInitializedRef.current) return;
+    if (!map || !isMapReady) return;
 
     const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
     if (source) {
