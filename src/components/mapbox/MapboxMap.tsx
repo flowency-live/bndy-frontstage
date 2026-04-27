@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import mapboxgl from "mapbox-gl";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
 import { useVenues } from "@/hooks/useVenues";
@@ -82,11 +83,30 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
     return "";
   };
 
-  // Set up map click listener
+  // Set up map click listener - only close overlays when clicking empty map area
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    const handleMapClick = () => {
+    const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
+      // Check if click was on any marker layer - if so, don't close overlays
+      // The marker layer handlers will handle the click
+      const markerLayers = [
+        "event-clusters",
+        "event-unclustered",
+        "venue-clusters",
+        "venue-unclustered",
+      ];
+
+      const clickedFeatures = map.queryRenderedFeatures(e.point, {
+        layers: markerLayers.filter(layer => map.getLayer(layer)),
+      });
+
+      if (clickedFeatures.length > 0) {
+        // Click was on a marker, let the marker handler deal with it
+        return;
+      }
+
+      // Click was on empty map area - close overlays
       setShowEventOverlay(false);
       setSelectedEvents([]);
       setShowVenueOverlay(false);
