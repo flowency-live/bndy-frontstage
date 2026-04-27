@@ -185,6 +185,11 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
           });
         }
 
+        // Ensure layers are visible (may have been hidden by previous unmount)
+        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
+        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
+        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
+
         // Add click handlers
         map.on("click", EVENT_CLUSTERS_LAYER, handleMapClick);
         map.on("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
@@ -231,22 +236,6 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
       }
     };
   }, [map, isMapReady, events, handleMapClick]);
-
-  // Show layers when component mounts (after initialization)
-  useEffect(() => {
-    if (!map || !isMapReady || !isInitializedRef.current) return;
-
-    // Make layers visible
-    if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-      map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
-    }
-    if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
-      map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
-    }
-    if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
-      map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
-    }
-  }, [map, isMapReady]);
 
   // Update click handler when eventGroups changes
   useEffect(() => {

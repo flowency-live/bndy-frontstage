@@ -185,6 +185,11 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
           });
         }
 
+        // Ensure layers are visible (may have been hidden by previous unmount)
+        map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "visible");
+        map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "visible");
+        map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "visible");
+
         // Add click handlers
         map.on("click", VENUE_CLUSTERS_LAYER, handleMapClick);
         map.on("click", VENUE_UNCLUSTERED_LAYER, handleMapClick);
@@ -231,22 +236,6 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
       }
     };
   }, [map, isMapReady, venues, handleMapClick]);
-
-  // Show layers when component mounts (after initialization)
-  useEffect(() => {
-    if (!map || !isMapReady || !isInitializedRef.current) return;
-
-    // Make layers visible
-    if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
-      map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "visible");
-    }
-    if (map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
-      map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "visible");
-    }
-    if (map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
-      map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "visible");
-    }
-  }, [map, isMapReady]);
 
   // Update data when venues change (NO new map load!)
   useEffect(() => {
