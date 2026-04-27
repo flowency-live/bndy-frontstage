@@ -157,6 +157,16 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
         map.on("mouseenter", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
+        // Ensure visibility is correct after all initialization
+        // (handles case where source already existed but visibility wasn't set)
+        if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
+          const visibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+          console.log("[VenueMarkerLayer] Final visibility set:", visibility);
+        }
+
         initializedRef.current = true;
         console.log("[VenueMarkerLayer] Initialized");
       } catch (error) {
@@ -187,6 +197,15 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     if (source) {
       source.setData(venuesToGeoJSON(venues));
       console.log("[VenueMarkerLayer] Data updated:", venues.length, "venues");
+
+      // Defensive: re-apply visibility after data update
+      // This ensures layers stay hidden when they should be
+      if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
+        const visibility = visibleRef.current ? "visible" : "none";
+        map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
+        map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+        map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+      }
     }
   }, [map, isMapReady, venues]);
 

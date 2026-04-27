@@ -240,6 +240,9 @@ export function venuesToGeoJSON(venues: Array<{ id: string; name: string; locati
 
 /**
  * Convert events to GeoJSON for Mapbox source
+ *
+ * IMPORTANT: locationKey is stored in properties to enable reliable lookup.
+ * Using coordinates directly is unreliable due to floating point precision.
  */
 export function eventsToGeoJSON(events: Array<{ id: string; name: string; location: { lat: number; lng: number }; date: string; venueName: string }>): GeoJSON.FeatureCollection {
   return {
@@ -253,6 +256,8 @@ export function eventsToGeoJSON(events: Array<{ id: string; name: string; locati
           name: event.name,
           date: event.date,
           venueName: event.venueName,
+          // Store the location key for reliable lookup (coordinates can lose precision)
+          locationKey: `${event.location.lat},${event.location.lng}`,
         },
         geometry: {
           type: "Point" as const,

@@ -137,15 +137,18 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
           const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_UNCLUSTERED_LAYER] });
           if (features.length === 0) return;
 
+          // Use locationKey from properties (reliable) instead of reconstructing from coordinates
+          const locationKey = features[0].properties?.locationKey;
           const geometry = features[0].geometry;
-          if (geometry.type === "Point") {
-            const [lng, lat] = geometry.coordinates;
-            const locationKey = `${lat},${lng}`;
-            const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
 
-            console.log("[EventMarkerLayer] Click - locationKey:", locationKey, "events:", eventsAtLocation.length);
+          console.log("[EventMarkerLayer] Click - locationKey:", locationKey);
+
+          if (locationKey && geometry.type === "Point") {
+            const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
+            console.log("[EventMarkerLayer] Events at location:", eventsAtLocation.length);
 
             if (eventsAtLocation.length > 0) {
+              const [lng, lat] = geometry.coordinates;
               map.easeTo({ center: [lng, lat], duration: 300 });
               onEventClickRef.current(eventsAtLocation);
             }
@@ -157,6 +160,15 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
         map.on("mouseleave", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
         map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
+
+        // Ensure visibility is correct after all initialization
+        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+          const visibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
+          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+          console.log("[EventMarkerLayer] Final visibility set:", visibility);
+        }
 
         initializedRef.current = true;
         console.log("[EventMarkerLayer] Initialized");
@@ -188,6 +200,14 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     if (source) {
       source.setData(eventsToGeoJSON(events));
       console.log("[EventMarkerLayer] Data updated:", events.length, "events");
+
+      // Defensive: re-apply visibility after data update
+      if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+        const visibility = visibleRef.current ? "visible" : "none";
+        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
+        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
+        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+      }
     }
   }, [map, isMapReady, events]);
 
