@@ -65,45 +65,63 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
 
     // Check for existing global instance (survives HMR and route changes)
     if (typeof window !== "undefined" && window.__BNDY_MAP__) {
-      console.log("[MapboxProvider] Reusing existing map instance");
       const existingMap = window.__BNDY_MAP__;
-
-      // Move map to new container if different
       const currentContainer = existingMap.getContainer();
-      if (currentContainer !== container) {
-        // Mapbox doesn't support moving containers, so we need to check if valid
-        if (currentContainer.parentElement) {
-          console.log("[MapboxProvider] Map already mounted in another container");
+
+      // Check if the existing container is still in the DOM
+      if (currentContainer && currentContainer.parentElement && document.body.contains(currentContainer)) {
+        // Container is valid and in DOM - can reuse
+        if (currentContainer === container) {
+          console.log("[MapboxProvider] Reusing existing map instance (same container)");
+          mapRef.current = existingMap;
+
+          if (existingMap.isStyleLoaded()) {
+            setIsMapReady(true);
+          } else {
+            existingMap.once("style.load", () => {
+              console.log("[MapboxProvider] Style loaded on existing map");
+              setIsMapReady(true);
+            });
+          }
+          return existingMap;
+        } else {
+          // Different container but old one still valid - shouldn't happen often
+          console.log("[MapboxProvider] Map exists in different container");
         }
-      }
-
-      mapRef.current = existingMap;
-
-      // Check if style is already loaded before setting ready
-      if (existingMap.isStyleLoaded()) {
-        setIsMapReady(true);
       } else {
-        // Wait for style to finish loading
-        existingMap.once("style.load", () => {
-          console.log("[MapboxProvider] Style loaded on existing map");
-          setIsMapReady(true);
-        });
+        // Container is gone (navigation removed it) - must recreate map
+        console.log("[MapboxProvider] Old container removed, recreating map");
+        try {
+          existingMap.remove();
+        } catch (e) {
+          console.warn("[MapboxProvider] Error removing old map:", e);
+        }
+        window.__BNDY_MAP__ = null;
+        mapRef.current = null;
+        setIsMapReady(false);
+        // Fall through to create new map
       }
-      return existingMap;
     }
 
     // Check for existing ref instance
     if (mapRef.current) {
-      console.log("[MapboxProvider] Reusing ref map instance");
-      // Check if style is already loaded
-      if (mapRef.current.isStyleLoaded()) {
-        setIsMapReady(true);
-      } else {
-        mapRef.current.once("style.load", () => {
+      const refContainer = mapRef.current.getContainer();
+      // Only reuse if container is still valid
+      if (refContainer && document.body.contains(refContainer)) {
+        console.log("[MapboxProvider] Reusing ref map instance");
+        if (mapRef.current.isStyleLoaded()) {
           setIsMapReady(true);
-        });
+        } else {
+          mapRef.current.once("style.load", () => {
+            setIsMapReady(true);
+          });
+        }
+        return mapRef.current;
+      } else {
+        // Ref map's container is gone
+        console.log("[MapboxProvider] Ref map container invalid, will create new");
+        mapRef.current = null;
       }
-      return mapRef.current;
     }
 
     // Validate token exists
