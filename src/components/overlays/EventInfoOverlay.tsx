@@ -100,7 +100,7 @@ export default function EventInfoOverlay({
       : artist?.name || currentEvent.name || "Live Music";
 
   const venueName = venue?.name || currentEvent.venueName || "Venue";
-  const venueCity = venue?.city || "";
+  const venueCity = currentEvent.venueCity || venue?.city || "";
   const isFree = !currentEvent.ticketed;
   const priceDisplay = isFree ? "FREE" : (currentEvent.ticketinformation || "Ticketed");
 
@@ -224,7 +224,7 @@ export default function EventInfoOverlay({
         >
           {formattedDateFull}
           <span className="block font-[family-name:var(--font-mono)] text-[10.5px] tracking-[0.25em] text-[#ff3322] mt-1.5 font-medium">
-            Doors {doorsTime}
+            From {doorsTime}
           </span>
         </div>
 
@@ -248,8 +248,7 @@ export default function EventInfoOverlay({
         {/* Footer */}
         <div className="flex justify-between items-center mt-4 pt-3.5" style={{ borderTop: "4px double #15110d" }}>
           <div className="font-[family-name:var(--font-typewriter)] text-[10px] text-[#6b5a47] tracking-[0.05em] leading-[1.3] max-w-[60%]">
-            Doors {doorsTime}.<br />
-            18+ID required at the bar.
+            From {doorsTime}
           </div>
           <div className={`font-[family-name:var(--font-anton)] text-[38px] uppercase tracking-[0.04em] leading-[0.9] text-right ${isFree ? "text-[#2a8538]" : "text-[#15110d]"}`}>
             {isFree ? "£ree" : priceDisplay}
@@ -406,7 +405,7 @@ export default function EventInfoOverlay({
           {/* Details */}
           <div className="flex justify-around items-end text-center gap-3 mb-2">
             <div className="font-[family-name:var(--font-caveat)]">
-              <div className="text-sm text-[#c9d4cc] mb-0.5" style={{ transform: "rotate(-1deg)" }}>doors</div>
+              <div className="text-sm text-[#c9d4cc] mb-0.5" style={{ transform: "rotate(-1deg)" }}>from</div>
               <div className="text-[28px] text-white leading-none font-bold">{formattedTime}</div>
             </div>
             <div className="font-[family-name:var(--font-caveat)]">
@@ -643,7 +642,7 @@ export default function EventInfoOverlay({
           <div className="grid grid-cols-2 gap-1.5 mt-3.5 pt-3.5" style={{ borderTop: "1px dashed rgba(255,255,255,0.3)" }}>
             {[
               { label: "Date", value: `${dayName} ${dayNum.toString().padStart(2, "0")} ${monthName}` },
-              { label: "Doors", value: doorsTime },
+              { label: "From", value: doorsTime },
               { label: "Distance", value: distanceDisplay || "—" },
               { label: "Entry", value: isFree ? "£ree" : priceDisplay },
             ].map((item, i) => (
@@ -772,7 +771,7 @@ export default function EventInfoOverlay({
         <ol className="list-none p-0 space-y-0">
           {[
             { label: formattedDateShort, value: null, highlight: true },
-            { label: `Doors ${formattedTime}`, value: null },
+            { label: `From ${formattedTime}`, value: null },
             { label: distanceDisplay ? `${distanceDisplay} away` : "Local gig", value: null },
             { label: "Entry —", value: isFree ? "FREE!" : priceDisplay, isFree },
           ].map((item, i) => (
