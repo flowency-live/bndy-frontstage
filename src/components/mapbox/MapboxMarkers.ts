@@ -142,7 +142,11 @@ function createUserLocationSVG(): string {
  * Call this after map loads
  */
 export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
-  if (!map || addedImages.has(map.getContainer().id)) return;
+  const containerId = map?.getContainer()?.id || "default";
+  if (!map || addedImages.has(containerId)) return;
+
+  // Mark as added immediately to prevent concurrent calls
+  addedImages.add(containerId);
 
   try {
     // Venue marker
@@ -190,10 +194,11 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
       }
     }
 
-    addedImages.add(map.getContainer().id);
     console.log("[MapboxMarkers] All marker images added to map");
   } catch (error) {
     console.error("[MapboxMarkers] Failed to add marker images:", error);
+    // Remove from set so it can be retried
+    addedImages.delete(containerId);
   }
 }
 
