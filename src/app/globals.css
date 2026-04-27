@@ -3326,3 +3326,878 @@ select:focus-visible {
     transition: none !important;
   }
 }
+
+/* ======================================================
+   Profile Pages (Venue & Artist Detail)
+   ====================================================== */
+
+/* Wrap - max width container */
+.profile-wrap {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 0 16px 80px;
+  position: relative;
+  z-index: 3;
+}
+
+@media (min-width: 721px) {
+  .profile-wrap {
+    padding: 0 24px 96px;
+  }
+}
+
+/* ─── INTRO SECTION ─── */
+.profile-intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: end;
+  margin-top: -48px;
+  margin-bottom: 0;
+  padding-bottom: 22px;
+}
+
+@media (min-width: 721px) {
+  .profile-intro {
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    margin-top: -56px;
+  }
+}
+
+/* Avatar */
+.profile-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 18px;
+  border: 3px solid var(--lv-bg);
+  background: var(--lv-surface);
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+}
+
+@media (min-width: 721px) {
+  .profile-avatar {
+    width: 128px;
+    height: 128px;
+    border-width: 4px;
+  }
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Ident (name, badge, meta) */
+.profile-ident {
+  padding-bottom: 4px;
+  min-width: 0;
+}
+
+/* Kind badge */
+.profile-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.profile-kind-badge.venue {
+  color: var(--lv-cyan);
+  background: var(--lv-cyan-soft);
+  border: 1px solid rgba(60,224,224,0.3);
+}
+
+.profile-kind-badge.artist {
+  color: var(--lv-orange);
+  background: var(--lv-orange-soft);
+  border: 1px solid rgba(255,122,61,0.3);
+}
+
+/* Name */
+.profile-name {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 0.9;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+@media (min-width: 721px) {
+  .profile-name {
+    font-size: 56px;
+  }
+}
+
+.profile-name.venue {
+  color: var(--lv-cyan);
+}
+
+.profile-name.artist {
+  color: var(--lv-orange);
+}
+
+/* Meta line */
+.profile-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+}
+
+.profile-meta .pin {
+  color: var(--lv-orange);
+}
+
+.profile-meta .dot {
+  color: var(--lv-text-3);
+}
+
+/* Actions */
+.profile-actions {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 4px;
+  grid-column: 1 / -1;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 721px) {
+  .profile-actions {
+    grid-column: auto;
+    padding-top: 0;
+  }
+}
+
+/* Action buttons */
+.profile-btn {
+  background: var(--lv-surface);
+  color: var(--lv-text);
+  border: 1px solid var(--lv-rule-strong);
+  padding: 9px 14px;
+  border-radius: 4px;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.12s;
+}
+
+.profile-btn:hover {
+  background: var(--lv-surface-2);
+  border-color: var(--lv-orange);
+}
+
+.profile-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.profile-btn.primary {
+  background: var(--lv-orange);
+  color: var(--lv-bg);
+  border-color: var(--lv-orange);
+}
+
+.profile-btn.primary:hover {
+  background: var(--lv-text);
+  border-color: var(--lv-text);
+}
+
+.profile-btn.icon {
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  justify-content: center;
+}
+
+.profile-btn.icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ─── BLURB ─── */
+.profile-blurb {
+  padding: 14px 0 18px;
+  font-size: 14.5px;
+  color: var(--lv-text-2);
+  line-height: 1.55;
+  max-width: 720px;
+  border-bottom: 1px solid var(--lv-rule);
+  margin-bottom: 22px;
+}
+
+.profile-blurb.italic {
+  font-style: italic;
+}
+
+/* ─── GENRES (Artist) ─── */
+.profile-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -8px 0 18px;
+}
+
+.profile-genre {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lv-orange);
+  background: var(--lv-orange-soft);
+  border: 1px solid rgba(255,122,61,0.3);
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* ─── VENUE INFO STRIP ─── */
+.profile-vinfo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-bottom: 22px;
+  border: 1px solid var(--lv-rule);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--lv-bg-2);
+}
+
+@media (min-width: 721px) {
+  .profile-vinfo {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.profile-vinfo-cell {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--lv-rule);
+  min-width: 0;
+}
+
+@media (min-width: 721px) {
+  .profile-vinfo-cell {
+    border-bottom: none;
+    border-right: 1px solid var(--lv-rule);
+  }
+}
+
+.profile-vinfo-cell:last-child {
+  border-bottom: none;
+  border-right: none;
+}
+
+.profile-vinfo-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lv-text-3);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.profile-vinfo-value {
+  font-size: 14px;
+  color: var(--lv-text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-vinfo-value.cyan {
+  color: var(--lv-cyan);
+}
+
+/* ─── TABS ─── */
+.profile-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--lv-rule);
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+
+.profile-tab {
+  background: transparent;
+  border: none;
+  padding: 12px 4px;
+  margin-right: 24px;
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lv-text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.12s;
+  flex-shrink: 0;
+}
+
+.profile-tab-count {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--lv-text-3);
+  font-weight: 500;
+}
+
+.profile-tab.active {
+  color: var(--lv-text);
+  border-bottom-color: var(--lv-orange);
+}
+
+.profile-tab.active .profile-tab-count {
+  color: var(--lv-orange);
+}
+
+.profile-tab:not(.active):hover {
+  color: var(--lv-text-2);
+}
+
+/* ─── VIEW TOGGLE (Artist) ─── */
+.profile-view-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-view-segments {
+  display: inline-flex;
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule);
+  border-radius: 6px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.profile-seg {
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.12s;
+}
+
+.profile-seg svg {
+  width: 12px;
+  height: 12px;
+}
+
+.profile-seg.active {
+  background: var(--lv-orange);
+  color: var(--lv-bg);
+}
+
+.profile-seg:not(.active):hover {
+  color: var(--lv-text);
+}
+
+.profile-view-meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lv-text-3);
+}
+
+.profile-view-meta .acc {
+  color: var(--lv-cyan);
+}
+
+/* ─── SECTION HEADERS ─── */
+.profile-section {
+  margin-bottom: 32px;
+}
+
+.profile-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 8px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid var(--lv-text);
+}
+
+.profile-section-name {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.profile-section-name.past {
+  color: var(--lv-text-3);
+}
+
+.profile-section-head.past {
+  border-bottom-color: var(--lv-text-3);
+}
+
+.profile-section-count {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+  margin-left: auto;
+}
+
+.profile-section-toggle {
+  color: var(--lv-text-2);
+  transition: transform 0.2s;
+}
+
+.profile-section-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.profile-section-toggle.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* ─── DATE GROUP ─── */
+.profile-date-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--lv-rule);
+}
+
+@media (min-width: 721px) {
+  .profile-date-group {
+    grid-template-columns: 124px 1fr;
+    gap: 22px;
+    padding: 14px 0 12px;
+  }
+}
+
+.profile-date-label {
+  border-bottom: 1px solid var(--lv-rule);
+  padding: 12px 4px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--lv-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  margin: 0 -4px;
+}
+
+@media (min-width: 721px) {
+  .profile-date-label {
+    border-right: 1px dashed var(--lv-rule-strong);
+    border-bottom: none;
+    padding: 8px 14px 8px 0;
+    display: block;
+    position: static;
+    background: transparent;
+    backdrop-filter: none;
+    margin: 0;
+  }
+}
+
+.profile-date-day {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 17px;
+  line-height: 0.95;
+  color: var(--lv-text);
+  text-transform: uppercase;
+}
+
+@media (min-width: 721px) {
+  .profile-date-day {
+    font-size: 28px;
+  }
+}
+
+.profile-date-day.past {
+  color: var(--lv-text-3);
+}
+
+.profile-date-dow {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+}
+
+@media (min-width: 721px) {
+  .profile-date-dow {
+    font-size: 10.5px;
+    margin-top: 6px;
+  }
+}
+
+.profile-date-when {
+  display: inline-block;
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lv-orange);
+  background: var(--lv-orange-soft);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+@media (min-width: 721px) {
+  .profile-date-when {
+    font-size: 10px;
+    padding: 3px 7px;
+    margin-top: 12px;
+  }
+}
+
+.profile-date-events {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ─── PROFILE EVENT ROW ─── */
+.profile-ev {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 12px 6px 12px 10px;
+  border-top: 1px dashed var(--lv-rule);
+  border-radius: 3px;
+  min-height: 56px;
+  transition: background 0.12s;
+}
+
+@media (min-width: 721px) {
+  .profile-ev {
+    grid-template-columns: 46px minmax(0, 1fr) auto 70px;
+    grid-template-rows: auto;
+    column-gap: 16px;
+    padding: 10px 12px 10px 10px;
+    min-height: 44px;
+  }
+}
+
+.profile-ev:first-child {
+  border-top: none;
+}
+
+/* Left accent bar */
+.profile-ev::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--lv-orange);
+  border-radius: 2px;
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+@media (min-width: 721px) {
+  .profile-ev::before {
+    top: 6px;
+    bottom: 6px;
+  }
+}
+
+.profile-ev:hover {
+  background: var(--lv-surface);
+}
+
+.profile-ev:hover::before {
+  transform: scaleY(1);
+}
+
+/* Full-row clickable link */
+.profile-ev-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Time */
+.profile-ev-time {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: var(--lv-text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+  align-self: center;
+}
+
+@media (min-width: 721px) {
+  .profile-ev-time {
+    font-size: 13px;
+  }
+}
+
+/* Headline */
+.profile-ev-headline {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Counterpart (artist on venue page, venue on artist page) */
+.profile-ev-counterpart {
+  flex: 0 1 auto;
+  font-family: var(--font-anton), Impact, sans-serif;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.profile-ev-counterpart.artist {
+  font-size: 16px;
+  color: var(--lv-orange);
+}
+
+@media (min-width: 721px) {
+  .profile-ev-counterpart.artist {
+    font-size: 19px;
+  }
+}
+
+.profile-ev-counterpart.venue {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--lv-cyan);
+}
+
+.profile-ev-counterpart:hover {
+  color: var(--lv-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+/* Meta */
+.profile-ev-meta {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  color: var(--lv-text-2);
+  white-space: nowrap;
+  align-self: center;
+}
+
+@media (min-width: 721px) {
+  .profile-ev-meta {
+    grid-column: 3;
+    grid-row: 1;
+    font-size: 12.5px;
+    gap: 10px;
+  }
+}
+
+.profile-ev-town {
+  color: var(--lv-text-2);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-ev-dot {
+  color: var(--lv-text-3);
+}
+
+.profile-ev-dist {
+  color: var(--lv-text-3);
+  font-weight: 500;
+  min-width: 46px;
+  text-align: right;
+}
+
+.profile-ev-dist.near {
+  color: var(--lv-cyan);
+}
+
+.profile-ev-dist.very-near {
+  color: var(--lv-cyan);
+  font-weight: 600;
+}
+
+.profile-ev-genres {
+  color: var(--lv-text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ticket stub */
+.profile-ev-stub {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 64px;
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--lv-green-soft);
+  color: var(--lv-green);
+  border: 1px dashed var(--lv-green);
+  position: relative;
+  transition: all 0.12s;
+  z-index: 1;
+  align-self: center;
+}
+
+@media (min-width: 721px) {
+  .profile-ev-stub {
+    grid-column: 4;
+    grid-row: 1;
+    width: 70px;
+    font-size: 15px;
+  }
+}
+
+/* Perforated edges */
+.profile-ev-stub::before,
+.profile-ev-stub::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: var(--lv-bg);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.12s;
+}
+
+.profile-ev-stub::before {
+  left: -3.5px;
+}
+
+.profile-ev-stub::after {
+  right: -3.5px;
+}
+
+.profile-ev-stub.paid {
+  background: var(--lv-orange-soft);
+  color: var(--lv-orange);
+  border-color: var(--lv-orange);
+}
+
+/* Hover effects on stub */
+.profile-ev:hover .profile-ev-stub {
+  background: var(--lv-green);
+  color: var(--lv-bg);
+}
+
+.profile-ev:hover .profile-ev-stub.paid {
+  background: var(--lv-orange);
+  color: var(--lv-bg);
+}
+
+.profile-ev:hover .profile-ev-stub::before,
+.profile-ev:hover .profile-ev-stub::after {
+  background: var(--lv-surface);
+}
+
+/* Past event styling */
+.profile-ev.past .profile-ev-counterpart,
+.profile-ev.past .profile-ev-time,
+.profile-ev.past .profile-ev-meta {
+  opacity: 0.5;
+}
+
+.profile-ev.past .profile-ev-stub {
+  background: transparent;
+  color: var(--lv-text-3);
+  border-color: var(--lv-rule-strong);
+  border-style: solid;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .profile-ev::before,
+  .profile-ev-stub,
+  .profile-section-toggle {
+    animation: none !important;
+    transition: none !important;
+  }
+}

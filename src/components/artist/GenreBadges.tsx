@@ -5,13 +5,12 @@ interface GenreBadgesProps {
 }
 
 /**
- * GenreBadges - Displays genre badges below banner, right-aligned
+ * GenreBadges - Displays genre badges for artist profile
  *
- * Right-aligned with social icons, wraps on mobile to avoid avatar.
+ * Now uses normal document flow (not absolute positioned)
+ * Positioned between blurb and tabs in ArtistProfileClient
  *
- * CRITICAL: This component is ABSOLUTELY POSITIONED in ArtistProfileClient.
- * It does NOT take up space in the document flow.
- * DO NOT add margin/padding that would affect surrounding elements.
+ * Uses CSS classes from globals.css (.profile-genres, .profile-genre)
  */
 export default function GenreBadges({ genres }: GenreBadgesProps) {
   if (!genres || genres.length === 0) {
@@ -19,17 +18,12 @@ export default function GenreBadges({ genres }: GenreBadgesProps) {
   }
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 pt-2 pb-1">
-      <div className="flex flex-wrap gap-1.5 justify-end max-w-[200px] ml-auto sm:max-w-none">
-        {genres.map((genre, index) => (
-          <span
-            key={index}
-            className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full text-primary bg-primary/10 border border-primary/30"
-          >
-            {genre}
-          </span>
-        ))}
-      </div>
+    <div className="profile-genres">
+      {genres.map((genre, index) => (
+        <span key={index} className="profile-genre">
+          {genre}
+        </span>
+      ))}
     </div>
   );
 }

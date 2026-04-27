@@ -2,105 +2,138 @@
 
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import Image from "next/image";
-import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { Music, Share2, Play } from "lucide-react";
 
 interface ArtistInfoProps {
   artist: ArtistProfileData;
 }
 
 /**
- * ArtistInfo - Refactored artist profile information section
+ * ArtistInfo - Artist profile intro section (restyled)
  *
- * Features:
- * - Profile image overlaps banner by 20px
- * - Layout order: Name → Bio/Subtitle → Location → Genres → Social Links
- * - ALL genre badges displayed (no artificial limit)
- * - Bio character limit (200 chars) with "Read more" expansion
- * - Theme-aware styling
+ * New grid layout: avatar | ident | actions
+ * - Avatar: 88px mobile, 128px desktop, overlaps hero by negative margin
+ * - Kind badge: BAND / SOLO ARTIST / DJ etc
+ * - Name: Anton font, orange color
+ * - Meta line: location + active since + piece count
+ * - Action buttons: Follow (primary), Spotify, Share
+ *
+ * Uses CSS classes from globals.css (.profile-*)
  */
 export default function ArtistInfo({ artist }: ArtistInfoProps) {
-  const [showFullBio, setShowFullBio] = useState(false);
+  // Format artist type for kind badge
+  const getKindLabel = (artistType?: string) => {
+    if (!artistType) return "Artist";
+    const type = artistType.toLowerCase();
+    if (type === "band" || type === "group") return "Band";
+    if (type === "solo") return "Solo Artist";
+    if (type === "duo") return "Duo";
+    if (type === "trio") return "Trio";
+    if (type === "dj") return "DJ";
+    if (type === "collective") return "Collective";
+    return artistType.charAt(0).toUpperCase() + artistType.slice(1);
+  };
 
-  // Bio character limit logic
-  const BIO_CHAR_LIMIT = 200;
-  const bioNeedsTruncation = artist.bio && artist.bio.length > BIO_CHAR_LIMIT;
-  const displayedBio = bioNeedsTruncation && !showFullBio
-    ? artist.bio!.slice(0, BIO_CHAR_LIMIT) + "..."
-    : artist.bio;
+  // Get Spotify URL from socialMediaUrls if available
+  const spotifyUrl = artist.socialMediaUrls?.find(
+    (url: any) => url.platform === "spotify" || url.url?.includes("spotify")
+  )?.url;
+
+  // Share handler
+  const handleShare = async () => {
+    const shareData = {
+      title: artist.name,
+      text: artist.bio || `Check out ${artist.name} on bndy`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 relative" data-testid="artist-info-container">
-      {/*
-        AVATAR POSITIONING - DO NOT MODIFY NEGATIVE MARGINS
-
-        Negative margins: -mt-16 (64px) / -mt-20 (80px) / -mt-24 (96px)
-        Avatar sizes: 140px / 150px / 160px
-
-        These values position the avatar center precisely at the banner/background boundary.
-        CRITICAL: Changing these values will break the visual alignment.
-      */}
-      <div className="flex flex-col -mt-16 sm:-mt-20 md:-mt-24">
-        <div className="relative flex-shrink-0">
+    <div className="profile-wrap">
+      <div className="profile-intro">
+        {/* Avatar */}
+        <div className="profile-avatar">
           {artist.profileImageUrl ? (
             <Image
               src={artist.profileImageUrl}
               alt={`${artist.name} profile picture`}
-              width={160}
-              height={160}
-              className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg object-cover"
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
               priority
               quality={90}
-              sizes="(max-width: 640px) 140px, (max-width: 768px) 150px, 160px"
+              sizes="(max-width: 720px) 88px, 128px"
             />
           ) : (
-            <div className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
-              <span className="text-4xl font-bold text-muted-foreground">
+            <div className="w-full h-full flex items-center justify-center bg-[var(--lv-surface)]">
+              <span className="text-3xl font-bold text-[var(--lv-text-3)]">
                 {artist.name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
         </div>
 
-        {/* Artist Name, Location, Bio - Below Avatar */}
-        <div className="w-full mt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
-            {artist.name}
-          </h1>
+        {/* Ident (name, badge, meta) */}
+        <div className="profile-ident">
+          {/* Kind badge */}
+          <span className="profile-kind-badge artist">
+            <Music className="w-[11px] h-[11px]" strokeWidth={2.4} />
+            {getKindLabel(artist.artistType)}
+          </span>
 
-          {/* Location and Artist Type Badge - Same row */}
-          {(artist.location || artist.artistType) && (
-            <div className="flex items-center gap-2 flex-wrap mb-3">
-              {artist.location && (
-                <>
-                  <MapPin className="w-4 h-4 flex-shrink-0 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">{artist.location}</span>
-                </>
-              )}
-              {artist.artistType && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/30">
-                  {artist.artistType.charAt(0).toUpperCase() + artist.artistType.slice(1)}
-                </span>
-              )}
-            </div>
+          {/* Name */}
+          <h1 className="profile-name artist">{artist.name}</h1>
+
+          {/* Meta line */}
+          <div className="profile-meta">
+            {artist.location && (
+              <>
+                <span className="pin">📍</span>
+                <span>{artist.location}</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="profile-actions">
+          <button className="profile-btn primary">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-[14px] h-[14px]">
+              <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" />
+            </svg>
+            Follow
+          </button>
+
+          {spotifyUrl && (
+            <a
+              href={spotifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="profile-btn icon"
+              aria-label="Listen on Spotify"
+            >
+              <Play className="w-[15px] h-[15px]" fill="currentColor" />
+            </a>
           )}
 
-          {/* Bio/Subtitle */}
-          {artist.bio && (
-            <p className="text-sm text-muted-foreground">
-              {displayedBio}
-              {bioNeedsTruncation && (
-                <button
-                  onClick={() => setShowFullBio(!showFullBio)}
-                  className="ml-1 text-primary hover:text-primary/80 font-medium transition-colors"
-                  aria-expanded={showFullBio}
-                  aria-label={showFullBio ? "Show less" : "Read more"}
-                >
-                  {showFullBio ? "Show less" : "Read more"}
-                </button>
-              )}
-            </p>
-          )}
+          <button
+            onClick={handleShare}
+            className="profile-btn icon"
+            aria-label="Share"
+          >
+            <Share2 className="w-[15px] h-[15px]" strokeWidth={1.8} />
+          </button>
         </div>
       </div>
     </div>

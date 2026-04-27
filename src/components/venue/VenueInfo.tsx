@@ -3,7 +3,7 @@
 import { Venue, getSocialMediaURLs } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
-import { MapPin, Building } from "lucide-react";
+import { Building, Share2, MapPin, Navigation } from "lucide-react";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface VenueInfoProps {
@@ -11,30 +11,25 @@ interface VenueInfoProps {
 }
 
 /**
- * VenueInfo - Venue profile information section
+ * VenueInfo - Venue profile intro section (restyled)
  *
- * Features:
- * - Profile image overlaps banner
- * - Layout order: Name → Address → Facilities → Description
- * - Facilities badges (cyan-500 for venues)
- * - Description character limit (200 chars) with "Show more" expansion
+ * New grid layout: avatar | ident | actions
+ * - Avatar: 88px mobile, 128px desktop, overlaps hero by negative margin
+ * - Kind badge: VENUE (cyan)
+ * - Name: Anton font, cyan color
+ * - Meta line: address + distance
+ * - Action buttons: Directions (primary), Share, Social icons
+ *
+ * Uses CSS classes from globals.css (.profile-*)
  */
 export default function VenueInfo({ venue }: VenueInfoProps) {
-  const [showFullDescription, setShowFullDescription] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState(venue.profileImageUrl || venue.imageUrl || "");
   const [hasFetched, setHasFetched] = useState(false);
-
-  // Description character limit logic
-  const DESC_CHAR_LIMIT = 200;
-  const descriptionNeedsTruncation = venue.description && venue.description.length > DESC_CHAR_LIMIT;
-  const displayedDescription = descriptionNeedsTruncation && !showFullDescription
-    ? venue.description!.slice(0, DESC_CHAR_LIMIT) + "..."
-    : venue.description;
 
   // Format address for display
   const fullAddress = [venue.address, venue.postcode].filter(Boolean).join(", ");
 
-  // Get social media URLs to extract Facebook URL
+  // Get social media URLs
   const socialMediaUrls = getSocialMediaURLs(venue);
   const fbURL = socialMediaUrls.find((s) => s.platform === "facebook")?.url;
 
@@ -43,29 +38,54 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
     setHasFetched(true);
   };
 
+  // Share handler
+  const handleShare = async () => {
+    const shareData = {
+      title: venue.name,
+      text: venue.description || `Check out ${venue.name} on bndy`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  // Directions handler
+  const handleDirections = () => {
+    const address = encodeURIComponent(fullAddress || venue.name);
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+  };
+
   return (
-    <div className="container mx-auto px-2 sm:px-4 relative">
-      {/* Avatar overlaps banner */}
-      <div className="flex flex-col -mt-16 sm:-mt-20 md:-mt-24">
-        <div className="relative flex-shrink-0">
+    <div className="profile-wrap">
+      <div className="profile-intro">
+        {/* Avatar */}
+        <div className="profile-avatar">
           {profileImageUrl ? (
             <Image
               src={profileImageUrl}
               alt={`${venue.name} profile picture`}
-              width={160}
-              height={160}
-              className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg object-cover"
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
               priority
               quality={90}
-              sizes="(max-width: 640px) 140px, (max-width: 768px) 150px, 160px"
+              sizes="(max-width: 720px) 88px, 128px"
               onError={() => {
                 setProfileImageUrl("");
                 setHasFetched(true);
               }}
             />
           ) : (
-            <div className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] md:w-[160px] md:h-[160px] rounded-full border-4 border-background shadow-lg bg-muted flex items-center justify-center">
-              <Building className="w-12 h-12 text-secondary" />
+            <div className="w-full h-full flex items-center justify-center bg-[var(--lv-surface)]">
+              <Building className="w-10 h-10 text-[var(--lv-cyan)]" />
             </div>
           )}
           {!profileImageUrl && !hasFetched && (
@@ -76,53 +96,57 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           )}
         </div>
 
-        {/* Venue Name */}
-        <div className="mt-4">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">
-            {venue.name}
-          </h1>
-        </div>
+        {/* Ident (name, badge, meta) */}
+        <div className="profile-ident">
+          {/* Kind badge */}
+          <span className="profile-kind-badge venue">
+            <Building className="w-[11px] h-[11px]" strokeWidth={2.4} />
+            Venue
+          </span>
 
-        {/* Address and Facilities - Same row */}
-        {fullAddress && (
-          <div className="flex items-center gap-2 flex-wrap mb-3 mt-2">
-            <MapPin className="w-4 h-4 flex-shrink-0 text-foreground" />
-            <span className="text-sm font-medium text-foreground">{fullAddress}</span>
-          </div>
-        )}
+          {/* Name */}
+          <h1 className="profile-name venue">{venue.name}</h1>
 
-        {/* Facilities Badges - Cyan outline for venues */}
-        {venue.facilities && venue.facilities.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {venue.facilities.map((facility, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-secondary bg-secondary/10 border border-secondary/30 whitespace-nowrap"
-              >
-                {facility}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Description */}
-        {venue.description && (
-          <div className="mb-4 max-w-2xl">
-            <p className="text-muted-foreground leading-relaxed text-sm">
-              {displayedDescription}
-            </p>
-            {descriptionNeedsTruncation && (
-              <button
-                onClick={() => setShowFullDescription(!showFullDescription)}
-                className="mt-2 text-secondary hover:text-secondary/80 text-sm font-medium transition-colors"
-                aria-expanded={showFullDescription}
-                aria-label={showFullDescription ? "Show less" : "Show more"}
-              >
-                {showFullDescription ? "Show less" : "Show more"}
-              </button>
+          {/* Meta line */}
+          <div className="profile-meta">
+            {fullAddress && (
+              <>
+                <span className="pin">📍</span>
+                <span>{fullAddress}</span>
+              </>
             )}
           </div>
-        )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="profile-actions">
+          <button onClick={handleDirections} className="profile-btn primary">
+            <Navigation className="w-[14px] h-[14px]" />
+            Directions
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="profile-btn icon"
+            aria-label="Share"
+          >
+            <Share2 className="w-[15px] h-[15px]" strokeWidth={1.8} />
+          </button>
+
+          {fbURL && (
+            <a
+              href={fbURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="profile-btn icon"
+              aria-label="Facebook"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-[15px] h-[15px]">
+                <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z"/>
+              </svg>
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

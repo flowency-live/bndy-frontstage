@@ -1,82 +1,194 @@
 "use client";
 
 import { useState } from "react";
-import EventsList from "../EventsList";
-import ArtistEventsMap from "../ArtistEventsMap";
 import { Event } from "@/lib/types";
-import { Calendar, MapPin, Map } from "lucide-react";
+import { Calendar, MapPin, Map as MapIcon, ChevronDown } from "lucide-react";
+import {
+  ProfileDateGroup,
+  formatDateForGroup,
+  groupEventsByDate,
+  separateEvents,
+} from "@/components/shared/ProfileDateGroup";
+import ArtistEventsMap from "../ArtistEventsMap";
+import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
 
 interface EventsTabProps {
   events: Event[];
   artistLocation?: string;
 }
 
-type ViewMode = 'date' | 'distance' | 'map';
+type ViewMode = "date" | "distance" | "map";
 
 /**
- * EventsTab - Wrapper for events list/map with view toggle
+ * EventsTab - Artist events with view toggle (restyled)
  *
  * Features:
- * - Toggle between "By Date" (month grouping), "By Distance" (5mi range grouping), and "Map" view
- * - Pill-style toggle buttons with orange active border
- * - Default: By Date
+ * - View toggle: By Date | By Distance | Map
+ * - Upcoming and Past sections with collapsible past
+ * - ProfileDateGroup + ProfileEventRow patterns
+ * - EventInfoOverlay on event click
+ *
+ * Uses CSS classes from globals.css (.profile-*)
  */
 export default function EventsTab({ events, artistLocation }: EventsTabProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('date');
+  const [viewMode, setViewMode] = useState<ViewMode>("date");
+  const [showPast, setShowPast] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  // Separate upcoming and past events
+  const { upcoming, past } = separateEvents(events);
+
+  // Group events by date
+  const upcomingByDate = groupEventsByDate(upcoming);
+  const pastByDate = groupEventsByDate(past);
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowOverlay(true);
+  };
+
+  const handleCloseOverlay = () => {
+    setShowOverlay(false);
+    setSelectedEvent(null);
+  };
 
   return (
-    <div role="tabpanel" id="events-panel" aria-labelledby="events-tab" className="container mx-auto px-4 py-4 bg-muted">
+    <div
+      role="tabpanel"
+      id="events-panel"
+      aria-labelledby="events-tab"
+      className="profile-wrap"
+    >
       {/* View Toggle */}
-      <div className="mb-4 flex justify-center">
-        <div className="inline-flex gap-1 p-1 rounded-lg bg-background border border-border">
+      <div className="profile-view-toggle">
+        <div className="profile-view-segments">
           <button
-            onClick={() => setViewMode('date')}
-            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
-              viewMode === 'date'
-                ? 'bg-primary text-white'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            }`}
-            aria-pressed={viewMode === 'date'}
+            onClick={() => setViewMode("date")}
+            className={`profile-seg ${viewMode === "date" ? "active" : ""}`}
+            aria-pressed={viewMode === "date"}
           >
-            <Calendar className="w-4 h-4" />
-            <span>By Date</span>
+            <Calendar className="w-3 h-3" />
+            By Date
           </button>
           <button
-            onClick={() => setViewMode('distance')}
-            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
-              viewMode === 'distance'
-                ? 'bg-primary text-white'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            }`}
-            aria-pressed={viewMode === 'distance'}
+            onClick={() => setViewMode("distance")}
+            className={`profile-seg ${viewMode === "distance" ? "active" : ""}`}
+            aria-pressed={viewMode === "distance"}
           >
-            <MapPin className="w-4 h-4" />
-            <span>By Distance</span>
+            <MapPin className="w-3 h-3" />
+            By Distance
           </button>
           <button
-            onClick={() => setViewMode('map')}
-            className={`flex items-center gap-2 px-3 py-1.5 font-medium text-sm transition-all rounded-md ${
-              viewMode === 'map'
-                ? 'bg-primary text-white'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            }`}
-            aria-pressed={viewMode === 'map'}
+            onClick={() => setViewMode("map")}
+            className={`profile-seg ${viewMode === "map" ? "active" : ""}`}
+            aria-pressed={viewMode === "map"}
           >
-            <Map className="w-4 h-4" />
-            <span>Map</span>
+            <MapIcon className="w-3 h-3" />
+            Map
           </button>
         </div>
+        {artistLocation && (
+          <span className="profile-view-meta">
+            From <span className="acc">{artistLocation}</span>
+          </span>
+        )}
       </div>
 
       {/* Content: Map or List */}
-      {viewMode === 'map' ? (
+      {viewMode === "map" ? (
         <ArtistEventsMap events={events} />
       ) : (
-        <EventsList
-          events={events}
-          artistLocation={artistLocation}
-          hideDistanceFilter={true}
-          sortBy={viewMode}
+        <>
+          {/* Upcoming Section */}
+          {upcoming.length > 0 && (
+            <section className="profile-section">
+              <div className="profile-section-head">
+                <h2 className="profile-section-name">Upcoming</h2>
+                <span className="profile-section-count">
+                  {upcoming.length} Event{upcoming.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+
+              {Array.from(upcomingByDate.entries()).map(([dateKey, dateEvents]) => {
+                const { day, monthYear, relativeLabel } = formatDateForGroup(dateKey);
+                return (
+                  <ProfileDateGroup
+                    key={dateKey}
+                    day={day}
+                    monthYear={monthYear}
+                    relativeLabel={relativeLabel}
+                    events={dateEvents}
+                    counterpartType="venue"
+                    onEventClick={handleEventClick}
+                  />
+                );
+              })}
+            </section>
+          )}
+
+          {/* Past Section (Collapsible) */}
+          {past.length > 0 && (
+            <section className="profile-section">
+              <div
+                className="profile-section-head past"
+                onClick={() => setShowPast(!showPast)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setShowPast(!showPast);
+                  }
+                }}
+                aria-expanded={showPast}
+              >
+                <h2 className="profile-section-name past">Past</h2>
+                <span className="profile-section-count">
+                  {past.length} Event{past.length !== 1 ? "s" : ""}
+                </span>
+                <span className={`profile-section-toggle ${showPast ? "" : "collapsed"}`}>
+                  <ChevronDown className="w-4 h-4" />
+                </span>
+              </div>
+
+              {showPast && (
+                <div>
+                  {Array.from(pastByDate.entries()).map(([dateKey, dateEvents]) => {
+                    const { day, monthYear } = formatDateForGroup(dateKey);
+                    return (
+                      <ProfileDateGroup
+                        key={dateKey}
+                        day={day}
+                        monthYear={monthYear}
+                        events={dateEvents}
+                        counterpartType="venue"
+                        isPast
+                        onEventClick={handleEventClick}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Empty state */}
+          {events.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-[var(--lv-text-3)]">No upcoming events</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Event Info Overlay */}
+      {selectedEvent && (
+        <EventInfoOverlay
+          events={[selectedEvent]}
+          isOpen={showOverlay}
+          onClose={handleCloseOverlay}
+          position="list"
         />
       )}
     </div>

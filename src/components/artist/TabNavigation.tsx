@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Link2, CalendarCheck } from "lucide-react";
 
 interface TabNavigationProps {
   artistId: string;
   hasVideos?: boolean;
   publishAvailability?: boolean;
+  eventCount?: number;
+  availabilityCount?: number;
 }
 
 type TabType = "events" | "links" | "availability";
@@ -15,23 +16,27 @@ type TabType = "events" | "links" | "availability";
 interface Tab {
   id: TabType;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  count?: number;
   visible: boolean;
 }
 
 /**
- * TabNavigation - Tabbed interface for artist profile content
+ * TabNavigation - Tabbed interface for artist profile content (restyled)
  *
  * Features:
- * - Two tabs: Events | Links
- * - Active tab: Orange underline (3px)
+ * - Anton font, uppercase
+ * - Count badges in JetBrains Mono
+ * - Orange bottom border on active
  * - URL param sync (?tab=events)
- * - Default active: "events"
+ *
+ * Uses CSS classes from globals.css (.profile-tabs, .profile-tab)
  */
 export default function TabNavigation({
   artistId,
   hasVideos = false,
   publishAvailability = false,
+  eventCount,
+  availabilityCount,
 }: TabNavigationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,9 +44,9 @@ export default function TabNavigation({
 
   // Define tabs - Events, Availability (conditional), and Links (hidden for now)
   const tabs: Tab[] = [
-    { id: "events", label: "Events", icon: Calendar, visible: true },
-    { id: "availability", label: "Availability", icon: CalendarCheck, visible: publishAvailability === true },
-    { id: "links", label: "Links", icon: Link2, visible: false },
+    { id: "events", label: "Events", count: eventCount, visible: true },
+    { id: "availability", label: "Availability", count: availabilityCount, visible: publishAvailability === true },
+    { id: "links", label: "About", visible: false },
   ];
 
   // Sync with URL params on mount and when search params change
@@ -64,39 +69,31 @@ export default function TabNavigation({
   const visibleTabs = tabs.filter(tab => tab.visible);
 
   return (
-    <div className="border-b border-border bg-background">
-      <div className="container mx-auto px-4">
-        <nav
-          role="tablist"
-          className="flex gap-8"
-          aria-label="Artist profile sections"
-        >
-          {visibleTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={isActive}
-                aria-controls={`${tab.id}-panel`}
-                onClick={() => handleTabClick(tab.id)}
-                className={`relative py-3 font-medium text-sm transition-colors flex items-center gap-2 ${
-                  isActive
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+    <div className="profile-wrap">
+      <nav
+        role="tablist"
+        className="profile-tabs"
+        aria-label="Artist profile sections"
+      >
+        {visibleTabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`${tab.id}-panel`}
+              onClick={() => handleTabClick(tab.id)}
+              className={`profile-tab ${isActive ? 'active' : ''}`}
+            >
+              {tab.label}
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="profile-tab-count">{tab.count}</span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
