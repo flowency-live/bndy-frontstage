@@ -27,7 +27,6 @@ const EVENT_UNCLUSTERED_LAYER = "event-unclustered";
  */
 export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMarkerLayerProps) {
   const { map, isMapReady } = useMapbox();
-  const isInitializedRef = useRef(false);
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
 
@@ -96,9 +95,16 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     }
   }, [map]);
 
-  // Initialize layers when map is ready
+  // Initialize layers when map is ready (runs once per map instance)
   useEffect(() => {
-    if (!map || !isMapReady || isInitializedRef.current) return;
+    if (!map || !isMapReady) return;
+
+    // Check if already initialized on this map instance
+    const mapAny = map as mapboxgl.Map & { __eventLayersInit?: boolean };
+    if (mapAny.__eventLayersInit) {
+      console.log("[EventMarkerLayer] Layers already exist, skipping init");
+      return;
+    }
 
     // Wait for style to be fully loaded before adding layers
     const setupWhenReady = () => {
@@ -120,8 +126,8 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
             type: "geojson",
             data: eventsToGeoJSON(events),
             cluster: true,
-            clusterMaxZoom: 11, // Disable clustering at zoom 12+
-            clusterRadius: 40, // Slightly larger radius for events
+            clusterMaxZoom: 11,
+            clusterRadius: 40,
           });
         }
 
@@ -133,22 +139,8 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
             source: EVENT_SOURCE_ID,
             filter: ["has", "point_count"],
             paint: {
-              // Size based on point count
-              "circle-radius": [
-                "step",
-                ["get", "point_count"],
-                16, // Default size
-                10, 20, // 10+ points
-                50, 24, // 50+ points
-              ],
-              // Orange gradient based on count
-              "circle-color": [
-                "step",
-                ["get", "point_count"],
-                "#F97316", // Orange-500
-                10, "#EA580C", // Orange-600
-                50, "#C2410C", // Orange-700
-              ],
+              "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
+              "circle-color": ["step", ["get", "point_count"], "#F97316", 10, "#EA580C", 50, "#C2410C"],
               "circle-stroke-width": 2,
               "circle-stroke-color": "#FFFFFF",
             },
@@ -168,13 +160,11 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
               "text-size": 12,
               "text-allow-overlap": true,
             },
-            paint: {
-              "text-color": "#FFFFFF",
-            },
+            paint: { "text-color": "#FFFFFF" },
           });
         }
 
-        // Unclustered event markers - teardrop shape using symbol
+        // Unclustered event markers
         if (!map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
           map.addLayer({
             id: EVENT_UNCLUSTERED_LAYER,
@@ -190,30 +180,17 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
           });
         }
 
-        // Ensure layers are visible (may have been hidden by previous unmount)
-        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
-        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
-        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
-
         // Add click handlers
         map.on("click", EVENT_CLUSTERS_LAYER, handleMapClick);
         map.on("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
 
         // Change cursor on hover
-        map.on("mouseenter", EVENT_CLUSTERS_LAYER, () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", EVENT_CLUSTERS_LAYER, () => {
-          map.getCanvas().style.cursor = "";
-        });
-        map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, () => {
-          map.getCanvas().style.cursor = "";
-        });
+        map.on("mouseenter", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
-        isInitializedRef.current = true;
+        mapAny.__eventLayersInit = true;
         console.log("[EventMarkerLayer] Layers initialized");
       } catch (error) {
         console.error("[EventMarkerLayer] Failed to initialize:", error);
@@ -221,23 +198,43 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     };
 
     setupWhenReady();
+  }, [map, isMapReady]);
 
-    // Cleanup - hide layers when component unmounts (mode switch)
-    return () => {
-      if (map) {
-        // Hide layers when switching modes (component unmount)
-        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "none");
-        }
-        if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
-          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "none");
-        }
-        if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
-          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "none");
-        }
+  // Manage layer visibility on mount/unmount (separate from initialization)
+  useEffect(() => {
+    if (!map || !isMapReady) return;
+
+    // Show layers when component mounts
+    const showLayers = () => {
+      if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
       }
+      if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
+        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
+      }
+      if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
+        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
+      }
+      console.log("[EventMarkerLayer] Layers set to visible");
     };
-    // Only depend on map/isMapReady - events and click handlers are handled by separate effects
+
+    // Wait a tick to ensure layers exist after init effect
+    const timeoutId = setTimeout(showLayers, 0);
+
+    // Hide layers when component unmounts (mode switch)
+    return () => {
+      clearTimeout(timeoutId);
+      if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "none");
+      }
+      if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
+        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "none");
+      }
+      if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
+        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "none");
+      }
+      console.log("[EventMarkerLayer] Layers hidden");
+    };
   }, [map, isMapReady]);
 
   // Update data when events change (NO new map load!)
