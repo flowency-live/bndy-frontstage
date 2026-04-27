@@ -144,3 +144,78 @@ export function createEmptyGroups(): Record<EventGroup, never[]> {
     futureEvents: [],
   };
 }
+
+/**
+ * Group events by individual date (returns Map ordered by date)
+ * Used for rendering date-grouped list view
+ */
+export function groupEventsByDate<T extends { date: string }>(
+  events: T[]
+): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+
+  // Sort events by date first
+  const sortedEvents = [...events].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  for (const event of sortedEvents) {
+    const dateKey = event.date.split("T")[0]; // YYYY-MM-DD
+    const existing = grouped.get(dateKey) || [];
+    grouped.set(dateKey, [...existing, event]);
+  }
+
+  return grouped;
+}
+
+/**
+ * Get relative label for a date ("Today", "Tomorrow", "In 8 days", etc.)
+ */
+export function getRelativeDateLabel(
+  date: Date,
+  baseDate: Date = new Date()
+): string | undefined {
+  const today = new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate()
+  );
+  const targetDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
+  const diffMs = targetDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays < 0) return undefined; // Past date
+  if (diffDays <= 7) return `In ${diffDays} days`;
+  if (diffDays <= 14) return `In ${diffDays} days`;
+
+  return undefined; // No label for dates far in the future
+}
+
+/**
+ * Format date for display in date group header
+ * Returns { day: "SAT 02", monthYear: "May 2026" }
+ */
+export function formatDateParts(date: Date): { day: string; monthYear: string } {
+  const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  const dayOfWeek = dayNames[date.getDay()];
+  const dayOfMonth = date.getDate().toString().padStart(2, "0");
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+
+  return {
+    day: `${dayOfWeek} ${dayOfMonth}`,
+    monthYear: `${month} ${year}`
+  };
+}

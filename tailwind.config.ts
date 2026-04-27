@@ -13,8 +13,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ["var(--font-display)", "Georgia", "serif"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        // New list view fonts
+        anton: ["var(--font-anton)", "Impact", "sans-serif"],
+        archivo: ["var(--font-archivo)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "Courier New", "monospace"],
+        // Legacy support
+        display: ["var(--font-anton)", "Impact", "sans-serif"],
+        body: ["var(--font-archivo)", "system-ui", "sans-serif"],
       },
       colors: {
         background: "var(--background)",
@@ -28,6 +33,24 @@ export default {
         muted: {
           DEFAULT: "var(--muted)",
           foreground: "var(--muted-foreground)",
+        },
+        // List view colors
+        lv: {
+          bg: "var(--lv-bg)",
+          "bg-2": "var(--lv-bg-2)",
+          surface: "var(--lv-surface)",
+          "surface-2": "var(--lv-surface-2)",
+          rule: "var(--lv-rule)",
+          "rule-strong": "var(--lv-rule-strong)",
+          text: "var(--lv-text)",
+          "text-2": "var(--lv-text-2)",
+          "text-3": "var(--lv-text-3)",
+          orange: "var(--lv-orange)",
+          "orange-soft": "var(--lv-orange-soft)",
+          cyan: "var(--lv-cyan)",
+          "cyan-soft": "var(--lv-cyan-soft)",
+          green: "var(--lv-green)",
+          "green-soft": "var(--lv-green-soft)",
         },
       },
       borderRadius: {

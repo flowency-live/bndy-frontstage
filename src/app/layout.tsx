@@ -1,6 +1,6 @@
 // app/layout.tsx - Updated
 import type { Metadata } from "next";
-import { Instrument_Serif, Instrument_Sans } from "next/font/google";
+import { Anton, Archivo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -10,19 +10,27 @@ import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import { MapboxProvider } from "@/context/MapboxContext";
 
-// Display font - elegant serif for headings
-const instrumentSerif = Instrument_Serif({
+// Display font - bold impactful headlines (gig poster aesthetic)
+const anton = Anton({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-display",
+  variable: "--font-anton",
   display: "swap",
 });
 
-// Body font - clean sans-serif for readability
-const instrumentSans = Instrument_Sans({
+// Body font - clean readable sans-serif
+const archivo = Archivo({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
+  variable: "--font-archivo",
+  display: "swap",
+});
+
+// Mono font - terminal/technical aesthetic for metadata
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -71,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${instrumentSerif.variable} ${instrumentSans.variable}`}>
+    <html lang="en" className={`${anton.variable} ${archivo.variable} ${jetbrainsMono.variable}`}>
       <head>
         {/* Enhanced mobile-specific meta tags */}
         <meta name="mobile-web-app-capable" content="yes" />

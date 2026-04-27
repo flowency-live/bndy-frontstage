@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useAllPublicEvents } from "./useAllPublicEvents";
+import type { Event } from "@/lib/types";
 
 interface UseEventsForListOptions {
   startDate?: string;
@@ -7,6 +8,11 @@ interface UseEventsForListOptions {
   location?: { lat: number; lng: number } | null;
   radius?: number;  // in miles
   enabled?: boolean;
+}
+
+// Event with calculated distance from user
+export interface EventWithDistance extends Event {
+  distanceMiles: number | null;
 }
 
 // Haversine distance calculation (client-side)
@@ -30,10 +36,32 @@ function calculateDistance(
 }
 
 /**
+ * Format distance for display
+ */
+export function formatDistance(distance: number): string {
+  if (distance < 1) {
+    return `${distance.toFixed(1)} mi`;
+  }
+  return `${Math.round(distance)} mi`;
+}
+
+/**
+ * Get distance class for styling
+ */
+export function getDistanceClass(distance: number | null): string {
+  if (distance === null) return "";
+  if (distance < 5) return "very-near";
+  if (distance < 15) return "near";
+  return "";
+}
+
+/**
  * Hook for fetching events in ListView with location+radius filtering
  *
  * Reuses useAllPublicEvents (same as MapView) then applies client-side
  * radius filtering. At 250 events/weekend scale, this is < 1ms.
+ *
+ * Returns events with calculated distance from user location.
  */
 export function useEventsForList({
   startDate,
@@ -49,23 +77,32 @@ export function useEventsForList({
     enabled
   });
 
-  // Client-side radius filtering (instant from TanStack Query cache)
-  const filteredEvents = useMemo(() => {
-    if (!location || !allEvents.length) return allEvents;
+  // Client-side radius filtering with distance calculation
+  const eventsWithDistance = useMemo<EventWithDistance[]>(() => {
+    if (!allEvents.length) return [];
 
-    return allEvents.filter(event => {
-      const distance = calculateDistance(
-        location.lat,
-        location.lng,
-        event.location.lat,
-        event.location.lng
-      );
-      return distance <= radius;
-    });
+    return allEvents
+      .map(event => {
+        const distanceMiles = location
+          ? calculateDistance(
+              location.lat,
+              location.lng,
+              event.location.lat,
+              event.location.lng
+            )
+          : null;
+        return { ...event, distanceMiles };
+      })
+      .filter(event => {
+        // If no location, include all events
+        if (!location || event.distanceMiles === null) return true;
+        // Otherwise filter by radius
+        return event.distanceMiles <= radius;
+      });
   }, [allEvents, location, radius]);
 
   return {
-    events: filteredEvents,
+    events: eventsWithDistance,
     isLoading,
     isError,
     error

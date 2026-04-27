@@ -44,6 +44,23 @@
   --surface-2: #f5f5f5;
   --surface-3: #e5e5e5;
   --surface-4: #d4d4d4;
+
+  /* List View Theme - Light Mode */
+  --lv-bg: #ffffff;
+  --lv-bg-2: #f8f9fa;
+  --lv-surface: #f1f3f5;
+  --lv-surface-2: #e9ecef;
+  --lv-rule: rgba(0,0,0,0.08);
+  --lv-rule-strong: rgba(0,0,0,0.15);
+  --lv-text: #1a1a2e;
+  --lv-text-2: #4a4a68;
+  --lv-text-3: #6c6c8a;
+  --lv-orange: #e85d2d;
+  --lv-orange-soft: rgba(232,93,45,0.12);
+  --lv-cyan: #0891b2;
+  --lv-cyan-soft: rgba(8,145,178,0.10);
+  --lv-green: #059669;
+  --lv-green-soft: rgba(5,150,105,0.12);
 }
 
 /* Dark Mode Overrides */
@@ -73,22 +90,57 @@
   --surface-2: hsl(223, 47%, 15%);
   --surface-3: hsl(223, 47%, 20%);
   --surface-4: hsl(223, 47%, 25%);
+
+  /* List View Theme - Dark Mode */
+  --lv-bg: #0c1530;
+  --lv-bg-2: #111a3a;
+  --lv-surface: #18234a;
+  --lv-surface-2: #1f2c5a;
+  --lv-rule: rgba(255,255,255,0.07);
+  --lv-rule-strong: rgba(255,255,255,0.16);
+  --lv-text: #f0eee6;
+  --lv-text-2: #c8cee0;
+  --lv-text-3: #95a0bd;
+  --lv-orange: #ff7a3d;
+  --lv-orange-soft: rgba(255,122,61,0.14);
+  --lv-cyan: #3ce0e0;
+  --lv-cyan-soft: rgba(60,224,224,0.12);
+  --lv-green: #86eb8e;
+  --lv-green-soft: rgba(134,235,142,0.14);
 }
 
 /* ======================================================
    1b. Typography & Design System Utilities
    ====================================================== */
 
-/* Display font for headings - Instrument Serif */
-.text-display {
-  font-family: var(--font-display), Georgia, serif;
+/* Display font for headings - Anton (gig poster aesthetic) */
+.font-anton {
+  font-family: var(--font-anton), Impact, sans-serif;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
-/* Body font - Instrument Sans */
+/* Body font - Archivo (clean, readable) */
+.font-archivo {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+}
+
+/* Mono font - JetBrains Mono (terminal aesthetic) */
+.font-mono {
+  font-family: var(--font-mono), 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legacy support - map old classes to new fonts */
+.text-display {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
 .text-body {
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-archivo), system-ui, sans-serif;
 }
 
 /* Refined card surface */
@@ -2795,4 +2847,476 @@ select:focus-visible {
   -webkit-backface-visibility: hidden;
   will-change: transform, filter;
   contain: layout style;
+}
+
+/* ======================================================
+   List View V2 - Gig Poster Meets Terminal Aesthetic
+   ====================================================== */
+
+/* Noise texture overlay for list view */
+.lv-noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3CfeColorMatrix values='0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* List view container */
+.lv-wrap {
+  background-color: var(--lv-bg);
+  color: var(--lv-text);
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  position: relative;
+  z-index: 2;
+}
+
+/* Section header styling */
+.lv-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid var(--lv-text);
+}
+
+.lv-section-name {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--lv-text);
+}
+
+.lv-section-count {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+  margin-left: auto;
+}
+
+/* Date group layout */
+.lv-date-group {
+  display: grid;
+  grid-template-columns: 124px 1fr;
+  gap: 22px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--lv-rule);
+}
+
+.lv-date-label {
+  border-right: 1px dashed var(--lv-rule-strong);
+  padding-right: 14px;
+  padding-top: 8px;
+}
+
+.lv-date-day {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 28px;
+  line-height: 0.95;
+  color: var(--lv-text);
+  text-transform: uppercase;
+}
+
+.lv-date-dow {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+  margin-top: 6px;
+}
+
+.lv-date-when {
+  display: inline-block;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lv-orange);
+  background: var(--lv-orange-soft);
+  padding: 3px 7px;
+  border-radius: 2px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+/* Event row */
+.ev {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto 70px;
+  column-gap: 16px;
+  align-items: center;
+  padding: 10px 12px 10px 10px;
+  border-top: 1px dashed var(--lv-rule);
+  border-radius: 3px;
+  min-height: 44px;
+  transition: background 0.12s;
+}
+
+.ev:first-child {
+  border-top: none;
+}
+
+/* Left accent line on hover */
+.ev::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--lv-orange);
+  border-radius: 2px;
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects - desktop only */
+@media (hover: hover) and (pointer: fine) {
+  .ev:hover {
+    background: var(--lv-surface);
+  }
+
+  .ev:hover::before {
+    transform: scaleY(1);
+  }
+
+  .ev:hover .ev-stub {
+    background: var(--lv-green);
+    color: var(--lv-bg);
+    border-style: solid;
+  }
+
+  .ev:hover .ev-stub.paid {
+    background: var(--lv-orange);
+    color: var(--lv-bg);
+  }
+
+  .ev:hover .ev-stub::before,
+  .ev:hover .ev-stub::after {
+    background: var(--lv-surface);
+  }
+}
+
+/* Full-row clickable link */
+.ev-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Time column */
+.ev-time {
+  grid-column: 1;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: var(--lv-text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Headline: artist · venue */
+.ev-headline {
+  grid-column: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ev-artist {
+  flex: 0 0 auto;
+  max-width: 240px;
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 19px;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--lv-orange);
+  text-decoration: none;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 2;
+}
+
+.ev-artist:hover {
+  color: var(--lv-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.ev-sep {
+  flex: 0 0 auto;
+  color: var(--lv-text-3);
+  font-size: 13px;
+  line-height: 1;
+  align-self: center;
+}
+
+.ev-venue {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lv-cyan);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 2;
+}
+
+.ev-venue:hover {
+  color: var(--lv-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* Meta: town · distance */
+.ev-meta {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: var(--lv-text-2);
+  white-space: nowrap;
+}
+
+.ev-town {
+  color: var(--lv-text-2);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-dot {
+  color: var(--lv-text-3);
+}
+
+.ev-dist {
+  color: var(--lv-text-3);
+  font-weight: 500;
+  min-width: 46px;
+  text-align: right;
+}
+
+.ev-dist.near {
+  color: var(--lv-cyan);
+}
+
+.ev-dist.very-near {
+  color: var(--lv-cyan);
+  font-weight: 600;
+  animation: distance-pulse 2s ease-in-out infinite;
+}
+
+@keyframes distance-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Ticket stub */
+.ev-stub {
+  grid-column: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 70px;
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--lv-green-soft);
+  color: var(--lv-green);
+  border: 1px dashed var(--lv-green);
+  position: relative;
+  transition: all 0.12s;
+  z-index: 1;
+}
+
+/* Perforated edges */
+.ev-stub::before,
+.ev-stub::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: var(--lv-bg);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.12s;
+}
+
+.ev-stub::before {
+  left: -3.5px;
+}
+
+.ev-stub::after {
+  right: -3.5px;
+}
+
+.ev-stub.paid {
+  background: var(--lv-orange-soft);
+  color: var(--lv-orange);
+  border-color: var(--lv-orange);
+}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--lv-surface) 25%,
+    var(--lv-surface-2) 50%,
+    var(--lv-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Mobile layout */
+@media (max-width: 720px) {
+  .lv-section-name {
+    font-size: 19px;
+  }
+
+  /* Sticky date header on mobile */
+  .lv-date-group {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0 0 8px;
+  }
+
+  .lv-date-label {
+    border-right: none;
+    border-bottom: 1px solid var(--lv-rule);
+    padding: 12px 4px 10px;
+    padding-right: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--lv-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    margin: 0 -4px;
+  }
+
+  .lv-date-day {
+    font-size: 17px;
+  }
+
+  .lv-date-dow {
+    font-size: 10px;
+    margin: 0;
+  }
+
+  .lv-date-when {
+    margin: 0;
+    font-size: 9.5px;
+    padding: 2px 6px;
+  }
+
+  /* Mobile event row - 3 rows × 3 cols */
+  .ev {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 12px 6px 12px 10px;
+    min-height: 64px;
+  }
+
+  .ev::before {
+    top: 12px;
+    bottom: 12px;
+  }
+
+  .ev-time {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    font-size: 12.5px;
+  }
+
+  /* Break headline into individual cells */
+  .ev-headline {
+    display: contents;
+  }
+
+  .ev-artist {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: 100%;
+    align-self: center;
+    font-size: 16px;
+  }
+
+  .ev-sep {
+    display: none;
+  }
+
+  .ev-venue {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 13.5px;
+    align-self: center;
+  }
+
+  .ev-meta {
+    grid-column: 2;
+    grid-row: 3;
+    font-size: 11.5px;
+    gap: 8px;
+    align-self: center;
+  }
+
+  .ev-stub {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    align-self: center;
+    width: 64px;
+    height: 30px;
+    font-size: 14px;
+  }
+}
+
+/* Reduced motion preferences for list view */
+@media (prefers-reduced-motion: reduce) {
+  .ev::before,
+  .ev-stub,
+  .ev-dist.very-near,
+  .skeleton-shimmer {
+    animation: none !important;
+    transition: none !important;
+  }
 }
