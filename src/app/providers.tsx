@@ -8,7 +8,7 @@ import { GoogleMapsProvider } from "@/components/providers/GoogleMapsProvider";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <GoogleMapsProvider>
+      <GoogleMapsProvider autoLoad>
         {children}
       </GoogleMapsProvider>
     </QueryClientProvider>
