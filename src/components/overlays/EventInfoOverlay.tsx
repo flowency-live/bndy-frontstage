@@ -2,35 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  MapPin,
-  Clock,
-  Ticket,
-  ExternalLink,
-  Music,
-  CalendarDays,
-  Mic,
-  Map,
-  RefreshCw,
-} from "lucide-react";
+import { Music, Mic, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { Event, Venue, getSocialMediaURLs } from "@/lib/types";
-import { formatEventDate, formatTime } from "@/lib/utils/date-utils";
+import { formatTime } from "@/lib/utils/date-utils";
 import { getVenueById } from "@/lib/services/venue-service";
 import { useArtist } from "@/hooks/useArtist";
-import { getDirectionsUrl } from "@/lib/utils/mapLinks";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
 import SocialShareButton from "@/components/shared/SocialShareButton";
 
-// Theme type definitions
-type ThemeName = "backstagePass" | "setlist" | "letterboard" | "gigPoster" | "chalkboard";
+type ThemeName = "gigPoster" | "chalkboard" | "letterboard" | "backstagePass" | "setlist";
 
-const THEME_ORDER: ThemeName[] = ["backstagePass", "setlist", "letterboard", "gigPoster", "chalkboard"];
+const THEME_ORDER: ThemeName[] = ["gigPoster", "chalkboard", "letterboard", "backstagePass", "setlist"];
 
 function getRandomTheme(): ThemeName {
-  const randomIndex = Math.floor(Math.random() * THEME_ORDER.length);
-  return THEME_ORDER[randomIndex];
+  return THEME_ORDER[Math.floor(Math.random() * THEME_ORDER.length)];
 }
 
 interface EventInfoOverlayProps {
@@ -38,7 +25,6 @@ interface EventInfoOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   position?: "map" | "list";
-  verticalOffset?: number;
 }
 
 export default function EventInfoOverlay({
@@ -49,24 +35,20 @@ export default function EventInfoOverlay({
 }: EventInfoOverlayProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentEvent = events[currentIndex];
-
-  // Theme state with refresh capability
   const [theme, setTheme] = useState<ThemeName>(() => getRandomTheme());
-
-  const cycleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const currentIdx = THEME_ORDER.indexOf(prev);
-      return THEME_ORDER[(currentIdx + 1) % THEME_ORDER.length];
-    });
-  }, []);
-
   const [venue, setVenue] = useState<Venue | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
   const [fetchedProfilePicture, setFetchedProfilePicture] = useState<string | null>(null);
 
+  const cycleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const idx = THEME_ORDER.indexOf(prev);
+      return THEME_ORDER[(idx + 1) % THEME_ORDER.length];
+    });
+  }, []);
+
   const artistId = currentEvent?.artistIds?.[0];
   const { data: artist } = useArtist(artistId);
-
   const isOpenMic = currentEvent?.isOpenMic || false;
 
   useEffect(() => {
@@ -78,8 +60,8 @@ export default function EventInfoOverlay({
   useEffect(() => {
     if (currentEvent?.venueId) {
       getVenueById(currentEvent.venueId)
-        .then((venueData) => setVenue(venueData))
-        .catch((err) => console.error("Error fetching venue:", err));
+        .then((v) => setVenue(v))
+        .catch(() => {});
     }
   }, [currentEvent?.venueId]);
 
@@ -88,1011 +70,739 @@ export default function EventInfoOverlay({
   const igURL = socialMediaUrls.find((s) => s.platform === "instagram")?.url;
   const displayProfileImageUrl = fetchedProfilePicture || artist?.profileImageUrl;
 
-  const eventDate = currentEvent ? new Date(currentEvent.date) : new Date();
-  const formattedDate = formatEventDate(eventDate);
-  const formattedTime = currentEvent?.startTime ? formatTime(currentEvent.startTime) : "Time TBA";
-  const endTime = currentEvent?.endTime
-    ? formatTime(currentEvent.endTime) === "12:00am"
-      ? "LATE!"
-      : formatTime(currentEvent.endTime)
-    : undefined;
+  if (!currentEvent) return null;
+
+  // Format data
+  const eventDate = new Date(currentEvent.date);
+  const dayName = eventDate.toLocaleDateString("en-GB", { weekday: "short" });
+  const dayNum = eventDate.getDate();
+  const monthName = eventDate.toLocaleDateString("en-GB", { month: "short" });
+  const year = eventDate.getFullYear();
+  const formattedDateFull = `${dayName} ${dayNum.toString().padStart(2, "0")} ${monthName} ${year}`;
+  const formattedDateShort = `${dayName} ${dayNum}${getOrdinal(dayNum)} ${monthName}`;
+  const formattedTime = currentEvent.startTime ? formatTime(currentEvent.startTime) : "TBA";
+  const doorsTime = currentEvent.startTime || "21:00";
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const isToday = eventDate.getTime() === today.getTime();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const eventDateOnly = new Date(eventDate);
+  eventDateOnly.setHours(0, 0, 0, 0);
 
-  const directionsUrl = venue ? getDirectionsUrl(venue) : "";
+  const isToday = eventDateOnly.getTime() === today.getTime();
+  const isTomorrow = eventDateOnly.getTime() === tomorrow.getTime();
 
-  const overlayStyles =
-    position === "map"
-      ? "fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center backdrop-blur-sm"
-      : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm";
-
-  const getShareData = () => {
-    if (!currentEvent) return { title: "", text: "" };
-    const eventTitle = isOpenMic && artist
-      ? `Open Mic with ${artist.name}`
-      : isOpenMic
-        ? "Open Mic"
-        : currentEvent.name;
-    return {
-      title: `${eventTitle} | bndy`,
-      text: `Check out this event: ${eventTitle} on ${formattedDate} at ${formattedTime} at ${currentEvent.venueName}`,
-    };
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % events.length);
-  };
-
-  if (!currentEvent) return null;
-
-  // Get display name for artist
   const artistName = isOpenMic && artist
     ? `Open Mic with ${artist.name}`
     : isOpenMic
       ? "Open Mic"
-      : artist?.name || currentEvent.name;
+      : artist?.name || currentEvent.name || "Live Music";
 
-  const venueName = venue?.name || currentEvent.venueName || "Unknown Venue";
+  const venueName = venue?.name || currentEvent.venueName || "Venue";
   const venueCity = venue?.city || "";
   const isFree = !currentEvent.ticketed;
-  const ticketPrice = currentEvent.ticketinformation || (isFree ? "FREE" : "Ticketed");
+  const priceDisplay = isFree ? "FREE" : (currentEvent.ticketinformation || "Ticketed");
 
-  // Render the appropriate theme
+  // Get distance if available
+  const distanceMiles = (currentEvent as Event & { distanceMiles?: number }).distanceMiles;
+  const distanceDisplay = distanceMiles ? `${Math.round(distanceMiles)} mi` : "";
+
+  const overlayStyles = position === "map"
+    ? "fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center backdrop-blur-sm"
+    : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm";
+
+  const getShareData = () => ({
+    title: `${artistName} | bndy`,
+    text: `Check out ${artistName} at ${venueName}`,
+  });
+
+  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % events.length);
+
   const renderTheme = () => {
     switch (theme) {
-      case "backstagePass":
-        return renderBackstagePass();
-      case "setlist":
-        return renderSetlist();
-      case "letterboard":
-        return renderLetterboard();
-      case "gigPoster":
-        return renderGigPoster();
-      case "chalkboard":
-        return renderChalkboard();
-      default:
-        return renderBackstagePass();
+      case "gigPoster": return renderGigPoster();
+      case "chalkboard": return renderChalkboard();
+      case "letterboard": return renderLetterboard();
+      case "backstagePass": return renderBackstagePass();
+      case "setlist": return renderSetlist();
     }
   };
 
-  // ============================================
-  // THEME 1: BACKSTAGE PASS
-  // ============================================
-  const renderBackstagePass = () => (
-    <motion.div
-      onClick={(e) => e.stopPropagation()}
-      initial={{ opacity: 0, y: -50, rotateX: 15 }}
-      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-      exit={{ opacity: 0, y: 50, rotateX: -15 }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="relative"
-      style={{ perspective: "1000px" }}
-    >
-      {/* Lanyard */}
-      <div className="absolute left-1/2 -translate-x-1/2 -top-24 w-6 h-28 z-0">
-        <div
-          className="w-full h-full"
-          style={{
-            background: "linear-gradient(90deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%)",
-            boxShadow: "inset 2px 0 4px rgba(0,0,0,0.3), inset -2px 0 4px rgba(0,0,0,0.3)",
-          }}
-        />
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
-          style={{
-            background: "linear-gradient(135deg, #c0c0c0, #888)",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-          }}
-        />
-      </div>
-
-      {/* Pass Container */}
-      <div
-        className="relative w-[320px] rounded-xl overflow-hidden z-10"
-        style={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset",
-        }}
-      >
-        {/* Holographic strip */}
-        <div
-          className="h-2"
-          style={{
-            background: "linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0, #ff0080)",
-            backgroundSize: "200% 100%",
-            animation: "holographic 3s linear infinite",
-          }}
-        />
-
-        {/* Inner content */}
-        <div
-          className="m-3 rounded-lg p-5"
-          style={{
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          {/* Header */}
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <div className="font-[family-name:var(--font-typewriter)] text-xs text-gray-500 tracking-wider">
-                ACCESS ALL AREAS
-              </div>
-              <div className="font-[family-name:var(--font-bebas)] text-3xl text-gray-900 tracking-wide">
-                BACKSTAGE
-              </div>
-            </div>
-            {isToday && (
-              <div className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                TONIGHT
-              </div>
-            )}
-          </div>
-
-          {/* Artist Photo + Info */}
-          <div className="flex gap-4 mb-4">
-            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-gray-200">
-              {displayProfileImageUrl ? (
-                <Image
-                  src={displayProfileImageUrl}
-                  alt=""
-                  className="object-cover w-full h-full"
-                  width={80}
-                  height={80}
-                  onError={() => setHasFetched(true)}
-                />
-              ) : isOpenMic ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-pink-500">
-                  <Mic className="w-8 h-8 text-white" />
-                </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-500">
-                  <Music className="w-8 h-8 text-white" />
-                </div>
-              )}
-              {!displayProfileImageUrl && artist && !hasFetched && (
-                <ProfilePictureFetcher
-                  facebookUrl={fbURL}
-                  instagramUrl={igURL}
-                  onPictureFetched={(url) => {
-                    setFetchedProfilePicture(url);
-                    setHasFetched(true);
-                  }}
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              {artistId ? (
-                <Link
-                  href={`/artists/${artistId}`}
-                  className="font-[family-name:var(--font-bebas)] text-2xl text-purple-700 hover:text-purple-500 transition-colors flex items-center gap-1 group"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {artistName}
-                  <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
-              ) : (
-                <div className="font-[family-name:var(--font-bebas)] text-2xl text-purple-700">
-                  {artistName}
-                </div>
-              )}
-              <Link
-                href={`/venues/${currentEvent.venueId}`}
-                className="text-sm text-gray-600 hover:text-purple-500 transition-colors flex items-center gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MapPin className="w-3 h-3" />
-                {venueName}
-              </Link>
-            </div>
-          </div>
-
-          {/* Event Details */}
-          <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div className="bg-gray-100 rounded-lg p-3">
-              <div className="text-gray-500 text-xs mb-1">DATE</div>
-              <div className="font-[family-name:var(--font-typewriter)] font-bold text-gray-900">
-                {formattedDate}
-              </div>
-            </div>
-            <div className="bg-gray-100 rounded-lg p-3">
-              <div className="text-gray-500 text-xs mb-1">TIME</div>
-              <div className="font-[family-name:var(--font-typewriter)] font-bold text-gray-900">
-                {formattedTime}
-                {endTime && ` - ${endTime}`}
-              </div>
-            </div>
-          </div>
-
-          {/* Ticket Info */}
-          <div
-            className={`text-center py-2 rounded-lg font-bold ${
-              isFree ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700"
-            }`}
-          >
-            {isFree ? "FREE ENTRY" : ticketPrice}
-            {currentEvent.ticketUrl && !isFree && (
-              <a
-                href={currentEvent.ticketUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-2 underline text-sm"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Buy Tickets
-              </a>
-            )}
-          </div>
-
-          {/* Barcode */}
-          <div className="mt-4 pt-4 border-t border-dashed border-gray-300">
-            <div className="flex justify-center gap-[2px]">
-              {Array.from({ length: 40 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-900"
-                  style={{
-                    width: Math.random() > 0.5 ? "2px" : "1px",
-                    height: "32px",
-                  }}
-                />
-              ))}
-            </div>
-            <div className="text-center font-[family-name:var(--font-mono)] text-xs text-gray-400 mt-2">
-              BNDY-{currentEvent.id.substring(0, 8).toUpperCase()}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom holographic */}
-        <div
-          className="h-2"
-          style={{
-            background: "linear-gradient(90deg, #40e0d0, #ff8c00, #ff0080, #40e0d0)",
-            backgroundSize: "200% 100%",
-            animation: "holographic 3s linear infinite reverse",
-          }}
-        />
-      </div>
-
-      {/* Action buttons */}
-      {renderActionButtons("bg-purple-600 text-white hover:bg-purple-700")}
-    </motion.div>
-  );
-
-  // ============================================
-  // THEME 2: SETLIST
-  // ============================================
-  const renderSetlist = () => (
-    <motion.div
-      onClick={(e) => e.stopPropagation()}
-      initial={{ opacity: 0, rotate: -5, scale: 0.9 }}
-      animate={{ opacity: 1, rotate: 1, scale: 1 }}
-      exit={{ opacity: 0, rotate: 5, scale: 0.9 }}
-      transition={{ type: "spring", damping: 20, stiffness: 150 }}
-      className="relative"
-    >
-      {/* Tape strips */}
-      <div
-        className="absolute -top-3 left-8 w-16 h-6 z-20"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,220,180,0.9), rgba(255,200,150,0.7))",
-          transform: "rotate(-12deg)",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-        }}
-      />
-      <div
-        className="absolute -top-2 right-10 w-14 h-5 z-20"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,220,180,0.9), rgba(255,200,150,0.7))",
-          transform: "rotate(8deg)",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-        }}
-      />
-
-      {/* Paper */}
-      <div
-        className="relative w-[300px] z-10"
-        style={{
-          background: "#fff9f0",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.05)",
-          transform: "rotate(1deg)",
-        }}
-      >
-        {/* Torn top edge */}
-        <div
-          className="h-3 w-full"
-          style={{
-            background: "#fff9f0",
-            clipPath: "polygon(0% 100%, 3% 60%, 7% 100%, 12% 50%, 18% 100%, 23% 70%, 28% 100%, 33% 55%, 38% 100%, 44% 65%, 50% 100%, 55% 45%, 60% 100%, 66% 70%, 72% 100%, 78% 55%, 83% 100%, 88% 60%, 93% 100%, 97% 50%, 100% 100%)",
-          }}
-        />
-
-        <div className="px-6 pb-6 pt-2">
-          {/* Header with scribble */}
-          <div className="text-center mb-4">
-            <div className="font-[family-name:var(--font-caveat)] text-4xl text-gray-800 font-bold">
-              SET LIST
-            </div>
-            <div className="font-[family-name:var(--font-caveat)] text-lg text-gray-500 -mt-1">
-              {formattedDate}
-            </div>
-          </div>
-
-          {/* Lined paper content */}
-          <div
-            className="space-y-0"
-            style={{
-              backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, #e0d8d0 28px)",
-              backgroundSize: "100% 28px",
-            }}
-          >
-            {/* Artist */}
-            <div className="flex items-baseline gap-3 py-1" style={{ lineHeight: "28px" }}>
-              <span className="font-[family-name:var(--font-caveat)] text-red-400 text-xl">1.</span>
-              {artistId ? (
-                <Link
-                  href={`/artists/${artistId}`}
-                  className="font-[family-name:var(--font-caveat)] text-2xl text-gray-800 hover:text-red-500 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {artistName}
-                </Link>
-              ) : (
-                <span className="font-[family-name:var(--font-caveat)] text-2xl text-gray-800">
-                  {artistName}
-                </span>
-              )}
-            </div>
-
-            {/* Venue */}
-            <div className="flex items-baseline gap-3 py-1" style={{ lineHeight: "28px" }}>
-              <span className="font-[family-name:var(--font-caveat)] text-red-400 text-xl">2.</span>
-              <Link
-                href={`/venues/${currentEvent.venueId}`}
-                className="font-[family-name:var(--font-caveat)] text-xl text-gray-600 hover:text-red-500 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                @ {venueName}
-              </Link>
-            </div>
-
-            {/* Time */}
-            <div className="flex items-baseline gap-3 py-1" style={{ lineHeight: "28px" }}>
-              <span className="font-[family-name:var(--font-caveat)] text-red-400 text-xl">3.</span>
-              <span className="font-[family-name:var(--font-caveat)] text-xl text-gray-600">
-                {formattedTime}
-                {endTime && ` til ${endTime}`}
-              </span>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3 py-1" style={{ lineHeight: "28px" }}>
-              <span className="font-[family-name:var(--font-caveat)] text-red-400 text-xl">4.</span>
-              <span
-                className={`font-[family-name:var(--font-caveat)] text-xl ${
-                  isFree ? "text-green-600" : "text-gray-600"
-                }`}
-              >
-                {isFree ? "FREE!" : ticketPrice}
-              </span>
-              {!isFree && currentEvent.ticketUrl && (
-                <span className="font-[family-name:var(--font-caveat)] text-sm text-blue-500 underline">
-                  (tix online)
-                </span>
-              )}
-            </div>
-
-            {/* Today badge */}
-            {isToday && (
-              <div className="flex items-baseline gap-3 py-1" style={{ lineHeight: "28px" }}>
-                <span className="font-[family-name:var(--font-caveat)] text-red-400 text-xl">*</span>
-                <span className="font-[family-name:var(--font-caveat)] text-2xl text-red-500 font-bold animate-pulse">
-                  TONIGHT!!!
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Scribbled notes at bottom */}
-          <div className="mt-4 pt-3 border-t border-dashed border-gray-300">
-            <div className="font-[family-name:var(--font-caveat)] text-gray-400 text-sm italic">
-              dont forget guitar pick!!
-            </div>
-          </div>
-        </div>
-
-        {/* Coffee stain */}
-        <div
-          className="absolute bottom-8 right-4 w-12 h-12 rounded-full opacity-20"
-          style={{
-            background: "radial-gradient(circle, #8b4513 0%, transparent 60%)",
-          }}
-        />
-      </div>
-
-      {/* Action buttons */}
-      {renderActionButtons("bg-gray-800 text-white hover:bg-gray-700")}
-    </motion.div>
-  );
-
-  // ============================================
-  // THEME 3: LETTERBOARD
-  // ============================================
-  const renderLetterboard = () => (
-    <motion.div
-      onClick={(e) => e.stopPropagation()}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ type: "spring", damping: 20, stiffness: 200 }}
-      className="relative"
-    >
-      {/* Marquee frame */}
-      <div
-        className="relative w-[340px] rounded-lg overflow-hidden"
-        style={{
-          background: "#1a1a1a",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.1)",
-          border: "8px solid #2a2a2a",
-        }}
-      >
-        {/* Brass corner screws */}
-        {["-top-1 -left-1", "-top-1 -right-1", "-bottom-1 -left-1", "-bottom-1 -right-1"].map(
-          (pos, i) => (
-            <div
-              key={i}
-              className={`absolute ${pos} w-4 h-4 rounded-full z-10`}
-              style={{
-                background: "linear-gradient(135deg, #d4af37, #b8860b, #d4af37)",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
-              }}
-            >
-              <div
-                className="absolute inset-1 rounded-full"
-                style={{
-                  background: "linear-gradient(135deg, #f5d77a, #c9a227)",
-                }}
-              />
-            </div>
-          )
-        )}
-
-        <div className="p-6">
-          {/* Letter slots background */}
-          <div
-            className="rounded p-4"
-            style={{
-              background: "linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)",
-              boxShadow: "inset 0 2px 10px rgba(0,0,0,0.8)",
-            }}
-          >
-            {/* Artist name */}
-            <div className="mb-3">
-              {artistId ? (
-                <Link
-                  href={`/artists/${artistId}`}
-                  className="block text-center font-[family-name:var(--font-bebas)] text-3xl tracking-[0.15em] hover:opacity-80 transition-opacity"
-                  style={{
-                    color: "#ffffff",
-                    textShadow: "0 0 10px rgba(255,255,255,0.3)",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {artistName.toUpperCase()}
-                </Link>
-              ) : (
-                <div
-                  className="text-center font-[family-name:var(--font-bebas)] text-3xl tracking-[0.15em]"
-                  style={{
-                    color: "#ffffff",
-                    textShadow: "0 0 10px rgba(255,255,255,0.3)",
-                  }}
-                >
-                  {artistName.toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="flex justify-center gap-2 my-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: "#ff6b35" }}
-                />
-              ))}
-            </div>
-
-            {/* Venue */}
-            <div className="mb-2">
-              <Link
-                href={`/venues/${currentEvent.venueId}`}
-                className="block text-center font-[family-name:var(--font-bebas)] text-xl tracking-[0.1em] hover:opacity-80 transition-opacity"
-                style={{ color: "#ff6b35" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {venueName.toUpperCase()}
-              </Link>
-              {venueCity && (
-                <div
-                  className="text-center font-[family-name:var(--font-bebas)] text-sm tracking-[0.2em]"
-                  style={{ color: "#888" }}
-                >
-                  {venueCity.toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            {/* Date & Time */}
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="text-center">
-                <div
-                  className="font-[family-name:var(--font-bebas)] text-2xl tracking-wider"
-                  style={{ color: "#40e0d0" }}
-                >
-                  {formattedDate.toUpperCase()}
-                </div>
-                {isToday && (
-                  <div
-                    className="font-[family-name:var(--font-bebas)] text-sm tracking-widest animate-pulse"
-                    style={{ color: "#ff0080" }}
-                  >
-                    TONIGHT
-                  </div>
-                )}
-              </div>
-              <div className="text-center">
-                <div
-                  className="font-[family-name:var(--font-bebas)] text-2xl tracking-wider"
-                  style={{ color: "#40e0d0" }}
-                >
-                  {formattedTime.toUpperCase()}
-                </div>
-                {endTime && (
-                  <div
-                    className="font-[family-name:var(--font-bebas)] text-sm tracking-wider"
-                    style={{ color: "#888" }}
-                  >
-                    TIL {endTime.toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Price */}
-            <div className="mt-4 text-center">
-              <span
-                className={`font-[family-name:var(--font-bebas)] text-2xl tracking-widest ${
-                  isFree ? "" : ""
-                }`}
-                style={{ color: isFree ? "#00ff88" : "#ffcc00" }}
-              >
-                {isFree ? "FREE ENTRY" : ticketPrice.toUpperCase()}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      {renderActionButtons("bg-[#ff6b35] text-white hover:bg-[#ff8555]")}
-    </motion.div>
-  );
-
-  // ============================================
-  // THEME 4: GIG POSTER
-  // ============================================
+  // ════════════════════════════════════════════════════════
+  // 1. GIG POSTER — wood-block print attitude
+  // ════════════════════════════════════════════════════════
   const renderGigPoster = () => (
     <motion.div
       onClick={(e) => e.stopPropagation()}
-      initial={{ opacity: 0, y: 30, rotate: -3 }}
+      initial={{ opacity: 0, y: 20, rotate: -2 }}
       animate={{ opacity: 1, y: 0, rotate: 0 }}
-      exit={{ opacity: 0, y: -30, rotate: 3 }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="relative"
+      exit={{ opacity: 0, y: -20, rotate: 2 }}
+      className="relative w-[340px]"
+      style={{
+        background: "#ede4cc",
+        color: "#15110d",
+        boxShadow: "6px 6px 0 #15110d, 9px 9px 0 #ff3322, 0 1px 0 rgba(255,255,255,0.04)",
+      }}
     >
-      {/* Poster */}
+      {/* Paper texture overlay */}
       <div
-        className="relative w-[320px] overflow-hidden"
+        className="absolute inset-0 pointer-events-none z-[1]"
         style={{
-          background: "#f5f0e1",
-          boxShadow: "0 15px 40px rgba(0,0,0,0.4)",
-          border: "3px solid #1a1a1a",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3CfeColorMatrix values='0 0 0 0 0.08, 0 0 0 0 0.07, 0 0 0 0 0.05, 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")`,
+          mixBlendMode: "multiply",
+          opacity: 0.7,
+        }}
+      />
+      {/* Inner border */}
+      <div className="absolute top-[6px] left-[6px] right-[6px] bottom-[6px] border-2 border-[#15110d] pointer-events-none z-[2]" />
+
+      {/* One Night Only stamp */}
+      <div
+        className="absolute top-[38px] right-[-18px] z-[4] px-[18px] py-1 font-[family-name:var(--font-anton)] text-xs tracking-[0.18em] uppercase"
+        style={{
+          background: "#ff3322",
+          color: "#ede4cc",
+          transform: "rotate(8deg)",
+          boxShadow: "2px 2px 0 #15110d",
         }}
       >
-        {/* Woodblock texture overlay */}
+        One Night Only
+      </div>
+
+      <div className="relative z-[3] px-6 pt-7 pb-5">
+        {/* Top bar */}
         <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          }}
-        />
+          className="flex justify-between items-center font-[family-name:var(--font-mono)] text-[9.5px] tracking-[0.3em] uppercase font-semibold pb-2 mb-3.5"
+          style={{ borderBottom: "4px double #15110d" }}
+        >
+          <span>{venueCity || "UK"}</span>
+          <span style={{ color: "#ff3322" }}>★ ★ ★</span>
+          <span>Live Music</span>
+        </div>
 
-        <div className="p-5 relative">
-          {/* Top banner */}
-          <div
-            className="text-center py-2 mb-4 -mx-5 px-5"
-            style={{
-              background: "#1a1a1a",
-              borderTop: "4px solid #ff4444",
-              borderBottom: "4px solid #ff4444",
-            }}
-          >
-            <div className="font-[family-name:var(--font-bungee)] text-xs text-white tracking-[0.3em]">
-              LIVE ON STAGE
-            </div>
-          </div>
-
-          {/* Artist name - main headline */}
-          <div className="mb-4">
-            {artistId ? (
-              <Link
-                href={`/artists/${artistId}`}
-                className="block text-center font-[family-name:var(--font-bungee)] text-4xl leading-tight hover:text-red-600 transition-colors"
-                style={{
-                  color: "#1a1a1a",
-                  textShadow: "3px 3px 0 #ff4444, 6px 6px 0 rgba(0,0,0,0.1)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {artistName.toUpperCase()}
-              </Link>
-            ) : (
-              <div
-                className="text-center font-[family-name:var(--font-bungee)] text-4xl leading-tight"
-                style={{
-                  color: "#1a1a1a",
-                  textShadow: "3px 3px 0 #ff4444, 6px 6px 0 rgba(0,0,0,0.1)",
-                }}
-              >
-                {artistName.toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Decorative zigzag */}
-          <div
-            className="h-4 -mx-5 mb-4"
-            style={{
-              background: "#1a1a1a",
-              clipPath: "polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%, 100% 100%, 0% 100%)",
-            }}
-          />
-
-          {/* Venue block */}
-          <div
-            className="text-center py-3 mb-4"
-            style={{
-              background: "#ff4444",
-              transform: "rotate(-1deg)",
-            }}
-          >
+        {/* Artist name */}
+        <div className="text-center my-2">
+          {artistId ? (
             <Link
-              href={`/venues/${currentEvent.venueId}`}
-              className="block font-[family-name:var(--font-bungee)] text-xl text-white hover:opacity-80 transition-opacity"
+              href={`/artists/${artistId}`}
               onClick={(e) => e.stopPropagation()}
+              className="hover:text-[#ff3322] transition-colors"
             >
-              {venueName.toUpperCase()}
-            </Link>
-            {venueCity && (
-              <div className="font-[family-name:var(--font-bungee)] text-sm text-white/80">
-                {venueCity.toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Date & Time */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div
-              className="text-center py-3"
-              style={{
-                background: "#1a1a1a",
-                transform: "rotate(0.5deg)",
-              }}
-            >
-              <div className="font-[family-name:var(--font-bungee)] text-lg text-white">
-                {formattedDate.toUpperCase()}
-              </div>
-              {isToday && (
-                <div className="font-[family-name:var(--font-bungee)] text-xs text-[#ff4444] animate-pulse">
-                  TONIGHT!
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center py-3"
-              style={{
-                background: "#1a1a1a",
-                transform: "rotate(-0.5deg)",
-              }}
-            >
-              <div className="font-[family-name:var(--font-bungee)] text-lg text-white">
-                {formattedTime.toUpperCase()}
-              </div>
-              {endTime && (
-                <div className="font-[family-name:var(--font-bungee)] text-xs text-white/60">
-                  TIL {endTime.toUpperCase()}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Price starburst */}
-          <div className="flex justify-center mb-4">
-            <div
-              className="relative px-8 py-3"
-              style={{
-                background: isFree ? "#00aa55" : "#ffcc00",
-                transform: "rotate(-2deg)",
-                clipPath: "polygon(10% 0%, 20% 50%, 0% 50%, 20% 100%, 50% 70%, 80% 100%, 100% 50%, 80% 50%, 90% 0%, 50% 30%)",
-              }}
-            >
-              <div
-                className="font-[family-name:var(--font-bungee)] text-xl"
-                style={{ color: isFree ? "#fff" : "#1a1a1a" }}
+              <h1
+                className="font-[family-name:var(--font-anton)] text-[60px] sm:text-[78px] leading-[0.82] uppercase break-words"
+                style={{
+                  textShadow: "2px 2px 0 #ede4cc, 4px 4px 0 #ff3322",
+                }}
               >
-                {isFree ? "FREE!" : ticketPrice.toUpperCase()}
-              </div>
-            </div>
-          </div>
+                {artistName}
+              </h1>
+            </Link>
+          ) : (
+            <h1
+              className="font-[family-name:var(--font-anton)] text-[60px] sm:text-[78px] leading-[0.82] uppercase break-words"
+              style={{
+                textShadow: "2px 2px 0 #ede4cc, 4px 4px 0 #ff3322",
+              }}
+            >
+              {artistName}
+            </h1>
+          )}
+        </div>
 
-          {/* Bottom banner */}
-          <div
-            className="text-center py-2 -mx-5 -mb-5 px-5"
-            style={{
-              background: "#1a1a1a",
-              borderTop: "4px solid #ff4444",
-            }}
+        {/* Date bar */}
+        <div
+          className="text-center font-[family-name:var(--font-anton)] text-[26px] tracking-[0.05em] uppercase leading-none py-2.5 px-6 -mx-6 my-4"
+          style={{
+            background: "#15110d",
+            color: "#ede4cc",
+            borderTop: "1px solid #ede4cc",
+            borderBottom: "1px solid #ede4cc",
+            boxShadow: "inset 0 0 0 4px #15110d",
+          }}
+        >
+          {formattedDateFull}
+          <span className="block font-[family-name:var(--font-mono)] text-[10.5px] tracking-[0.25em] text-[#ff3322] mt-1.5 font-medium">
+            Doors {doorsTime}
+          </span>
+        </div>
+
+        {/* Venue */}
+        <div className="text-center mb-3.5">
+          <div className="font-[family-name:var(--font-typewriter)] text-xs text-[#6b5a47] tracking-[0.05em] italic mb-1">
+            at the legendary
+          </div>
+          <Link
+            href={`/venues/${currentEvent.venueId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-block font-[family-name:var(--font-anton)] text-[32px] leading-[0.95] uppercase border-b-[3px] border-[#15110d] pb-0.5 hover:text-[#ff3322] hover:border-[#ff3322] transition-colors"
           >
-            <div className="font-[family-name:var(--font-bungee)] text-[10px] text-white/60 tracking-[0.2em]">
-              BNDY.LIVE PRESENTS
-            </div>
+            {venueName}
+          </Link>
+          <div className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.22em] uppercase text-[#6b5a47] mt-1.5 font-medium">
+            {venueCity}{distanceDisplay && ` · ${distanceDisplay} Away`}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center mt-4 pt-3.5" style={{ borderTop: "4px double #15110d" }}>
+          <div className="font-[family-name:var(--font-typewriter)] text-[10px] text-[#6b5a47] tracking-[0.05em] leading-[1.3] max-w-[60%]">
+            Doors {doorsTime}.<br />
+            18+ID required at the bar.
+          </div>
+          <div className={`font-[family-name:var(--font-anton)] text-[38px] uppercase tracking-[0.04em] leading-[0.9] text-right ${isFree ? "text-[#2a8538]" : "text-[#15110d]"}`}>
+            {isFree ? "£ree" : priceDisplay}
+            <small className="block font-[family-name:var(--font-mono)] text-[9.5px] tracking-[0.22em] text-[#6b5a47] mt-1 font-medium">
+              Entry
+            </small>
           </div>
         </div>
       </div>
-
-      {/* Action buttons */}
-      {renderActionButtons("bg-[#ff4444] text-white hover:bg-[#ff6666]")}
     </motion.div>
   );
 
-  // ============================================
-  // THEME 5: CHALKBOARD
-  // ============================================
+  // ════════════════════════════════════════════════════════
+  // 2. CHALKBOARD — pub blackboard
+  // ════════════════════════════════════════════════════════
   const renderChalkboard = () => (
     <motion.div
       onClick={(e) => e.stopPropagation()}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="relative"
+      className="relative w-[340px] p-3.5 rounded"
+      style={{
+        background: "linear-gradient(135deg, #6b4423 0%, #4a2f18 50%, #6b4423 100%)",
+        backgroundImage: "repeating-linear-gradient(85deg, transparent 0px, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px), linear-gradient(135deg, #6b4423 0%, #4a2f18 50%, #6b4423 100%)",
+        boxShadow: "0 1px 0 rgba(255,200,150,0.1) inset, 0 0 0 1px #2a1810, 0 24px 40px -10px rgba(0,0,0,0.6), 0 8px 16px -4px rgba(0,0,0,0.3)",
+      }}
     >
-      {/* Wooden frame */}
+      {/* Chalkboard surface */}
       <div
-        className="relative w-[340px] p-3 rounded"
+        className="relative overflow-hidden min-h-[380px] p-6"
         style={{
-          background: "linear-gradient(135deg, #8b5a2b, #654321, #8b5a2b)",
-          boxShadow: "0 15px 40px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.1)",
+          background: "linear-gradient(135deg, #1f2a22 0%, #15201a 100%)",
+          backgroundImage: "radial-gradient(ellipse at 25% 30%, rgba(255,255,255,0.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 70%, rgba(255,255,255,0.03) 0%, transparent 50%), linear-gradient(135deg, #1f2a22 0%, #15201a 100%)",
+          boxShadow: "inset 0 0 30px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.3)",
         }}
       >
-        {/* Chalkboard */}
+        {/* Chalk dust texture */}
         <div
-          className="relative rounded overflow-hidden"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            background: "linear-gradient(135deg, #2d4739 0%, #1e3a2c 50%, #2d4739 100%)",
-            boxShadow: "inset 0 2px 10px rgba(0,0,0,0.5)",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E")`,
+            mixBlendMode: "screen",
+            opacity: 0.7,
           }}
+        />
+        {/* Light reflections */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse 200px 80px at 30% 20%, rgba(255,255,255,0.05), transparent 70%), radial-gradient(ellipse 150px 60px at 80% 90%, rgba(255,255,255,0.04), transparent 70%)",
+          }}
+        />
+
+        {/* Chalk piece */}
+        <div
+          className="absolute bottom-0 right-8 w-9 h-2 rounded-sm z-[4]"
+          style={{
+            background: "linear-gradient(180deg, #f4f0e8 0%, #d8d0c0 100%)",
+            transform: "rotate(-3deg)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.4)",
+          }}
+        />
+
+        {/* Music note doodle */}
+        <div
+          className="absolute bottom-3 right-3.5 font-[family-name:var(--font-caveat)] text-4xl text-[#ffe066] opacity-55 z-[3] leading-none"
+          style={{ transform: "rotate(-15deg)" }}
         >
-          {/* Chalk dust texture */}
+          ♪
+        </div>
+
+        {/* Content */}
+        <div className="relative z-[2]">
+          {/* Header */}
           <div
-            className="absolute inset-0 opacity-20 pointer-events-none"
+            className="font-[family-name:var(--font-caveat)] text-[32px] text-[#ffe066] text-center mb-1 leading-none"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E")`,
+              transform: "rotate(-1.5deg)",
+              textShadow: "0 0 1px rgba(255,224,102,0.2)",
+              WebkitTextStroke: "0.5px rgba(255,224,102,0.3)",
             }}
-          />
+          >
+            {isToday ? "Tonight!" : isTomorrow ? "Tomorrow!" : formattedDateShort}
+            <span className="block w-[60px] h-0 border-b-2 border-[#ffe066] mx-auto mt-1 opacity-70" style={{ transform: "rotate(0.8deg)" }} />
+          </div>
 
-          <div className="p-5 relative">
-            {/* Header scribble */}
-            <div className="text-center mb-3">
-              <div
-                className="font-[family-name:var(--font-marker)] text-sm tracking-wider"
-                style={{
-                  color: "rgba(255,255,255,0.5)",
-                }}
-              >
-                TONIGHTS GIG
-              </div>
-            </div>
+          {/* Eyebrow */}
+          <div
+            className="text-center font-[family-name:var(--font-caveat)] text-lg text-[#ffb3b3] mb-2 font-medium tracking-wide"
+            style={{ transform: "rotate(0.5deg)" }}
+          >
+            ~ Live Music ~
+          </div>
 
-            {/* Artist */}
-            <div className="mb-4">
-              {artistId ? (
-                <Link
-                  href={`/artists/${artistId}`}
-                  className="block text-center font-[family-name:var(--font-marker)] text-3xl hover:opacity-80 transition-opacity"
-                  style={{
-                    color: "#ffffff",
-                    textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {artistName}
-                </Link>
-              ) : (
-                <div
-                  className="text-center font-[family-name:var(--font-marker)] text-3xl"
-                  style={{
-                    color: "#ffffff",
-                    textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  {artistName}
-                </div>
-              )}
-            </div>
-
-            {/* Chalk divider */}
-            <div
-              className="h-1 mx-auto mb-4 rounded-full"
+          {/* Artist */}
+          {artistId ? (
+            <Link
+              href={`/artists/${artistId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="block text-center font-[family-name:var(--font-bungee)] text-[32px] sm:text-[38px] leading-[0.9] uppercase mb-1 text-[#ff8a6a] hover:text-[#ffe066] transition-colors"
               style={{
-                width: "60%",
-                background: "rgba(255,255,255,0.3)",
+                textShadow: "0 0 1px rgba(255,138,106,0.4), 0 0 8px rgba(255,138,106,0.15)",
+                WebkitTextStroke: "0.5px rgba(255,255,255,0.1)",
               }}
-            />
+            >
+              {artistName}
+            </Link>
+          ) : (
+            <h1
+              className="text-center font-[family-name:var(--font-bungee)] text-[32px] sm:text-[38px] leading-[0.9] uppercase mb-1 text-[#ff8a6a]"
+              style={{
+                textShadow: "0 0 1px rgba(255,138,106,0.4), 0 0 8px rgba(255,138,106,0.15)",
+                WebkitTextStroke: "0.5px rgba(255,255,255,0.1)",
+              }}
+            >
+              {artistName}
+            </h1>
+          )}
 
-            {/* Venue */}
-            <div className="mb-4">
-              <Link
-                href={`/venues/${currentEvent.venueId}`}
-                className="block text-center font-[family-name:var(--font-marker)] text-xl hover:opacity-80 transition-opacity"
-                style={{
-                  color: "#ffd700",
-                  textShadow: "1px 1px 3px rgba(0,0,0,0.3)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                @ {venueName}
-              </Link>
-              {venueCity && (
-                <div
-                  className="text-center font-[family-name:var(--font-marker)] text-sm"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
-                >
-                  {venueCity}
-                </div>
-              )}
+          {/* Arrow */}
+          <div
+            className="text-center font-[family-name:var(--font-caveat)] text-[22px] text-white my-2"
+            style={{ transform: "rotate(-1deg)" }}
+          >
+            <span className="block text-[28px] leading-none opacity-70">↓</span>
+            live at
+          </div>
+
+          {/* Venue */}
+          <Link
+            href={`/venues/${currentEvent.venueId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="block text-center font-[family-name:var(--font-caveat)] text-[30px] sm:text-[36px] text-[#88e0ff] leading-none mb-1 hover:text-[#ffe066] transition-colors"
+            style={{
+              transform: "rotate(-0.5deg)",
+              WebkitTextStroke: "0.4px rgba(136,224,255,0.3)",
+            }}
+          >
+            <u className="border-b-2 border-[#88e0ff] pb-0.5" style={{ textDecoration: "none" }}>{venueName}</u>
+          </Link>
+          <div
+            className="text-center font-[family-name:var(--font-caveat)] text-lg text-[#c9d4cc] mb-3.5"
+            style={{ transform: "rotate(0.6deg)" }}
+          >
+            {venueCity}{distanceDisplay && ` — ${distanceDisplay}`}
+          </div>
+
+          {/* Divider */}
+          <div className="text-center text-[#a0b0a5] font-[family-name:var(--font-caveat)] text-base tracking-[0.5em] my-3 opacity-70">
+            — — —
+          </div>
+
+          {/* Details */}
+          <div className="flex justify-around items-end text-center gap-3 mb-2">
+            <div className="font-[family-name:var(--font-caveat)]">
+              <div className="text-sm text-[#c9d4cc] mb-0.5" style={{ transform: "rotate(-1deg)" }}>doors</div>
+              <div className="text-[28px] text-white leading-none font-bold">{formattedTime}</div>
             </div>
-
-            {/* Date & Time in chalk boxes */}
-            <div className="flex justify-center gap-4 mb-4">
+            <div className="font-[family-name:var(--font-caveat)]">
+              <div className="text-sm text-[#c9d4cc] mb-0.5" style={{ transform: "rotate(-1deg)" }}>entry</div>
               <div
-                className="px-4 py-2 rounded"
-                style={{
-                  border: "2px solid rgba(255,255,255,0.4)",
-                }}
+                className={`text-[32px] leading-none font-bold ${isFree ? "text-[#88ff9c]" : "text-white"}`}
+                style={isFree ? { transform: "rotate(-2deg)", textShadow: "0 0 6px rgba(136,255,156,0.25)" } : {}}
               >
-                <div
-                  className="font-[family-name:var(--font-marker)] text-lg"
-                  style={{ color: "#7fdbff" }}
-                >
-                  {formattedDate}
-                </div>
-                {isToday && (
-                  <div
-                    className="font-[family-name:var(--font-marker)] text-xs text-center animate-pulse"
-                    style={{ color: "#ff6b6b" }}
-                  >
-                    TONIGHT!
-                  </div>
-                )}
-              </div>
-              <div
-                className="px-4 py-2 rounded"
-                style={{
-                  border: "2px solid rgba(255,255,255,0.4)",
-                }}
-              >
-                <div
-                  className="font-[family-name:var(--font-marker)] text-lg"
-                  style={{ color: "#7fdbff" }}
-                >
-                  {formattedTime}
-                </div>
-                {endTime && (
-                  <div
-                    className="font-[family-name:var(--font-marker)] text-xs text-center"
-                    style={{ color: "rgba(255,255,255,0.5)" }}
-                  >
-                    til {endTime}
-                  </div>
-                )}
+                {isFree ? "FREE!" : priceDisplay}
               </div>
             </div>
-
-            {/* Price */}
-            <div className="text-center">
-              <span
-                className="font-[family-name:var(--font-marker)] text-2xl px-4 py-1 rounded"
-                style={{
-                  color: isFree ? "#98fb98" : "#ffa500",
-                  background: "rgba(0,0,0,0.2)",
-                }}
-              >
-                {isFree ? "FREE!" : ticketPrice}
-              </span>
+            <div className="font-[family-name:var(--font-caveat)]">
+              <div className="text-sm text-[#c9d4cc] mb-0.5" style={{ transform: "rotate(-1deg)" }}>date</div>
+              <div className="text-[28px] text-white leading-none font-bold">{dayName} {dayNum}{getOrdinal(dayNum)}</div>
             </div>
           </div>
 
-          {/* Chalk dust at bottom */}
+          {/* Footer */}
           <div
-            className="h-2"
+            className="text-center font-[family-name:var(--font-caveat)] text-[22px] text-[#ffe066] mt-3.5 leading-[1.1]"
             style={{
-              background: "linear-gradient(to top, rgba(255,255,255,0.1), transparent)",
+              transform: "rotate(-1deg)",
+              textShadow: "0 0 1px rgba(255,224,102,0.3)",
             }}
-          />
-        </div>
-
-        {/* Chalk ledge */}
-        <div
-          className="h-3 mt-2 rounded-b flex items-center justify-center gap-2"
-          style={{
-            background: "linear-gradient(to bottom, #654321, #4a3219)",
-          }}
-        >
-          {/* Chalk pieces */}
-          <div className="w-8 h-2 rounded bg-white/80" />
-          <div className="w-6 h-2 rounded bg-yellow-200/80" />
-          <div className="w-5 h-2 rounded bg-pink-200/80" />
+          >
+            ↓ get down here ↓
+          </div>
         </div>
       </div>
-
-      {/* Action buttons */}
-      {renderActionButtons("bg-amber-700 text-white hover:bg-amber-600")}
     </motion.div>
   );
 
-  // ============================================
-  // SHARED: Action Buttons
-  // ============================================
-  const renderActionButtons = (buttonClass: string) => (
-    <div className="flex justify-center gap-3 mt-4">
-      {/* Directions button */}
-      {directionsUrl && (
-        <a
-          href={directionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${buttonClass}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Map className="w-4 h-4" />
-          Directions
-        </a>
-      )}
+  // ════════════════════════════════════════════════════════
+  // 3. MARQUEE LETTERBOARD
+  // ════════════════════════════════════════════════════════
+  const renderLetterboard = () => (
+    <motion.div
+      onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="relative w-[340px] rounded"
+      style={{
+        background: "#1a1a1a",
+        border: "8px solid #c0a060",
+        backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.4) 100%), repeating-linear-gradient(0deg, transparent 0px, transparent 38px, rgba(255,255,255,0.04) 38px, rgba(255,255,255,0.04) 39px)",
+        boxShadow: "0 0 0 2px #15110d, 0 0 30px rgba(255, 200, 100, 0.15), 0 20px 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.7)",
+      }}
+    >
+      {/* Brass screws */}
+      {[
+        "top-1 left-1",
+        "top-1 right-1",
+        "bottom-1 left-1",
+        "bottom-1 right-1",
+      ].map((pos, i) => (
+        <div
+          key={i}
+          className={`absolute ${pos} w-2.5 h-2.5 rounded-full`}
+          style={{
+            background: "radial-gradient(circle at 35% 35%, #e8c878 0%, #8a6b3a 70%, #4a3a1a 100%)",
+            boxShadow: "inset 0 0 2px rgba(0,0,0,0.6)",
+          }}
+        />
+      ))}
 
-      {/* Ticket button (if ticketed) */}
-      {currentEvent.ticketUrl && !isFree && (
-        <a
-          href={currentEvent.ticketUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${buttonClass}`}
-          onClick={(e) => e.stopPropagation()}
+      <div className="relative z-[2] px-6 py-7 text-center text-[#f0eee6] font-[family-name:var(--font-bebas)]">
+        {/* Tonight header */}
+        <div
+          className="text-sm tracking-[0.5em] text-[#ffd380] mb-1.5"
+          style={{ textShadow: "0 0 8px rgba(255,200,100,0.4)" }}
         >
-          <Ticket className="w-4 h-4" />
-          Tickets
-        </a>
-      )}
-    </div>
+          {isToday ? "Tonight" : isTomorrow ? "Tomorrow Night" : formattedDateShort}
+        </div>
+
+        {/* Artist */}
+        {artistId ? (
+          <Link
+            href={`/artists/${artistId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="block text-[38px] sm:text-[46px] tracking-[0.04em] leading-none text-white mb-1 hover:text-[#ffd380] transition-colors"
+            style={{ textShadow: "0 0 1px #fff, 0 1px 2px rgba(0,0,0,0.8)" }}
+          >
+            {artistName.toUpperCase()}
+          </Link>
+        ) : (
+          <h1
+            className="text-[38px] sm:text-[46px] tracking-[0.04em] leading-none text-white mb-1"
+            style={{ textShadow: "0 0 1px #fff, 0 1px 2px rgba(0,0,0,0.8)" }}
+          >
+            {artistName.toUpperCase()}
+          </h1>
+        )}
+
+        {/* Divider */}
+        <div className="text-[13px] tracking-[0.4em] text-[#ffd380] my-2">
+          — LIVE AT —
+        </div>
+
+        {/* Venue */}
+        <Link
+          href={`/venues/${currentEvent.venueId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="block text-[26px] tracking-[0.05em] leading-none text-white mb-1 hover:text-[#ffd380] transition-colors"
+          style={{ textShadow: "0 1px 2px rgba(0,0,0,0.8)" }}
+        >
+          {venueName.toUpperCase()}
+        </Link>
+        <div className="text-[13px] tracking-[0.3em] text-[#ccc] mb-3.5">
+          {venueCity.toUpperCase()}
+        </div>
+
+        {/* Rule */}
+        <div
+          className="h-px my-3.5"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(255,200,100,0.4), transparent)" }}
+        />
+
+        {/* Meta */}
+        <div className="flex justify-between items-baseline text-lg tracking-[0.06em]">
+          <span className="text-white">{dayName.toUpperCase()} {dayNum.toString().padStart(2, "0")} · {formattedTime.toUpperCase()}</span>
+          <span
+            className={`text-2xl ${isFree ? "text-[#86eb8e]" : "text-[#ffd380]"}`}
+            style={{ textShadow: isFree ? "0 0 6px rgba(134,235,142,0.4)" : "0 0 6px rgba(255,211,128,0.4)" }}
+          >
+            {isFree ? "FREE" : priceDisplay.toUpperCase()}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  // ════════════════════════════════════════════════════════
+  // 4. BACKSTAGE PASS
+  // ════════════════════════════════════════════════════════
+  const renderBackstagePass = () => (
+    <motion.div
+      onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0, y: -30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 30 }}
+      className="flex flex-col items-center"
+    >
+      {/* Lanyard */}
+      <div
+        className="relative w-3.5 h-[60px] z-[1]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(255,255,255,0.18) 3px, rgba(255,255,255,0.18) 4px, transparent 4px, transparent 7px), linear-gradient(90deg, rgba(0,0,0,0.4) 0%, #c41e3a 20%, #e63333 50%, #c41e3a 80%, rgba(0,0,0,0.4) 100%)",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
+        }}
+      >
+        {/* Clip */}
+        <div
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-3.5 rounded-sm"
+          style={{
+            background: "linear-gradient(180deg, #aaa 0%, #555 100%)",
+            borderRadius: "2px 2px 4px 4px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
+          }}
+        />
+      </div>
+
+      {/* Pass */}
+      <div
+        className="relative w-[320px] rounded-md overflow-hidden px-5 pt-7 pb-5"
+        style={{
+          background: "linear-gradient(135deg, #ff7a3d 0%, #c41e3a 60%, #6b1024 100%)",
+          boxShadow: "0 0 0 1px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)",
+        }}
+      >
+        {/* Gloss overlay */}
+        <div
+          className="absolute top-0 left-0 right-0 bottom-1/2 pointer-events-none"
+          style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)" }}
+        />
+        {/* Punch hole */}
+        <div
+          className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[38px] h-3 rounded-md z-[2]"
+          style={{
+            background: "var(--lv-bg, #0c1530)",
+            boxShadow: "inset 0 1px 2px rgba(0,0,0,0.6)",
+          }}
+        />
+
+        <div className="relative z-[1] pt-3.5 text-white">
+          {/* Header */}
+          <div
+            className="font-[family-name:var(--font-anton)] text-[13px] tracking-[0.4em] uppercase text-center text-white/80 pb-3 mb-0"
+            style={{ borderBottom: "1px dashed rgba(255,255,255,0.3)" }}
+          >
+            ★ Backstage Pass ★
+          </div>
+
+          {/* Access */}
+          <div className="font-[family-name:var(--font-anton)] text-[28px] text-center tracking-[0.06em] uppercase leading-none my-3" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.4)" }}>
+            All <span className="text-[#fff200]">Access</span>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px my-4" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)" }} />
+
+          {/* Artist */}
+          {artistId ? (
+            <Link
+              href={`/artists/${artistId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="block font-[family-name:var(--font-anton)] text-[32px] sm:text-[38px] text-center tracking-[0.005em] uppercase leading-[0.9] mb-2 hover:opacity-80 transition-opacity"
+              style={{ textShadow: "0 2px 6px rgba(0,0,0,0.5)" }}
+            >
+              {artistName}
+            </Link>
+          ) : (
+            <h1
+              className="font-[family-name:var(--font-anton)] text-[32px] sm:text-[38px] text-center tracking-[0.005em] uppercase leading-[0.9] mb-2"
+              style={{ textShadow: "0 2px 6px rgba(0,0,0,0.5)" }}
+            >
+              {artistName}
+            </h1>
+          )}
+
+          {/* Venue */}
+          <div className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.2em] uppercase text-center text-white/95 mb-4">
+            Live at{" "}
+            <Link
+              href={`/venues/${currentEvent.venueId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="border-b border-white/40 pb-0.5 hover:border-white transition-colors"
+            >
+              {venueName} · {venueCity}
+            </Link>
+          </div>
+
+          {/* Meta grid */}
+          <div className="grid grid-cols-2 gap-1.5 mt-3.5 pt-3.5" style={{ borderTop: "1px dashed rgba(255,255,255,0.3)" }}>
+            {[
+              { label: "Date", value: `${dayName} ${dayNum.toString().padStart(2, "0")} ${monthName}` },
+              { label: "Doors", value: doorsTime },
+              { label: "Distance", value: distanceDisplay || "—" },
+              { label: "Entry", value: isFree ? "£ree" : priceDisplay },
+            ].map((item, i) => (
+              <div key={i} className="font-[family-name:var(--font-mono)]">
+                <div className="text-[9px] tracking-[0.22em] uppercase text-white/70 mb-0.5">{item.label}</div>
+                <div className="font-[family-name:var(--font-anton)] text-base tracking-[0.04em] uppercase leading-none">{item.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Barcode */}
+          <div className="mt-4 pt-3.5 text-center" style={{ borderTop: "1px dashed rgba(255,255,255,0.3)" }}>
+            <div
+              className="h-7 mb-1"
+              style={{
+                background: "repeating-linear-gradient(90deg, #fff 0, #fff 2px, transparent 2px, transparent 3px, #fff 3px, #fff 5px, transparent 5px, transparent 6px, #fff 6px, #fff 7px, transparent 7px, transparent 10px, #fff 10px, #fff 13px, transparent 13px, transparent 14px, #fff 14px, #fff 15px, transparent 15px, transparent 18px)",
+              }}
+            />
+            <div className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.18em] text-white/85">
+              BNDY · {dayNum.toString().padStart(3, "0")} · {year}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  // ════════════════════════════════════════════════════════
+  // 5. SETLIST
+  // ════════════════════════════════════════════════════════
+  const renderSetlist = () => (
+    <motion.div
+      onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0, rotate: -3, scale: 0.95 }}
+      animate={{ opacity: 1, rotate: -1.2, scale: 1 }}
+      exit={{ opacity: 0, rotate: 3, scale: 0.95 }}
+      className="relative pt-4"
+    >
+      {/* Tape strips */}
+      <div
+        className="absolute -top-2 left-3.5 w-[60px] h-[22px] z-10"
+        style={{
+          background: "rgba(255, 230, 100, 0.55)",
+          border: "1px solid rgba(180, 140, 30, 0.2)",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+          transform: "rotate(-8deg)",
+        }}
+      />
+      <div
+        className="absolute -top-2 right-3.5 w-[60px] h-[22px] z-10"
+        style={{
+          background: "rgba(255, 230, 100, 0.55)",
+          border: "1px solid rgba(180, 140, 30, 0.2)",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+          transform: "rotate(6deg)",
+        }}
+      />
+
+      {/* Paper */}
+      <div
+        className="relative w-[320px] px-7 pt-6 pb-6"
+        style={{
+          background: "#fefcf3",
+          color: "#1a1a1a",
+          boxShadow: "0 1px 0 rgba(255,255,255,0.04), 2px 22px 36px -10px rgba(0,0,0,0.6), 0 8px 16px -4px rgba(0,0,0,0.3)",
+          transformOrigin: "center top",
+        }}
+      >
+        {/* Paper texture */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95'/%3E%3CfeColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.08, 0 0 0 0 0.05, 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")`,
+            mixBlendMode: "multiply",
+            opacity: 0.6,
+          }}
+        />
+
+        {/* Tonight stamp */}
+        <div
+          className="absolute top-[18px] right-5 font-[family-name:var(--font-typewriter)] text-[10px] tracking-[0.2em] uppercase text-[#c41e3a] border-[1.5px] border-[#c41e3a] px-2 py-1 opacity-80 z-[5]"
+          style={{ transform: "rotate(7deg)" }}
+        >
+          ★ {isToday ? "Tonight" : isTomorrow ? "Tomorrow" : formattedDateShort} ★
+        </div>
+
+        {/* Artist */}
+        {artistId ? (
+          <Link
+            href={`/artists/${artistId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="block font-[family-name:var(--font-marker)] text-[28px] sm:text-[36px] tracking-[0.005em] leading-[0.95] uppercase mb-1 hover:text-[#c41e3a] transition-colors"
+            style={{ transform: "rotate(0.5deg)" }}
+          >
+            {artistName}
+          </Link>
+        ) : (
+          <h1
+            className="font-[family-name:var(--font-marker)] text-[28px] sm:text-[36px] tracking-[0.005em] leading-[0.95] uppercase mb-1"
+            style={{ transform: "rotate(0.5deg)" }}
+          >
+            {artistName}
+          </h1>
+        )}
+
+        {/* Venue */}
+        <div
+          className="font-[family-name:var(--font-marker)] text-lg text-[#1a4a8a] leading-none mb-4"
+          style={{ transform: "rotate(-0.4deg)" }}
+        >
+          @{" "}
+          <Link
+            href={`/venues/${currentEvent.venueId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="border-b-[1.5px] border-[#1a4a8a] hover:text-[#c41e3a] hover:border-[#c41e3a] transition-colors"
+          >
+            {venueName}
+          </Link>
+          , {venueCity}
+        </div>
+
+        {/* Rule */}
+        <hr className="border-0 border-t-2 border-[#1a1a1a] mb-3" style={{ transform: "rotate(0.3deg)" }} />
+
+        {/* List */}
+        <ol className="list-none p-0 space-y-0">
+          {[
+            { label: formattedDateShort, value: null, highlight: true },
+            { label: `Doors ${formattedTime}`, value: null },
+            { label: distanceDisplay ? `${distanceDisplay} away` : "Local gig", value: null },
+            { label: "Entry —", value: isFree ? "FREE!" : priceDisplay, isFree },
+          ].map((item, i) => (
+            <li
+              key={i}
+              className="font-[family-name:var(--font-marker)] text-lg leading-[1.6] grid grid-cols-[28px_1fr_auto] gap-2 items-baseline border-b border-[rgba(26,26,26,0.15)] py-1"
+            >
+              <span className="text-[#c41e3a] text-base">{i + 1}.</span>
+              <span className={item.highlight ? "text-[#c41e3a]" : "text-[#1a1a1a]"}>{item.label}</span>
+              {item.value && (
+                <span
+                  className={`text-[22px] ${item.isFree ? "text-[#2a8538]" : "text-[#c41e3a]"}`}
+                  style={item.isFree ? { transform: "rotate(-2deg)", display: "inline-block" } : {}}
+                >
+                  {item.value}
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+
+        {/* Encore */}
+        <div
+          className="mt-3.5 font-[family-name:var(--font-marker)] text-sm text-[#1a4a8a] uppercase tracking-[0.05em] text-center border-2 border-[#1a4a8a] py-1.5"
+          style={{ transform: "rotate(-1deg)" }}
+        >
+          ★ Don't be late ★
+        </div>
+      </div>
+    </motion.div>
   );
 
   return (
@@ -1118,21 +828,18 @@ export default function EventInfoOverlay({
                 e.stopPropagation();
                 cycleTheme();
               }}
-              className="absolute top-2 left-2 z-30 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110"
+              className="absolute top-2 left-2 z-30 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:rotate-180 duration-300"
               title="Switch theme"
             >
               <RefreshCw className="w-4 h-4 text-gray-600" />
             </button>
 
-            {/* Navigation controls if there is more than one event */}
+            {/* Navigation */}
             {events.length > 1 && (
               <div className="flex justify-center items-center gap-4 mt-4">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrev();
-                  }}
-                  className="px-4 py-2 text-sm font-bold bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all hover:scale-105"
+                  onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                  className="px-4 py-2 text-sm font-bold bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg"
                 >
                   ← Prev
                 </button>
@@ -1140,11 +847,8 @@ export default function EventInfoOverlay({
                   {currentIndex + 1} / {events.length}
                 </span>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNext();
-                  }}
-                  className="px-4 py-2 text-sm font-bold bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all hover:scale-105"
+                  onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                  className="px-4 py-2 text-sm font-bold bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg"
                 >
                   Next →
                 </button>
@@ -1155,4 +859,10 @@ export default function EventInfoOverlay({
       )}
     </AnimatePresence>
   );
+}
+
+function getOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 }
