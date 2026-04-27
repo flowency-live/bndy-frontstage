@@ -220,10 +220,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
     // Cleanup - hide layers when component unmounts (mode switch)
     return () => {
       if (map) {
-        map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
-        map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
-
-        // Hide layers when switching modes
+        // Hide layers when switching modes (component unmount)
         if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
           map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "none");
         }
@@ -235,7 +232,8 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
         }
       }
     };
-  }, [map, isMapReady, events, handleMapClick]);
+    // Only depend on map/isMapReady - events and click handlers are handled by separate effects
+  }, [map, isMapReady]);
 
   // Update click handler when eventGroups changes
   useEffect(() => {

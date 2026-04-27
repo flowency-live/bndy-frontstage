@@ -220,10 +220,7 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
     // Cleanup - hide layers when component unmounts (mode switch)
     return () => {
       if (map) {
-        map.off("click", VENUE_CLUSTERS_LAYER, handleMapClick);
-        map.off("click", VENUE_UNCLUSTERED_LAYER, handleMapClick);
-
-        // Hide layers when switching modes
+        // Hide layers when switching modes (component unmount)
         if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
           map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "none");
         }
@@ -235,7 +232,8 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
         }
       }
     };
-  }, [map, isMapReady, venues, handleMapClick]);
+    // Only depend on map/isMapReady - venues and click handlers are handled by separate effects
+  }, [map, isMapReady]);
 
   // Update data when venues change (NO new map load!)
   useEffect(() => {
