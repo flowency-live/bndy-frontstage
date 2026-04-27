@@ -212,14 +212,57 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick }: EventMar
 
     setupWhenReady();
 
-    // Cleanup
+    // Cleanup - hide layers when component unmounts (mode switch)
     return () => {
       if (map) {
         map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
         map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
+
+        // Hide layers when switching modes
+        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "none");
+        }
+        if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
+          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "none");
+        }
+        if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
+          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "none");
+        }
       }
     };
   }, [map, isMapReady, events, handleMapClick]);
+
+  // Show layers when component mounts (after initialization)
+  useEffect(() => {
+    if (!map || !isMapReady || !isInitializedRef.current) return;
+
+    // Make layers visible
+    if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+      map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", "visible");
+    }
+    if (map.getLayer(EVENT_CLUSTER_COUNT_LAYER)) {
+      map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", "visible");
+    }
+    if (map.getLayer(EVENT_UNCLUSTERED_LAYER)) {
+      map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", "visible");
+    }
+  }, [map, isMapReady]);
+
+  // Update click handler when eventGroups changes
+  useEffect(() => {
+    if (!map || !isMapReady || !isInitializedRef.current) return;
+
+    // Remove old handlers and add new ones with updated eventGroups
+    map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
+    map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
+    map.on("click", EVENT_CLUSTERS_LAYER, handleMapClick);
+    map.on("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
+
+    return () => {
+      map.off("click", EVENT_CLUSTERS_LAYER, handleMapClick);
+      map.off("click", EVENT_UNCLUSTERED_LAYER, handleMapClick);
+    };
+  }, [map, isMapReady, handleMapClick]);
 
   // Update data when events change (NO new map load!)
   useEffect(() => {

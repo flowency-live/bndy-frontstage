@@ -212,14 +212,41 @@ export function VenueMarkerLayer({ venues, onVenueClick }: VenueMarkerLayerProps
 
     setupWhenReady();
 
-    // Cleanup
+    // Cleanup - hide layers when component unmounts (mode switch)
     return () => {
       if (map) {
         map.off("click", VENUE_CLUSTERS_LAYER, handleMapClick);
         map.off("click", VENUE_UNCLUSTERED_LAYER, handleMapClick);
+
+        // Hide layers when switching modes
+        if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
+          map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "none");
+        }
+        if (map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
+          map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "none");
+        }
+        if (map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
+          map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "none");
+        }
       }
     };
   }, [map, isMapReady, venues, handleMapClick]);
+
+  // Show layers when component mounts (after initialization)
+  useEffect(() => {
+    if (!map || !isMapReady || !isInitializedRef.current) return;
+
+    // Make layers visible
+    if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
+      map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", "visible");
+    }
+    if (map.getLayer(VENUE_CLUSTER_COUNT_LAYER)) {
+      map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", "visible");
+    }
+    if (map.getLayer(VENUE_UNCLUSTERED_LAYER)) {
+      map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", "visible");
+    }
+  }, [map, isMapReady]);
 
   // Update data when venues change (NO new map load!)
   useEffect(() => {
