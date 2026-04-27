@@ -55,13 +55,15 @@ export default function MapView() {
         onClearSearch={handleClearSearch}
       />
 
-      {/* Search filter above the map */}
-      <div className="absolute top-2 left-0 right-0 z-20 px-4 py-2 bg-opacity-80 backdrop-blur-sm dark:bg-opacity-80">
-        <EventFilter 
-          ref={eventFilterRef}
-          onFilterChange={handleFilterChange} 
-          showRadiusFilter={false} 
-        />
+      {/* Search filter above the map - leave room for map controls on right */}
+      <div className="absolute top-2 left-0 right-16 z-20 px-4 py-2 pointer-events-none">
+        <div className="pointer-events-auto max-w-md">
+          <EventFilter
+            ref={eventFilterRef}
+            onFilterChange={handleFilterChange}
+            showRadiusFilter={false}
+          />
+        </div>
       </div>
 
       {/* Venue Mode Indicator - appears in top-center when in venue mode */}
