@@ -27,6 +27,7 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
   const initializedRef = useRef(false);
   const onVenueClickRef = useRef(onVenueClick);
   const venueMapRef = useRef<Map<string, Venue>>(new Map());
+  const visibleRef = useRef(visible);
 
   // Keep refs updated
   useEffect(() => {
@@ -38,6 +39,10 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     venues.forEach((v) => venueMap.set(v.id, v));
     venueMapRef.current = venueMap;
   }, [venues]);
+
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
 
   // Initialize layers and handlers ONCE
   useEffect(() => {
@@ -102,7 +107,13 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
             },
           });
 
-          console.log("[VenueMarkerLayer] Layers created");
+          // Set initial visibility based on prop
+          const initialVisibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", initialVisibility);
+
+          console.log("[VenueMarkerLayer] Layers created, visibility:", initialVisibility);
         }
 
         // Add click handlers (using refs so they stay current)

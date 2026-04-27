@@ -28,6 +28,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   const initializedRef = useRef(false);
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
+  const visibleRef = useRef(visible);
 
   // Keep refs updated
   useEffect(() => {
@@ -37,6 +38,10 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   useEffect(() => {
     eventGroupsRef.current = eventGroups;
   }, [eventGroups]);
+
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
 
   // Initialize layers and handlers ONCE
   useEffect(() => {
@@ -101,7 +106,13 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
             },
           });
 
-          console.log("[EventMarkerLayer] Layers created");
+          // Set initial visibility based on prop
+          const initialVisibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", initialVisibility);
+
+          console.log("[EventMarkerLayer] Layers created, visibility:", initialVisibility);
         }
 
         // Add click handlers (using refs so they stay current)
