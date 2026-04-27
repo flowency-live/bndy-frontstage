@@ -95,7 +95,7 @@ export default function VenueProfileClient({ initialData, events, error, venueId
       />
 
       {/* Tab Content */}
-      <div className="py-6">
+      <div className="py-2">
         <div className={activeTab === "events" ? "block" : "hidden"}>
           <EventsTab
             events={events}
@@ -108,8 +108,8 @@ export default function VenueProfileClient({ initialData, events, error, venueId
       </div>
 
       {/* Navigation Section */}
-      <div className="profile-wrap pb-8 pt-4">
-        <nav className="pt-8 mt-8 border-t border-[var(--lv-rule)]" aria-label="Page Navigation">
+      <div className="profile-wrap pb-4 pt-2">
+        <nav className="pt-4 mt-4 border-t border-[var(--lv-rule)]" aria-label="Page Navigation">
           <Link
             href="/"
             className="profile-btn"
