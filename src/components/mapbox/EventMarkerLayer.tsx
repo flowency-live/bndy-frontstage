@@ -26,6 +26,7 @@ const EVENT_UNCLUSTERED_LAYER = "event-unclustered";
 export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }: EventMarkerLayerProps) {
   const { map, isMapReady } = useMapbox();
   const initializedRef = useRef(false);
+  const lastMapIdRef = useRef<string | null>(null);
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
   const visibleRef = useRef(visible);
@@ -43,14 +44,31 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     visibleRef.current = visible;
   }, [visible]);
 
+  // Reset initialization when map instance changes (after navigation)
+  useEffect(() => {
+    if (!map) return;
+    const mapId = map.getContainer()?.id || "default";
+    if (lastMapIdRef.current && lastMapIdRef.current !== mapId) {
+      console.log("[EventMarkerLayer] Map instance changed, resetting init");
+      initializedRef.current = false;
+    }
+    lastMapIdRef.current = mapId;
+  }, [map]);
+
   // Initialize layers and handlers ONCE
   useEffect(() => {
     if (!map || !isMapReady || initializedRef.current) return;
 
     const init = async () => {
       try {
-        // Wait for style
-        if (!map.isStyleLoaded()) {
+        // Wait for style - wrap in try-catch as isStyleLoaded can throw if map is in bad state
+        let styleLoaded = false;
+        try {
+          styleLoaded = map.isStyleLoaded();
+        } catch {
+          styleLoaded = false;
+        }
+        if (!styleLoaded) {
           await new Promise<void>(resolve => map.once("style.load", () => resolve()));
         }
 
@@ -183,31 +201,41 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   // Control visibility via prop
   useEffect(() => {
     if (!map || !isMapReady) return;
-    if (!map.getLayer(EVENT_CLUSTERS_LAYER)) return;
 
-    const visibility = visible ? "visible" : "none";
-    map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
-    map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
-    map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
-    console.log("[EventMarkerLayer] Visibility:", visibility);
+    // Guard against map being in bad state (style not loaded)
+    try {
+      if (!map.getLayer(EVENT_CLUSTERS_LAYER)) return;
+
+      const visibility = visible ? "visible" : "none";
+      map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
+      map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
+      map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+      console.log("[EventMarkerLayer] Visibility:", visibility);
+    } catch (e) {
+      // Map style not ready yet, will be set during init
+    }
   }, [map, isMapReady, visible]);
 
   // Update data when events change
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
-    if (source) {
-      source.setData(eventsToGeoJSON(events));
-      console.log("[EventMarkerLayer] Data updated:", events.length, "events");
+    try {
+      const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData(eventsToGeoJSON(events));
+        console.log("[EventMarkerLayer] Data updated:", events.length, "events");
 
-      // Defensive: re-apply visibility after data update
-      if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-        const visibility = visibleRef.current ? "visible" : "none";
-        map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
-        map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
-        map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+        // Defensive: re-apply visibility after data update
+        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
+          const visibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
+          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
+        }
       }
+    } catch (e) {
+      // Map or source not ready yet
     }
   }, [map, isMapReady, events]);
 

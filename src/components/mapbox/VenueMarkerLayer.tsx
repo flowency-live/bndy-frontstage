@@ -25,6 +25,7 @@ const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
 export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerLayerProps) {
   const { map, isMapReady } = useMapbox();
   const initializedRef = useRef(false);
+  const lastMapIdRef = useRef<string | null>(null);
   const onVenueClickRef = useRef(onVenueClick);
   const venueMapRef = useRef<Map<string, Venue>>(new Map());
   const visibleRef = useRef(visible);
@@ -44,14 +45,31 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     visibleRef.current = visible;
   }, [visible]);
 
+  // Reset initialization when map instance changes (after navigation)
+  useEffect(() => {
+    if (!map) return;
+    const mapId = map.getContainer()?.id || "default";
+    if (lastMapIdRef.current && lastMapIdRef.current !== mapId) {
+      console.log("[VenueMarkerLayer] Map instance changed, resetting init");
+      initializedRef.current = false;
+    }
+    lastMapIdRef.current = mapId;
+  }, [map]);
+
   // Initialize layers and handlers ONCE
   useEffect(() => {
     if (!map || !isMapReady || initializedRef.current) return;
 
     const init = async () => {
       try {
-        // Wait for style
-        if (!map.isStyleLoaded()) {
+        // Wait for style - wrap in try-catch as isStyleLoaded can throw if map is in bad state
+        let styleLoaded = false;
+        try {
+          styleLoaded = map.isStyleLoaded();
+        } catch {
+          styleLoaded = false;
+        }
+        if (!styleLoaded) {
           await new Promise<void>(resolve => map.once("style.load", () => resolve()));
         }
 
@@ -180,32 +198,42 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
   // Control visibility via prop
   useEffect(() => {
     if (!map || !isMapReady) return;
-    if (!map.getLayer(VENUE_CLUSTERS_LAYER)) return;
 
-    const visibility = visible ? "visible" : "none";
-    map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
-    map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
-    map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
-    console.log("[VenueMarkerLayer] Visibility:", visibility);
+    // Guard against map being in bad state (style not loaded)
+    try {
+      if (!map.getLayer(VENUE_CLUSTERS_LAYER)) return;
+
+      const visibility = visible ? "visible" : "none";
+      map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
+      map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+      map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+      console.log("[VenueMarkerLayer] Visibility:", visibility);
+    } catch (e) {
+      // Map style not ready yet, will be set during init
+    }
   }, [map, isMapReady, visible]);
 
   // Update data when venues change
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
-    if (source) {
-      source.setData(venuesToGeoJSON(venues));
-      console.log("[VenueMarkerLayer] Data updated:", venues.length, "venues");
+    try {
+      const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData(venuesToGeoJSON(venues));
+        console.log("[VenueMarkerLayer] Data updated:", venues.length, "venues");
 
-      // Defensive: re-apply visibility after data update
-      // This ensures layers stay hidden when they should be
-      if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
-        const visibility = visibleRef.current ? "visible" : "none";
-        map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
-        map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
-        map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+        // Defensive: re-apply visibility after data update
+        // This ensures layers stay hidden when they should be
+        if (map.getLayer(VENUE_CLUSTERS_LAYER)) {
+          const visibility = visibleRef.current ? "visible" : "none";
+          map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+        }
       }
+    } catch (e) {
+      // Map or source not ready yet
     }
   }, [map, isMapReady, venues]);
 

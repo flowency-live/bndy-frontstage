@@ -75,7 +75,15 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
           console.log("[MapboxProvider] Reusing existing map instance (same container)");
           mapRef.current = existingMap;
 
-          if (existingMap.isStyleLoaded()) {
+          // Check style load state with try-catch (can throw if map is in bad state)
+          let styleLoaded = false;
+          try {
+            styleLoaded = existingMap.isStyleLoaded();
+          } catch {
+            styleLoaded = false;
+          }
+
+          if (styleLoaded) {
             setIsMapReady(true);
           } else {
             existingMap.once("style.load", () => {
@@ -109,7 +117,16 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
       // Only reuse if container is still valid
       if (refContainer && document.body.contains(refContainer)) {
         console.log("[MapboxProvider] Reusing ref map instance");
-        if (mapRef.current.isStyleLoaded()) {
+
+        // Check style load state with try-catch (can throw if map is in bad state)
+        let styleLoaded = false;
+        try {
+          styleLoaded = mapRef.current.isStyleLoaded();
+        } catch {
+          styleLoaded = false;
+        }
+
+        if (styleLoaded) {
           setIsMapReady(true);
         } else {
           mapRef.current.once("style.load", () => {
