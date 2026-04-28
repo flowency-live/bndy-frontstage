@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Artist } from "@/lib/types";
 
-// Force dynamic rendering - never cache this route
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache for 5 minutes - artists don't change that frequently
+export const revalidate = 300;
 
 /**
  * GET /api/artists - Get all artists for browse page
@@ -31,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Fetch from the DynamoDB API via API Gateway
     const response = await fetch('https://api.bndy.co.uk/api/artists', {
       headers: forwardHeaders,
-      cache: 'no-store' // Always fetch fresh data - artists are frequently added/updated
+      next: { revalidate: 300 } // Cache for 5 minutes
     });
 
     if (!response.ok) {
@@ -67,9 +66,9 @@ export async function GET(request: NextRequest) {
       return true;
     });
 
-    // Set cache headers to prevent browser caching - artist data changes frequently
+    // Allow browser/CDN caching for 5 minutes
     const response_headers = new Headers();
-    response_headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response_headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
 
     return NextResponse.json(validArtists, { headers: response_headers });
   } catch (error) {
