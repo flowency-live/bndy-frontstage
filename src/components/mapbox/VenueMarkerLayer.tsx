@@ -56,6 +56,24 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     lastMapIdRef.current = mapId;
   }, [map]);
 
+  // Reset initialization when style changes (theme toggle)
+  useEffect(() => {
+    if (!map) return;
+
+    const handleStyleLoad = () => {
+      // After style change, our source is gone - need to reinitialize
+      if (initializedRef.current && !map.getSource(VENUE_SOURCE_ID)) {
+        console.log("[VenueMarkerLayer] Style changed, resetting init");
+        initializedRef.current = false;
+      }
+    };
+
+    map.on("style.load", handleStyleLoad);
+    return () => {
+      map.off("style.load", handleStyleLoad);
+    };
+  }, [map]);
+
   // Initialize layers and handlers ONCE
   useEffect(() => {
     if (!map || !isMapReady || initializedRef.current) return;

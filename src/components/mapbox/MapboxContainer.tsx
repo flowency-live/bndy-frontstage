@@ -30,16 +30,18 @@ interface MapboxContainerProps {
  *
  * Access map via useMapbox() hook or onMapReady callback
  */
-export function MapboxContainer({ userLocation, isDarkMode, className, onMapReady }: MapboxContainerProps) {
+export function MapboxContainer({ userLocation, isDarkMode = true, className, onMapReady }: MapboxContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { map, isMapReady, isBot, initializeMap } = useMapbox();
+  const { map, isMapReady, isBot, initializeMap, setMapStyle, currentStyleMode } = useMapbox();
+  const initializedWithThemeRef = useRef(false);
 
   // Initialize map when container is ready
   useEffect(() => {
     if (!containerRef.current || isBot) return;
 
-    // Initialize or retrieve existing map
-    const mapInstance = initializeMap(containerRef.current);
+    // Initialize or retrieve existing map with current theme
+    const mapInstance = initializeMap(containerRef.current, isDarkMode);
+    initializedWithThemeRef.current = true;
 
     if (mapInstance) {
       // Notify parent when map is ready
@@ -56,26 +58,19 @@ export function MapboxContainer({ userLocation, isDarkMode, className, onMapRead
         });
       }
     }
-  }, [initializeMap, isBot, userLocation, onMapReady]);
+  }, [initializeMap, isBot, userLocation, onMapReady, isDarkMode]);
 
-  // Handle dark mode style changes
+  // Handle dark mode style changes after initial load
   useEffect(() => {
     if (!map || !isMapReady) return;
+    if (!initializedWithThemeRef.current) return;
 
-    // Ensure style is fully loaded before accessing it
-    if (!map.isStyleLoaded()) {
-      return;
+    // Check if theme changed from current style
+    const expectedMode = isDarkMode ? "dark" : "light";
+    if (currentStyleMode !== expectedMode) {
+      setMapStyle(isDarkMode);
     }
-
-    // Mapbox style switching - doesn't count as new load
-    // Note: setStyle removes all custom layers/sources
-    // We'll need to re-add markers after style change
-    // For now, keeping consistent style to avoid complexity
-    // const newStyle = isDarkMode
-    //   ? "mapbox://styles/mapbox/dark-v11"
-    //   : "mapbox://styles/mapbox/streets-v12";
-    // map.setStyle(newStyle);
-  }, [map, isMapReady, isDarkMode]);
+  }, [map, isMapReady, isDarkMode, setMapStyle, currentStyleMode]);
 
   // Render static fallback for bots
   if (isBot) {

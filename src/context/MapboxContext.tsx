@@ -6,6 +6,17 @@ import mapboxgl from "mapbox-gl";
 // Set Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
+/**
+ * Map styles for light/dark themes
+ * navigation-night-v1 has blue tones that match bndy's dark blue brand
+ */
+export const MAPBOX_STYLES = {
+  dark: "mapbox://styles/mapbox/navigation-night-v1",
+  light: "mapbox://styles/mapbox/light-v11",
+} as const;
+
+export type MapStyleMode = "dark" | "light";
+
 // Type declaration for window with map instance
 declare global {
   interface Window {
@@ -18,8 +29,10 @@ interface MapboxContextValue {
   mapContainer: HTMLDivElement | null;
   isMapReady: boolean;
   isBot: boolean;
-  initializeMap: (container: HTMLDivElement) => mapboxgl.Map | null;
+  currentStyleMode: MapStyleMode | null;
+  initializeMap: (container: HTMLDivElement, isDarkMode?: boolean) => mapboxgl.Map | null;
   setMapContainer: (container: HTMLDivElement | null) => void;
+  setMapStyle: (isDarkMode: boolean) => void;
 }
 
 const MapboxContext = createContext<MapboxContextValue | null>(null);
@@ -54,9 +67,31 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
   const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isBot] = useState(() => detectBot());
+  const [currentStyleMode, setCurrentStyleMode] = useState<MapStyleMode | null>(null);
+
+  // Switch map style based on theme
+  const setMapStyle = useCallback((isDarkMode: boolean) => {
+    if (!mapRef.current) return;
+
+    const newMode: MapStyleMode = isDarkMode ? "dark" : "light";
+    if (newMode === currentStyleMode) return; // No change needed
+
+    const newStyle = MAPBOX_STYLES[newMode];
+    console.log("[MapboxProvider] Switching style to:", newMode);
+
+    // Mark not ready while style loads - this tells marker layers to wait
+    setIsMapReady(false);
+
+    mapRef.current.setStyle(newStyle);
+    mapRef.current.once("style.load", () => {
+      console.log("[MapboxProvider] New style loaded:", newMode);
+      setCurrentStyleMode(newMode);
+      setIsMapReady(true);
+    });
+  }, [currentStyleMode]);
 
   // Initialize or retrieve the global map instance
-  const initializeMap = useCallback((container: HTMLDivElement): mapboxgl.Map | null => {
+  const initializeMap = useCallback((container: HTMLDivElement, isDarkMode: boolean = true): mapboxgl.Map | null => {
     // Don't create map for bots
     if (isBot) {
       console.log("[MapboxProvider] Bot detected, skipping map initialization");
@@ -147,12 +182,14 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
       return null;
     }
 
-    console.log("[MapboxProvider] Creating new map instance (billable load)");
+    const initialMode: MapStyleMode = isDarkMode ? "dark" : "light";
+    const initialStyle = MAPBOX_STYLES[initialMode];
+    console.log("[MapboxProvider] Creating new map instance (billable load), style:", initialMode);
 
     // Create new map - THIS IS A BILLABLE EVENT
     const map = new mapboxgl.Map({
       container,
-      style: "mapbox://styles/mapbox/streets-v12", // Can customize later
+      style: initialStyle,
       center: [-2.0, 54.0], // UK center
       zoom: 6,
       attributionControl: true,
@@ -162,6 +199,8 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
       fadeDuration: 0, // Instant tile transitions
       crossSourceCollisions: false, // Better clustering performance
     });
+
+    setCurrentStyleMode(initialMode);
 
     // Store globally to survive route changes
     if (typeof window !== "undefined") {
@@ -196,8 +235,10 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
     mapContainer,
     isMapReady,
     isBot,
+    currentStyleMode,
     initializeMap,
     setMapContainer,
+    setMapStyle,
   };
 
   return (
