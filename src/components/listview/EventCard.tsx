@@ -2,40 +2,64 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { formatTime } from "@/lib/utils/date-utils";
 import { formatDistance, type EventWithDistance } from "@/hooks/useEventsForList";
-import { useArtist } from "@/hooks/useArtist";
 
 interface EventCardProps {
   event: EventWithDistance;
   onClick: () => void;
 }
 
+/**
+ * Get initials from artist name (max 2 characters)
+ */
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+/**
+ * Generate a consistent color based on artist name
+ */
+function getAvatarColor(name: string): string {
+  const colors = [
+    "#ff7a3d", // orange
+    "#3ce0e0", // cyan
+    "#86eb8e", // green
+    "#ff6b9d", // pink
+    "#a78bfa", // purple
+    "#fbbf24", // amber
+    "#60a5fa", // blue
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
 export function EventCard({ event, onClick }: EventCardProps) {
   const hasArtist = event.artistIds && event.artistIds.length > 0;
-  const artistId = hasArtist ? event.artistIds[0] : undefined;
-  const { data: artist } = useArtist(artistId);
-
   const artistName = event.artistName || event.name || "Live Music";
+  const initials = getInitials(artistName);
+  const avatarColor = getAvatarColor(artistName);
   const isFree = !event.ticketed;
   const price = event.ticketinformation || null;
-  const profileImageUrl = artist?.profileImageUrl;
 
   return (
     <div className="lv-event-card" onClick={onClick}>
       {/* Header: Avatar + Artist/Venue */}
       <div className="lv-card-header">
-        {/* Avatar - only show if profile image exists */}
-        {profileImageUrl && (
-          <Image
-            src={profileImageUrl}
-            alt={artistName}
-            width={40}
-            height={40}
-            className="lv-card-avatar"
-          />
-        )}
+        {/* Avatar */}
+        <div
+          className="lv-card-avatar"
+          style={{ backgroundColor: avatarColor }}
+        >
+          {initials}
+        </div>
 
         {/* Names */}
         <div className="lv-card-names">
