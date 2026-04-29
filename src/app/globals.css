@@ -3328,6 +3328,228 @@ select:focus-visible {
 }
 
 /* ======================================================
+   Desktop Date Grid Layout (≥1024px)
+   Multi-column cards that wrap to rows
+   ====================================================== */
+
+/* Hide desktop grid on mobile/tablet */
+.lv-date-grid {
+  display: none;
+}
+
+/* Show desktop grid, hide row layout on desktop */
+@media (min-width: 1024px) {
+  .lv-date-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 8px 0;
+  }
+
+  /* Hide row-based layout on desktop */
+  .lv-date-group {
+    display: none;
+  }
+}
+
+/* Date Column */
+.lv-date-column {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lv-date-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--lv-rule);
+}
+
+.lv-date-column-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lv-text);
+}
+
+.lv-date-column-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--lv-text-3);
+}
+
+.lv-date-column-events {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Event Card */
+.lv-event-card {
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.lv-event-card:hover {
+  border-color: var(--lv-orange);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Card Header: Avatar + Names */
+.lv-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lv-card-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-anton);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--lv-bg);
+  text-transform: uppercase;
+}
+
+.lv-card-names {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lv-card-artist {
+  font-family: var(--font-anton);
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--lv-orange);
+  line-height: 1.1;
+  text-decoration: none;
+  transition: color 0.12s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lv-card-artist:hover {
+  color: var(--lv-text);
+}
+
+.lv-card-venue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--lv-cyan);
+  text-decoration: none;
+  transition: color 0.12s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lv-card-venue:hover {
+  color: var(--lv-text);
+}
+
+/* Card Meta: Location + Time */
+.lv-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-archivo);
+  font-size: 12px;
+  color: var(--lv-text-3);
+  margin-bottom: 10px;
+}
+
+.lv-card-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lv-card-distance {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--lv-text-3);
+}
+
+.lv-card-distance::before {
+  content: "·";
+  margin-right: 8px;
+}
+
+.lv-card-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--lv-text-2);
+}
+
+/* Card Badge (Price) */
+.lv-card-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--lv-green-soft);
+  color: var(--lv-green);
+  border: 1px dashed var(--lv-green);
+  transition: all 0.12s;
+}
+
+.lv-card-badge.paid {
+  background: var(--lv-orange-soft);
+  color: var(--lv-orange);
+  border-color: var(--lv-orange);
+}
+
+.lv-card-badge-arrow {
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.lv-event-card:hover .lv-card-badge {
+  background: var(--lv-green);
+  color: var(--lv-bg);
+  border-style: solid;
+}
+
+.lv-event-card:hover .lv-card-badge.paid {
+  background: var(--lv-orange);
+  color: var(--lv-bg);
+}
+
+/* ======================================================
    Profile Pages (Venue & Artist Detail)
    ====================================================== */
 

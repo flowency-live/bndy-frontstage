@@ -7,6 +7,7 @@ import { useEvents } from "@/context/EventsContext";
 import { useEventsForList, type EventWithDistance } from "@/hooks/useEventsForList";
 import { Search, X, ChevronDown, ChevronRight } from "lucide-react";
 import { DateGroup } from "./listview/DateGroup";
+import { DateColumnGrid } from "./listview/DateColumnGrid";
 import { DateGroupSkeleton } from "./listview/EventRowSkeleton";
 import LocationSelector from "./filters/LocationSelector";
 import EventInfoOverlay from "./overlays/EventInfoOverlay";
@@ -303,6 +304,13 @@ export default function ListView() {
                         }}
                         style={{ overflow: "hidden" }}
                       >
+                        {/* Desktop: Multi-column date grid (hidden on mobile via CSS) */}
+                        <DateColumnGrid
+                          eventsByDate={eventsByDate}
+                          onEventClick={handleEventClick}
+                        />
+
+                        {/* Mobile/Tablet: Row-based date groups (hidden on desktop via CSS) */}
                         {Array.from(eventsByDate.entries()).map(([dateKey, dateEvents]) => {
                           const date = new Date(dateKey);
                           const { day, monthYear } = formatDateParts(date);
