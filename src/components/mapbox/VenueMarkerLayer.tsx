@@ -23,7 +23,7 @@ const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
  * IMPORTANT: This component stays mounted. Visibility is controlled by prop.
  */
 export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerLayerProps) {
-  const { map, isMapReady } = useMapbox();
+  const { map, isMapReady, currentStyleMode } = useMapbox();
   const initializedRef = useRef(false);
   const lastMapIdRef = useRef<string | null>(null);
   const onVenueClickRef = useRef(onVenueClick);
@@ -74,9 +74,11 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     };
   }, [map]);
 
-  // Initialize layers and handlers ONCE
+  // Initialize layers and handlers ONCE (or reinitialize after style change)
   useEffect(() => {
-    if (!map || !isMapReady || initializedRef.current) return;
+    if (!map || !isMapReady) return;
+    // Skip if already initialized AND source still exists (source is removed on style change)
+    if (initializedRef.current && map.getSource(VENUE_SOURCE_ID)) return;
 
     const init = async () => {
       try {
@@ -211,7 +213,7 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     };
 
     init();
-  }, [map, isMapReady]);
+  }, [map, isMapReady, currentStyleMode]);
 
   // Control visibility via prop
   useEffect(() => {
