@@ -240,7 +240,9 @@ export default function ArtistBrowseClient() {
 
       switch (groupBy) {
         case 'alpha':
-          groupKey = artist.name.charAt(0).toUpperCase();
+          const firstChar = artist.name.charAt(0).toUpperCase();
+          // Group all numbers under "0-9"
+          groupKey = /[0-9]/.test(firstChar) ? '0-9' : firstChar;
           break;
         case 'type':
           groupKey = artist.artist_type ? artist.artist_type.charAt(0).toUpperCase() + artist.artist_type.slice(1) : 'Unknown';
