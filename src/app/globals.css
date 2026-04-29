@@ -3421,14 +3421,7 @@ select:focus-visible {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-anton);
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  color: var(--lv-bg);
-  text-transform: uppercase;
+  object-fit: cover;
 }
 
 .lv-card-names {
