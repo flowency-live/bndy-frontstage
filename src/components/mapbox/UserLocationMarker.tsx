@@ -28,6 +28,12 @@ export function UserLocationMarker({ userLocation }: UserLocationMarkerProps) {
       return;
     }
 
+    // Verify map container is valid before adding marker
+    const mapContainer = map.getContainer();
+    if (!mapContainer || !document.body.contains(mapContainer)) {
+      return;
+    }
+
     // Create custom HTML element for the marker
     const el = document.createElement("div");
     el.className = "mapbox-user-location-marker";
@@ -37,15 +43,19 @@ export function UserLocationMarker({ userLocation }: UserLocationMarkerProps) {
     `;
 
     // Create or update marker
-    if (markerRef.current) {
-      markerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
-    } else {
-      markerRef.current = new mapboxgl.Marker({
-        element: el,
-        anchor: "center",
-      })
-        .setLngLat([userLocation.lng, userLocation.lat])
-        .addTo(map);
+    try {
+      if (markerRef.current) {
+        markerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
+      } else {
+        markerRef.current = new mapboxgl.Marker({
+          element: el,
+          anchor: "center",
+        })
+          .setLngLat([userLocation.lng, userLocation.lat])
+          .addTo(map);
+      }
+    } catch (e) {
+      console.warn("[UserLocationMarker] Failed to add marker:", e);
     }
 
     // Cleanup

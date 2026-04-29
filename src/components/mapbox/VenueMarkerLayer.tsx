@@ -77,11 +77,23 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
   // Initialize layers and handlers ONCE (or reinitialize after style change)
   useEffect(() => {
     if (!map || !isMapReady) return;
+
     // Skip if already initialized AND source still exists (source is removed on style change)
-    if (initializedRef.current && map.getSource(VENUE_SOURCE_ID)) return;
+    // Wrap in try-catch as getSource can throw if style isn't loaded
+    try {
+      if (initializedRef.current && map.getSource(VENUE_SOURCE_ID)) return;
+    } catch {
+      // Style not loaded yet, proceed with initialization
+    }
 
     const init = async () => {
       try {
+        // Verify map container is valid
+        const mapContainer = map.getContainer();
+        if (!mapContainer || !document.body.contains(mapContainer)) {
+          return;
+        }
+
         // Wait for style - wrap in try-catch as isStyleLoaded can throw if map is in bad state
         let styleLoaded = false;
         try {
