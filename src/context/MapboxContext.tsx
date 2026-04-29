@@ -8,10 +8,10 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
 /**
  * Map styles for light/dark themes
- * navigation-night-v1 has blue tones that match bndy's dark blue brand
+ * dark-v11 provides a clean dark theme without requiring traffic data access
  */
 export const MAPBOX_STYLES = {
-  dark: "mapbox://styles/mapbox/navigation-night-v1",
+  dark: "mapbox://styles/mapbox/dark-v11",
   light: "mapbox://styles/mapbox/light-v11",
 } as const;
 

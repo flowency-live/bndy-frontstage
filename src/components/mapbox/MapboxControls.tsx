@@ -24,12 +24,24 @@ export function MapboxControls({ userLocation }: MapboxControlsProps) {
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    // Only add if not already added
-    if (!navigationControlRef.current) {
-      navigationControlRef.current = new mapboxgl.NavigationControl({
-        showCompass: false, // Just zoom buttons, no compass
-      });
-      map.addControl(navigationControlRef.current, "top-right");
+    // Check if map container is valid
+    const mapContainer = map.getContainer();
+    if (!mapContainer || !document.body.contains(mapContainer)) return;
+
+    // Only add if not already added or if it was removed (style change)
+    const hasControl = map.hasControl(navigationControlRef.current as mapboxgl.NavigationControl);
+    if (!navigationControlRef.current || !hasControl) {
+      try {
+        if (navigationControlRef.current && hasControl) {
+          map.removeControl(navigationControlRef.current);
+        }
+        navigationControlRef.current = new mapboxgl.NavigationControl({
+          showCompass: false, // Just zoom buttons, no compass
+        });
+        map.addControl(navigationControlRef.current, "top-right");
+      } catch (e) {
+        console.warn("[MapboxControls] Failed to add navigation control:", e);
+      }
     }
 
     return () => {
@@ -41,47 +53,57 @@ export function MapboxControls({ userLocation }: MapboxControlsProps) {
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    // Create locate button container
-    if (!locateButtonRef.current) {
-      const container = document.createElement("div");
-      container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-      container.style.marginTop = "10px";
+    // Check if map container is valid
+    const mapContainer = map.getContainer();
+    if (!mapContainer || !document.body.contains(mapContainer)) return;
 
-      const button = document.createElement("button");
-      button.className = "mapboxgl-ctrl-icon";
-      button.type = "button";
-      button.title = "Center on my location";
-      button.setAttribute("aria-label", "Center on my location");
-      button.innerHTML = `
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" style="display:block;margin:auto;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="22" y1="12" x2="18" y2="12"></line>
-          <line x1="6" y1="12" x2="2" y2="12"></line>
-          <line x1="12" y1="6" x2="12" y2="2"></line>
-          <line x1="12" y1="22" x2="12" y2="18"></line>
-        </svg>
-      `;
+    // Check if button is already in DOM (might have been removed by style change)
+    const existingButton = locateButtonRef.current;
+    const isInDOM = existingButton && document.body.contains(existingButton);
 
-      button.addEventListener("click", () => {
-        if (userLocation && map) {
-          map.flyTo({
-            center: [userLocation.lng, userLocation.lat],
-            zoom: 14,
-            duration: 500,
-          });
+    // Create locate button container if not in DOM
+    if (!isInDOM) {
+      try {
+        const container = document.createElement("div");
+        container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+        container.style.marginTop = "10px";
+
+        const button = document.createElement("button");
+        button.className = "mapboxgl-ctrl-icon";
+        button.type = "button";
+        button.title = "Center on my location";
+        button.setAttribute("aria-label", "Center on my location");
+        button.innerHTML = `
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" style="display:block;margin:auto;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="22" y1="12" x2="18" y2="12"></line>
+            <line x1="6" y1="12" x2="2" y2="12"></line>
+            <line x1="12" y1="6" x2="12" y2="2"></line>
+            <line x1="12" y1="22" x2="12" y2="18"></line>
+          </svg>
+        `;
+
+        button.addEventListener("click", () => {
+          if (userLocation && map) {
+            map.flyTo({
+              center: [userLocation.lng, userLocation.lat],
+              zoom: 14,
+              duration: 500,
+            });
+          }
+        });
+
+        container.appendChild(button);
+
+        // Find the navigation control and add after it
+        const ctrlTopRight = mapContainer.querySelector(".mapboxgl-ctrl-top-right");
+        if (ctrlTopRight) {
+          ctrlTopRight.appendChild(container);
+          locateButtonRef.current = container;
         }
-      });
-
-      container.appendChild(button);
-
-      // Find the navigation control and add after it
-      const mapContainer = map.getContainer();
-      const ctrlTopRight = mapContainer.querySelector(".mapboxgl-ctrl-top-right");
-      if (ctrlTopRight) {
-        ctrlTopRight.appendChild(container);
+      } catch (e) {
+        console.warn("[MapboxControls] Failed to add locate button:", e);
       }
-
-      locateButtonRef.current = container;
     }
 
     return () => {
