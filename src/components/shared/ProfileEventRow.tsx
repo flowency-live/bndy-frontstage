@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Event } from "@/lib/types";
+import { formatArtistDisplay } from "@/lib/utils/artist-display";
 
 interface ProfileEventRowProps {
   event: Event;
@@ -27,9 +28,10 @@ export default function ProfileEventRow({
   distance,
 }: ProfileEventRowProps) {
   // Determine counterpart name and link
+  // For artist counterpart, use formatArtistDisplay for "Artist1 + N more" format
   const counterpartName = counterpartType === "venue"
     ? event.venueName
-    : event.artistName || "Unknown Artist";
+    : formatArtistDisplay(event);
 
   const counterpartLink = counterpartType === "venue"
     ? `/venues/${event.venueId}`

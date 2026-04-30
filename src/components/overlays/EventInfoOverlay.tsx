@@ -11,6 +11,7 @@ import { useArtist } from "@/hooks/useArtist";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
 import SocialShareButton from "@/components/shared/SocialShareButton";
+import { formatArtistDisplay } from "@/lib/utils/artist-display";
 
 type ThemeName = "gigPoster" | "chalkboard" | "letterboard" | "backstagePass" | "setlist";
 
@@ -93,11 +94,16 @@ export default function EventInfoOverlay({
   const isToday = eventDateOnly.getTime() === today.getTime();
   const isTomorrow = eventDateOnly.getTime() === tomorrow.getTime();
 
+  // For multi-artist events, show "Artist1 + N more" format
+  // For single artist, use artist.name or fall back to event data
+  const hasMultipleArtists = currentEvent.artistIds && currentEvent.artistIds.length > 1;
   const artistName = isOpenMic && artist
     ? `Open Mic with ${artist.name}`
     : isOpenMic
       ? "Open Mic"
-      : artist?.name || currentEvent.name || "Live Music";
+      : hasMultipleArtists
+        ? formatArtistDisplay(currentEvent)
+        : artist?.name || currentEvent.name || "Live Music";
 
   const venueName = venue?.name || currentEvent.venueName || "Venue";
   const venueCity = currentEvent.venueCity || venue?.city || "";

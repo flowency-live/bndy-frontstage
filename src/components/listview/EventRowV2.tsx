@@ -6,6 +6,7 @@ import Link from "next/link";
 import { TicketStub } from "./TicketStub";
 import { formatTime } from "@/lib/utils/date-utils";
 import { formatDistance, getDistanceClass, type EventWithDistance } from "@/hooks/useEventsForList";
+import { formatArtistDisplay } from "@/lib/utils/artist-display";
 
 interface EventRowV2Props {
   event: EventWithDistance;
@@ -18,6 +19,8 @@ export function EventRowV2({ event, index, onClick }: EventRowV2Props) {
   const isFree = !event.ticketed;
   const price = event.ticketinformation || null;
   const distanceClass = getDistanceClass(event.distanceMiles);
+  // Use formatArtistDisplay to show "Artist1 + N more" for multi-artist events
+  const artistDisplayName = formatArtistDisplay(event);
 
   return (
     <motion.div
@@ -41,18 +44,18 @@ export function EventRowV2({ event, index, onClick }: EventRowV2Props) {
       {/* Time */}
       <span className="ev-time">{formatTime(event.startTime)}</span>
 
-      {/* Headline: Artist · Venue */}
+      {/* Headline: Artist · Venue - shows "Artist1 + N more" for multi-artist */}
       <div className="ev-headline">
-        {hasArtist && event.artistName ? (
+        {hasArtist ? (
           <Link
             href={`/artists/${event.artistIds[0]}`}
             className="ev-artist"
             onClick={(e) => e.stopPropagation()}
           >
-            {event.artistName}
+            {artistDisplayName}
           </Link>
         ) : (
-          <span className="ev-artist">{event.name}</span>
+          <span className="ev-artist">{artistDisplayName}</span>
         )}
         <span className="ev-sep">·</span>
         <Link

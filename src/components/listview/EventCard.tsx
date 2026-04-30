@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { formatTime } from "@/lib/utils/date-utils";
 import { formatDistance, type EventWithDistance } from "@/hooks/useEventsForList";
+import { formatArtistDisplay } from "@/lib/utils/artist-display";
 
 interface EventCardProps {
   event: EventWithDistance;
@@ -43,9 +44,11 @@ function getAvatarColor(name: string): string {
 
 export function EventCard({ event, onClick }: EventCardProps) {
   const hasArtist = event.artistIds && event.artistIds.length > 0;
-  const artistName = event.artistName || event.name || "Live Music";
-  const initials = getInitials(artistName);
-  const avatarColor = getAvatarColor(artistName);
+  // Use formatArtistDisplay to show "Artist1 + N more" for multi-artist events
+  const artistDisplayName = formatArtistDisplay(event);
+  const primaryArtistName = event.artistName || event.name || "Live Music";
+  const initials = getInitials(primaryArtistName);
+  const avatarColor = getAvatarColor(primaryArtistName);
   const isFree = !event.ticketed;
   const price = event.ticketinformation || null;
 
@@ -63,17 +66,17 @@ export function EventCard({ event, onClick }: EventCardProps) {
 
         {/* Names */}
         <div className="lv-card-names">
-          {/* Artist */}
+          {/* Artist - shows "Artist1 + N more" for multi-artist events */}
           {hasArtist ? (
             <Link
               href={`/artists/${event.artistIds[0]}`}
               className="lv-card-artist"
               onClick={(e) => e.stopPropagation()}
             >
-              {artistName}
+              {artistDisplayName}
             </Link>
           ) : (
-            <span className="lv-card-artist">{artistName}</span>
+            <span className="lv-card-artist">{artistDisplayName}</span>
           )}
 
           {/* Venue */}

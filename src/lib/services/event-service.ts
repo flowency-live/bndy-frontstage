@@ -23,7 +23,8 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        artistId: artistId,
+        artistId: artistId, // Primary artist (backward compatible)
+        artistIds: event.artistIds, // Full array (for multi-artist support)
         venueId: event.venueId,
         date: event.date,
         startTime: event.startTime,
@@ -32,6 +33,7 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
         price: event.price || null,
         ticketUrl: event.ticketUrl || null,
         notes: event.notes || null,
+        source: 'frontstage', // Track event origin
       }),
     });
 
@@ -43,6 +45,12 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
     const data = await response.json();
 
     // Return event in format expected by frontstage
+    // Use artistIds from response if available (multi-artist support),
+    // otherwise fall back to input artistIds or single artistId
+    const returnedArtistIds = data.event.artistIds
+      || event.artistIds
+      || [data.event.artistId];
+
     return {
       id: data.event.id,
       name: data.event.title,
@@ -50,7 +58,7 @@ export async function createEvent(event: Omit<Event, 'id' | 'createdAt' | 'updat
       startTime: data.event.startTime,
       endTime: data.event.endTime,
       venueId: data.event.venueId,
-      artistIds: [data.event.artistId],
+      artistIds: returnedArtistIds,
       price: event.price || null,
       ticketUrl: event.ticketUrl || null,
       notes: event.notes || null,
