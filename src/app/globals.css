@@ -4725,7 +4725,7 @@ select:focus-visible {
 .artist-popup-venue {
   font-family: var(--font-anton), Impact, sans-serif;
   font-size: 16px;
-  color: var(--lv-cyan);
+  color: var(--lv-orange); /* Orange has 4.5:1+ contrast on dark bg - WCAG AA compliant */
   text-decoration: none;
   line-height: 1.2;
 }
