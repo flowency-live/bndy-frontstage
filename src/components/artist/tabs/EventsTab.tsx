@@ -10,6 +10,7 @@ import {
   separateEvents,
 } from "@/components/shared/ProfileDateGroup";
 import ProfileSectionGroup from "@/components/shared/ProfileSectionGroup";
+import ProfileDistanceGroup from "@/components/shared/ProfileDistanceGroup";
 import FeaturedEventCard from "@/components/shared/FeaturedEventCard";
 import ArtistEventsMap from "../ArtistEventsMap";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
@@ -102,10 +103,27 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
         )}
       </div>
 
-      {/* Content: Map or List */}
+      {/* Content: Map, Distance, or Date view */}
       {viewMode === "map" ? (
         <ArtistEventsMap events={events} />
+      ) : viewMode === "distance" ? (
+        /* Distance View - Group events by distance from user */
+        <section className="profile-section">
+          <div className="profile-section-head">
+            <h2 className="profile-section-name">Upcoming</h2>
+            <span className="profile-section-count">
+              {upcoming.length} Event{upcoming.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <ProfileDistanceGroup
+            events={upcoming}
+            counterpartType="venue"
+            onEventClick={handleEventClick}
+          />
+        </section>
       ) : (
+        /* Date View - Group events by section (TODAY, TOMORROW, etc.) */
         <>
           {/* Upcoming Section */}
           {upcoming.length > 0 && (
