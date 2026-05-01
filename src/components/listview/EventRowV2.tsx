@@ -1,8 +1,10 @@
 // src/components/listview/EventRowV2.tsx
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { TicketStub } from "./TicketStub";
 import { formatTime } from "@/lib/utils/date-utils";
 import { formatDistance, getDistanceClass, type EventWithDistance } from "@/hooks/useEventsForList";
@@ -12,15 +14,38 @@ interface EventRowV2Props {
   event: EventWithDistance;
   index: number;
   onClick: () => void;
+  artistImageUrl?: string | null;
+  artistDisplayColour?: string | null;
 }
 
-export function EventRowV2({ event, index, onClick }: EventRowV2Props) {
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+function getAvatarColor(name: string): string {
+  const colors = ["#ff7a3d", "#3ce0e0", "#86eb8e", "#ff6b9d", "#a78bfa", "#fbbf24", "#60a5fa"];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+export function EventRowV2({ event, index, onClick, artistImageUrl, artistDisplayColour }: EventRowV2Props) {
+  const [imageError, setImageError] = useState(false);
   const hasArtist = event.artistIds && event.artistIds.length > 0;
   const isFree = !event.ticketed;
   const price = event.ticketinformation || null;
   const distanceClass = getDistanceClass(event.distanceMiles);
-  // Use formatArtistDisplay to show "Artist1 + N more" for multi-artist events
   const artistDisplayName = formatArtistDisplay(event);
+  const primaryArtistName = event.artistName || event.name || "Live Music";
+  const initials = getInitials(primaryArtistName);
+  const avatarColor = artistDisplayColour || getAvatarColor(primaryArtistName);
+  const showImage = artistImageUrl && !imageError;
 
   return (
     <motion.div
@@ -40,6 +65,26 @@ export function EventRowV2({ event, index, onClick }: EventRowV2Props) {
     >
       {/* Full-row clickable overlay */}
       <span className="ev-link" aria-label="View event details" />
+
+      {/* Avatar - mobile only */}
+      <div
+        className="ev-avatar"
+        style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
+      >
+        {showImage ? (
+          <Image
+            src={artistImageUrl}
+            alt={primaryArtistName}
+            width={44}
+            height={44}
+            className="ev-avatar-img"
+            onError={() => setImageError(true)}
+            unoptimized
+          />
+        ) : (
+          initials
+        )}
+      </div>
 
       {/* Time */}
       <span className="ev-time">{formatTime(event.startTime)}</span>

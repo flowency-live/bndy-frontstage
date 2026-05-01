@@ -3183,6 +3183,18 @@ select:focus-visible {
   border-color: var(--lv-orange);
 }
 
+/* Avatar - hidden on desktop, shown on mobile */
+.ev-avatar {
+  display: none;
+}
+
+.ev-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 /* Skeleton loading shimmer */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -3252,26 +3264,47 @@ select:focus-visible {
     padding: 2px 6px;
   }
 
-  /* Mobile event row - 3 rows × 3 cols */
+  /* Mobile event row - 3 rows × 3 cols with avatar */
   .ev {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
     grid-template-rows: auto auto auto;
     column-gap: 12px;
-    row-gap: 4px;
-    padding: 12px 6px 12px 10px;
+    row-gap: 3px;
+    padding: 10px 8px 10px 10px;
     min-height: 64px;
   }
 
   .ev::before {
-    top: 12px;
-    bottom: 12px;
+    top: 10px;
+    bottom: 10px;
   }
 
-  .ev-time {
+  /* Avatar - visible on mobile */
+  .ev-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / span 3;
     align-self: center;
-    font-size: 12.5px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-family: var(--font-anton);
+    font-size: 14px;
+    color: var(--lv-bg);
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+
+  /* Time - above ticket stub */
+  .ev-time {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    justify-self: center;
+    font-size: 11px;
+    color: var(--lv-text-3);
   }
 
   /* Break headline into individual cells */
@@ -3294,25 +3327,27 @@ select:focus-visible {
   .ev-venue {
     grid-column: 2;
     grid-row: 2;
-    font-size: 13.5px;
+    font-size: 13px;
     align-self: center;
   }
 
   .ev-meta {
     grid-column: 2;
     grid-row: 3;
-    font-size: 11.5px;
-    gap: 8px;
+    font-size: 11px;
+    gap: 6px;
     align-self: center;
   }
 
+  /* Ticket stub - below time */
   .ev-stub {
     grid-column: 3;
-    grid-row: 1 / span 3;
-    align-self: center;
-    width: 64px;
-    height: 30px;
-    font-size: 14px;
+    grid-row: 2 / span 2;
+    align-self: start;
+    justify-self: center;
+    width: 60px;
+    height: 28px;
+    font-size: 13px;
   }
 }
 
@@ -3531,14 +3566,7 @@ select:focus-visible {
   margin-right: 6px;
 }
 
-.lv-card-time {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--lv-text-2);
-}
-
-/* Card Ticket Stub - positioned top-right */
+/* Card Ticket Stub - matches .ev-stub styling */
 .lv-card-stub {
   position: absolute;
   top: 10px;
@@ -3546,14 +3574,11 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 24px;
-  min-width: 48px;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  height: 28px;
+  width: 60px;
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   background: var(--lv-green-soft);
   color: var(--lv-green);
@@ -3566,8 +3591,8 @@ select:focus-visible {
 .lv-card-stub::after {
   content: '';
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   background: var(--lv-surface);
   border-radius: 50%;
   top: 50%;
@@ -3576,11 +3601,11 @@ select:focus-visible {
 }
 
 .lv-card-stub::before {
-  left: -3px;
+  left: -3.5px;
 }
 
 .lv-card-stub::after {
-  right: -3px;
+  right: -3.5px;
 }
 
 .lv-card-stub.paid {
