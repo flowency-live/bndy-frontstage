@@ -74,8 +74,8 @@ export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour 
             <Image
               src={artistImageUrl}
               alt={primaryArtistName}
-              width={40}
-              height={40}
+              width={48}
+              height={48}
               className="lv-card-avatar-img"
               onError={() => setImageError(true)}
               unoptimized
@@ -124,11 +124,10 @@ export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour 
         <span className="lv-card-time">{formatTime(event.startTime)}</span>
       </div>
 
-      {/* Price Badge */}
-      <div className={`lv-card-badge ${isFree ? "" : "paid"}`}>
-        {isFree ? "Free" : price || "Tickets"}
-        <span className="lv-card-badge-arrow">›</span>
-      </div>
+      {/* Ticket Stub */}
+      <span className={`lv-card-stub ${isFree ? "" : "paid"}`}>
+        {isFree ? "£ree" : price || "TBC"}
+      </span>
     </div>
   );
 }

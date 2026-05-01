@@ -3435,14 +3435,14 @@ select:focus-visible {
 
 .lv-card-avatar {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-anton);
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.02em;
   color: var(--lv-bg);
   text-transform: uppercase;
@@ -3534,17 +3534,20 @@ select:focus-visible {
   color: var(--lv-text-2);
 }
 
-/* Card Badge (Price) */
-.lv-card-badge {
-  display: flex;
-  justify-content: space-between;
+/* Card Ticket Stub (compact, matches .ev-stub styling) */
+.lv-card-stub {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 4px;
+  justify-content: center;
+  height: 26px;
+  min-width: 52px;
+  padding: 2px 10px;
+  border-radius: 3px;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   background: var(--lv-green-soft);
   color: var(--lv-green);
@@ -3552,27 +3555,48 @@ select:focus-visible {
   transition: all 0.12s;
 }
 
-.lv-card-badge.paid {
+/* Perforated edges */
+.lv-card-stub::before,
+.lv-card-stub::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--lv-surface);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.12s;
+}
+
+.lv-card-stub::before {
+  left: -3px;
+}
+
+.lv-card-stub::after {
+  right: -3px;
+}
+
+.lv-card-stub.paid {
   background: var(--lv-orange-soft);
   color: var(--lv-orange);
   border-color: var(--lv-orange);
 }
 
-.lv-card-badge-arrow {
-  font-size: 16px;
-  line-height: 1;
-  opacity: 0.7;
-}
-
-.lv-event-card:hover .lv-card-badge {
+.lv-event-card:hover .lv-card-stub {
   background: var(--lv-green);
   color: var(--lv-bg);
   border-style: solid;
 }
 
-.lv-event-card:hover .lv-card-badge.paid {
+.lv-event-card:hover .lv-card-stub.paid {
   background: var(--lv-orange);
   color: var(--lv-bg);
+}
+
+.lv-event-card:hover .lv-card-stub::before,
+.lv-event-card:hover .lv-card-stub::after {
+  background: var(--lv-bg-2);
 }
 
 /* ======================================================
