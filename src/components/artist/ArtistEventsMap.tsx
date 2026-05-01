@@ -146,11 +146,15 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
     groupMap.get(key)!.events.push(event);
   });
 
-  // Load Leaflet dynamically (client-side only)
+  // Load Leaflet and its CSS dynamically (client-side only)
   useEffect(() => {
     let mounted = true;
 
-    import("leaflet").then((L) => {
+    // Load CSS first, then Leaflet
+    Promise.all([
+      import("leaflet/dist/leaflet.css"),
+      import("leaflet"),
+    ]).then(([, L]) => {
       if (!mounted) return;
 
       // Fix default icon paths for Leaflet
@@ -200,11 +204,20 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
     markersLayerRef.current = markersLayer;
     mapInstanceRef.current = map;
 
-    // Force resize after mount to ensure proper dimensions
-    requestAnimationFrame(() => {
+    // Force resize multiple times to ensure proper dimensions
+    // This is necessary because the container may not have final dimensions immediately
+    const invalidateSizes = () => {
       map.invalidateSize();
+    };
+
+    // Call invalidateSize at various intervals
+    requestAnimationFrame(invalidateSizes);
+    setTimeout(invalidateSizes, 100);
+    setTimeout(invalidateSizes, 300);
+    setTimeout(() => {
+      invalidateSizes();
       setIsMapReady(true);
-    });
+    }, 500);
 
     // Cleanup on unmount
     return () => {
@@ -320,7 +333,18 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
   // Empty state
   if (validEvents.length === 0) {
     return (
-      <div className="artist-map-empty" data-testid="artist-events-map">
+      <div
+        data-testid="artist-events-map"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '300px',
+          background: 'var(--lv-bg-2)',
+          borderRadius: '12px',
+        }}
+      >
         <MapPin className="w-12 h-12 text-[var(--lv-text-3)] mb-3" />
         <p className="text-[var(--lv-text-2)]">No events with location data</p>
       </div>
@@ -328,21 +352,78 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
   }
 
   return (
-    <div className="artist-map-wrapper" data-testid="artist-events-map">
+    <div
+      data-testid="artist-events-map"
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '450px',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        background: 'var(--lv-bg-2)',
+      }}
+    >
       {/* Loading overlay */}
       {!isMapReady && (
-        <div className="artist-map-loading">
-          <div className="artist-map-spinner" />
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--lv-bg-2)',
+          zIndex: 1000,
+          gap: '12px',
+          color: 'var(--lv-text-2)',
+          fontSize: '14px',
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            border: '3px solid var(--lv-rule)',
+            borderTopColor: 'var(--lv-orange)',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }} />
           <p>Loading map...</p>
         </div>
       )}
 
-      {/* Map container */}
-      <div ref={mapContainerRef} className="artist-map" />
+      {/* Map container - MUST have explicit dimensions */}
+      <div
+        ref={mapContainerRef}
+        style={{
+          width: '100%',
+          height: '100%',
+        }}
+      />
 
       {/* Legend */}
-      <div className="artist-map-legend">
-        <span className="artist-map-legend-dot" />
+      <div style={{
+        position: 'absolute',
+        bottom: '12px',
+        left: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 12px',
+        background: 'var(--lv-bg)',
+        borderRadius: '6px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        fontSize: '12px',
+        color: 'var(--lv-text-2)',
+        zIndex: 500,
+      }}>
+        <span style={{
+          width: '10px',
+          height: '10px',
+          background: 'var(--lv-orange)',
+          borderRadius: '50%',
+        }} />
         <span>
           {eventGroups.length} venue{eventGroups.length !== 1 ? "s" : ""} ·{" "}
           {validEvents.length} event{validEvents.length !== 1 ? "s" : ""}
