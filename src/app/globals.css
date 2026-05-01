@@ -4471,9 +4471,35 @@ select:focus-visible {
 
 /* ─── SECTION GROUP HEADERS ─── */
 .profile-section-group {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
+/* Collapsible section header button */
+.profile-section-header-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 8px;
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule-strong);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.profile-section-header-toggle:hover {
+  background: var(--lv-surface-2);
+  border-color: var(--lv-orange);
+}
+
+.profile-section-header-toggle[aria-expanded="true"] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+
+/* Non-collapsible header (for backwards compat) */
 .profile-section-header {
   display: flex;
   align-items: center;
@@ -4504,4 +4530,14 @@ select:focus-visible {
   letter-spacing: 0.12em;
   color: var(--lv-text-3);
   text-transform: uppercase;
+}
+
+/* Section content area when expanded */
+.profile-section-header-toggle + .profile-date-events {
+  border: 1px solid var(--lv-rule-strong);
+  border-top: none;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding: 8px;
+  background: var(--lv-bg);
 }
