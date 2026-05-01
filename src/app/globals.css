@@ -3361,6 +3361,13 @@ select:focus-visible {
   min-width: 0; /* Prevents grid blowout */
 }
 
+/* When there's only one date column (single day), span full width */
+@media (min-width: 1024px) {
+  .lv-date-column:only-child {
+    grid-column: 1 / -1;
+  }
+}
+
 .lv-date-column-header {
   display: flex;
   justify-content: space-between;
@@ -3392,21 +3399,9 @@ select:focus-visible {
   gap: 10px;
 }
 
-/* When a section has only ONE date column (like TODAY with single day),
-   make the events spread horizontally in a grid */
+/* Desktop: Make events within each column use grid layout */
 @media (min-width: 1024px) {
-  .lv-date-grid:has(.lv-date-column:only-child) .lv-date-column {
-    width: 100%;
-  }
-
-  .lv-date-grid:has(.lv-date-column:only-child) .lv-date-column-events {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  /* Also apply to grids with 2 columns when they don't fill width */
-  .lv-date-grid:has(.lv-date-column:nth-child(2):last-child) .lv-date-column-events {
+  .lv-date-column-events {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
