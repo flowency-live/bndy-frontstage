@@ -3329,7 +3329,7 @@ select:focus-visible {
 
 /* ======================================================
    Desktop Date Grid Layout (≥1024px)
-   Multi-column cards that wrap to rows
+   Multi-column cards that wrap to rows using CSS Grid
    ====================================================== */
 
 /* Hide desktop grid on mobile/tablet */
@@ -3340,8 +3340,9 @@ select:focus-visible {
 /* Show desktop grid, hide row layout on desktop */
 @media (min-width: 1024px) {
   .lv-date-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    /* Auto-fill columns: min 260px, max 1fr - fills available space */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
     padding: 8px 0;
   }
@@ -3352,12 +3353,12 @@ select:focus-visible {
   }
 }
 
-/* Date Column */
+/* Date Column - now flex-based within grid cell */
 .lv-date-column {
-  flex: 0 0 240px;
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-width: 0; /* Prevents grid blowout */
 }
 
 .lv-date-column-header {

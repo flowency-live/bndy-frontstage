@@ -1,7 +1,9 @@
 // src/components/listview/DateColumn.tsx
 "use client";
 
+import { useMemo } from "react";
 import { EventCard } from "./EventCard";
+import { useArtistImages, getArtistImage } from "@/hooks/useArtistImages";
 import type { EventWithDistance } from "@/hooks/useEventsForList";
 
 interface DateColumnProps {
@@ -38,6 +40,20 @@ export function DateColumn({
 }: DateColumnProps) {
   const formattedDate = formatColumnDate(dateKey);
 
+  // Collect unique artist IDs from all events in this column
+  const artistIds = useMemo(() => {
+    const ids: string[] = [];
+    events.forEach((event) => {
+      if (event.artistIds && event.artistIds.length > 0) {
+        ids.push(event.artistIds[0]); // Primary artist
+      }
+    });
+    return [...new Set(ids)];
+  }, [events]);
+
+  // Fetch artist images
+  const { artistImages } = useArtistImages(artistIds);
+
   return (
     <div className="lv-date-column">
       {/* Column Header */}
@@ -48,13 +64,20 @@ export function DateColumn({
 
       {/* Event Cards */}
       <div className="lv-date-column-events">
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            onClick={() => onEventClick(event)}
-          />
-        ))}
+        {events.map((event) => {
+          const primaryArtistId = event.artistIds?.[0];
+          const artistData = getArtistImage(artistImages, primaryArtistId);
+
+          return (
+            <EventCard
+              key={event.id}
+              event={event}
+              onClick={() => onEventClick(event)}
+              artistImageUrl={artistData?.profileImageUrl}
+              artistDisplayColour={artistData?.displayColour}
+            />
+          );
+        })}
       </div>
     </div>
   );
