@@ -3408,12 +3408,15 @@ select:focus-visible {
   }
 }
 
-/* Event Card */
+/* Event Card - horizontal layout with large avatar */
 .lv-event-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--lv-surface);
   border: 1px solid var(--lv-rule);
   border-radius: 8px;
-  padding: 14px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
@@ -3425,29 +3428,21 @@ select:focus-visible {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* Card Header: Avatar + Names */
-.lv-card-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
+/* Large Avatar */
 .lv-card-avatar {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-anton);
-  font-size: 16px;
+  font-size: 20px;
   letter-spacing: 0.02em;
   color: var(--lv-bg);
   text-transform: uppercase;
   overflow: hidden;
-  position: relative;
 }
 
 .lv-card-avatar-img {
@@ -3457,20 +3452,23 @@ select:focus-visible {
   border-radius: 50%;
 }
 
-.lv-card-names {
+/* Info section (next to avatar) */
+.lv-card-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  gap: 2px;
+  padding-right: 50px; /* Space for ticket stub */
 }
 
 .lv-card-artist {
   font-family: var(--font-anton);
-  font-size: 17px;
+  font-size: 16px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--lv-orange);
-  line-height: 1.1;
+  line-height: 1.15;
   text-decoration: none;
   transition: color 0.12s;
   overflow: hidden;
@@ -3484,8 +3482,8 @@ select:focus-visible {
 
 .lv-card-venue {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.06em;
   color: var(--lv-cyan);
   text-decoration: none;
   transition: color 0.12s;
@@ -3498,33 +3496,39 @@ select:focus-visible {
   color: var(--lv-text);
 }
 
-/* Card Meta: Location + Time */
+/* Card Meta: Location · Distance · Time (inline) */
 .lv-card-meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 6px;
   font-family: var(--font-archivo);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--lv-text-3);
-  margin-bottom: 10px;
-}
-
-.lv-card-location {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-top: 2px;
 }
 
 .lv-card-distance {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.05em;
   color: var(--lv-text-3);
 }
 
 .lv-card-distance::before {
   content: "·";
-  margin-right: 8px;
+  margin-right: 6px;
+}
+
+.lv-card-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--lv-text-2);
+}
+
+.lv-card-time::before {
+  content: "·";
+  margin-right: 6px;
 }
 
 .lv-card-time {
@@ -3534,18 +3538,20 @@ select:focus-visible {
   color: var(--lv-text-2);
 }
 
-/* Card Ticket Stub (compact, matches .ev-stub styling) */
+/* Card Ticket Stub - positioned top-right */
 .lv-card-stub {
-  position: relative;
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 26px;
-  min-width: 52px;
-  padding: 2px 10px;
+  height: 24px;
+  min-width: 48px;
+  padding: 2px 8px;
   border-radius: 3px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

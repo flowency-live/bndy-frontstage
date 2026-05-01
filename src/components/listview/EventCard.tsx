@@ -63,71 +63,66 @@ export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour 
 
   return (
     <div className="lv-event-card" onClick={onClick}>
-      {/* Header: Avatar + Artist/Venue */}
-      <div className="lv-card-header">
-        {/* Avatar - shows profile image if available, otherwise initials */}
-        <div
-          className="lv-card-avatar"
-          style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
-        >
-          {showImage ? (
-            <Image
-              src={artistImageUrl}
-              alt={primaryArtistName}
-              width={48}
-              height={48}
-              className="lv-card-avatar-img"
-              onError={() => setImageError(true)}
-              unoptimized
-            />
-          ) : (
-            initials
-          )}
-        </div>
+      {/* Ticket Stub - top right */}
+      <span className={`lv-card-stub ${isFree ? "" : "paid"}`}>
+        {isFree ? "£ree" : price || "TBC"}
+      </span>
 
-        {/* Names */}
-        <div className="lv-card-names">
-          {/* Artist - shows "Artist1 + N more" for multi-artist events */}
-          {hasArtist ? (
-            <Link
-              href={`/artists/${event.artistIds[0]}`}
-              className="lv-card-artist"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {artistDisplayName}
-            </Link>
-          ) : (
-            <span className="lv-card-artist">{artistDisplayName}</span>
-          )}
-
-          {/* Venue */}
-          <Link
-            href={`/venues/${event.venueId}`}
-            className="lv-card-venue"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {event.venueName}
-          </Link>
-        </div>
+      {/* Large Avatar */}
+      <div
+        className="lv-card-avatar"
+        style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
+      >
+        {showImage ? (
+          <Image
+            src={artistImageUrl}
+            alt={primaryArtistName}
+            width={64}
+            height={64}
+            className="lv-card-avatar-img"
+            onError={() => setImageError(true)}
+            unoptimized
+          />
+        ) : (
+          initials
+        )}
       </div>
 
-      {/* Meta: Location + Time */}
-      <div className="lv-card-meta">
-        <span className="lv-card-location">
+      {/* Info section */}
+      <div className="lv-card-info">
+        {/* Artist */}
+        {hasArtist ? (
+          <Link
+            href={`/artists/${event.artistIds[0]}`}
+            className="lv-card-artist"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {artistDisplayName}
+          </Link>
+        ) : (
+          <span className="lv-card-artist">{artistDisplayName}</span>
+        )}
+
+        {/* Venue */}
+        <Link
+          href={`/venues/${event.venueId}`}
+          className="lv-card-venue"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {event.venueName}
+        </Link>
+
+        {/* Meta: Location · Distance · Time */}
+        <div className="lv-card-meta">
           {event.venueCity}
           {event.distanceMiles !== null && (
             <span className="lv-card-distance">
               {formatDistance(event.distanceMiles)}
             </span>
           )}
-        </span>
-        <span className="lv-card-time">{formatTime(event.startTime)}</span>
+          <span className="lv-card-time">{formatTime(event.startTime)}</span>
+        </div>
       </div>
-
-      {/* Ticket Stub */}
-      <span className={`lv-card-stub ${isFree ? "" : "paid"}`}>
-        {isFree ? "£ree" : price || "TBC"}
-      </span>
     </div>
   );
 }
