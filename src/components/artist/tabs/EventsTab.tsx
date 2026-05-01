@@ -9,6 +9,8 @@ import {
   groupEventsByDate,
   separateEvents,
 } from "@/components/shared/ProfileDateGroup";
+import ProfileSectionGroup from "@/components/shared/ProfileSectionGroup";
+import FeaturedEventCard from "@/components/shared/FeaturedEventCard";
 import ArtistEventsMap from "../ArtistEventsMap";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
 
@@ -24,8 +26,9 @@ type ViewMode = "date" | "distance" | "map";
  *
  * Features:
  * - View toggle: By Date | By Distance | Map
- * - Upcoming and Past sections with collapsible past
- * - ProfileDateGroup + ProfileEventRow patterns
+ * - Featured "next event" card
+ * - Section-based grouping (TODAY, TOMORROW, THIS WEEK, etc.)
+ * - Collapsible past events section
  * - EventInfoOverlay on event click
  *
  * Uses CSS classes from globals.css (.profile-*)
@@ -39,8 +42,12 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
   // Separate upcoming and past events
   const { upcoming, past } = separateEvents(events);
 
-  // Group events by date
-  const upcomingByDate = groupEventsByDate(upcoming);
+  // First upcoming event for featured card
+  const nextEvent = upcoming.length > 0 ? upcoming[0] : null;
+  // Remaining events for section grouping
+  const remainingUpcoming = upcoming.slice(1);
+
+  // Group past events by date (for collapsible section)
   const pastByDate = groupEventsByDate(past);
 
   const handleEventClick = (event: Event) => {
@@ -110,20 +117,23 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
                 </span>
               </div>
 
-              {Array.from(upcomingByDate.entries()).map(([dateKey, dateEvents]) => {
-                const { day, monthYear, relativeLabel } = formatDateForGroup(dateKey);
-                return (
-                  <ProfileDateGroup
-                    key={dateKey}
-                    day={day}
-                    monthYear={monthYear}
-                    relativeLabel={relativeLabel}
-                    events={dateEvents}
-                    counterpartType="venue"
-                    onEventClick={handleEventClick}
-                  />
-                );
-              })}
+              {/* Featured Next Event Card */}
+              {nextEvent && (
+                <FeaturedEventCard
+                  event={nextEvent}
+                  counterpartType="venue"
+                  onClick={() => handleEventClick(nextEvent)}
+                />
+              )}
+
+              {/* Remaining events grouped by section */}
+              {remainingUpcoming.length > 0 && (
+                <ProfileSectionGroup
+                  events={remainingUpcoming}
+                  counterpartType="venue"
+                  onEventClick={handleEventClick}
+                />
+              )}
             </section>
           )}
 
