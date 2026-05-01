@@ -1,7 +1,9 @@
 // src/components/listview/EventCard.tsx
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatTime } from "@/lib/utils/date-utils";
 import { formatDistance, type EventWithDistance } from "@/hooks/useEventsForList";
 import { formatArtistDisplay } from "@/lib/utils/artist-display";
@@ -9,6 +11,8 @@ import { formatArtistDisplay } from "@/lib/utils/artist-display";
 interface EventCardProps {
   event: EventWithDistance;
   onClick: () => void;
+  artistImageUrl?: string | null;
+  artistDisplayColour?: string | null;
 }
 
 /**
@@ -42,26 +46,43 @@ function getAvatarColor(name: string): string {
   return colors[Math.abs(hash) % colors.length];
 }
 
-export function EventCard({ event, onClick }: EventCardProps) {
+export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour }: EventCardProps) {
+  const [imageError, setImageError] = useState(false);
   const hasArtist = event.artistIds && event.artistIds.length > 0;
   // Use formatArtistDisplay to show "Artist1 + N more" for multi-artist events
   const artistDisplayName = formatArtistDisplay(event);
   const primaryArtistName = event.artistName || event.name || "Live Music";
   const initials = getInitials(primaryArtistName);
-  const avatarColor = getAvatarColor(primaryArtistName);
+  // Use artist's display colour if provided, otherwise generate from name
+  const avatarColor = artistDisplayColour || getAvatarColor(primaryArtistName);
   const isFree = !event.ticketed;
   const price = event.ticketinformation || null;
+
+  // Show image if URL provided and no error loading it
+  const showImage = artistImageUrl && !imageError;
 
   return (
     <div className="lv-event-card" onClick={onClick}>
       {/* Header: Avatar + Artist/Venue */}
       <div className="lv-card-header">
-        {/* Avatar */}
+        {/* Avatar - shows profile image if available, otherwise initials */}
         <div
           className="lv-card-avatar"
-          style={{ backgroundColor: avatarColor }}
+          style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
         >
-          {initials}
+          {showImage ? (
+            <Image
+              src={artistImageUrl}
+              alt={primaryArtistName}
+              width={40}
+              height={40}
+              className="lv-card-avatar-img"
+              onError={() => setImageError(true)}
+              unoptimized
+            />
+          ) : (
+            initials
+          )}
         </div>
 
         {/* Names */}
