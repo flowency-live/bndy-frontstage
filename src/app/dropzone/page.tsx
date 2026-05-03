@@ -48,29 +48,51 @@ interface SignalResponse {
   claims: Claim[];
 }
 
+interface SignalSubmission {
+  type: 'text' | 'image';
+  content?: string;
+  base64Content?: string;
+  fileName?: string;
+  mimeType?: string;
+}
+
 export default function DropzonePage() {
   const [currentSignal, setCurrentSignal] = useState<SignalResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (content: string) => {
+  const handleSubmit = async (submission: SignalSubmission) => {
     setIsSubmitting(true);
     setError(null);
     setCurrentSignal(null);
 
     try {
+      let body: Record<string, unknown>;
+
+      if (submission.type === 'text') {
+        body = {
+          signalType: 'text_paste',
+          content: submission.content,
+        };
+      } else {
+        body = {
+          signalType: 'image',
+          base64Content: submission.base64Content,
+          fileName: submission.fileName,
+          mimeType: submission.mimeType,
+        };
+      }
+
       const response = await fetch(`${API_URL}/signals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          signalType: 'text_paste',
-          content,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create signal');
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create signal');
       }
 
       const { signalId } = await response.json();
@@ -83,7 +105,7 @@ export default function DropzonePage() {
   };
 
   const pollForResult = async (signalId: string) => {
-    const maxAttempts = 30;
+    const maxAttempts = 60; // Longer timeout for image OCR
     let attempts = 0;
 
     const poll = async () => {
@@ -123,7 +145,7 @@ export default function DropzonePage() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Signal Dropzone</h1>
           <p className="text-zinc-400">
-            Paste event text, and bndy will interpret what it means for the live music world.
+            Drop a gig poster or paste event text, and bndy will interpret what it means for the live music world.
           </p>
         </header>
 
