@@ -151,6 +151,7 @@ export default function DropzonePage() {
                 <ClaimsList
                   claims={currentSignal.claims}
                   uncertainties={currentSignal.interpretation?.uncertainties}
+                  signalId={currentSignal.signal.signalId}
                 />
               )}
             </>
