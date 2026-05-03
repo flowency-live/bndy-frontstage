@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface SignalSubmission {
   type: 'text' | 'image';
@@ -63,6 +63,33 @@ export function SignalDropzone({ onSubmit, isSubmitting }: SignalDropzoneProps) 
     reader.readAsDataURL(file);
   }, []);
 
+  // Handle clipboard paste for images
+  const handlePaste = useCallback((e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          // Generate a name for clipboard images
+          const extension = file.type.split('/')[1] || 'png';
+          const clipboardFile = new File([file], `clipboard-image.${extension}`, { type: file.type });
+          processFile(clipboardFile);
+        }
+        return;
+      }
+    }
+    // If no image, let the paste proceed normally (for text)
+  }, [processFile]);
+
+  // Attach paste listener to document
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
@@ -100,7 +127,7 @@ export function SignalDropzone({ onSubmit, isSubmitting }: SignalDropzoneProps) 
 
   const exampleTexts = [
     'STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM',
-    'Jazz Night at The Blue Note - Friday 23rd May, doors 7pm, tickets £15',
+    'Jazz Night at The Blue Note - Friday 23rd May, 7pm, tickets £15',
   ];
 
   return (
@@ -145,8 +172,8 @@ export function SignalDropzone({ onSubmit, isSubmitting }: SignalDropzoneProps) 
         ) : (
           <div className="space-y-2">
             <div className="text-4xl">🎵</div>
-            <p className="text-zinc-300 font-medium">Drop a gig poster here</p>
-            <p className="text-sm text-zinc-500">or</p>
+            <p className="text-zinc-300 font-medium">Drop or paste a gig poster</p>
+            <p className="text-sm text-zinc-500">Ctrl+V to paste from clipboard, or</p>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300"
