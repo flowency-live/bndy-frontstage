@@ -110,7 +110,7 @@ describe('useChatSession', () => {
           json: () =>
             Promise.resolve({
               signal: { signalId: 'signal-123', status: 'pending_review' },
-              interpretation: { llmInterpretation: { response: 'Got it!' } },
+              interpretation: { llmInterpretation: { reasoning: 'Got it!' } },
               claims: [],
             }),
         })
@@ -154,7 +154,7 @@ describe('useChatSession', () => {
             Promise.resolve({
               signal: { signalId: 'signal-123', status: 'pending_review' },
               interpretation: {
-                llmInterpretation: { response: 'What date is the gig?' },
+                llmInterpretation: { reasoning: 'What date is the gig?' },
               },
               claims: [],
             }),
@@ -192,7 +192,7 @@ describe('useChatSession', () => {
             Promise.resolve({
               signal: { signalId: 'signal-123', status: 'pending_review' },
               interpretation: {
-                llmInterpretation: { response: 'Response received' },
+                llmInterpretation: { reasoning: 'Response received' },
               },
               claims: [],
             }),
@@ -232,7 +232,7 @@ describe('useChatSession', () => {
             Promise.resolve({
               signal: { signalId: 'signal-123', status: 'pending_review' },
               interpretation: {
-                llmInterpretation: { response: 'Done!' },
+                llmInterpretation: { reasoning: 'Done!' },
               },
               claims: [],
             }),

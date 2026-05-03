@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 
-const API_URL = 'https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.bndy.co.uk';
 
 export interface ChatMessage {
   id: string;
@@ -18,7 +18,8 @@ interface SignalResponse {
   };
   interpretation?: {
     llmInterpretation: {
-      response: string;
+      reasoning: string;
+      modelUsed: string;
     };
   };
   claims: unknown[];
@@ -60,12 +61,12 @@ export function useChatSession(): UseChatSessionReturn {
             pollingRef.current = null;
           }
 
-          // Add assistant message if we have a response
-          if (data.interpretation?.llmInterpretation?.response) {
+          // Add assistant message if we have a reasoning response
+          if (data.interpretation?.llmInterpretation?.reasoning) {
             const assistantMessage: ChatMessage = {
               id: generateId(),
               role: 'assistant',
-              content: data.interpretation.llmInterpretation.response,
+              content: data.interpretation.llmInterpretation.reasoning,
               timestamp: getTimestamp(),
             };
             setMessages((prev) => [...prev, assistantMessage]);
@@ -102,7 +103,7 @@ export function useChatSession(): UseChatSessionReturn {
 
       try {
         const body: Record<string, unknown> = {
-          signalType: 'chat_message',
+          signalType: 'text_paste',
           content,
         };
 

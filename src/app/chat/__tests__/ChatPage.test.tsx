@@ -110,7 +110,7 @@ describe('ChatPage', () => {
             Promise.resolve({
               signal: { signalId: 'signal-123', status: 'pending_review' },
               interpretation: {
-                llmInterpretation: { response: 'What date is your gig?' },
+                llmInterpretation: { reasoning: 'What date is your gig?' },
               },
               claims: [],
             }),
