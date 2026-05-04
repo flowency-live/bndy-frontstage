@@ -48,30 +48,42 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
   const { isDarkMode, mapMode } = useViewToggle();
   const { map, isMapReady, isBot } = useMapbox();
 
-  // Calculate date range for queries
+  // Calculate date range for event marker queries
   const { startDate, endDate } = useMemo(() => {
     return getFormattedDateRange(dateRange as DateRangeFilter);
   }, [dateRange]);
 
-  // Fetch ALL public events in date range (always fetch - cache handles efficiency)
-  // Needed for venue mode to determine which venues have upcoming events
+  // Today's date for "all future events" query
+  const todayStr = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+  }, []);
+
+  // Fetch events in current date range (for event markers)
   const { data: allEvents = [], isLoading: eventsLoading } = useAllPublicEvents({
     startDate,
     endDate,
     enabled: true,
   });
 
+  // Fetch ALL future events (for venue highlighting - no end date)
+  const { data: allFutureEvents = [] } = useAllPublicEvents({
+    startDate: todayStr,
+    endDate: undefined,
+    enabled: true,
+  });
+
   // Fetch all venues
   const { data: venues = [], isLoading: venuesLoading } = useVenues();
 
-  // Compute venue IDs that have upcoming events (for conditional styling)
+  // Compute venue IDs that have ANY future events (not just current filter)
   const venueIdsWithEvents = useMemo(() => {
     const ids = new Set<string>();
-    allEvents.forEach(event => {
+    allFutureEvents.forEach(event => {
       if (event.venueId) ids.add(event.venueId);
     });
     return ids;
-  }, [allEvents]);
+  }, [allFutureEvents]);
 
   // UI state for overlays
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);

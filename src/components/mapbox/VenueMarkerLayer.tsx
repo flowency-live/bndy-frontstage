@@ -158,9 +158,9 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             source: VENUE_SOURCE_ID,
             filter: ["all", ["!", ["has", "point_count"]], ["get", "hasEvents"]],
             paint: {
-              "circle-radius": 14,
-              "circle-color": "#FF1493",
-              "circle-opacity": 0.35,
+              "circle-radius": 16,
+              "circle-color": "#06B6D4",  // Cyan glow
+              "circle-opacity": 0.4,
               "circle-blur": 1,
             },
           });
@@ -171,11 +171,11 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             source: VENUE_SOURCE_ID,
             filter: ["!", ["has", "point_count"]],
             paint: {
-              // Active venues: full presence with white stroke for pop
-              // Inactive venues: smaller, faded, no stroke
-              "circle-radius": ["case", ["get", "hasEvents"], 7, 4],
-              "circle-color": "#FF1493",
-              "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.4],
+              // Active venues: CYAN (has events) - clear differentiation
+              // Inactive venues: faded pink
+              "circle-radius": ["case", ["get", "hasEvents"], 8, 4],
+              "circle-color": ["case", ["get", "hasEvents"], "#06B6D4", "#FF1493"],
+              "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.35],
               "circle-stroke-width": ["case", ["get", "hasEvents"], 2, 0],
               "circle-stroke-color": "#FFFFFF",
             },
