@@ -338,4 +338,283 @@ describe('useChatSession', () => {
       expect(result.current.isLoading).toBe(false);
     });
   });
+
+  describe('clarifications', () => {
+    it('starts with empty clarifications array', () => {
+      const { result } = renderHook(() => useChatSession());
+
+      expect(result.current.clarifications).toEqual([]);
+    });
+
+    it('populates clarifications from poll response', async () => {
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        candidateId: 'cand_xyz12345',
+        question: 'Which venue is "The Rigger"?',
+        questionType: 'entity_match',
+        options: [
+          { optionId: 'opt_venue001', label: 'The Rigger, Newcastle', entityId: 'vnue_ncl12345' },
+        ],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: {
+                llmInterpretation: { reasoning: 'Found an event' },
+              },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        });
+
+      const { result } = renderHook(() => useChatSession());
+
+      await act(async () => {
+        result.current.sendMessage('Stingray at The Rigger');
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await waitFor(() => {
+        expect(result.current.clarifications).toHaveLength(1);
+      });
+
+      expect(result.current.clarifications[0].clarificationId).toBe('clar_test1234');
+      expect(result.current.clarifications[0].question).toBe('Which venue is "The Rigger"?');
+    });
+
+    it('provides handleResolve function', async () => {
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        candidateId: 'cand_xyz12345',
+        question: 'Which venue?',
+        questionType: 'entity_match',
+        options: [
+          { optionId: 'opt_venue001', label: 'Venue A', entityId: 'vnue_abc12345' },
+        ],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: { llmInterpretation: { reasoning: 'Event found' } },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        })
+        // Resolve clarification call
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true, resolution: 'vnue_abc12345' }),
+        });
+
+      const { result } = renderHook(() => useChatSession());
+
+      await act(async () => {
+        result.current.sendMessage('Test');
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await waitFor(() => {
+        expect(result.current.clarifications).toHaveLength(1);
+      });
+
+      await act(async () => {
+        await result.current.handleResolve('clar_test1234', 'opt_venue001');
+      });
+
+      // Clarification should be removed after resolution
+      expect(result.current.clarifications).toHaveLength(0);
+    });
+
+    it('provides handleDismiss function', async () => {
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        question: 'Which venue?',
+        questionType: 'entity_match',
+        options: [],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: { llmInterpretation: { reasoning: 'Event found' } },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        })
+        // Dismiss clarification call
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        });
+
+      const { result } = renderHook(() => useChatSession());
+
+      await act(async () => {
+        result.current.sendMessage('Test');
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await waitFor(() => {
+        expect(result.current.clarifications).toHaveLength(1);
+      });
+
+      await act(async () => {
+        await result.current.handleDismiss('clar_test1234');
+      });
+
+      expect(result.current.clarifications).toHaveLength(0);
+    });
+
+    it('tracks resolvingId while resolving', async () => {
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        question: 'Which venue?',
+        questionType: 'entity_match',
+        options: [{ optionId: 'opt_1', label: 'A', entityId: 'vnue_a' }],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      let resolvePromise: () => void;
+      const delayedResolve = new Promise<void>((resolve) => {
+        resolvePromise = resolve;
+      });
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: { llmInterpretation: { reasoning: 'Event' } },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        })
+        .mockImplementationOnce(() =>
+          delayedResolve.then(() => ({
+            ok: true,
+            json: () => Promise.resolve({ success: true }),
+          }))
+        );
+
+      const { result } = renderHook(() => useChatSession());
+
+      await act(async () => {
+        result.current.sendMessage('Test');
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await waitFor(() => {
+        expect(result.current.clarifications).toHaveLength(1);
+      });
+
+      // Start resolving - don't await yet
+      act(() => {
+        result.current.handleResolve('clar_test1234', 'opt_1');
+      });
+
+      expect(result.current.resolvingId).toBe('clar_test1234');
+
+      // Complete the resolution
+      await act(async () => {
+        resolvePromise!();
+      });
+
+      await waitFor(() => {
+        expect(result.current.resolvingId).toBeNull();
+      });
+    });
+
+    it('clears clarifications on clearSession', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: { llmInterpretation: { reasoning: 'Event' } },
+              claims: [],
+              clarifications: [
+                {
+                  clarificationId: 'clar_1',
+                  question: 'Q?',
+                  options: [],
+                  status: 'open',
+                  createdAt: '2026-05-04T12:00:00.000Z',
+                },
+              ],
+            }),
+        });
+
+      const { result } = renderHook(() => useChatSession());
+
+      await act(async () => {
+        result.current.sendMessage('Test');
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await waitFor(() => {
+        expect(result.current.clarifications).toHaveLength(1);
+      });
+
+      act(() => {
+        result.current.clearSession();
+      });
+
+      expect(result.current.clarifications).toEqual([]);
+    });
+  });
 });

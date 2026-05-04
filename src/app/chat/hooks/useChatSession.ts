@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { ClarificationRequest } from '../types/clarification';
+import {
+  resolveClarification as apiResolveClarification,
+  dismissClarification as apiDismissClarification,
+} from '../api/clarificationApi';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.bndy.co.uk';
 
@@ -23,6 +28,7 @@ interface SignalResponse {
     };
   };
   claims: unknown[];
+  clarifications?: ClarificationRequest[];
 }
 
 interface UseChatSessionReturn {
@@ -30,8 +36,12 @@ interface UseChatSessionReturn {
   isLoading: boolean;
   error: string | null;
   sessionId: string | null;
+  clarifications: ClarificationRequest[];
+  resolvingId: string | null;
   sendMessage: (content: string) => Promise<void>;
   clearSession: () => void;
+  handleResolve: (clarificationId: string, optionId: string) => Promise<void>;
+  handleDismiss: (clarificationId: string) => Promise<void>;
 }
 
 export function useChatSession(): UseChatSessionReturn {
@@ -39,6 +49,8 @@ export function useChatSession(): UseChatSessionReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [clarifications, setClarifications] = useState<ClarificationRequest[]>([]);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const generateId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -70,6 +82,14 @@ export function useChatSession(): UseChatSessionReturn {
               timestamp: getTimestamp(),
             };
             setMessages((prev) => [...prev, assistantMessage]);
+          }
+
+          // Update clarifications (only show open ones)
+          if (data.clarifications) {
+            const openClarifications = data.clarifications.filter(
+              (c) => c.status === 'open'
+            );
+            setClarifications(openClarifications);
           }
 
           setIsLoading(false);
@@ -139,6 +159,53 @@ export function useChatSession(): UseChatSessionReturn {
     [sessionId, pollForResponse]
   );
 
+  const handleResolve = useCallback(
+    async (clarificationId: string, optionId: string) => {
+      setResolvingId(clarificationId);
+      try {
+        const result = await apiResolveClarification(
+          clarificationId,
+          optionId,
+          'chat_user' // Default user ID for chat
+        );
+
+        if (result.success) {
+          // Remove the resolved clarification from the list
+          setClarifications((prev) =>
+            prev.filter((c) => c.clarificationId !== clarificationId)
+          );
+        } else {
+          setError(result.error || 'Failed to resolve clarification');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to resolve clarification');
+      } finally {
+        setResolvingId(null);
+      }
+    },
+    []
+  );
+
+  const handleDismiss = useCallback(async (clarificationId: string) => {
+    setResolvingId(clarificationId);
+    try {
+      const result = await apiDismissClarification(clarificationId, 'chat_user');
+
+      if (result.success) {
+        // Remove the dismissed clarification from the list
+        setClarifications((prev) =>
+          prev.filter((c) => c.clarificationId !== clarificationId)
+        );
+      } else {
+        setError(result.error || 'Failed to dismiss clarification');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to dismiss clarification');
+    } finally {
+      setResolvingId(null);
+    }
+  }, []);
+
   const clearSession = useCallback(() => {
     if (pollingRef.current) {
       clearTimeout(pollingRef.current);
@@ -148,6 +215,8 @@ export function useChatSession(): UseChatSessionReturn {
     setSessionId(null);
     setError(null);
     setIsLoading(false);
+    setClarifications([]);
+    setResolvingId(null);
   }, []);
 
   return {
@@ -155,7 +224,11 @@ export function useChatSession(): UseChatSessionReturn {
     isLoading,
     error,
     sessionId,
+    clarifications,
+    resolvingId,
     sendMessage,
     clearSession,
+    handleResolve,
+    handleDismiss,
   };
 }

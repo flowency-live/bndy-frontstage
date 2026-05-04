@@ -190,4 +190,129 @@ describe('ChatPage', () => {
       expect(screen.getByPlaceholderText(/tell me about your gig/i)).toHaveFocus();
     });
   });
+
+  describe('clarifications', () => {
+    it('displays clarification when returned from poll', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        candidateId: 'cand_xyz12345',
+        question: 'Which venue is "The Rigger"?',
+        questionType: 'entity_match',
+        options: [
+          { optionId: 'opt_venue001', label: 'The Rigger, Newcastle', entityId: 'vnue_ncl12345' },
+          { optionId: 'opt_venue002', label: 'The Rigger, Sheffield', entityId: 'vnue_shf67890' },
+        ],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: {
+                llmInterpretation: { reasoning: 'Found an event' },
+              },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        });
+
+      render(<ChatPage />);
+
+      await user.type(screen.getByPlaceholderText(/tell me about your gig/i), 'Stingray at The Rigger');
+      await user.click(screen.getByRole('button', { name: /send/i }));
+
+      await jest.advanceTimersByTimeAsync(2000);
+
+      await waitFor(() => {
+        expect(screen.getByText('Which venue is "The Rigger"?')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('button', { name: 'The Rigger, Newcastle' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'The Rigger, Sheffield' })).toBeInTheDocument();
+    });
+
+    it('removes clarification after resolution', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+      const clarification = {
+        clarificationId: 'clar_test1234',
+        question: 'Which venue?',
+        questionType: 'entity_match',
+        options: [
+          { optionId: 'opt_venue001', label: 'Venue A', entityId: 'vnue_a' },
+        ],
+        status: 'open',
+        createdAt: '2026-05-04T12:00:00.000Z',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ signalId: 'signal-123' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              signal: { signalId: 'signal-123', status: 'pending_review' },
+              interpretation: {
+                llmInterpretation: { reasoning: 'Event found' },
+              },
+              claims: [],
+              clarifications: [clarification],
+            }),
+        })
+        // Resolve clarification call
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true, resolution: 'vnue_a' }),
+        });
+
+      render(<ChatPage />);
+
+      await user.type(screen.getByPlaceholderText(/tell me about your gig/i), 'Test');
+      await user.click(screen.getByRole('button', { name: /send/i }));
+
+      await jest.advanceTimersByTimeAsync(2000);
+
+      await waitFor(() => {
+        expect(screen.getByText('Which venue?')).toBeInTheDocument();
+      });
+
+      // Click the option to resolve
+      await user.click(screen.getByRole('button', { name: 'Venue A' }));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Which venue?')).not.toBeInTheDocument();
+      });
+    });
+
+    it('does not show clarification while loading', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ signalId: 'signal-123' }),
+      });
+
+      render(<ChatPage />);
+
+      await user.type(screen.getByPlaceholderText(/tell me about your gig/i), 'Test');
+      await user.click(screen.getByRole('button', { name: /send/i }));
+
+      // Should show loading, not clarification
+      expect(screen.getByTestId('loading-indicator')).toBeInTheDocument();
+      expect(screen.queryByTestId('clarification-message')).not.toBeInTheDocument();
+    });
+  });
 });

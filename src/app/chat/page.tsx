@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
+import { ClarificationMessage } from './components/ClarificationMessage';
 import { useChatSession } from './hooks/useChatSession';
 
 const WELCOME_MESSAGE = {
@@ -14,13 +15,26 @@ const WELCOME_MESSAGE = {
 };
 
 export default function ChatPage() {
-  const { messages, isLoading, error, sendMessage, clearSession } = useChatSession();
+  const {
+    messages,
+    isLoading,
+    error,
+    clarifications,
+    resolvingId,
+    sendMessage,
+    clearSession,
+    handleResolve,
+    handleDismiss,
+  } = useChatSession();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get the first (active) clarification - sequential presentation
+  const activeClarification = clarifications.length > 0 ? clarifications[0] : null;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, clarifications]);
 
   const displayMessages = messages.length === 0 ? [WELCOME_MESSAGE] : messages;
 
@@ -66,6 +80,16 @@ export default function ChatPage() {
               role="assistant"
               content=""
               isLoading
+            />
+          )}
+
+          {/* Clarification prompt - only show when not loading */}
+          {activeClarification && !isLoading && (
+            <ClarificationMessage
+              clarification={activeClarification}
+              onResolve={handleResolve}
+              onDismiss={handleDismiss}
+              isResolving={resolvingId === activeClarification.clarificationId}
             />
           )}
 
