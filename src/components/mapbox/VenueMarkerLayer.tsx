@@ -32,6 +32,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
   const venueMapRef = useRef<Map<string, Venue>>(new Map());
   const visibleRef = useRef(visible);
   const venueIdsWithEventsRef = useRef(venueIdsWithEvents);
+  const venuesRef = useRef(venues);
 
   // Keep refs updated
   useEffect(() => {
@@ -51,6 +52,10 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
   useEffect(() => {
     venueIdsWithEventsRef.current = venueIdsWithEvents;
   }, [venueIdsWithEvents]);
+
+  useEffect(() => {
+    venuesRef.current = venues;
+  }, [venues]);
 
   // Reset initialization when map instance changes (after navigation)
   useEffect(() => {
@@ -115,10 +120,11 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
         await addMarkerImagesToMap(map);
 
         // Create source if doesn't exist
+        // Use refs to avoid stale closure issue (venues may update during async init)
         if (!map.getSource(VENUE_SOURCE_ID)) {
           map.addSource(VENUE_SOURCE_ID, {
             type: "geojson",
-            data: venuesToGeoJSON(venues, venueIdsWithEventsRef.current),
+            data: venuesToGeoJSON(venuesRef.current, venueIdsWithEventsRef.current),
             cluster: true,
             clusterMaxZoom: 11,
             clusterRadius: 30,

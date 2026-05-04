@@ -30,6 +30,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
   const visibleRef = useRef(visible);
+  const eventsRef = useRef(events);
 
   // Keep refs updated
   useEffect(() => {
@@ -43,6 +44,10 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   useEffect(() => {
     visibleRef.current = visible;
   }, [visible]);
+
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
 
   // Reset initialization when map instance changes (after navigation)
   useEffect(() => {
@@ -107,10 +112,11 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
         await addMarkerImagesToMap(map);
 
         // Create source if doesn't exist
+        // Use ref to avoid stale closure issue (events may update during async init)
         if (!map.getSource(EVENT_SOURCE_ID)) {
           map.addSource(EVENT_SOURCE_ID, {
             type: "geojson",
-            data: eventsToGeoJSON(events),
+            data: eventsToGeoJSON(eventsRef.current),
             cluster: true,
             clusterMaxZoom: 11,
             clusterRadius: 40,
