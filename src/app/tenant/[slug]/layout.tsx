@@ -1,19 +1,24 @@
 /**
  * White-label tenant layout
  *
- * Isolated from main BNDY layout - does NOT use:
- * - Main Header/Footer
- * - EventsContext
- * - ViewToggleContext
+ * Reuses main BNDY components (MapView, ListView) with tenant theming.
+ * Does NOT use main Header/Footer - has its own branded versions.
  *
- * Uses its own providers and components.
+ * Provider hierarchy:
+ * - Providers (React Query)
+ * - ViewToggleProvider (view state)
+ * - MapboxProvider (map instance)
+ * - WhitelabelProvider (tenant context + CSS variables)
+ * - WhitelabelEventsProvider (EventsContext with tenant location)
  */
 
 import { notFound } from 'next/navigation';
 import { getTenantConfig, getAllTenantSlugs } from '@/lib/whitelabel/tenants';
 import { WhitelabelProvider } from '@/components/whitelabel/WhitelabelProvider';
+import { WhitelabelEventsProvider } from '@/components/whitelabel/WhitelabelEventsProvider';
 import { Providers } from '@/app/providers';
 import { MapboxProvider } from '@/context/MapboxContext';
+import { ViewToggleProvider } from '@/context/ViewToggleContext';
 import type { Metadata } from 'next';
 
 interface TenantLayoutProps {
@@ -62,19 +67,23 @@ export default async function TenantLayout({ children, params }: TenantLayoutPro
 
   return (
     <Providers>
-      <MapboxProvider>
-        <WhitelabelProvider tenant={tenant}>
-          <div
-            className="min-h-screen flex flex-col"
-            style={{
-              backgroundColor: tenant.theme.background,
-              color: tenant.theme.foreground,
-            }}
-          >
-            {children}
-          </div>
-        </WhitelabelProvider>
-      </MapboxProvider>
+      <ViewToggleProvider>
+        <MapboxProvider>
+          <WhitelabelProvider tenant={tenant}>
+            <WhitelabelEventsProvider>
+              <div
+                className="min-h-screen flex flex-col"
+                style={{
+                  backgroundColor: tenant.theme.background,
+                  color: tenant.theme.foreground,
+                }}
+              >
+                {children}
+              </div>
+            </WhitelabelEventsProvider>
+          </WhitelabelProvider>
+        </MapboxProvider>
+      </ViewToggleProvider>
     </Providers>
   );
 }

@@ -3,19 +3,18 @@
 /**
  * White-label homepage component
  *
- * Self-contained view that doesn't rely on main BNDY contexts.
- * Has its own map/list toggle state.
+ * Reuses the main BNDY MapView and ListView with tenant theming.
+ * Uses ViewToggleContext for view state (provided by layout).
  */
 
-import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useWhitelabel } from './WhitelabelProvider';
+import { useViewToggle } from '@/context/ViewToggleContext';
 import { WhitelabelHeader } from './WhitelabelHeader';
 import { WhitelabelFooter } from './WhitelabelFooter';
-import { WhitelabelList } from './WhitelabelList';
+import ListView from '@/components/ListView';
 
-// Dynamically import map with SSR disabled
-const WhitelabelMapNoSSR = dynamic(() => import('./WhitelabelMap').then(m => m.WhitelabelMap), {
+// Dynamically import MapView with SSR disabled (same as main app)
+const MapViewNoSSR = dynamic(() => import('@/components/MapView'), {
   ssr: false,
   loading: () => (
     <div className="flex-1 flex items-center justify-center">
@@ -24,25 +23,18 @@ const WhitelabelMapNoSSR = dynamic(() => import('./WhitelabelMap').then(m => m.W
   ),
 });
 
-type ViewMode = 'map' | 'list';
-
 export function WhitelabelHome() {
-  const { tenant } = useWhitelabel();
-  const [activeView, setActiveView] = useState<ViewMode>('map');
+  const { activeView } = useViewToggle();
 
   return (
     <div className="flex flex-col min-h-screen">
-      <WhitelabelHeader
-        activeView={activeView}
-        onViewChange={setActiveView}
-      />
+      <WhitelabelHeader />
 
       <main className="flex-1 mt-20">
-        {activeView === 'map' ? (
-          <WhitelabelMapNoSSR />
-        ) : (
-          <WhitelabelList />
-        )}
+        {/* Key forces remount when view changes (same as main app) */}
+        <div key={`view-${activeView}`}>
+          {activeView === 'map' ? <MapViewNoSSR /> : <ListView />}
+        </div>
       </main>
 
       <WhitelabelFooter />

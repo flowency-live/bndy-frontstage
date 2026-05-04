@@ -6,9 +6,12 @@
  */
 
 export { WhitelabelProvider, useWhitelabel } from './WhitelabelProvider';
+export { WhitelabelEventsProvider } from './WhitelabelEventsProvider';
 export { WhitelabelHome } from './WhitelabelHome';
 export { WhitelabelHeader } from './WhitelabelHeader';
 export { WhitelabelFooter } from './WhitelabelFooter';
+export { ConfigPanel } from './ConfigPanel';
+
+// Legacy simple components (kept for config page preview)
 export { WhitelabelList } from './WhitelabelList';
 export { WhitelabelMap } from './WhitelabelMap';
-export { ConfigPanel } from './ConfigPanel';

@@ -3,20 +3,18 @@
 /**
  * White-label header component
  *
- * Shows tenant branding and map/list toggle.
+ * Shows tenant branding and map/list/venue toggles.
+ * Uses ViewToggleContext for view state.
  * Does NOT show BNDY branding.
  */
 
-import { Map, List } from 'lucide-react';
+import { Map, List, Building, Calendar } from 'lucide-react';
 import { useWhitelabel } from './WhitelabelProvider';
+import { useViewToggle } from '@/context/ViewToggleContext';
 
-interface WhitelabelHeaderProps {
-  activeView: 'map' | 'list';
-  onViewChange: (view: 'map' | 'list') => void;
-}
-
-export function WhitelabelHeader({ activeView, onViewChange }: WhitelabelHeaderProps) {
+export function WhitelabelHeader() {
   const { tenant } = useWhitelabel();
+  const { activeView, setActiveView, mapMode, setMapMode } = useViewToggle();
 
   return (
     <header
@@ -46,22 +44,48 @@ export function WhitelabelHeader({ activeView, onViewChange }: WhitelabelHeaderP
         </div>
 
         {/* View toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Events Map */}
           <button
-            onClick={() => onViewChange('map')}
+            onClick={() => {
+              setActiveView('map');
+              setMapMode('events');
+            }}
             className={`p-2 rounded-lg transition-colors ${
-              activeView === 'map' ? 'opacity-100' : 'opacity-50'
+              activeView === 'map' && mapMode === 'events' ? 'opacity-100' : 'opacity-50'
             }`}
             style={{
-              backgroundColor: activeView === 'map' ? `${tenant.theme.primary}22` : 'transparent',
+              backgroundColor: activeView === 'map' && mapMode === 'events' ? `${tenant.theme.primary}22` : 'transparent',
               color: tenant.theme.primary,
             }}
-            aria-label="Map view"
+            aria-label="Events map view"
+            title="Events Map"
           >
-            <Map className="w-5 h-5" />
+            <Calendar className="w-5 h-5" />
           </button>
+
+          {/* Venues Map */}
           <button
-            onClick={() => onViewChange('list')}
+            onClick={() => {
+              setActiveView('map');
+              setMapMode('venues');
+            }}
+            className={`p-2 rounded-lg transition-colors ${
+              activeView === 'map' && mapMode === 'venues' ? 'opacity-100' : 'opacity-50'
+            }`}
+            style={{
+              backgroundColor: activeView === 'map' && mapMode === 'venues' ? `${tenant.theme.primary}22` : 'transparent',
+              color: tenant.theme.primary,
+            }}
+            aria-label="Venues map view"
+            title="Venues Map"
+          >
+            <Building className="w-5 h-5" />
+          </button>
+
+          {/* List View */}
+          <button
+            onClick={() => setActiveView('list')}
             className={`p-2 rounded-lg transition-colors ${
               activeView === 'list' ? 'opacity-100' : 'opacity-50'
             }`}
@@ -70,6 +94,7 @@ export function WhitelabelHeader({ activeView, onViewChange }: WhitelabelHeaderP
               color: tenant.theme.primary,
             }}
             aria-label="List view"
+            title="List View"
           >
             <List className="w-5 h-5" />
           </button>
