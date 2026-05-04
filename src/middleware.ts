@@ -42,7 +42,10 @@ const IGNORED_SUBDOMAINS = [
 ];
 
 export function middleware(request: NextRequest) {
-  const hostname = request.headers.get('host') || '';
+  // Check x-forwarded-host first (used by AWS CloudFront/Amplify), then fall back to host
+  const hostname = request.headers.get('x-forwarded-host')
+    || request.headers.get('host')
+    || '';
 
   // Extract subdomain (first part before first dot)
   const subdomain = hostname.split('.')[0].toLowerCase();
