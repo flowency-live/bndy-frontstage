@@ -93,7 +93,8 @@ export default function TodayEventHighlight({
           {/* Price column */}
           <div className="sm:col-span-2 flex justify-start sm:justify-end items-center">
             {(() => {
-              const priceValue = event.price;
+              const rawPrice = event.price;
+              const priceValue = rawPrice?.replace(/^from\s+/i, '');
               const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
               return isFree ? (
                 <div className="text-sm font-medium text-[var(--secondary)]">

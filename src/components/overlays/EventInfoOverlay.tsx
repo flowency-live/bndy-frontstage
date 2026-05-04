@@ -107,7 +107,9 @@ export default function EventInfoOverlay({
 
   const venueName = venue?.name || currentEvent.venueName || "Venue";
   const venueCity = currentEvent.venueCity || venue?.city || "";
-  const priceValue = currentEvent.price;
+  // Strip "From " prefix for cleaner display
+  const rawPrice = currentEvent.price;
+  const priceValue = rawPrice?.replace(/^from\s+/i, '');
   const isFree = !currentEvent.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
   const priceDisplay = isFree ? "FREE" : (priceValue || currentEvent.ticketinformation || "Ticketed");
 

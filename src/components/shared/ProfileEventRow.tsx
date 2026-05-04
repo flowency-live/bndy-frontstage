@@ -41,7 +41,9 @@ export default function ProfileEventRow({
   const formattedTime = event.startTime?.slice(0, 5) || "";
 
   // Determine ticket display - Event uses 'price' field
-  const priceValue = event.price;
+  // Strip "From " prefix for cleaner display
+  const rawPrice = event.price;
+  const priceValue = rawPrice?.replace(/^from\s+/i, '');
   const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
   const ticketDisplay = isFree ? "£ree" : priceValue || "TBC";
 

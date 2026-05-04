@@ -142,7 +142,8 @@ export default function VAEventsList({
           {/* Ticket Column */}
           <div className="col-span-2 flex justify-end items-center">
             {(() => {
-              const priceValue = event.price;
+              const rawPrice = event.price;
+              const priceValue = rawPrice?.replace(/^from\s+/i, '');
               const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
               return isFree ? (
                 <span className="text-xs font-medium text-[var(--secondary)]">

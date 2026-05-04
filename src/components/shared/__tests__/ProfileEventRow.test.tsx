@@ -87,6 +87,21 @@ describe('ProfileEventRow', () => {
       });
     });
 
+    it('strips "From" prefix from price', () => {
+      const event = { ...baseEvent, ticketed: true, price: 'From £12.50' };
+      render(<ProfileEventRow event={event} counterpartType="venue" />);
+
+      expect(screen.getByText('£12.50')).toBeInTheDocument();
+      expect(screen.queryByText(/from/i)).not.toBeInTheDocument();
+    });
+
+    it('strips "from" prefix case-insensitively', () => {
+      const event = { ...baseEvent, ticketed: true, price: 'from £10' };
+      render(<ProfileEventRow event={event} counterpartType="venue" />);
+
+      expect(screen.getByText('£10')).toBeInTheDocument();
+    });
+
     it('shows TBC when ticketed is true but price is empty string', () => {
       const event = { ...baseEvent, ticketed: true, price: '' };
       render(<ProfileEventRow event={event} counterpartType="venue" />);

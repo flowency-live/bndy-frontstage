@@ -42,8 +42,9 @@ export default function FeaturedEventCard({
   const formattedDate = format(eventDate, "EEE, d MMM yyyy");
   const formattedTime = event.startTime?.slice(0, 5) || "";
 
-  // Determine ticket display
-  const priceValue = event.price;
+  // Determine ticket display - strip "From " prefix
+  const rawPrice = event.price;
+  const priceValue = rawPrice?.replace(/^from\s+/i, '');
   const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
   const ticketDisplay = isFree ? "Free" : priceValue || "Tickets";
 
