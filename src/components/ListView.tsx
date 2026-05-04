@@ -36,12 +36,17 @@ export default function ListView() {
   }, []);
 
   // Fetch events with distance
-  const { events, isLoading: loading, isError, error } = useEventsForList({
+  // Use isPending to detect "no data yet" state (React Query v5)
+  // isLoading = isPending && isFetching, so it's false if there's stale cache
+  const { events, isLoading, isPending, isError, error } = useEventsForList({
     location: selectedLocation,
     radius,
     startDate,
     enabled: true
   });
+
+  // Show skeleton when we have no data yet (isPending) or actively loading
+  const showSkeleton = isPending || isLoading;
 
   const [expandedSections, setExpandedSections] = useState<string[]>(["today", "tomorrow", "thisWeek"]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,7 +137,7 @@ export default function ListView() {
 
   const noSearchResults = searchTerm.length >= 2 && totalEvents === 0 && events.length > 0;
 
-  if (loading) {
+  if (showSkeleton) {
     return (
       <div className="lv-wrap flex flex-col h-[calc(100vh-116px)] overflow-hidden">
         <div className="p-4">

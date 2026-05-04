@@ -218,8 +218,13 @@ export function getClusterImageName(count: number, type: "venue" | "event"): str
 
 /**
  * Convert venues to GeoJSON for Mapbox source
+ * @param venues Array of venue objects
+ * @param venueIdsWithEvents Optional Set of venue IDs that have upcoming events
  */
-export function venuesToGeoJSON(venues: Array<{ id: string; name: string; location: { lat: number; lng: number } }>): GeoJSON.FeatureCollection {
+export function venuesToGeoJSON(
+  venues: Array<{ id: string; name: string; location: { lat: number; lng: number } }>,
+  venueIdsWithEvents?: Set<string>
+): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
     features: venues
@@ -229,6 +234,7 @@ export function venuesToGeoJSON(venues: Array<{ id: string; name: string; locati
         properties: {
           id: venue.id,
           name: venue.name,
+          hasEvents: venueIdsWithEvents?.has(venue.id) ?? false,
         },
         geometry: {
           type: "Point" as const,

@@ -8,6 +8,7 @@ import { addMarkerImagesToMap, venuesToGeoJSON } from "./MapboxMarkers";
 
 interface VenueMarkerLayerProps {
   venues: Venue[];
+  venueIdsWithEvents: Set<string>;
   onVenueClick: (venue: Venue) => void;
   visible: boolean;
 }
@@ -22,13 +23,14 @@ const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
  *
  * IMPORTANT: This component stays mounted. Visibility is controlled by prop.
  */
-export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerLayerProps) {
+export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, visible }: VenueMarkerLayerProps) {
   const { map, isMapReady, currentStyleMode } = useMapbox();
   const initializedRef = useRef(false);
   const lastMapIdRef = useRef<string | null>(null);
   const onVenueClickRef = useRef(onVenueClick);
   const venueMapRef = useRef<Map<string, Venue>>(new Map());
   const visibleRef = useRef(visible);
+  const venueIdsWithEventsRef = useRef(venueIdsWithEvents);
 
   // Keep refs updated
   useEffect(() => {
@@ -44,6 +46,10 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
   useEffect(() => {
     visibleRef.current = visible;
   }, [visible]);
+
+  useEffect(() => {
+    venueIdsWithEventsRef.current = venueIdsWithEvents;
+  }, [venueIdsWithEvents]);
 
   // Reset initialization when map instance changes (after navigation)
   useEffect(() => {
@@ -111,7 +117,7 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
         if (!map.getSource(VENUE_SOURCE_ID)) {
           map.addSource(VENUE_SOURCE_ID, {
             type: "geojson",
-            data: venuesToGeoJSON(venues),
+            data: venuesToGeoJSON(venues, venueIdsWithEventsRef.current),
             cluster: true,
             clusterMaxZoom: 11,
             clusterRadius: 30,
@@ -150,10 +156,13 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
             source: VENUE_SOURCE_ID,
             filter: ["!", ["has", "point_count"]],
             paint: {
-              "circle-radius": 6,
+              // Venues with events: larger + orange stroke (event color)
+              // Venues without: smaller + white stroke + faded
+              "circle-radius": ["case", ["get", "hasEvents"], 8, 5],
               "circle-color": "#FF1493",
-              "circle-stroke-width": 1.5,
-              "circle-stroke-color": "#FFFFFF",
+              "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.4],
+              "circle-stroke-width": ["case", ["get", "hasEvents"], 2.5, 1],
+              "circle-stroke-color": ["case", ["get", "hasEvents"], "#F97316", "#FFFFFF"],
             },
           });
 
@@ -252,7 +261,7 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
     try {
       const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
       if (source) {
-        source.setData(venuesToGeoJSON(venues));
+        source.setData(venuesToGeoJSON(venues, venueIdsWithEventsRef.current));
         console.log("[VenueMarkerLayer] Data updated:", venues.length, "venues");
 
         // Defensive: re-apply visibility after data update
@@ -268,6 +277,21 @@ export function VenueMarkerLayer({ venues, onVenueClick, visible }: VenueMarkerL
       // Map or source not ready yet
     }
   }, [map, isMapReady, venues]);
+
+  // Update GeoJSON when events change (affects hasEvents property)
+  useEffect(() => {
+    if (!map || !isMapReady) return;
+
+    try {
+      const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData(venuesToGeoJSON(venues, venueIdsWithEvents));
+        console.log("[VenueMarkerLayer] Events updated, refreshing venue hasEvents");
+      }
+    } catch {
+      // Source not ready
+    }
+  }, [map, isMapReady, venues, venueIdsWithEvents]);
 
   return null;
 }

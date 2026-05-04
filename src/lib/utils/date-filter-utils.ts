@@ -37,10 +37,10 @@ export function getDateRange(filter: DateRangeFilter, baseDate: Date = new Date(
       break;
       
     case 'thisWeekend':
-      if (today.getDay() < 5) { // Before Friday
+      if (today.getDay() >= 1 && today.getDay() < 5) { // Monday through Thursday
         // Start: upcoming Friday
         startDate.setDate(today.getDate() + (5 - today.getDay()));
-      } 
+      }
       // If today is Friday, Saturday, or Sunday, start from today
       
       // End: upcoming Sunday (or today if today is Sunday)

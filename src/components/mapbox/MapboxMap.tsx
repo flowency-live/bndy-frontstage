@@ -53,15 +53,25 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
     return getFormattedDateRange(dateRange as DateRangeFilter);
   }, [dateRange]);
 
-  // Fetch ALL public events in date range
+  // Fetch ALL public events in date range (always fetch - cache handles efficiency)
+  // Needed for venue mode to determine which venues have upcoming events
   const { data: allEvents = [], isLoading: eventsLoading } = useAllPublicEvents({
     startDate,
     endDate,
-    enabled: mapMode === "events",
+    enabled: true,
   });
 
-  // Fetch all venues (only when in venue mode)
+  // Fetch all venues
   const { data: venues = [], isLoading: venuesLoading } = useVenues();
+
+  // Compute venue IDs that have upcoming events (for conditional styling)
+  const venueIdsWithEvents = useMemo(() => {
+    const ids = new Set<string>();
+    allEvents.forEach(event => {
+      if (event.venueId) ids.add(event.venueId);
+    });
+    return ids;
+  }, [allEvents]);
 
   // UI state for overlays
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
@@ -305,6 +315,7 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
 
           <VenueMarkerLayer
             venues={filteredVenues}
+            venueIdsWithEvents={venueIdsWithEvents}
             onVenueClick={handleVenueClick}
             visible={mapMode === "venues"}
           />

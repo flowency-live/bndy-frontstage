@@ -71,7 +71,7 @@ export function useEventsForList({
   enabled = true
 }: UseEventsForListOptions) {
   // Fetch ALL events using existing hook (same as MapView)
-  const { data: allEvents = [], isLoading, isError, error } = useAllPublicEvents({
+  const { data: allEvents = [], isLoading, isPending, isError, error } = useAllPublicEvents({
     startDate,
     endDate,
     enabled
@@ -104,6 +104,7 @@ export function useEventsForList({
   return {
     events: eventsWithDistance,
     isLoading,
+    isPending,
     isError,
     error
   };
