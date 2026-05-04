@@ -7,7 +7,9 @@ import {
   dismissClarification as apiDismissClarification,
 } from '../api/clarificationApi';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.bndy.co.uk';
+const SIGNALS_API_URL =
+  process.env.NEXT_PUBLIC_SIGNALS_API_URL ||
+  'https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev';
 
 export interface ChatMessage {
   id: string;
@@ -63,7 +65,7 @@ export function useChatSession(): UseChatSessionReturn {
   const pollForResponse = useCallback(async (signalId: string) => {
     const poll = async () => {
       try {
-        const response = await fetch(`${API_URL}/signals/${signalId}`);
+        const response = await fetch(`${SIGNALS_API_URL}/signals/${signalId}`);
         const data: SignalResponse = await response.json();
 
         if (data.signal.status === 'pending_review' || data.signal.status === 'failed') {
@@ -131,7 +133,7 @@ export function useChatSession(): UseChatSessionReturn {
           body.sessionId = sessionId;
         }
 
-        const response = await fetch(`${API_URL}/signals`, {
+        const response = await fetch(`${SIGNALS_API_URL}/signals`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),

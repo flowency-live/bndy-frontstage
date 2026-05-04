@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.bndy.co.uk';
+const SIGNALS_API_URL =
+  process.env.NEXT_PUBLIC_SIGNALS_API_URL ||
+  'https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev';
 
 export interface ResolveClarificationResponse {
   success: boolean;
@@ -16,7 +18,7 @@ export async function resolveClarification(
   selectedOptionId: string,
   resolvedBy: string
 ): Promise<ResolveClarificationResponse> {
-  const response = await fetch(`${API_URL}/clarifications/${clarificationId}`, {
+  const response = await fetch(`${SIGNALS_API_URL}/clarifications/${clarificationId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -42,7 +44,7 @@ export async function dismissClarification(
   dismissedBy: string,
   reason?: string
 ): Promise<DismissClarificationResponse> {
-  const response = await fetch(`${API_URL}/clarifications/${clarificationId}`, {
+  const response = await fetch(`${SIGNALS_API_URL}/clarifications/${clarificationId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
