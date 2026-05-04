@@ -141,16 +141,20 @@ export default function VAEventsList({
           
           {/* Ticket Column */}
           <div className="col-span-2 flex justify-end items-center">
-            {event.ticketed ? (
-              <div className="flex items-center text-xs">
-                <Ticket className="w-3 h-3 mr-1 text-[var(--primary)]" />
-                <span>{event.ticketinformation || "Ticketed"}</span>
-              </div>
-            ) : (
-              <span className="text-xs font-medium text-[var(--secondary)]">
-                £ree
-              </span>
-            )}
+            {(() => {
+              const priceValue = event.price;
+              const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
+              return isFree ? (
+                <span className="text-xs font-medium text-[var(--secondary)]">
+                  £ree
+                </span>
+              ) : (
+                <div className="flex items-center text-xs">
+                  <Ticket className="w-3 h-3 mr-1 text-[var(--primary)]" />
+                  <span>{priceValue || event.ticketinformation || "Ticketed"}</span>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </Card>

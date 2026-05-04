@@ -107,8 +107,9 @@ export default function EventInfoOverlay({
 
   const venueName = venue?.name || currentEvent.venueName || "Venue";
   const venueCity = currentEvent.venueCity || venue?.city || "";
-  const isFree = !currentEvent.ticketed;
-  const priceDisplay = isFree ? "FREE" : (currentEvent.ticketinformation || "Ticketed");
+  const priceValue = currentEvent.price;
+  const isFree = !currentEvent.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
+  const priceDisplay = isFree ? "FREE" : (priceValue || currentEvent.ticketinformation || "Ticketed");
 
   // Get distance if available
   const distanceMiles = (currentEvent as Event & { distanceMiles?: number }).distanceMiles;

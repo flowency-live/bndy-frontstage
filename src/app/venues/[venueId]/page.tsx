@@ -51,6 +51,8 @@ export default async function VenueProfilePage({ params }: { params: Promise<{ v
       },
       description: event.description,
       ticketed: event.ticketed,
+      price: event.price,
+      ticketinformation: event.ticketinformation,
       ticketUrl: event.ticketUrl,
       eventUrl: event.eventUrl,
       source: event.source || 'bndy.live',

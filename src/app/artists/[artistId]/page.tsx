@@ -52,6 +52,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       },
       description: event.description,
       ticketed: event.ticketed,
+      price: event.price,
+      ticketinformation: event.ticketinformation,
       ticketUrl: event.ticketUrl,
       eventUrl: event.eventUrl,
       source: event.source || 'bndy.live',
