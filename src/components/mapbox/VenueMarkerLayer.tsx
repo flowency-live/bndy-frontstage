@@ -16,6 +16,7 @@ interface VenueMarkerLayerProps {
 const VENUE_SOURCE_ID = "venues";
 const VENUE_CLUSTERS_LAYER = "venue-clusters";
 const VENUE_CLUSTER_COUNT_LAYER = "venue-cluster-count";
+const VENUE_GLOW_LAYER = "venue-glow";
 const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
 
 /**
@@ -150,19 +151,33 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             paint: { "text-color": "#FFFFFF" },
           });
 
+          // Glow layer for venues with events (renders underneath)
+          map.addLayer({
+            id: VENUE_GLOW_LAYER,
+            type: "circle",
+            source: VENUE_SOURCE_ID,
+            filter: ["all", ["!", ["has", "point_count"]], ["get", "hasEvents"]],
+            paint: {
+              "circle-radius": 14,
+              "circle-color": "#FF1493",
+              "circle-opacity": 0.35,
+              "circle-blur": 1,
+            },
+          });
+
           map.addLayer({
             id: VENUE_UNCLUSTERED_LAYER,
             type: "circle",
             source: VENUE_SOURCE_ID,
             filter: ["!", ["has", "point_count"]],
             paint: {
-              // Venues with events: larger + orange stroke (event color)
-              // Venues without: smaller + white stroke + faded
-              "circle-radius": ["case", ["get", "hasEvents"], 8, 5],
+              // Active venues: full presence with white stroke for pop
+              // Inactive venues: smaller, faded, no stroke
+              "circle-radius": ["case", ["get", "hasEvents"], 7, 4],
               "circle-color": "#FF1493",
               "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.4],
-              "circle-stroke-width": ["case", ["get", "hasEvents"], 2.5, 1],
-              "circle-stroke-color": ["case", ["get", "hasEvents"], "#F97316", "#FFFFFF"],
+              "circle-stroke-width": ["case", ["get", "hasEvents"], 2, 0],
+              "circle-stroke-color": "#FFFFFF",
             },
           });
 
@@ -170,6 +185,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           const initialVisibility = visibleRef.current ? "visible" : "none";
           map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", initialVisibility);
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", initialVisibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", initialVisibility);
 
           console.log("[VenueMarkerLayer] Layers created, visibility:", initialVisibility);
@@ -222,6 +238,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           const visibility = visibleRef.current ? "visible" : "none";
           map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
           console.log("[VenueMarkerLayer] Final visibility set:", visibility);
         }
@@ -247,6 +264,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
       const visibility = visible ? "visible" : "none";
       map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
       map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+      map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
       map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
       console.log("[VenueMarkerLayer] Visibility:", visibility);
     } catch (e) {
@@ -270,6 +288,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           const visibility = visibleRef.current ? "visible" : "none";
           map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
         }
       }
