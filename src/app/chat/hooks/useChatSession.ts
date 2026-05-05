@@ -42,7 +42,7 @@ interface UseChatSessionReturn {
   resolvingId: string | null;
   sendMessage: (content: string) => Promise<void>;
   clearSession: () => void;
-  handleResolve: (clarificationId: string, optionId: string) => Promise<void>;
+  handleResolve: (clarificationId: string, optionIdOrValue: string, isFreeform?: boolean) => Promise<void>;
   handleDismiss: (clarificationId: string) => Promise<void>;
 }
 
@@ -162,13 +162,14 @@ export function useChatSession(): UseChatSessionReturn {
   );
 
   const handleResolve = useCallback(
-    async (clarificationId: string, optionId: string) => {
+    async (clarificationId: string, optionIdOrValue: string, isFreeform = false) => {
       setResolvingId(clarificationId);
       try {
         const result = await apiResolveClarification(
           clarificationId,
-          optionId,
-          'chat_user' // Default user ID for chat
+          optionIdOrValue,
+          'chat_user', // Default user ID for chat
+          isFreeform
         );
 
         if (result.success) {

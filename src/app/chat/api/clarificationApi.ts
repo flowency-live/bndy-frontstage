@@ -15,17 +15,25 @@ export interface DismissClarificationResponse {
 
 export async function resolveClarification(
   clarificationId: string,
-  selectedOptionId: string,
-  resolvedBy: string
+  selectedOptionIdOrValue: string,
+  resolvedBy: string,
+  isFreeform = false
 ): Promise<ResolveClarificationResponse> {
+  const body: Record<string, string> = {
+    action: 'resolve',
+    resolvedBy,
+  };
+
+  if (isFreeform) {
+    body.freeformValue = selectedOptionIdOrValue;
+  } else {
+    body.selectedOptionId = selectedOptionIdOrValue;
+  }
+
   const response = await fetch(`${SIGNALS_API_URL}/clarifications/${clarificationId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'resolve',
-      selectedOptionId,
-      resolvedBy,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
