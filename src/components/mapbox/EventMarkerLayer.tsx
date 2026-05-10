@@ -236,7 +236,7 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     init();
   }, [map, isMapReady, currentStyleMode]);
 
-  // Control visibility via prop
+  // Control visibility via prop - also refresh data when becoming visible
   useEffect(() => {
     if (!map || !isMapReady) return;
 
@@ -249,6 +249,15 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
       map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
       map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
       console.log("[EventMarkerLayer] Visibility:", visibility);
+
+      // When becoming visible, ensure data is fresh (handles race where events arrived during init)
+      if (visible) {
+        const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        if (source && eventsRef.current.length > 0) {
+          source.setData(eventsToGeoJSON(eventsRef.current));
+          console.log("[EventMarkerLayer] Refreshed data on visibility:", eventsRef.current.length, "events");
+        }
+      }
     } catch (e) {
       // Map style not ready yet, will be set during init
     }

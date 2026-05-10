@@ -177,13 +177,13 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             source: VENUE_SOURCE_ID,
             filter: ["!", ["has", "point_count"]],
             paint: {
-              // Active venues: CYAN (has events) - clear differentiation
-              // Inactive venues: faded pink
-              "circle-radius": ["case", ["get", "hasEvents"], 8, 4],
+              // Active venues: CYAN with glow (has events) - clear differentiation
+              // Inactive venues: smaller pink dots, visible but subtle
+              "circle-radius": ["case", ["get", "hasEvents"], 8, 5],
               "circle-color": ["case", ["get", "hasEvents"], "#06B6D4", "#FF1493"],
-              "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.35],
-              "circle-stroke-width": ["case", ["get", "hasEvents"], 2, 0],
-              "circle-stroke-color": "#FFFFFF",
+              "circle-opacity": ["case", ["get", "hasEvents"], 1, 0.6],
+              "circle-stroke-width": ["case", ["get", "hasEvents"], 2, 1],
+              "circle-stroke-color": ["case", ["get", "hasEvents"], "#FFFFFF", "#FFFFFF"],
             },
           });
 
@@ -259,7 +259,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
     init();
   }, [map, isMapReady, currentStyleMode]);
 
-  // Control visibility via prop
+  // Control visibility via prop - also refresh data when becoming visible
   useEffect(() => {
     if (!map || !isMapReady) return;
 
@@ -273,6 +273,15 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
       map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
       map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
       console.log("[VenueMarkerLayer] Visibility:", visibility);
+
+      // When becoming visible, ensure data is fresh (handles race where venues arrived during init)
+      if (visible) {
+        const source = map.getSource(VENUE_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        if (source && venuesRef.current.length > 0) {
+          source.setData(venuesToGeoJSON(venuesRef.current, venueIdsWithEventsRef.current));
+          console.log("[VenueMarkerLayer] Refreshed data on visibility:", venuesRef.current.length, "venues");
+        }
+      }
     } catch (e) {
       // Map style not ready yet, will be set during init
     }
