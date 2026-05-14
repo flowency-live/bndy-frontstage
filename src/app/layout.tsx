@@ -143,7 +143,7 @@ export default function RootLayout({
                 <ServiceWorkerRegistration />
                 <Header />
                 <DesktopNav />
-                <main className="flex-1 mt-[88px] md:mt-[140px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+                <main className="flex-1 mt-[88px] md:mt-[156px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
                   {children}
                 </main>
                 <Footer />

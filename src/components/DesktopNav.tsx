@@ -73,7 +73,7 @@ export default function DesktopNav() {
   ];
 
   return (
-    <nav className="hidden md:block fixed top-[88px] left-0 right-0 z-40 bg-[var(--background)] border-b border-[var(--border)]">
+    <nav className="hidden md:block fixed top-[104px] left-0 right-0 z-40 bg-[var(--background)] border-b border-[var(--border)]">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-center gap-2 py-2">
           {/* Main Navigation Buttons */}

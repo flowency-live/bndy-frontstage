@@ -47,7 +47,7 @@ export default function MobileBottomNav() {
   return (
     <nav className="mobile-bottom-nav fixed bottom-0 left-0 right-0 md:hidden z-40">
       <div className="grid grid-cols-4 h-16 bg-[var(--background)] border-t border-gray-200 dark:border-gray-800">
-        {/* Map View */}
+        {/* Gig Map */}
         <button
           onClick={handleMapView}
           className={`flex flex-col items-center justify-center gap-1 transition-colors ${
@@ -55,13 +55,13 @@ export default function MobileBottomNav() {
               ? "text-[var(--primary)]"
               : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
-          aria-label="Map View"
+          aria-label="Gig Map"
         >
           <Map className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Map View</span>
+          <span className="text-[10px] font-medium">Gig Map</span>
         </button>
 
-        {/* List View */}
+        {/* Gig List */}
         <button
           onClick={handleListView}
           className={`flex flex-col items-center justify-center gap-1 transition-colors ${
@@ -69,13 +69,13 @@ export default function MobileBottomNav() {
               ? "text-[var(--primary)]"
               : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
-          aria-label="List View"
+          aria-label="Gig List"
         >
           <List className="w-5 h-5" />
-          <span className="text-[10px] font-medium">List View</span>
+          <span className="text-[10px] font-medium">Gig List</span>
         </button>
 
-        {/* Artist View */}
+        {/* Artists */}
         <button
           onClick={handleArtistView}
           className={`flex flex-col items-center justify-center gap-1 transition-colors ${
@@ -83,13 +83,13 @@ export default function MobileBottomNav() {
               ? "text-[var(--primary)]"
               : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
-          aria-label="Artist View"
+          aria-label="Artists"
         >
           <Users className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Artist View</span>
+          <span className="text-[10px] font-medium">Artists</span>
         </button>
 
-        {/* Venue Map */}
+        {/* Venues */}
         <button
           onClick={handleVenueMap}
           className={`flex flex-col items-center justify-center gap-1 transition-colors ${
@@ -97,10 +97,10 @@ export default function MobileBottomNav() {
               ? "text-[var(--primary)]"
               : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
-          aria-label="Venue Map"
+          aria-label="Venues"
         >
           <Building className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Venue Map</span>
+          <span className="text-[10px] font-medium">Venues</span>
         </button>
       </div>
     </nav>
