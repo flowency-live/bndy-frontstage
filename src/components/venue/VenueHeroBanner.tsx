@@ -59,8 +59,8 @@ export default function VenueHeroBanner({ socialMediaUrls, venueId, venueName }:
       {/* Dark gradient at bottom for profile overlap */}
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
 
-      {/* Transparent Controls Overlay */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+      {/* Transparent Controls Overlay - Mobile only (desktop uses DesktopNav) */}
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center md:hidden">
         {/* Map Button - Left */}
         <button
           onClick={() => router.push('/')}
