@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Anton, Archivo, JetBrains_Mono, Bebas_Neue, Caveat, Bungee, Permanent_Marker, Special_Elite } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import DesktopNav from "@/components/DesktopNav";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
@@ -141,7 +142,8 @@ export default function RootLayout({
               <EventsProvider>
                 <ServiceWorkerRegistration />
                 <Header />
-                <main className="flex-1 mt-[88px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+                <DesktopNav />
+                <main className="flex-1 mt-[88px] md:mt-[140px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
                   {children}
                 </main>
                 <Footer />
