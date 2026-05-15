@@ -1,8 +1,14 @@
-/* Hide header and remove top margin for venue profile pages */
-body:has(.venue-profile-page) header {
-  display: none;
+/* Hide header/nav and remove top margin for venue profile pages */
+body:has(.venue-profile-page) header,
+body:has(.venue-profile-page) nav.hidden.md\:block {
+  display: none !important;
 }
 
 body:has(.venue-profile-page) main {
   margin-top: 0 !important;
+}
+
+/* Show hero banner controls on desktop (since DesktopNav is hidden) */
+body:has(.venue-profile-page) .md\:hidden {
+  display: flex !important;
 }
