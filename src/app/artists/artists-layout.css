@@ -1,14 +1,1 @@
-/* Hide header/nav and remove top margin for artist profile pages */
-body:has(.artist-profile-page) header,
-body:has(.artist-profile-page) nav.hidden.md\:block {
-  display: none !important;
-}
-
-body:has(.artist-profile-page) main {
-  margin-top: 0 !important;
-}
-
-/* Show hero banner controls on desktop (since DesktopNav is hidden) */
-body:has(.artist-profile-page) .md\:hidden {
-  display: flex !important;
-}
+/* Artist profile pages use standard layout with DesktopNav */
