@@ -219,3 +219,48 @@ export function formatDateParts(date: Date): { day: string; monthYear: string } 
     monthYear: `${month} ${year}`
   };
 }
+
+/**
+ * Month key format for grouping: "YYYY-MM"
+ */
+export function getMonthKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  return `${year}-${month}`;
+}
+
+/**
+ * Format month key for display: "JUNE 2026"
+ */
+export function formatMonthYear(monthKey: string): string {
+  const [year, month] = monthKey.split("-");
+  const monthNames = [
+    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+  ];
+  return `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+}
+
+/**
+ * Group events by month (returns Map ordered by month)
+ * Used for rendering month-level sticky headers
+ */
+export function groupEventsByMonth<T extends { date: string }>(
+  events: T[]
+): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+
+  // Sort events by date first
+  const sortedEvents = [...events].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  for (const event of sortedEvents) {
+    const eventDate = new Date(event.date);
+    const monthKey = getMonthKey(eventDate);
+    const existing = grouped.get(monthKey) || [];
+    grouped.set(monthKey, [...existing, event]);
+  }
+
+  return grouped;
+}

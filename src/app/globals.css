@@ -4550,6 +4550,79 @@ select:focus-visible {
   }
 }
 
+/* ─── MONTH HEADERS ─── */
+.profile-month-group {
+  margin-bottom: 16px;
+}
+
+.profile-month-header {
+  position: sticky;
+  top: 88px; /* Below mobile header */
+  z-index: 20;
+
+  /* Gig poster aesthetic */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  margin: 0 -4px 8px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background: var(--lv-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Decorative lines flanking the month name */
+.profile-month-header::before,
+.profile-month-header::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--lv-orange) 15%,
+    var(--lv-orange) 85%,
+    transparent
+  );
+}
+
+.profile-month-name {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lv-text);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.profile-month-count {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lv-text-2);
+  white-space: nowrap;
+}
+
+@media (min-width: 721px) {
+  .profile-month-header {
+    top: 156px; /* Below desktop header */
+    padding: 12px 0;
+    margin: 0 0 12px;
+  }
+
+  .profile-month-name {
+    font-size: 24px;
+    letter-spacing: 0.15em;
+  }
+
+  .profile-month-count {
+    font-size: 10px;
+  }
+}
+
 /* ─── SECTION GROUP HEADERS ─── */
 .profile-section-group {
   margin-bottom: 8px;
