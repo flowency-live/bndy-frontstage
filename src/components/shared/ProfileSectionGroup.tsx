@@ -117,28 +117,10 @@ export default function ProfileSectionGroup({
   return (
     <div className="space-y-2">
       {showMonthHeaders ? (
-        // Multiple months: render with sticky month headers
+        // Multiple months: render with sticky month headers, no section collapse
         monthKeys.map((monthKey) => {
           const monthEvents = monthGroups.get(monthKey)!;
-
-          // Group this month's events by section
-          const monthSections = new Map<EventGroup, Event[]>();
-          for (const group of GROUP_ORDER) {
-            monthSections.set(group, []);
-          }
-          for (const event of monthEvents) {
-            const eventDate = new Date(event.date);
-            const group = getEventGroup(eventDate, today);
-            if (group) {
-              monthSections.get(group)!.push(event);
-            }
-          }
-
-          const monthNonEmpty = GROUP_ORDER.filter(
-            (group) => monthSections.get(group)!.length > 0
-          );
-
-          if (monthNonEmpty.length === 0) return null;
+          const eventsByDate = groupEventsByDate(monthEvents);
 
           return (
             <div key={monthKey} className="profile-month-group">
@@ -147,63 +129,25 @@ export default function ProfileSectionGroup({
                 eventCount={monthEvents.length}
               />
 
-              {monthNonEmpty.map((sectionKey) => {
-                const sectionEvents = monthSections.get(sectionKey)!;
-                const eventCount = sectionEvents.length;
-                const isExpanded = expandedSections.has(sectionKey);
-                const eventsByDate = groupEventsByDate(sectionEvents);
+              <div className="profile-date-events">
+                {Array.from(eventsByDate.entries()).map(([dateKey, dateEvents]) => {
+                  const eventDate = new Date(dateKey + "T00:00:00");
+                  const { day, monthYear } = formatDateParts(eventDate);
+                  const relativeLabel = getRelativeDateLabel(eventDate, today);
 
-                return (
-                  <div key={sectionKey} className="profile-section-group">
-                    <button
-                      type="button"
-                      className="profile-section-header-toggle"
-                      onClick={() => toggleSection(sectionKey)}
-                      aria-expanded={isExpanded}
-                      aria-controls={`section-${monthKey}-${sectionKey}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-[var(--lv-orange)]" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-[var(--lv-text-3)]" />
-                        )}
-                        <h3 className="profile-section-title">
-                          {SECTION_LABELS[sectionKey]}
-                        </h3>
-                      </div>
-                      <span className="profile-section-count">
-                        {eventCount} {eventCount === 1 ? "event" : "events"}
-                      </span>
-                    </button>
-
-                    {isExpanded && (
-                      <div
-                        id={`section-${monthKey}-${sectionKey}`}
-                        className="profile-date-events"
-                      >
-                        {Array.from(eventsByDate.entries()).map(([dateKey, dateEvents]) => {
-                          const eventDate = new Date(dateKey + "T00:00:00");
-                          const { day, monthYear } = formatDateParts(eventDate);
-                          const relativeLabel = getRelativeDateLabel(eventDate, today);
-
-                          return (
-                            <ProfileDateGroup
-                              key={dateKey}
-                              day={day}
-                              monthYear={monthYear}
-                              relativeLabel={relativeLabel}
-                              events={dateEvents}
-                              counterpartType={counterpartType}
-                              onEventClick={onEventClick}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  return (
+                    <ProfileDateGroup
+                      key={dateKey}
+                      day={day}
+                      monthYear={monthYear}
+                      relativeLabel={relativeLabel}
+                      events={dateEvents}
+                      counterpartType={counterpartType}
+                      onEventClick={onEventClick}
+                    />
+                  );
+                })}
+              </div>
             </div>
           );
         })
