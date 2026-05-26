@@ -4557,7 +4557,7 @@ select:focus-visible {
 
 .profile-month-header {
   position: sticky;
-  top: 0;
+  top: 88px; /* Below fixed header on mobile */
   z-index: 20;
 
   /* Gig poster aesthetic */
@@ -4606,9 +4606,9 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-@media (min-width: 721px) {
+@media (min-width: 768px) {
   .profile-month-header {
-    top: 0;
+    top: 156px; /* Below fixed header + DesktopNav on md+ */
     padding: 12px 0;
     margin: 0 0 12px;
   }
