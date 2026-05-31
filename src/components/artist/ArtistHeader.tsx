@@ -1,9 +1,11 @@
 "use client";
 
 import { ArtistProfileData } from "@/lib/types/artist-profile";
+import { getSocialMediaURLs } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
 import SocialMediaLinks from "./SocialMediaLinks";
+import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface ArtistHeaderProps {
   artist: ArtistProfileData;
@@ -11,6 +13,15 @@ interface ArtistHeaderProps {
 
 export default function ArtistHeader({ artist }: ArtistHeaderProps) {
   const [showFullBio, setShowFullBio] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  const [fetchedProfilePicture, setFetchedProfilePicture] = useState<string | null>(null);
+
+  // Extract Facebook URL for fallback image fetching
+  const socialMediaUrls = getSocialMediaURLs(artist);
+  const fbURL = socialMediaUrls.find((s) => s.platform === "facebook")?.url;
+
+  // Use fetched picture as fallback if no profileImageUrl
+  const displayProfileImageUrl = artist.profileImageUrl || fetchedProfilePicture;
 
   // Check if bio is long enough to need truncation
   const bioNeedsTruncation = artist.bio && artist.bio.length > 200;
@@ -20,12 +31,23 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
 
   return (
     <div className="relative">
+      {/* Facebook profile picture fetcher - triggers when no profileImageUrl */}
+      {!displayProfileImageUrl && !hasFetched && fbURL && (
+        <ProfilePictureFetcher
+          facebookUrl={fbURL}
+          onPictureFetched={(url) => {
+            setFetchedProfilePicture(url);
+            setHasFetched(true);
+          }}
+        />
+      )}
+
       {/* Cover/Banner Area - Compact */}
       <div className="h-24 sm:h-32 md:h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-background relative overflow-hidden">
-        {artist.profileImageUrl && (
+        {displayProfileImageUrl && (
           <div className="absolute inset-0 opacity-20">
             <Image
-              src={artist.profileImageUrl}
+              src={displayProfileImageUrl}
               alt={`${artist.name} cover`}
               fill
               className="object-cover"
@@ -43,9 +65,9 @@ export default function ArtistHeader({ artist }: ArtistHeaderProps) {
         <div className="flex items-start gap-3 md:gap-6 -mt-12 sm:-mt-10 md:-mt-12">
           {/* Profile Picture - Left side on mobile, larger */}
           <div className="relative flex-shrink-0">
-            {artist.profileImageUrl ? (
+            {displayProfileImageUrl ? (
               <Image
-                src={artist.profileImageUrl}
+                src={displayProfileImageUrl}
                 alt={`${artist.name} profile picture`}
                 width={125}
                 height={125}
