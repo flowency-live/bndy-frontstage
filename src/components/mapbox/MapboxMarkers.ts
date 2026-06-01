@@ -138,8 +138,26 @@ function createUserLocationSVG(): string {
 }
 
 /**
+ * Pill background SVG for venue labels (stretchable via icon-text-fit)
+ * Dark fill with cyan border for "active" venues
+ */
+function createPillBackgroundSVG(): string {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 32 24">
+      <rect x="1" y="1" width="30" height="22" rx="11"
+        fill="rgba(20, 24, 33, 0.92)"
+        stroke="#06B6D4"
+        stroke-width="2" />
+    </svg>
+  `;
+}
+
+/**
  * Add all marker images to a Mapbox map
  * Call this after map loads
+ *
+ * OPTIMIZED: Only generates images actually used by layers.
+ * Cluster layers use circle paint, not images.
  */
 export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
   const containerId = map?.getContainer()?.id || "default";
@@ -149,52 +167,38 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
   addedImages.add(containerId);
 
   try {
-    // Venue marker
-    const venueData = await svgToImageData(createVenueMarkerSVG(), 14, 14);
+    const dpr = window.devicePixelRatio || 1;
+
+    // Generate all images in parallel for faster loading
+    const [venueData, eventData, userLocData, pillData] = await Promise.all([
+      svgToImageData(createVenueMarkerSVG(), 14, 14),
+      svgToImageData(createEventMarkerSVG(), 22, 29),
+      svgToImageData(createUserLocationSVG(), 20, 20),
+      svgToImageData(createPillBackgroundSVG(), 32, 24),
+    ]);
+
+    // Add images to map (only if not already present)
     if (!map.hasImage("venue-marker")) {
-      map.addImage("venue-marker", venueData, { pixelRatio: window.devicePixelRatio || 1 });
+      map.addImage("venue-marker", venueData, { pixelRatio: dpr });
     }
-
-    // Event marker (single)
-    const eventData = await svgToImageData(createEventMarkerSVG(), 22, 29);
     if (!map.hasImage("event-marker")) {
-      map.addImage("event-marker", eventData, { pixelRatio: window.devicePixelRatio || 1 });
+      map.addImage("event-marker", eventData, { pixelRatio: dpr });
     }
-
-    // User location marker
-    const userLocData = await svgToImageData(createUserLocationSVG(), 20, 20);
     if (!map.hasImage("user-location")) {
-      map.addImage("user-location", userLocData, { pixelRatio: window.devicePixelRatio || 1 });
+      map.addImage("user-location", userLocData, { pixelRatio: dpr });
+    }
+    if (!map.hasImage("venue-pill-bg")) {
+      // Stretchable pill - content area excludes stroke padding
+      map.addImage("venue-pill-bg", pillData, {
+        pixelRatio: dpr,
+        // Make it stretchable (9-slice style)
+        stretchX: [[4, 28]],  // Stretchable horizontal zone
+        stretchY: [[4, 20]],  // Stretchable vertical zone
+        content: [4, 4, 28, 20],  // Content area (text fits here)
+      });
     }
 
-    // Pre-generate cluster images for common counts
-    const clusterCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50, 75, 100];
-    for (const count of clusterCounts) {
-      // Venue clusters
-      const venueClusWidth = count < 10 ? 24 : count < 100 ? 30 : 36;
-      const venueClusterKey = `venue-cluster-${count}`;
-      if (!map.hasImage(venueClusterKey)) {
-        const data = await svgToImageData(
-          createClusterMarkerSVG(count, "venue"),
-          venueClusWidth,
-          22
-        );
-        map.addImage(venueClusterKey, data, { pixelRatio: window.devicePixelRatio || 1 });
-      }
-
-      // Event clusters
-      const eventClusterKey = `event-cluster-${count}`;
-      if (!map.hasImage(eventClusterKey)) {
-        const data = await svgToImageData(
-          createClusterMarkerSVG(count, "event"),
-          venueClusWidth,
-          22
-        );
-        map.addImage(eventClusterKey, data, { pixelRatio: window.devicePixelRatio || 1 });
-      }
-    }
-
-    console.log("[MapboxMarkers] All marker images added to map");
+    console.log("[MapboxMarkers] Marker images added (optimized)");
   } catch (error) {
     console.error("[MapboxMarkers] Failed to add marker images:", error);
     // Remove from set so it can be retried

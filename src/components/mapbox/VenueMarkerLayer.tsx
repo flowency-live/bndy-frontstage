@@ -210,6 +210,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           });
 
           // Venue name labels - show at high zoom (13+)
+          // Active venues (hasEvents) get pill background with cyan border
+          // Inactive venues get simple text with halo
           map.addLayer({
             id: VENUE_LABELS_LAYER,
             type: "symbol",
@@ -226,11 +228,16 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
               "text-allow-overlap": false,       // Enable collision detection
               "text-ignore-placement": false,
               "symbol-sort-key": ["case", ["get", "hasEvents"], 0, 1],  // Active venues on top
+              // Pill background for venues with events
+              "icon-image": ["case", ["get", "hasEvents"], "venue-pill-bg", ""],
+              "icon-text-fit": "both",
+              "icon-text-fit-padding": [4, 8, 4, 8],  // top, right, bottom, left
             },
             paint: {
               "text-color": "#ffffff",
-              "text-halo-color": "rgba(26, 26, 46, 0.95)",  // Dark badge
-              "text-halo-width": 6,
+              // Only use halo for venues WITHOUT pill background
+              "text-halo-color": ["case", ["get", "hasEvents"], "transparent", "rgba(26, 26, 46, 0.95)"],
+              "text-halo-width": ["case", ["get", "hasEvents"], 0, 6],
               "text-halo-blur": 0.5,
               "text-opacity": ["case", ["get", "hasEvents"], 1, 0.7],  // Dim inactive
             },
