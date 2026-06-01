@@ -140,14 +140,21 @@ function createUserLocationSVG(): string {
 /**
  * Pill background SVG for venue labels (stretchable via icon-text-fit)
  * Dark fill with cyan border for "active" venues
+ *
+ * Designed for 9-slice stretching:
+ * - Image: 48x24 pixels
+ * - Corner radius: 10px (protected from stretching)
+ * - stretchX: [[10, 38]] - middle 28px stretches horizontally
+ * - stretchY: [[4, 20]] - middle 16px stretches vertically
+ * - content: [10, 4, 38, 20] - text placed in stretchable area
  */
 function createPillBackgroundSVG(): string {
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" viewBox="0 0 40 26">
-      <rect x="1.5" y="1.5" width="37" height="23" rx="11.5"
-        fill="rgba(18, 22, 30, 0.95)"
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="24" viewBox="0 0 48 24">
+      <rect x="1" y="1" width="46" height="22" rx="10"
+        fill="rgba(20, 26, 36, 0.95)"
         stroke="#06B6D4"
-        stroke-width="2.5" />
+        stroke-width="2" />
     </svg>
   `;
 }
@@ -174,7 +181,7 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
       svgToImageData(createVenueMarkerSVG(), 14, 14),
       svgToImageData(createEventMarkerSVG(), 22, 29),
       svgToImageData(createUserLocationSVG(), 20, 20),
-      svgToImageData(createPillBackgroundSVG(), 40, 26),
+      svgToImageData(createPillBackgroundSVG(), 48, 24),
     ]);
 
     // Add images to map (only if not already present)
@@ -188,13 +195,14 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
       map.addImage("user-location", userLocData, { pixelRatio: dpr });
     }
     if (!map.hasImage("venue-pill-bg")) {
-      // Stretchable pill - content area excludes stroke/corner padding
+      // Stretchable pill for icon-text-fit
+      // Image is 48x24, corners are 10px radius
+      // Stretch zones protect corners, allow middle to expand
       map.addImage("venue-pill-bg", pillData, {
         pixelRatio: dpr,
-        // 9-slice stretching: keep corners fixed, stretch middle
-        stretchX: [[14, 26]],  // Stretchable horizontal zone (middle section)
-        stretchY: [[6, 20]],   // Stretchable vertical zone
-        content: [6, 4, 34, 22],  // Content area where text fits
+        stretchX: [[10, 38]],   // Protect 10px corners on each side
+        stretchY: [[4, 20]],    // Protect 4px top/bottom
+        content: [10, 4, 38, 20],  // Text content area (matches stretch zones)
       });
     }
 

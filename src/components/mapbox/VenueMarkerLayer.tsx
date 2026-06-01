@@ -211,7 +211,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           });
 
           // Venue name labels - show at zoom 11+
-          // Simple text with dark halo - no fancy pill backgrounds
+          // Active venues: pill background with cyan border
+          // Inactive venues: text with dark halo (no pill)
           map.addLayer({
             id: VENUE_LABELS_LAYER,
             type: "symbol",
@@ -228,11 +229,16 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
               "text-allow-overlap": false,
               "text-ignore-placement": false,
               "symbol-sort-key": ["case", ["get", "hasEvents"], 0, 1],
+              // Pill background only for venues with events
+              "icon-image": ["case", ["get", "hasEvents"], "venue-pill-bg", ""],
+              "icon-text-fit": "both",
+              "icon-text-fit-padding": [2, 6, 2, 6],  // top, right, bottom, left padding
             },
             paint: {
               "text-color": "#ffffff",
-              "text-halo-color": "rgba(20, 24, 32, 0.95)",
-              "text-halo-width": 4,
+              // Halo only for venues without pill
+              "text-halo-color": ["case", ["get", "hasEvents"], "transparent", "rgba(20, 24, 32, 0.95)"],
+              "text-halo-width": ["case", ["get", "hasEvents"], 0, 4],
               "text-halo-blur": 0,
               "text-opacity": ["case", ["get", "hasEvents"], 1, 0.6],
             },
