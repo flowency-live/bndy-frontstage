@@ -193,26 +193,25 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             },
           });
 
-          // Indicator dot layer - small pink dot for INACTIVE venues only (zoom 11+)
-          // Active venues have the pill background, no separate indicator needed
+          // Indicator dot layer - colored dot left of venue name (zoom 11+)
+          // Cyan for active venues, pink for inactive
           map.addLayer({
             id: VENUE_INDICATOR_LAYER,
             type: "circle",
             source: VENUE_SOURCE_ID,
             minzoom: 11,
-            filter: ["all", ["!", ["has", "point_count"]], ["!", ["get", "hasEvents"]]],
+            filter: ["!", ["has", "point_count"]],
             paint: {
-              "circle-radius": 4,
-              "circle-color": "#FF1493",
-              "circle-stroke-width": 1,
+              "circle-radius": ["case", ["get", "hasEvents"], 5, 4],
+              "circle-color": ["case", ["get", "hasEvents"], "#06B6D4", "#FF1493"],
+              "circle-stroke-width": 1.5,
               "circle-stroke-color": "#ffffff",
-              "circle-translate": [-6, 0],  // Offset left of label anchor
+              "circle-translate": [-8, 0],
             },
           });
 
           // Venue name labels - show at zoom 11+
-          // Active venues (hasEvents) get pill background with cyan border
-          // Inactive venues get simple text with halo (+ pink indicator dot)
+          // Simple text with dark halo - no fancy pill backgrounds
           map.addLayer({
             id: VENUE_LABELS_LAYER,
             type: "symbol",
@@ -223,26 +222,19 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
               "text-field": ["get", "name"],
               "text-size": 12,
               "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-              // Active venues: centered on pill. Inactive: offset for indicator dot
-              "text-anchor": ["case", ["get", "hasEvents"], "center", "left"],
-              "text-offset": ["case", ["get", "hasEvents"], ["literal", [0, 0]], ["literal", [0.6, 0]]],
+              "text-anchor": "left",
+              "text-offset": [0.8, 0],
               "text-max-width": 10,
               "text-allow-overlap": false,
               "text-ignore-placement": false,
-              "symbol-sort-key": ["case", ["get", "hasEvents"], 0, 1],  // Active venues on top
-              // Pill background for venues with events
-              "icon-image": ["case", ["get", "hasEvents"], "venue-pill-bg", ""],
-              "icon-text-fit": "both",
-              "icon-text-fit-padding": [3, 10, 3, 10],  // top, right, bottom, left
-              "icon-allow-overlap": false,
+              "symbol-sort-key": ["case", ["get", "hasEvents"], 0, 1],
             },
             paint: {
               "text-color": "#ffffff",
-              // Only use halo for venues WITHOUT pill background
-              "text-halo-color": ["case", ["get", "hasEvents"], "transparent", "rgba(26, 26, 46, 0.95)"],
-              "text-halo-width": ["case", ["get", "hasEvents"], 0, 5],
+              "text-halo-color": "rgba(20, 24, 32, 0.95)",
+              "text-halo-width": 4,
               "text-halo-blur": 0,
-              "text-opacity": ["case", ["get", "hasEvents"], 1, 0.6],  // Dim inactive
+              "text-opacity": ["case", ["get", "hasEvents"], 1, 0.6],
             },
           });
 
