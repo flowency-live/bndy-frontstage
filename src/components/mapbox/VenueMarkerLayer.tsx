@@ -232,7 +232,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
               // Pill background only for venues with events
               "icon-image": ["case", ["get", "hasEvents"], "venue-pill-bg", ""],
               "icon-text-fit": "both",
-              "icon-text-fit-padding": [2, 6, 2, 6],  // top, right, bottom, left padding
+              "icon-text-fit-padding": [2, 6, 2, 6],
+              "icon-allow-overlap": false,
             },
             paint: {
               "text-color": "#ffffff",
@@ -241,6 +242,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
               "text-halo-width": ["case", ["get", "hasEvents"], 0, 4],
               "text-halo-blur": 0,
               "text-opacity": ["case", ["get", "hasEvents"], 1, 0.6],
+              // Icon must be fully opaque for proper interaction
+              "icon-opacity": 1,
             },
           });
 

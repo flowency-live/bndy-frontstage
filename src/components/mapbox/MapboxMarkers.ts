@@ -12,11 +12,16 @@ const addedImages = new Set<string>();
 
 /**
  * Renders an SVG string to a canvas ImageData
+ * @param svgString The SVG markup
+ * @param width Display width
+ * @param height Display height
+ * @param useFixedDpr Optional fixed DPR (for stretchable images where coordinates must match)
  */
 function svgToImageData(
   svgString: string,
   width: number,
-  height: number
+  height: number,
+  useFixedDpr?: number
 ): Promise<ImageData> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
@@ -26,8 +31,8 @@ function svgToImageData(
       return;
     }
 
-    // Use device pixel ratio for crisp rendering
-    const dpr = window.devicePixelRatio || 1;
+    // Use fixed DPR if specified (for stretchable images), otherwise use device DPR
+    const dpr = useFixedDpr ?? (window.devicePixelRatio || 1);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
@@ -177,11 +182,12 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
     const dpr = window.devicePixelRatio || 1;
 
     // Generate all images in parallel for faster loading
+    // Pill uses fixed DPR=2 so stretch coordinates work consistently across devices
     const [venueData, eventData, userLocData, pillData] = await Promise.all([
       svgToImageData(createVenueMarkerSVG(), 14, 14),
       svgToImageData(createEventMarkerSVG(), 22, 29),
       svgToImageData(createUserLocationSVG(), 20, 20),
-      svgToImageData(createPillBackgroundSVG(), 48, 24),
+      svgToImageData(createPillBackgroundSVG(), 48, 24, 2),  // Fixed 2x DPR
     ]);
 
     // Add images to map (only if not already present)
@@ -196,13 +202,14 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
     }
     if (!map.hasImage("venue-pill-bg")) {
       // Stretchable pill for icon-text-fit
-      // Image is 48x24, corners are 10px radius
-      // Stretch zones protect corners, allow middle to expand
+      // SVG is 48x24, rendered at 2x DPR = 96x48 pixels
+      // Stretch coordinates are in source pixels (scaled)
+      // Original zones: corners 10px, stretch 10-38 -> At 2x: corners 20px, stretch 20-76
       map.addImage("venue-pill-bg", pillData, {
-        pixelRatio: dpr,
-        stretchX: [[10, 38]],   // Protect 10px corners on each side
-        stretchY: [[4, 20]],    // Protect 4px top/bottom
-        content: [10, 4, 38, 20],  // Text content area (matches stretch zones)
+        pixelRatio: 2,  // Fixed 2x to match rendering
+        stretchX: [[20, 76]],   // Protect 20px corners (10*2) on each side
+        stretchY: [[8, 40]],    // Protect 8px (4*2) top/bottom
+        content: [20, 8, 76, 40],  // Text content area
       });
     }
 
