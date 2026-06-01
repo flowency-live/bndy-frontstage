@@ -143,11 +143,11 @@ function createUserLocationSVG(): string {
  */
 function createPillBackgroundSVG(): string {
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 32 24">
-      <rect x="1" y="1" width="30" height="22" rx="11"
-        fill="rgba(20, 24, 33, 0.92)"
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" viewBox="0 0 40 26">
+      <rect x="1.5" y="1.5" width="37" height="23" rx="11.5"
+        fill="rgba(18, 22, 30, 0.95)"
         stroke="#06B6D4"
-        stroke-width="2" />
+        stroke-width="2.5" />
     </svg>
   `;
 }
@@ -174,7 +174,7 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
       svgToImageData(createVenueMarkerSVG(), 14, 14),
       svgToImageData(createEventMarkerSVG(), 22, 29),
       svgToImageData(createUserLocationSVG(), 20, 20),
-      svgToImageData(createPillBackgroundSVG(), 32, 24),
+      svgToImageData(createPillBackgroundSVG(), 40, 26),
     ]);
 
     // Add images to map (only if not already present)
@@ -188,13 +188,13 @@ export async function addMarkerImagesToMap(map: mapboxgl.Map): Promise<void> {
       map.addImage("user-location", userLocData, { pixelRatio: dpr });
     }
     if (!map.hasImage("venue-pill-bg")) {
-      // Stretchable pill - content area excludes stroke padding
+      // Stretchable pill - content area excludes stroke/corner padding
       map.addImage("venue-pill-bg", pillData, {
         pixelRatio: dpr,
-        // Make it stretchable (9-slice style)
-        stretchX: [[4, 28]],  // Stretchable horizontal zone
-        stretchY: [[4, 20]],  // Stretchable vertical zone
-        content: [4, 4, 28, 20],  // Content area (text fits here)
+        // 9-slice stretching: keep corners fixed, stretch middle
+        stretchX: [[14, 26]],  // Stretchable horizontal zone (middle section)
+        stretchY: [[6, 20]],   // Stretchable vertical zone
+        content: [6, 4, 34, 22],  // Content area where text fits
       });
     }
 
