@@ -18,6 +18,8 @@ const VENUE_CLUSTERS_LAYER = "venue-clusters";
 const VENUE_CLUSTER_COUNT_LAYER = "venue-cluster-count";
 const VENUE_GLOW_LAYER = "venue-glow";
 const VENUE_UNCLUSTERED_LAYER = "venue-unclustered";
+const VENUE_LABELS_LAYER = "venue-labels";
+const VENUE_INDICATOR_LAYER = "venue-indicator";
 
 /**
  * VenueMarkerLayer - Renders venue markers with clustering on Mapbox
@@ -158,10 +160,12 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           });
 
           // Glow layer for venues with events (renders underneath)
+          // Only show at mid-zoom (hidden when labels appear at zoom 13+)
           map.addLayer({
             id: VENUE_GLOW_LAYER,
             type: "circle",
             source: VENUE_SOURCE_ID,
+            maxzoom: 13,
             filter: ["all", ["!", ["has", "point_count"]], ["get", "hasEvents"]],
             paint: {
               "circle-radius": 16,
@@ -171,10 +175,12 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             },
           });
 
+          // Unclustered venue dots - only show at mid-zoom (hidden when labels appear)
           map.addLayer({
             id: VENUE_UNCLUSTERED_LAYER,
             type: "circle",
             source: VENUE_SOURCE_ID,
+            maxzoom: 13,
             filter: ["!", ["has", "point_count"]],
             paint: {
               // Active venues: CYAN with glow (has events) - clear differentiation
@@ -187,12 +193,57 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             },
           });
 
+          // Indicator dot layer - small colored dot left of venue name (zoom 13+)
+          map.addLayer({
+            id: VENUE_INDICATOR_LAYER,
+            type: "circle",
+            source: VENUE_SOURCE_ID,
+            minzoom: 13,
+            filter: ["!", ["has", "point_count"]],
+            paint: {
+              "circle-radius": 5,
+              "circle-color": ["case", ["get", "hasEvents"], "#06B6D4", "#FF1493"],
+              "circle-stroke-width": 1.5,
+              "circle-stroke-color": "#ffffff",
+              "circle-translate": [-8, 0],  // Offset left of label anchor
+            },
+          });
+
+          // Venue name labels - show at high zoom (13+)
+          map.addLayer({
+            id: VENUE_LABELS_LAYER,
+            type: "symbol",
+            source: VENUE_SOURCE_ID,
+            minzoom: 13,
+            filter: ["!", ["has", "point_count"]],
+            layout: {
+              "text-field": ["get", "name"],
+              "text-size": 12,
+              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+              "text-anchor": "left",
+              "text-offset": [0.8, 0],           // Offset right of indicator dot
+              "text-max-width": 12,              // Wrap long names
+              "text-allow-overlap": false,       // Enable collision detection
+              "text-ignore-placement": false,
+              "symbol-sort-key": ["case", ["get", "hasEvents"], 0, 1],  // Active venues on top
+            },
+            paint: {
+              "text-color": "#ffffff",
+              "text-halo-color": "rgba(26, 26, 46, 0.95)",  // Dark badge
+              "text-halo-width": 6,
+              "text-halo-blur": 0.5,
+              "text-opacity": ["case", ["get", "hasEvents"], 1, 0.7],  // Dim inactive
+            },
+          });
+
           // Set initial visibility based on prop
           const initialVisibility = visibleRef.current ? "visible" : "none";
           map.setLayoutProperty(VENUE_CLUSTERS_LAYER, "visibility", initialVisibility);
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", initialVisibility);
           map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", initialVisibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(VENUE_INDICATOR_LAYER, "visibility", initialVisibility);
+          map.setLayoutProperty(VENUE_LABELS_LAYER, "visibility", initialVisibility);
 
           console.log("[VenueMarkerLayer] Layers created, visibility:", initialVisibility);
         }
@@ -232,11 +283,36 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         });
 
+        // Click handler for venue labels (at high zoom)
+        const handleLabelClick = (e: mapboxgl.MapMouseEvent) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER] });
+          if (features.length === 0) return;
+
+          const venueId = features[0].properties?.id;
+          const venue = venueMapRef.current.get(venueId);
+
+          console.log("[VenueMarkerLayer] Label click - venueId:", venueId, "found:", !!venue);
+
+          if (venue) {
+            if (venue.location) {
+              map.easeTo({ center: [venue.location.lng, venue.location.lat], duration: 300 });
+            }
+            onVenueClickRef.current(venue);
+          }
+        };
+
+        map.on("click", VENUE_LABELS_LAYER, handleLabelClick);
+        map.on("click", VENUE_INDICATOR_LAYER, handleLabelClick);
+
         // Cursor handlers
         map.on("mouseenter", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
         map.on("mouseenter", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", VENUE_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", VENUE_LABELS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", VENUE_LABELS_LAYER, () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", VENUE_INDICATOR_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", VENUE_INDICATOR_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
         // Ensure visibility is correct after all initialization
         // (handles case where source already existed but visibility wasn't set)
@@ -246,6 +322,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_INDICATOR_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_LABELS_LAYER, "visibility", visibility);
           console.log("[VenueMarkerLayer] Final visibility set:", visibility);
         }
 
@@ -272,6 +350,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
       map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
       map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
       map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+      map.setLayoutProperty(VENUE_INDICATOR_LAYER, "visibility", visibility);
+      map.setLayoutProperty(VENUE_LABELS_LAYER, "visibility", visibility);
       console.log("[VenueMarkerLayer] Visibility:", visibility);
 
       // When becoming visible, ensure data is fresh (handles race where venues arrived during init)
@@ -305,6 +385,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           map.setLayoutProperty(VENUE_CLUSTER_COUNT_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_GLOW_LAYER, "visibility", visibility);
           map.setLayoutProperty(VENUE_UNCLUSTERED_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_INDICATOR_LAYER, "visibility", visibility);
+          map.setLayoutProperty(VENUE_LABELS_LAYER, "visibility", visibility);
         }
       }
     } catch (e) {
