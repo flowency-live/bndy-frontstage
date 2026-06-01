@@ -294,10 +294,12 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         });
 
-        // Click handler for venue labels (at high zoom)
-        const handleLabelClick = (e: mapboxgl.MapMouseEvent) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER] });
-          if (features.length === 0) return;
+        // Click handler for venue labels and indicator dots (at high zoom)
+        // Use MapLayerMouseEvent which includes features array directly
+        const handleLabelClick = (e: mapboxgl.MapLayerMouseEvent) => {
+          // Use features from event (more reliable for symbol layers)
+          const features = e.features || map.queryRenderedFeatures(e.point, { layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER] });
+          if (!features || features.length === 0) return;
 
           const venueId = features[0].properties?.id;
           const venue = venueMapRef.current.get(venueId);
