@@ -58,11 +58,9 @@ export function useAllPublicEvents({ startDate, endDate, enabled = true }: UseAl
       if (endDate) params.append('endDate', endDate);
 
       const url = `/api/events/public${params.toString() ? '?' + params.toString() : ''}`;
-      console.log("[useAllPublicEvents] Fetching:", url);
 
       const response = await apiRequest('GET', url);
       const data = await response.json();
-      console.log("[useAllPublicEvents] Got", data.events?.length || 0, "events");
 
       // Transform: DynamoDB format → Frontstage format
       const transformedEvents = (data.events || []).map((event: DynamoDBEvent) => {

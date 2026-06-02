@@ -60,14 +60,9 @@ export function MapDateStrip({ eventCounts = {} }: MapDateStripProps) {
 
   // Handle date selection
   const handleSelectDate = useCallback((dateInfo: DateInfo) => {
-    console.log("[MapDateStrip] Selecting date:", dateInfo.iso);
     setSelectedDate(dateInfo.iso);
     // Update context with specific date range (single day)
-    const filterValue = `date:${dateInfo.iso}`;
-    console.log("[MapDateStrip] Setting dateRange to:", filterValue);
-    setDateRange(filterValue);
-    // Optionally collapse after selection
-    // setIsExpanded(false);
+    setDateRange(`date:${dateInfo.iso}`);
   }, [setDateRange]);
 
   // Navigate to previous day

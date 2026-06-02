@@ -33,13 +33,13 @@ export function getFormattedDateRangeUniversal(
   // Handle specific date filter
   const specificDate = parseSpecificDateFilter(filter);
   if (specificDate) {
-    // Parse the date
-    const date = new Date(specificDate);
-    const nextDay = new Date(date);
-    nextDay.setDate(date.getDate() + 1);
+    // Parse as local date (not UTC) to avoid timezone issues
+    const [year, month, day] = specificDate.split('-').map(Number);
+    const nextDate = new Date(year, month - 1, day + 1);
+    const nextDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
     return {
       startDate: specificDate,
-      endDate: nextDay.toISOString().split('T')[0]
+      endDate: nextDateStr
     };
   }
 
