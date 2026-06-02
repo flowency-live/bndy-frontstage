@@ -50,7 +50,9 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
 
   // Calculate date range for event marker queries (supports both range filters and specific dates)
   const { startDate, endDate } = useMemo(() => {
-    return getFormattedDateRangeUniversal(dateRange);
+    const range = getFormattedDateRangeUniversal(dateRange);
+    console.log("[MapboxMap] dateRange:", dateRange, "→ startDate:", range.startDate, "endDate:", range.endDate);
+    return range;
   }, [dateRange]);
 
   // Today's date for "all future events" query
