@@ -913,6 +913,213 @@ main {
   text-align: left;
 }
 
+/* ========================================
+   MAP DATE STRIP - Floating date selector
+   ======================================== */
+
+.map-date-strip {
+  position: fixed;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  pointer-events: auto;
+
+  /* Glass-morphism container */
+  background: rgba(10, 15, 28, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Mobile positioning */
+@media (max-width: 640px) {
+  .map-date-strip {
+    bottom: 130px;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Collapsed state */
+.map-date-strip.collapsed {
+  padding: 6px 8px;
+}
+
+.map-date-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-date-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-date-arrow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.map-date-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.map-date-current {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-date-current:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.map-date-display {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+/* Expanded state */
+.map-date-strip.expanded {
+  padding: 10px;
+}
+
+.map-date-expanded {
+  position: relative;
+}
+
+.map-date-close {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-date-close:hover {
+  background: rgba(249, 115, 22, 0.3);
+  border-color: rgba(249, 115, 22, 0.5);
+  color: white;
+}
+
+.map-date-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 20px 4px 4px;
+  max-width: calc(100vw - 60px);
+}
+
+.map-date-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Date tile wrapper for staggered animation */
+.date-tile-wrapper {
+  scroll-snap-align: center;
+  animation: date-tile-enter 0.25s ease backwards;
+}
+
+@keyframes date-tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Date tile base */
+.date-tile {
+  background: rgba(20, 28, 45, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.date-tile-default {
+  background: rgba(20, 28, 45, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.date-tile-hover {
+  background: rgba(30, 40, 60, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.date-tile-selected {
+  background: rgba(6, 182, 212, 0.18);
+  border: 2px solid var(--secondary);
+  color: white;
+  box-shadow:
+    0 0 20px rgba(6, 182, 212, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.date-tile-day {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.date-tile-num {
+  color: inherit;
+}
+
+.date-tile-month {
+  color: inherit;
+}
+
+.date-tile-selected .date-tile-day,
+.date-tile-selected .date-tile-num {
+  color: white;
+}
+
+.date-tile-selected .date-tile-month {
+  color: var(--secondary);
+}
+
 /* User location marker specific styles */
 .user-location-marker {
   z-index: 1000;

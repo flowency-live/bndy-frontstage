@@ -5,6 +5,7 @@
 import Map from "./mapbox/MapboxMap";
 import EventFilter from "./filters/EventFilter";
 import { MapViewEventsFilter } from "./filters/MapViewEventsFilter";
+import { MapDateStrip } from "./filters/MapDateStrip";
 import { useState, useRef, useEffect } from "react";
 import { AddEventButton } from "./events/AddEventButton";
 import { useViewToggle } from "@/context/ViewToggleContext";
@@ -70,6 +71,11 @@ export default function MapView() {
       <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-30">
         <VenueModeIndicator />
       </div>
+
+      {/* Date strip picker - centered above quick filter, only show in events mode */}
+      {mapMode === 'events' && (
+        <MapDateStrip />
+      )}
 
       {/* Quick filter button in the bottom left - only show in events mode */}
       {mapMode === 'events' && (

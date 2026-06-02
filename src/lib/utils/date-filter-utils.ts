@@ -1,6 +1,52 @@
 // src/lib/utils/date-filter-utils.ts
 export type DateRangeFilter = 'today' | 'thisWeek' | 'thisWeekend' | 'nextWeek' | 'nextWeekend';
 
+/**
+ * Check if a filter string is a specific date (format: "date:YYYY-MM-DD")
+ */
+export function isSpecificDateFilter(filter: string): boolean {
+  return filter.startsWith('date:');
+}
+
+/**
+ * Parse a specific date filter string
+ * @param filter The filter string (e.g., "date:2026-06-02")
+ * @returns The date string (e.g., "2026-06-02") or null if invalid
+ */
+export function parseSpecificDateFilter(filter: string): string | null {
+  if (!isSpecificDateFilter(filter)) return null;
+  const dateStr = filter.slice(5); // Remove "date:" prefix
+  // Validate format YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  return dateStr;
+}
+
+/**
+ * Get formatted date range for any filter type (including specific dates)
+ * @param filter The filter string (e.g., "today", "thisWeek", or "date:2026-06-02")
+ * @returns Start and end date ISO strings
+ */
+export function getFormattedDateRangeUniversal(
+  filter: string,
+  baseDate: Date = new Date()
+): { startDate: string; endDate: string } {
+  // Handle specific date filter
+  const specificDate = parseSpecificDateFilter(filter);
+  if (specificDate) {
+    // Parse the date
+    const date = new Date(specificDate);
+    const nextDay = new Date(date);
+    nextDay.setDate(date.getDate() + 1);
+    return {
+      startDate: specificDate,
+      endDate: nextDay.toISOString().split('T')[0]
+    };
+  }
+
+  // Fall back to standard date range filters
+  return getFormattedDateRange(filter as DateRangeFilter, baseDate);
+}
+
 export interface DateRange {
   startDate: Date;
   endDate: Date;

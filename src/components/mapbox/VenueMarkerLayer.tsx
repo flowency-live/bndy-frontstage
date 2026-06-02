@@ -294,19 +294,26 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         });
 
-        // Click handler for venue labels and indicator dots (at high zoom)
-        // Use MapLayerMouseEvent which includes features array directly
-        const handleLabelClick = (e: mapboxgl.MapLayerMouseEvent) => {
-          // Use features from event (more reliable for symbol layers)
-          const features = e.features || map.queryRenderedFeatures(e.point, { layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER] });
+        // Click handler for venue labels (at high zoom)
+        // NOTE: Layer-specific handlers for symbol layers with icon-text-fit often fail.
+        // Using general click handler with queryRenderedFeatures is more reliable.
+        const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
+          // Check if we clicked on label or indicator layers
+          const features = map.queryRenderedFeatures(e.point, {
+            layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER]
+          });
+
           if (!features || features.length === 0) return;
 
           const venueId = features[0].properties?.id;
           const venue = venueMapRef.current.get(venueId);
 
-          console.log("[VenueMarkerLayer] Label click - venueId:", venueId, "found:", !!venue);
+          console.log("[VenueMarkerLayer] Label/indicator click - venueId:", venueId, "found:", !!venue, "layer:", features[0].layer?.id);
 
           if (venue) {
+            // Prevent this click from propagating to other handlers
+            e.preventDefault();
+
             if (venue.location) {
               map.easeTo({ center: [venue.location.lng, venue.location.lat], duration: 300 });
             }
@@ -314,8 +321,8 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         };
 
-        map.on("click", VENUE_LABELS_LAYER, handleLabelClick);
-        map.on("click", VENUE_INDICATOR_LAYER, handleLabelClick);
+        // Use general click handler - more reliable for symbol layers with icons
+        map.on("click", handleMapClick);
 
         // Cursor handlers
         map.on("mouseenter", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });

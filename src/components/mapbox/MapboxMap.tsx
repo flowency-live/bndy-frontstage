@@ -7,7 +7,7 @@ import { useEvents } from "@/context/EventsContext";
 import { useVenues } from "@/hooks/useVenues";
 import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
 import type { Event, Venue } from "@/lib/types";
-import { isDateInRange, DateRangeFilter, getFormattedDateRange } from "@/lib/utils/date-filter-utils";
+import { isDateInRange, DateRangeFilter, getFormattedDateRangeUniversal } from "@/lib/utils/date-filter-utils";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
@@ -48,9 +48,9 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
   const { isDarkMode, mapMode } = useViewToggle();
   const { map, isMapReady, isBot } = useMapbox();
 
-  // Calculate date range for event marker queries
+  // Calculate date range for event marker queries (supports both range filters and specific dates)
   const { startDate, endDate } = useMemo(() => {
-    return getFormattedDateRange(dateRange as DateRangeFilter);
+    return getFormattedDateRangeUniversal(dateRange);
   }, [dateRange]);
 
   // Today's date for "all future events" query
