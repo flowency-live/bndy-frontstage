@@ -7,7 +7,7 @@ import { useEvents } from "@/context/EventsContext";
 import { useVenues } from "@/hooks/useVenues";
 import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
 import type { Event, Venue } from "@/lib/types";
-import { isDateInRange, DateRangeFilter, getFormattedDateRangeUniversal } from "@/lib/utils/date-filter-utils";
+import { isDateInRangeUniversal, getFormattedDateRangeUniversal } from "@/lib/utils/date-filter-utils";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
@@ -153,12 +153,12 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
       (e): e is Event => (e as Event).date !== undefined
     );
 
-    // Apply date filtering
+    // Apply date filtering (handles both range filters and specific dates)
     let dateFiltered = eventsOnly;
     if (dateRange) {
       dateFiltered = eventsOnly.filter((event) => {
         const eventDate = new Date(event.date);
-        return isDateInRange(eventDate, dateRange as DateRangeFilter);
+        return isDateInRangeUniversal(eventDate, dateRange);
       });
     }
 

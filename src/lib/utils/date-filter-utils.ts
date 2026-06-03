@@ -149,6 +149,26 @@ export function isDateInRange(date: Date, filter: DateRangeFilter, baseDate: Dat
 }
 
 /**
+ * Check if a date falls within a given filter (handles both range filters and specific dates)
+ * @param date The date to check
+ * @param filter The filter string (e.g., "today", "thisWeek", or "date:2026-06-02")
+ * @param baseDate The date to calculate from (defaults to today)
+ * @returns True if the date is within the range
+ */
+export function isDateInRangeUniversal(date: Date, filter: string, baseDate: Date = new Date()): boolean {
+  // Handle specific date filter
+  const specificDate = parseSpecificDateFilter(filter);
+  if (specificDate) {
+    // Compare just the date parts (ignore time)
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return dateStr === specificDate;
+  }
+
+  // Fall back to standard date range filter
+  return isDateInRange(date, filter as DateRangeFilter, baseDate);
+}
+
+/**
  * Format a date range for display or API use
  * @param filter The filter type
  * @param baseDate The date to calculate from (defaults to today)
