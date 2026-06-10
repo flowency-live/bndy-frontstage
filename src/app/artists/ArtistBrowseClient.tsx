@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Artist } from '@/lib/types';
-import { getAllArtists, searchArtists } from '@/lib/services/artist-service-new';
+import { getAllArtists } from '@/lib/services/artist-service-new';
 import { fuzzyMatch } from '@/lib/utils/fuzzy-search';
 import ArtistCard from '@/components/artist/ArtistCard';
 import ArtistFilters from '@/components/artist/ArtistFilters';
@@ -103,71 +103,29 @@ export default function ArtistBrowseClient() {
     loadArtists();
   }, []);
 
-  // Perform search when search query changes
+  // Perform search when search query changes - uses local fuzzy matching for better UX
   const performSearch = useCallback(async (query: string, location?: string) => {
-    if (!query || query.trim().length < 2) {
-      // If no search query, show all artists with local filtering
-      const filtered = allArtists.filter(artist => {
-        const matchesLocation = !location ||
-          (artist.location && artist.location.toLowerCase().includes(location.toLowerCase()));
-        const matchesType = !artistTypeFilter ||
-          artist.artist_type === artistTypeFilter;
-        const matchesGenre = genreFilter.length === 0 ||
-          (artist.genres && artist.genres.some(g => genreFilter.includes(g)));
-        const matchesAcoustic = acousticFilter === 'all' ||
-          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && !artist.acoustic);
-        const matchesActType = !actTypeFilter ||
-          (artist.actType && artist.actType.includes(actTypeFilter as any));
-        return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
-      });
-      setDisplayedArtists(filtered);
-      return;
-    }
+    // Use local fuzzy filtering for all searches (faster and supports prefix stripping)
+    const filtered = allArtists.filter(artist => {
+      // Name search with fuzzy matching (handles "The"/"A"/"An" prefixes and typos)
+      const matchesSearch = !query || query.trim().length < 2 || fuzzyMatch(query, artist.name);
+      const matchesLocation = !location ||
+        (artist.location && artist.location.toLowerCase().includes(location.toLowerCase()));
+      const matchesType = !artistTypeFilter ||
+        artist.artist_type === artistTypeFilter;
+      const matchesGenre = genreFilter.length === 0 ||
+        (artist.genres && artist.genres.some(g => genreFilter.includes(g)));
+      const matchesAcoustic = acousticFilter === 'all' ||
+        (acousticFilter === 'acoustic' && artist.acoustic === true) ||
+        (acousticFilter === 'non-acoustic' && !artist.acoustic);
+      const matchesActType = !actTypeFilter ||
+        (artist.actType && artist.actType.includes(actTypeFilter as any));
+      return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
+    });
+    setDisplayedArtists(filtered);
 
-    try {
-      setSearching(true);
-      setError(null);
-      const searchResults = await searchArtists(query, location);
-
-      // Apply additional local filtering for artist type, genre, acoustic, and actType
-      const filtered = searchResults.filter(artist => {
-        const matchesType = !artistTypeFilter ||
-          artist.artist_type === artistTypeFilter;
-        const matchesGenre = genreFilter.length === 0 ||
-          (artist.genres && artist.genres.some(g => genreFilter.includes(g)));
-        const matchesAcoustic = acousticFilter === 'all' ||
-          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && !artist.acoustic);
-        const matchesActType = !actTypeFilter ||
-          (artist.actType && artist.actType.includes(actTypeFilter as any));
-        return matchesType && matchesGenre && matchesAcoustic && matchesActType;
-      });
-
-      setDisplayedArtists(filtered);
-    } catch (err) {
-      console.error('Error searching artists:', err);
-      setError('Failed to search artists. Please try again.');
-      // Fallback to local filtering with fuzzy search
-      const filtered = allArtists.filter(artist => {
-        const matchesSearch = fuzzyMatch(query, artist.name);
-        const matchesLocation = !location ||
-          (artist.location && artist.location.toLowerCase().includes(location.toLowerCase()));
-        const matchesType = !artistTypeFilter ||
-          artist.artist_type === artistTypeFilter;
-        const matchesGenre = genreFilter.length === 0 ||
-          (artist.genres && artist.genres.some(g => genreFilter.includes(g)));
-        const matchesAcoustic = acousticFilter === 'all' ||
-          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && !artist.acoustic);
-        const matchesActType = !actTypeFilter ||
-          (artist.actType && artist.actType.includes(actTypeFilter as any));
-        return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
-      });
-      setDisplayedArtists(filtered);
-    } finally {
-      setSearching(false);
-    }
+    // No need for backend search - we have all artists loaded and fuzzy matching locally
+    // This is faster and provides better UX with prefix stripping and typo tolerance
   }, [allArtists, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter]);
 
   // Effect to trigger search when query or location changes
@@ -179,28 +137,9 @@ export default function ArtistBrowseClient() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, locationFilter, performSearch]);
 
-  // Effect to re-filter when artist type, genre, acoustic, or actType changes
+  // Effect to re-filter when filters change - performSearch handles all cases with fuzzy matching
   useEffect(() => {
-    if (searchQuery && searchQuery.trim().length >= 2) {
-      performSearch(searchQuery, locationFilter);
-    } else {
-      // Local filtering when no search query
-      const filtered = allArtists.filter(artist => {
-        const matchesLocation = !locationFilter ||
-          (artist.location && artist.location.toLowerCase().includes(locationFilter.toLowerCase()));
-        const matchesType = !artistTypeFilter ||
-          artist.artist_type === artistTypeFilter;
-        const matchesGenre = genreFilter.length === 0 ||
-          (artist.genres && artist.genres.some(g => genreFilter.includes(g)));
-        const matchesAcoustic = acousticFilter === 'all' ||
-          (acousticFilter === 'acoustic' && artist.acoustic === true) ||
-          (acousticFilter === 'non-acoustic' && !artist.acoustic);
-        const matchesActType = !actTypeFilter ||
-          (artist.actType && artist.actType.includes(actTypeFilter as any));
-        return matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
-      });
-      setDisplayedArtists(filtered);
-    }
+    performSearch(searchQuery, locationFilter);
   }, [artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, allArtists, searchQuery, locationFilter, performSearch]);
 
   // Get unique locations for filter dropdown
