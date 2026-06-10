@@ -47,7 +47,7 @@ export interface Artist {
   id: string;
   name: string;
   nameVariants?: string[];
-  artist_type?: 'band' | 'solo' | 'duo' | 'group' | 'dj' | 'collective'; // No "Band" entity - use artist_type field
+  artist_type?: 'band' | 'solo' | 'duo' | 'trio' | 'group' | 'dj' | 'collective'; // No "Band" entity - use artist_type field
   artistType?: string; // NEW: Lambda now returns both artist_type and artistType for compatibility
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls' - legacy individual URL fields also exist
   genres?: string[];  // Flat list of genres (simplified 2025-11-07)
@@ -89,6 +89,53 @@ export interface ArtistMember {
   role?: string;
   isAdmin: boolean;
   joinedAt: string;
+}
+
+// Builder Types (Multi-persona / White-label subdomains)
+export interface BuilderBranding {
+  logoUrl?: string;
+  tagline?: string;
+}
+
+export interface BuilderTheme {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  foregroundColor: string;
+  defaultMode: 'light' | 'dark';
+}
+
+export type BuilderCoverage =
+  | { type: 'postcode_radius'; postcode: string; radius: number }
+  | { type: 'postcode_areas'; areas: string[] }
+  | { type: 'bounding_box'; sw: { lat: number; lng: number }; ne: { lat: number; lng: number } }
+  | { type: 'manual' };
+
+export interface Builder {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  branding: BuilderBranding;
+  theme: BuilderTheme;
+  coverage: BuilderCoverage;
+  status: 'draft' | 'published' | 'suspended';
+  created_at: string;
+  updated_at: string;
+}
+
+// Calendar Subscription Types
+export interface CalendarSubscription {
+  token: string;
+  userId: string;
+  artistId: string;
+  scope: 'full' | 'public' | 'personal';
+  createdAt: string;
+  lastUsedAt: string;
+  revokedAt: string | null;
+  subscriptionUrl: string;
+  webcalUrl: string;
 }
 
 // Event Types

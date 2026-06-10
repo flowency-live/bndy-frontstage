@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { useMapbox } from "@/context/MapboxContext";
+import { createMarkerElement } from "./markerElements";
 
 interface UserLocationMarkerProps {
   userLocation: { lat: number; lng: number } | null;
@@ -34,13 +35,8 @@ export function UserLocationMarker({ userLocation }: UserLocationMarkerProps) {
       return;
     }
 
-    // Create custom HTML element for the marker
-    const el = document.createElement("div");
-    el.className = "mapbox-user-location-marker";
-    el.innerHTML = `
-      <div class="user-location-pulse"></div>
-      <div class="user-location-dot"></div>
-    `;
+    // Neon kit user-location marker (blue core + sonar, styles/markers.css)
+    const el = createMarkerElement({ type: "user" });
 
     // Create or update marker
     try {

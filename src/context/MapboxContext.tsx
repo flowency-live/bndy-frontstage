@@ -82,6 +82,10 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
     // Mark not ready while style loads - this tells marker layers to wait
     setIsMapReady(false);
 
+    // Neon markers restyle via CSS when .theme-light is on the container
+    // (see src/styles/markers.css) - HTML markers survive setStyle()
+    mapRef.current.getContainer()?.classList.toggle("theme-light", !isDarkMode);
+
     mapRef.current.setStyle(newStyle);
     mapRef.current.once("style.load", () => {
       console.log("[MapboxProvider] New style loaded:", newMode);
@@ -201,6 +205,9 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
     });
 
     setCurrentStyleMode(initialMode);
+
+    // Theme class for neon marker CSS (src/styles/markers.css)
+    container.classList.toggle("theme-light", !isDarkMode);
 
     // Store globally to survive route changes
     if (typeof window !== "undefined") {

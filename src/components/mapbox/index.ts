@@ -7,12 +7,9 @@ export { EventMarkerLayer } from "./EventMarkerLayer";
 export { UserLocationMarker } from "./UserLocationMarker";
 
 // Marker utilities
-export {
-  addMarkerImagesToMap,
-  venuesToGeoJSON,
-  eventsToGeoJSON,
-  getClusterImageName,
-} from "./MapboxMarkers";
+export { venuesToGeoJSON, eventsToGeoJSON } from "./MapboxMarkers";
+export { createMarkerElement, clusterTier } from "./markerElements";
+export { useDiffedMarkers } from "./useDiffedMarkers";
 
 // Re-export context utilities
 export { useMapbox, MapboxProvider, StaticMapFallback } from "@/context/MapboxContext";

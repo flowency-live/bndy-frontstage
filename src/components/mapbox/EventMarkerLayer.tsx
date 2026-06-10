@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import { Event } from "@/lib/types";
 import { useMapbox } from "@/context/MapboxContext";
-import { addMarkerImagesToMap, eventsToGeoJSON } from "./MapboxMarkers";
+import { eventsToGeoJSON } from "./MapboxMarkers";
+import { useDiffedMarkers, DiffedMarkerSpec } from "./useDiffedMarkers";
 
 interface EventMarkerLayerProps {
   events: Event[];
@@ -14,12 +15,21 @@ interface EventMarkerLayerProps {
 }
 
 const EVENT_SOURCE_ID = "events";
-const EVENT_CLUSTERS_LAYER = "event-clusters";
-const EVENT_CLUSTER_COUNT_LAYER = "event-cluster-count";
-const EVENT_UNCLUSTERED_LAYER = "event-unclustered";
+// Invisible anchor layer: keeps the clustered source's tiles processed so
+// querySourceFeatures() returns features. Never visible.
+const EVENT_ANCHOR_LAYER = "event-anchors";
+
+/** Local YYYY-MM-DD for "tonight" detection */
+function todayLocalISO(): string {
+  return new Date().toLocaleDateString("en-CA");
+}
 
 /**
- * EventMarkerLayer - Renders event markers with clustering on Mapbox
+ * EventMarkerLayer - Renders neon HTML event markers with clustering on Mapbox
+ *
+ * The GeoJSON source still does the clustering; rendering is diffed HTML
+ * markers (see useDiffedMarkers) styled by src/styles/markers.css.
+ * Visual source of truth: Projects/bndy/design-kit/marker-kit.html
  *
  * IMPORTANT: This component stays mounted. Visibility is controlled by prop.
  */
@@ -60,12 +70,11 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     lastMapIdRef.current = mapId;
   }, [map]);
 
-  // Reset initialization when style changes (theme toggle)
+  // Reset initialization when style changes (theme toggle removes sources)
   useEffect(() => {
     if (!map) return;
 
     const handleStyleLoad = () => {
-      // After style change, our source is gone - need to reinitialize
       if (initializedRef.current && !map.getSource(EVENT_SOURCE_ID)) {
         console.log("[EventMarkerLayer] Style changed, resetting init");
         initializedRef.current = false;
@@ -78,12 +87,10 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     };
   }, [map]);
 
-  // Initialize layers and handlers ONCE (or reinitialize after style change)
+  // Initialize source ONCE (or reinitialize after style change)
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    // Skip if already initialized AND source still exists (source is removed on style change)
-    // Wrap in try-catch as getSource can throw if style isn't loaded
     try {
       if (initializedRef.current && map.getSource(EVENT_SOURCE_ID)) return;
     } catch {
@@ -92,13 +99,11 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
 
     const init = async () => {
       try {
-        // Verify map container is valid
         const mapContainer = map.getContainer();
         if (!mapContainer || !document.body.contains(mapContainer)) {
           return;
         }
 
-        // Wait for style - wrap in try-catch as isStyleLoaded can throw if map is in bad state
         let styleLoaded = false;
         try {
           styleLoaded = map.isStyleLoaded();
@@ -109,10 +114,6 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
           await new Promise<void>(resolve => map.once("style.load", () => resolve()));
         }
 
-        await addMarkerImagesToMap(map);
-
-        // Create source if doesn't exist
-        // Use ref to avoid stale closure issue (events may update during async init)
         if (!map.getSource(EVENT_SOURCE_ID)) {
           map.addSource(EVENT_SOURCE_ID, {
             type: "geojson",
@@ -122,108 +123,15 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
             clusterRadius: 40,
           });
 
+          // Invisible anchor layer (markers are HTML; this just drives tiles)
           map.addLayer({
-            id: EVENT_CLUSTERS_LAYER,
+            id: EVENT_ANCHOR_LAYER,
             type: "circle",
             source: EVENT_SOURCE_ID,
-            filter: ["has", "point_count"],
-            paint: {
-              "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
-              "circle-color": ["step", ["get", "point_count"], "#F97316", 10, "#EA580C", 50, "#C2410C"],
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#FFFFFF",
-            },
+            paint: { "circle-radius": 0, "circle-opacity": 0 },
           });
 
-          map.addLayer({
-            id: EVENT_CLUSTER_COUNT_LAYER,
-            type: "symbol",
-            source: EVENT_SOURCE_ID,
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": ["get", "point_count_abbreviated"],
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-              "text-size": 12,
-              "text-allow-overlap": true,
-            },
-            paint: { "text-color": "#FFFFFF" },
-          });
-
-          map.addLayer({
-            id: EVENT_UNCLUSTERED_LAYER,
-            type: "circle",
-            source: EVENT_SOURCE_ID,
-            filter: ["!", ["has", "point_count"]],
-            paint: {
-              "circle-radius": 8,
-              "circle-color": "#F97316",
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#FFFFFF",
-            },
-          });
-
-          // Set initial visibility based on prop
-          const initialVisibility = visibleRef.current ? "visible" : "none";
-          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", initialVisibility);
-          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", initialVisibility);
-          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", initialVisibility);
-
-          console.log("[EventMarkerLayer] Layers created, visibility:", initialVisibility);
-        }
-
-        // Add click handlers (using refs so they stay current)
-        map.on("click", EVENT_CLUSTERS_LAYER, (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_CLUSTERS_LAYER] });
-          if (features.length === 0) return;
-
-          const clusterId = features[0].properties?.cluster_id;
-          const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
-          if (source && clusterId !== undefined) {
-            source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-              if (err) return;
-              const geometry = features[0].geometry;
-              if (geometry.type === "Point") {
-                map.easeTo({ center: geometry.coordinates as [number, number], zoom: zoom ?? 12 });
-              }
-            });
-          }
-        });
-
-        map.on("click", EVENT_UNCLUSTERED_LAYER, (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: [EVENT_UNCLUSTERED_LAYER] });
-          if (features.length === 0) return;
-
-          // Use locationKey from properties (reliable) instead of reconstructing from coordinates
-          const locationKey = features[0].properties?.locationKey;
-          const geometry = features[0].geometry;
-
-          console.log("[EventMarkerLayer] Click - locationKey:", locationKey);
-
-          if (locationKey && geometry.type === "Point") {
-            const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
-            console.log("[EventMarkerLayer] Events at location:", eventsAtLocation.length);
-
-            if (eventsAtLocation.length > 0) {
-              const [lng, lat] = geometry.coordinates;
-              map.easeTo({ center: [lng, lat], duration: 300 });
-              onEventClickRef.current(eventsAtLocation);
-            }
-          }
-        });
-
-        // Cursor handlers
-        map.on("mouseenter", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", EVENT_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ""; });
-        map.on("mouseenter", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", EVENT_UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ""; });
-
-        // Ensure visibility is correct after all initialization
-        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-          const visibility = visibleRef.current ? "visible" : "none";
-          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
-          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
-          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
-          console.log("[EventMarkerLayer] Final visibility set:", visibility);
+          console.log("[EventMarkerLayer] Source created");
         }
 
         initializedRef.current = true;
@@ -236,29 +144,88 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
     init();
   }, [map, isMapReady, currentStyleMode]);
 
-  // Control visibility via prop - also refresh data when becoming visible
-  useEffect(() => {
-    if (!map || !isMapReady) return;
+  // Build marker specs from clustered source features (stable; reads via refs)
+  const buildSpecs = useCallback((features: GeoJSON.Feature[]): DiffedMarkerSpec[] => {
+    const specs: DiffedMarkerSpec[] = [];
+    const today = todayLocalISO();
+    const mapInstance = map;
 
-    // Guard against map being in bad state (style not loaded)
-    try {
-      if (!map.getLayer(EVENT_CLUSTERS_LAYER)) return;
+    for (const feature of features) {
+      if (feature.geometry.type !== "Point") continue;
+      const [lng, lat] = feature.geometry.coordinates as [number, number];
+      const props = feature.properties as Record<string, unknown>;
 
-      const visibility = visible ? "visible" : "none";
-      map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
-      map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
-      map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
-      console.log("[EventMarkerLayer] Visibility:", visibility);
-
-      // When becoming visible, ensure data is fresh (handles race where events arrived during init)
-      if (visible) {
-        const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
-        if (source && eventsRef.current.length > 0) {
-          source.setData(eventsToGeoJSON(eventsRef.current));
-          console.log("[EventMarkerLayer] Refreshed data on visibility:", eventsRef.current.length, "events");
-        }
+      if (props && props.cluster) {
+        const clusterId = props.cluster_id as number;
+        const count = (props.point_count as number) ?? 0;
+        specs.push({
+          key: `ec:${clusterId}`,
+          lngLat: [lng, lat],
+          opts: { type: "cluster", count, kind: "gig" },
+          onClick: () => {
+            if (!mapInstance) return;
+            const source = mapInstance.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+            source?.getClusterExpansionZoom(clusterId, (err, zoom) => {
+              if (err) return;
+              mapInstance.easeTo({ center: [lng, lat], zoom: zoom ?? 12 });
+            });
+          },
+        });
+        continue;
       }
-    } catch (e) {
+
+      // Single event location (multiple events can share a locationKey — one
+      // marker per location, click opens all of them)
+      const locationKey = (props?.locationKey as string) ?? `${lat},${lng}`;
+      const eventsAtLocation = eventGroupsRef.current[locationKey] || [];
+      const count = eventsAtLocation.length;
+      const name = (props?.name as string) ?? "";
+      const venueName = (props?.venueName as string) ?? "";
+      const date = (props?.date as string) ?? "";
+
+      specs.push({
+        key: `e:${locationKey}`,
+        lngLat: [lng, lat],
+        opts: {
+          type: "gig",
+          isTonight: date.startsWith(today),
+          label: count > 1 ? venueName || name : name,
+          sub: count > 1 ? `${count} gigs` : venueName,
+        },
+        onClick: () => {
+          console.log("[EventMarkerLayer] Click - locationKey:", locationKey);
+          const group = eventGroupsRef.current[locationKey] || [];
+          if (group.length > 0 && mapInstance) {
+            mapInstance.easeTo({ center: [lng, lat], duration: 300 });
+            onEventClickRef.current(group);
+          }
+        },
+      });
+    }
+
+    return specs;
+  }, [map]);
+
+  // Diffed HTML marker rendering
+  useDiffedMarkers({
+    map,
+    isMapReady,
+    sourceId: EVENT_SOURCE_ID,
+    enabled: visible,
+    buildSpecs,
+  });
+
+  // Refresh data when becoming visible (handles race where events arrived during init)
+  useEffect(() => {
+    if (!map || !isMapReady || !visible) return;
+
+    try {
+      const source = map.getSource(EVENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+      if (source && eventsRef.current.length > 0) {
+        source.setData(eventsToGeoJSON(eventsRef.current));
+        console.log("[EventMarkerLayer] Refreshed data on visibility:", eventsRef.current.length, "events");
+      }
+    } catch {
       // Map style not ready yet, will be set during init
     }
   }, [map, isMapReady, visible]);
@@ -272,16 +239,8 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
       if (source) {
         source.setData(eventsToGeoJSON(events));
         console.log("[EventMarkerLayer] Data updated:", events.length, "events");
-
-        // Defensive: re-apply visibility after data update
-        if (map.getLayer(EVENT_CLUSTERS_LAYER)) {
-          const visibility = visibleRef.current ? "visible" : "none";
-          map.setLayoutProperty(EVENT_CLUSTERS_LAYER, "visibility", visibility);
-          map.setLayoutProperty(EVENT_CLUSTER_COUNT_LAYER, "visibility", visibility);
-          map.setLayoutProperty(EVENT_UNCLUSTERED_LAYER, "visibility", visibility);
-        }
       }
-    } catch (e) {
+    } catch {
       // Map or source not ready yet
     }
   }, [map, isMapReady, events]);

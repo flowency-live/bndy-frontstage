@@ -1,12 +1,15 @@
 // app/layout.tsx - Updated
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Anton, Archivo, JetBrains_Mono, Bebas_Neue, Caveat, Bungee, Permanent_Marker, Special_Elite } from "next/font/google";
 import "./globals.css";
+import "@/styles/markers.css";
 import Header from "@/components/Header";
 import DesktopNav from "@/components/DesktopNav";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ViewToggleProvider } from "@/context/ViewToggleContext";
+import { TenantProvider } from "@/context/TenantContext";
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import { MapboxProvider } from "@/context/MapboxContext";
@@ -111,11 +114,15 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read subdomain from middleware-set header for white-label sites
+  const headersList = await headers();
+  const subdomain = headersList.get("x-tenant-subdomain");
+
   return (
     <html lang="en" className={`${anton.variable} ${archivo.variable} ${jetbrainsMono.variable} ${bebasNeue.variable} ${caveat.variable} ${bungee.variable} ${permanentMarker.variable} ${specialElite.variable}`}>
       <head>
@@ -128,29 +135,32 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="HandheldFriendly" content="true" />
         <meta name="MobileOptimized" content="320" />
-        
+
         {/* Preconnect to external domains for better performance */}
         <link rel="preconnect" href="https://graph.facebook.com" />
         <link rel="dns-prefetch" href="https://graph.facebook.com" />
       </head>
       <body className="flex flex-col min-h-screen min-h-dvh m-0 p-0 mobile-optimized keyboard-safe">
         <Providers>
-          <ViewToggleProvider>
-            {/* MapboxProvider at layout level - map survives route navigation */}
-            <MapboxProvider>
-              {/* EventsProvider at layout level - state survives route navigation */}
-              <EventsProvider>
-                <ServiceWorkerRegistration />
-                <Header />
-                <DesktopNav />
-                <main className="flex-1 mt-[88px] md:mt-[156px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
-                  {children}
-                </main>
-                <Footer />
-                <MobileBottomNav />
-              </EventsProvider>
-            </MapboxProvider>
-          </ViewToggleProvider>
+          {/* TenantProvider for white-label subdomain support */}
+          <TenantProvider subdomain={subdomain}>
+            <ViewToggleProvider>
+              {/* MapboxProvider at layout level - map survives route navigation */}
+              <MapboxProvider>
+                {/* EventsProvider at layout level - state survives route navigation */}
+                <EventsProvider>
+                  <ServiceWorkerRegistration />
+                  <Header />
+                  <DesktopNav />
+                  <main className="flex-1 mt-[88px] md:mt-[156px] mb-0 pb-16 md:pb-0 p-0 flex flex-col overflow-y-auto mobile-scroll-enhanced">
+                    {children}
+                  </main>
+                  <Footer />
+                  <MobileBottomNav />
+                </EventsProvider>
+              </MapboxProvider>
+            </ViewToggleProvider>
+          </TenantProvider>
         </Providers>
       </body>
     </html>

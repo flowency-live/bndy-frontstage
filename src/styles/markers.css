@@ -1,0 +1,224 @@
+/* ============================================================
+   bndy — Neon Map Marker System · markers.css
+   Canonical source: design-kit/marker-kit.html (keep in sync)
+   Scope: Gig Map + Venue Mode markers, Mapbox GL HTML markers
+   ============================================================ */
+
+:root {
+  /* brand neon palette */
+  --bndy-orange:      #ff7a1a;  /* gigs / events */
+  --bndy-orange-hot:  #ffd9b0;  /* white-hot core */
+  --bndy-pink:        #ff2e88;  /* venue with upcoming gigs */
+  --bndy-pink-hot:    #ffc2dd;
+  --bndy-cyan:        #19d3f5;  /* venue, no gigs scheduled */
+  --bndy-cyan-hot:    #c9f4fd;
+  --bndy-blue:        #4f8df9;  /* user location */
+  --bndy-ink:         #0a0e18;  /* dark glass fill */
+  --bndy-glass:       rgba(10, 14, 24, 0.78);
+
+  /* motion */
+  --mk-ease-pop: cubic-bezier(.2, .9, .3, 1.35);
+  --mk-t-hover: 160ms;
+}
+
+/* ---------- base ---------- */
+.bndy-mk {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform var(--mk-t-hover) var(--mk-ease-pop),
+              filter var(--mk-t-hover) ease;
+  will-change: transform;
+  /* Mapbox: anchor 'center' for dots/clusters */
+}
+.bndy-mk:hover { transform: scale(1.14); z-index: 5; }
+.bndy-mk.is-selected { transform: scale(1.18); z-index: 6; }
+
+/* ============================================================
+   1. SINGLE NEON DOT  (gig + venue singles)
+   14px hot core + neon ring + bloom
+   ============================================================ */
+.bndy-mk--dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, var(--hot, var(--bndy-orange-hot)) 0%, var(--clr, var(--bndy-orange)) 58%, color-mix(in srgb, var(--clr, var(--bndy-orange)) 70%, #000) 100%);
+  border: 1.5px solid color-mix(in srgb, var(--clr, var(--bndy-orange)) 65%, #fff);
+  box-shadow:
+    0 0 7px  color-mix(in srgb, var(--clr, var(--bndy-orange)) 90%, transparent),
+    0 0 18px color-mix(in srgb, var(--clr, var(--bndy-orange)) 55%, transparent),
+    0 0 38px color-mix(in srgb, var(--clr, var(--bndy-orange)) 28%, transparent);
+  animation: mk-breathe 2.8s ease-in-out infinite;
+}
+/* color variants */
+.bndy-mk--gig        { --clr: var(--bndy-orange); --hot: var(--bndy-orange-hot); }
+.bndy-mk--venue-live { --clr: var(--bndy-pink);   --hot: var(--bndy-pink-hot); }
+.bndy-mk--venue-idle { --clr: var(--bndy-cyan);   --hot: var(--bndy-cyan-hot);
+  /* idle venues glow ~40% as bright so live venues pop */
+  box-shadow:
+    0 0 5px  color-mix(in srgb, var(--bndy-cyan) 55%, transparent),
+    0 0 12px color-mix(in srgb, var(--bndy-cyan) 25%, transparent);
+  animation: none; opacity: .92;
+}
+
+@keyframes mk-breathe {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.22); }
+}
+
+/* ---------- TONIGHT variant: sonar ping for gigs happening today ---------- */
+.bndy-mk--tonight::before {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  border: 2px solid var(--clr, var(--bndy-orange));
+  animation: mk-sonar 2.2s cubic-bezier(.25,.6,.3,1) infinite;
+  pointer-events: none;
+}
+@keyframes mk-sonar {
+  0%   { transform: scale(.7); opacity: .9; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ---------- selected: white halo ring + max bloom ---------- */
+.bndy-mk--dot.is-selected {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.92),
+    0 0 12px color-mix(in srgb, var(--clr, var(--bndy-orange)) 95%, transparent),
+    0 0 28px color-mix(in srgb, var(--clr, var(--bndy-orange)) 65%, transparent),
+    0 0 56px color-mix(in srgb, var(--clr, var(--bndy-orange)) 35%, transparent);
+  animation: none;
+}
+
+/* ============================================================
+   2. CLUSTERS — dark glass core, neon ring, count
+   sm 2–4 → 32px · md 5–9 → 40px · lg 10+ → 48px
+   ============================================================ */
+.bndy-mk--cluster {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--clr, var(--bndy-orange)) 26%, transparent) 0%, transparent 65%),
+    var(--bndy-glass);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 2px solid var(--clr, var(--bndy-orange));
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800; letter-spacing: -.3px;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--clr, var(--bndy-orange)) 80%, transparent);
+  box-shadow:
+    0 0 9px  color-mix(in srgb, var(--clr, var(--bndy-orange)) 80%, transparent),
+    0 0 22px color-mix(in srgb, var(--clr, var(--bndy-orange)) 42%, transparent),
+    0 0 46px color-mix(in srgb, var(--clr, var(--bndy-orange)) 20%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--clr, var(--bndy-orange)) 22%, transparent);
+}
+.bndy-mk--cluster.bndy-mk--sm { width: 32px; height: 32px; font-size: 13px; }
+.bndy-mk--cluster.bndy-mk--md { width: 40px; height: 40px; font-size: 15px; }
+.bndy-mk--cluster.bndy-mk--lg { width: 48px; height: 48px; font-size: 17px; }
+
+/* cluster orbit ring — slow rotating dashed neon for lg only */
+.bndy-mk--cluster.bndy-mk--lg::after {
+  content: ''; position: absolute; inset: -7px; border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--clr, var(--bndy-orange)) 55%, transparent);
+  animation: mk-orbit 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes mk-orbit { to { transform: rotate(360deg); } }
+
+.bndy-mk--cluster.is-selected {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 14px color-mix(in srgb, var(--clr, var(--bndy-orange)) 90%, transparent),
+    0 0 34px color-mix(in srgb, var(--clr, var(--bndy-orange)) 55%, transparent);
+}
+
+/* venue idle clusters: dimmer, no inset wash */
+.bndy-mk--cluster.bndy-mk--venue-idle {
+  box-shadow:
+    0 0 6px  color-mix(in srgb, var(--bndy-cyan) 50%, transparent),
+    0 0 14px color-mix(in srgb, var(--bndy-cyan) 22%, transparent);
+}
+
+/* ============================================================
+   3. HOVER LABEL PILL  (venue / event name)
+   ============================================================ */
+.bndy-mk-label {
+  position: absolute; bottom: calc(100% + 9px); left: 50%;
+  transform: translateX(-50%) translateY(4px) scale(.94);
+  background: var(--bndy-glass);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--clr, var(--bndy-orange)) 60%, transparent);
+  color: #f2f5fa; font-size: 12px; font-weight: 600; letter-spacing: .2px;
+  padding: 5px 11px; border-radius: 99px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms var(--mk-ease-pop);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--clr, var(--bndy-orange)) 30%, transparent), 0 4px 14px rgba(0,0,0,.45);
+}
+.bndy-mk-label .sub { color: #8b93a7; font-weight: 500; margin-left: 5px; }
+.bndy-mk:hover .bndy-mk-label,
+.bndy-mk.is-selected .bndy-mk-label {
+  opacity: 1; transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* ============================================================
+   4. USER LOCATION — blue core + sonar
+   ============================================================ */
+.bndy-mk--user {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #cfe1ff 0%, var(--bndy-blue) 60%);
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 10px rgba(79,141,249,.8), 0 0 24px rgba(79,141,249,.4), 0 2px 8px rgba(0,0,0,.4);
+  cursor: default;
+}
+.bndy-mk--user:hover { transform: none; }
+.bndy-mk--user::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid var(--bndy-blue);
+  animation: mk-sonar 2.6s cubic-bezier(.25,.6,.3,1) infinite;
+  pointer-events: none;
+}
+
+/* ============================================================
+   5. LIGHT THEME — neon bloom doesn't read on white.
+   Same geometry; solid core, white stroke, soft colored shadow.
+   Scope: add .theme-light to the map container.
+   ============================================================ */
+.theme-light .bndy-mk--dot {
+  border: 2px solid #fff;
+  box-shadow:
+    0 1px 3px rgba(15,20,30,.25),
+    0 3px 10px color-mix(in srgb, var(--clr, var(--bndy-orange)) 45%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--clr, var(--bndy-orange)) 14%, transparent);
+  animation: none;
+}
+.theme-light .bndy-mk--venue-idle { opacity: 1; }
+.theme-light .bndy-mk--dot.is-selected {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--clr, var(--bndy-orange)) 85%, transparent),
+    0 1px 3px rgba(15,20,30,.3),
+    0 4px 16px color-mix(in srgb, var(--clr, var(--bndy-orange)) 55%, transparent);
+}
+.theme-light .bndy-mk--cluster {
+  background: #fff;
+  color: color-mix(in srgb, var(--clr, var(--bndy-orange)) 80%, #000);
+  text-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow:
+    0 2px 6px rgba(15,20,30,.18),
+    0 5px 18px color-mix(in srgb, var(--clr, var(--bndy-orange)) 35%, transparent);
+}
+.theme-light .bndy-mk--cluster.bndy-mk--lg::after {
+  border-color: color-mix(in srgb, var(--clr, var(--bndy-orange)) 45%, transparent);
+}
+.theme-light .bndy-mk-label {
+  background: rgba(255,255,255,.92);
+  color: #1a2030;
+  border-color: color-mix(in srgb, var(--clr, var(--bndy-orange)) 45%, transparent);
+  box-shadow: 0 4px 14px rgba(15,20,30,.18);
+}
+.theme-light .bndy-mk-label .sub { color: #6b7382; }
+
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bndy-mk, .bndy-mk::before, .bndy-mk::after { animation: none !important; }
+}
