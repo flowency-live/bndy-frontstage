@@ -14,6 +14,7 @@ import ProfileDistanceGroup from "@/components/shared/ProfileDistanceGroup";
 import FeaturedEventCard from "@/components/shared/FeaturedEventCard";
 import ArtistEventsMap from "../ArtistEventsMap";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
+import EventDisclaimer from "@/components/shared/EventDisclaimer";
 
 interface EventsTabProps {
   events: Event[];
@@ -101,6 +102,11 @@ export default function EventsTab({ events, artistLocation }: EventsTabProps) {
             From <span className="acc">{artistLocation}</span>
           </span>
         )}
+      </div>
+
+      {/* Event accuracy disclaimer */}
+      <div className="px-4 py-2">
+        <EventDisclaimer variant="compact" />
       </div>
 
       {/* Content: Map, Distance, or Date view */}

@@ -15,7 +15,6 @@
 | FS-07 | Finish /new gig wizard | High | Complete the wizard and add button to map page | - |
 | FS-08 | User accounts with favorites | Medium | User login, saved favorites, custom filters | - |
 | FS-09 | Artist/venue claim flow | Medium | Verify ownership via social media message | - |
-| FS-10 | Event accuracy disclaimer | High | Unintrusive disclaimer on all event-displaying screens: "Events subject to change - check venue/artist for accuracy". Include hint about clicking for Facebook profiles. Design: cool, clear, minimal. | - |
 | FS-11 | Festival support | Medium | Venues can create mini-festivals (multi-day, multi-artist events). Also supports town-based festivals spanning multiple venues. Includes: festival builder wizard, dedicated festival page, lineup scheduling per day/time. Needs design: separate event type vs festival wrapper around existing events. | - |
 
 ### Backstage (Artist Management)
@@ -57,6 +56,7 @@
 ## Recently Completed (2026)
 
 ### June 2026
+- **FS-10:** Event accuracy disclaimer - Dismissable disclaimer on map, list, overlay, and profile pages
 - **FS-12:** Fuzzy artist/venue search - Prefix stripping ("The"/"A"/"An"), typo tolerance, partial matching
 
 ### May 2026

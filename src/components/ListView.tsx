@@ -21,6 +21,7 @@ import {
   getRelativeDateLabel,
   type EventGroup
 } from "@/lib/utils/event-grouping";
+import EventDisclaimer from "./shared/EventDisclaimer";
 
 export default function ListView() {
   const { radius, setRadius, selectedLocation } = useEvents();
@@ -219,6 +220,11 @@ export default function ListView() {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-3 sm:px-4 pb-20">
+        {/* Event accuracy disclaimer */}
+        <div className="py-3">
+          <EventDisclaimer variant="compact" />
+        </div>
+
         {noSearchResults ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -12,6 +12,7 @@ import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 import Image from "next/image";
 import SocialShareButton from "@/components/shared/SocialShareButton";
 import { formatArtistDisplay } from "@/lib/utils/artist-display";
+import EventDisclaimer from "@/components/shared/EventDisclaimer";
 
 type ThemeName = "gigPoster" | "chalkboard" | "letterboard" | "backstagePass" | "setlist";
 
@@ -862,6 +863,11 @@ export default function EventInfoOverlay({
                 </button>
               </div>
             )}
+
+            {/* Event accuracy disclaimer */}
+            <div className="mt-4 max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
+              <EventDisclaimer variant="compact" />
+            </div>
           </div>
         </div>
       )}

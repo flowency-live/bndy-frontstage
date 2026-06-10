@@ -12,6 +12,7 @@ import {
 import ProfileSectionGroup from "@/components/shared/ProfileSectionGroup";
 import FeaturedEventCard from "@/components/shared/FeaturedEventCard";
 import EventInfoOverlay from "@/components/overlays/EventInfoOverlay";
+import EventDisclaimer from "@/components/shared/EventDisclaimer";
 
 interface EventsTabProps {
   events: Event[];
@@ -63,6 +64,11 @@ export default function EventsTab({ events, venueLocation }: EventsTabProps) {
       aria-labelledby="events-tab"
       className="profile-wrap"
     >
+      {/* Event accuracy disclaimer */}
+      <div className="px-4 py-2">
+        <EventDisclaimer variant="compact" />
+      </div>
+
       {/* Upcoming Section */}
       {upcoming.length > 0 && (
         <section className="profile-section">

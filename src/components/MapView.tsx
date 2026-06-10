@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from "react";
 import { AddEventButton } from "./events/AddEventButton";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { VenueModeIndicator } from "./map/VenueModeIndicator";
+import EventDisclaimer from "./shared/EventDisclaimer";
 
 export default function MapView() {
   const { mapMode } = useViewToggle();
@@ -88,6 +89,9 @@ export default function MapView() {
       <div className="z-50" style={{ pointerEvents: 'auto' }}>
         <AddEventButton />
       </div>
+
+      {/* Event accuracy disclaimer - banner at bottom */}
+      {mapMode === 'events' && <EventDisclaimer variant="banner" />}
     </div>
   );
 }
