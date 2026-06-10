@@ -277,43 +277,27 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         });
 
-        map.on("click", VENUE_UNCLUSTERED_LAYER, (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: [VENUE_UNCLUSTERED_LAYER] });
-          if (features.length === 0) return;
+        // General click handler for ALL venue layers (except clusters)
+        // NOTE: Layer-specific handlers can be unreliable for both symbol and circle layers.
+        // Using a single general handler with queryRenderedFeatures is more reliable.
+        const handleVenueClick = (e: mapboxgl.MapMouseEvent) => {
+          // Check all clickable venue layers (unclustered dots, glow, labels, indicators)
+          const venueLayers = [
+            VENUE_UNCLUSTERED_LAYER,
+            VENUE_GLOW_LAYER,
+            VENUE_INDICATOR_LAYER,
+            VENUE_LABELS_LAYER
+          ].filter(layer => map.getLayer(layer));
 
-          const venueId = features[0].properties?.id;
-          const venue = venueMapRef.current.get(venueId);
-
-          console.log("[VenueMarkerLayer] Click - venueId:", venueId, "found:", !!venue);
-
-          if (venue) {
-            if (venue.location) {
-              map.easeTo({ center: [venue.location.lng, venue.location.lat], duration: 300 });
-            }
-            onVenueClickRef.current(venue);
-          }
-        });
-
-        // Click handler for venue labels (at high zoom)
-        // NOTE: Layer-specific handlers for symbol layers with icon-text-fit often fail.
-        // Using general click handler with queryRenderedFeatures is more reliable.
-        const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
-          // Check if we clicked on label or indicator layers
-          const features = map.queryRenderedFeatures(e.point, {
-            layers: [VENUE_LABELS_LAYER, VENUE_INDICATOR_LAYER]
-          });
+          const features = map.queryRenderedFeatures(e.point, { layers: venueLayers });
 
           if (!features || features.length === 0) return;
 
           const venueId = features[0].properties?.id;
           const venue = venueMapRef.current.get(venueId);
 
-          console.log("[VenueMarkerLayer] Label/indicator click - venueId:", venueId, "found:", !!venue, "layer:", features[0].layer?.id);
-
           if (venue) {
-            // Prevent this click from propagating to other handlers
             e.preventDefault();
-
             if (venue.location) {
               map.easeTo({ center: [venue.location.lng, venue.location.lat], duration: 300 });
             }
@@ -321,8 +305,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           }
         };
 
-        // Use general click handler - more reliable for symbol layers with icons
-        map.on("click", handleMapClick);
+        map.on("click", handleVenueClick);
 
         // Cursor handlers
         map.on("mouseenter", VENUE_CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
