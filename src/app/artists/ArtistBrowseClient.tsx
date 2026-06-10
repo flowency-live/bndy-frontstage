@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Artist } from '@/lib/types';
 import { getAllArtists, searchArtists } from '@/lib/services/artist-service-new';
+import { fuzzyMatch } from '@/lib/utils/fuzzy-search';
 import ArtistCard from '@/components/artist/ArtistCard';
 import ArtistFilters from '@/components/artist/ArtistFilters';
 
@@ -147,9 +148,9 @@ export default function ArtistBrowseClient() {
     } catch (err) {
       console.error('Error searching artists:', err);
       setError('Failed to search artists. Please try again.');
-      // Fallback to local filtering
+      // Fallback to local filtering with fuzzy search
       const filtered = allArtists.filter(artist => {
-        const matchesSearch = artist.name.toLowerCase().includes(query.toLowerCase());
+        const matchesSearch = fuzzyMatch(query, artist.name);
         const matchesLocation = !location ||
           (artist.location && artist.location.toLowerCase().includes(location.toLowerCase()));
         const matchesType = !artistTypeFilter ||

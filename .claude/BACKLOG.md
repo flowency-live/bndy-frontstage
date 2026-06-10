@@ -1,6 +1,6 @@
 # BNDY Product Backlog
 
-**Last Updated:** 2026-05-14
+**Last Updated:** 2026-06-10
 **Status:** Active
 
 ---
@@ -9,12 +9,14 @@
 
 ### Frontstage (Public Discovery)
 
-| ID | Feature | Priority | Description |
-|----|---------|----------|-------------|
-| FS-05 | White label events list | Medium | Embeddable/white-label events list for external sites |
-| FS-07 | Finish /new gig wizard | High | Complete the wizard and add button to map page |
-| FS-08 | User accounts with favorites | Medium | User login, saved favorites, custom filters |
-| FS-09 | Artist/venue claim flow | Medium | Verify ownership via social media message |
+| ID | Feature | Priority | Description | Spec |
+|----|---------|----------|-------------|------|
+| FS-05 | White label events list | Medium | Embeddable events for external sites. Geographic config via postcode+radius, postcode areas, or bounding box. | [Spec](plans/FS-05-white-label-events.md) |
+| FS-07 | Finish /new gig wizard | High | Complete the wizard and add button to map page | - |
+| FS-08 | User accounts with favorites | Medium | User login, saved favorites, custom filters | - |
+| FS-09 | Artist/venue claim flow | Medium | Verify ownership via social media message | - |
+| FS-10 | Event accuracy disclaimer | High | Unintrusive disclaimer on all event-displaying screens: "Events subject to change - check venue/artist for accuracy". Include hint about clicking for Facebook profiles. Design: cool, clear, minimal. | - |
+| FS-11 | Festival support | Medium | Venues can create mini-festivals (multi-day, multi-artist events). Also supports town-based festivals spanning multiple venues. Includes: festival builder wizard, dedicated festival page, lineup scheduling per day/time. Needs design: separate event type vs festival wrapper around existing events. | - |
 
 ### Backstage (Artist Management)
 
@@ -23,12 +25,24 @@
 | BS-01 | Notification System | High | Push/email notifications for gig confirmations, member votes, etc. |
 | BS-03 | Find my artist/band | Medium | Search and request to join existing artists |
 
+### Builder Platform (Multi-Persona)
+
+| ID | Feature | Priority | Description | Spec |
+|----|---------|----------|-------------|------|
+| BU-01 | Builder persona & dashboard | High | Self-service request + approval, builder-only dashboard with tiles | [Plan](plans/eager-herding-dragon.md) |
+| BU-02 | Subdomain provisioning | High | Wildcard SSL, Route53, CloudFront for *.bndy.live | [Plan](plans/eager-herding-dragon.md) |
+| BU-03 | Event source-based editing | High | Full edit for community/AI events, suggest-only for artist events | [Plan](plans/eager-herding-dragon.md) |
+| BU-04 | Theme editor | Medium | Color pickers, logo upload, live preview | [Plan](plans/eager-herding-dragon.md) |
+| BU-05 | Godmode builder approval | Medium | Pending requests queue, approve/reject flow | [Plan](plans/eager-herding-dragon.md) |
+| BU-06 | Builder analytics | Low | Views, clicks, embed stats per builder | Future |
+
 ### Technical Debt
 
 | ID | Issue | Priority | Description |
 |----|-------|----------|-------------|
 | TD-06 | Orphaned entities cleanup | Medium | 287 venues (33%) and 344 artists (44%) have no events |
 | TD-02 | `collaboratingArtistIds` not indexed | Low | Consider `bndy-event-artists` join table |
+| TD-07 | MCP `create_artist` missing `locationType` | Low | Currently requires 2 calls (create + edit) to set regional artist. Add `locationType` param to `create_artist` tool (ref: commit 29d0905) |
 
 ### Data Quality
 
@@ -41,6 +55,9 @@
 ---
 
 ## Recently Completed (2026)
+
+### June 2026
+- **FS-12:** Fuzzy artist/venue search - Prefix stripping ("The"/"A"/"An"), typo tolerance, partial matching
 
 ### May 2026
 - **FS-06:** Desktop navigation redesign - Pill-style nav bar with labeled buttons

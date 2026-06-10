@@ -8,6 +8,7 @@ import { useVenues } from "@/hooks/useVenues";
 import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
 import type { Event, Venue } from "@/lib/types";
 import { isDateInRangeUniversal, getFormattedDateRangeUniversal } from "@/lib/utils/date-filter-utils";
+import { fuzzyMatch } from "@/lib/utils/fuzzy-search";
 import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
@@ -168,14 +169,13 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
       if (filterType === "nomatch") {
         searchFiltered = [];
       } else {
-        const searchTerm = filterId.toLowerCase();
         if (filterType === "artist") {
           searchFiltered = dateFiltered.filter((event) =>
-            event.name.toLowerCase().includes(searchTerm)
+            fuzzyMatch(filterId, event.name)
           );
         } else if (filterType === "venue") {
           searchFiltered = dateFiltered.filter((event) =>
-            event.venueName.toLowerCase().includes(searchTerm)
+            fuzzyMatch(filterId, event.venueName)
           );
         }
       }
@@ -207,9 +207,8 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
       if (filterType === "nomatch") {
         setFilteredVenues([]);
       } else if (filterType === "venue") {
-        const searchTerm = filterId.toLowerCase();
         const filtered = venues.filter((venue) =>
-          venue.name.toLowerCase().includes(searchTerm)
+          fuzzyMatch(filterId, venue.name)
         );
         setFilteredVenues(filtered);
       } else {
