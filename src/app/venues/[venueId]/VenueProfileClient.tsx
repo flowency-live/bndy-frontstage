@@ -71,7 +71,12 @@ export default function VenueProfileClient({ initialData, events, error, venueId
       />
 
       {/* Venue Info Section - Avatar overlaps banner via negative margin in profile-intro */}
-      <VenueInfo venue={initialData} />
+      <VenueInfo
+        venue={initialData}
+        hasUpcomingGigs={events.some(
+          (e) => e.date >= new Date().toLocaleDateString("en-CA"),
+        )}
+      />
 
       {/* Blurb (Description) */}
       {initialData.description && (

@@ -36,12 +36,23 @@ export function ProfileDateGroup({
   isPast = false,
   onEventClick,
 }: ProfileDateGroupProps) {
+  // "SAT 02" -> accent-coloured DOW + same-size day number
+  const [dowPart, ...dayRest] = day.split(" ");
+  const dayNum = dayRest.join(" ");
+  // Year only when it isn't this year ("May 2026" -> "MAY" or "MAY 2027")
+  const currentYear = String(new Date().getFullYear());
+  const monthDisplay = monthYear.endsWith(currentYear)
+    ? monthYear.replace(currentYear, "").trim().toUpperCase()
+    : monthYear.toUpperCase();
+
   return (
     <div className="profile-date-group">
       {/* Date label column (sticky on mobile) */}
       <div className="profile-date-label">
-        <div className={`profile-date-day ${isPast ? "past" : ""}`}>{day}</div>
-        <div className="profile-date-dow">{monthYear}</div>
+        <div className={`profile-date-day ${isPast ? "past" : ""}`}>
+          <span className="dow">{dowPart}</span> {dayNum}
+        </div>
+        <div className="profile-date-dow">{monthDisplay}</div>
         {relativeLabel && !isPast && (
           <div className="profile-date-when">{relativeLabel}</div>
         )}

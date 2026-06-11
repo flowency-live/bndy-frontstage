@@ -17,6 +17,8 @@ import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface VenueInfoProps {
   venue: Venue;
+  /** Pink halo on the name when the venue has upcoming gigs */
+  hasUpcomingGigs?: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ interface VenueInfoProps {
  *
  * Uses CSS classes from globals.css (.profile-*)
  */
-export default function VenueInfo({ venue }: VenueInfoProps) {
+export default function VenueInfo({ venue, hasUpcomingGigs }: VenueInfoProps) {
   const [profileImageUrl, setProfileImageUrl] = useState(venue.profileImageUrl || venue.imageUrl || "");
   const [hasFetched, setHasFetched] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -115,7 +117,9 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           </span>
 
           {/* Name */}
-          <h1 className="profile-name venue">{venue.name}</h1>
+          <h1 className={`profile-name venue ${hasUpcomingGigs ? "live" : ""}`}>
+            {venue.name}
+          </h1>
 
           {/* Meta line */}
           <div className="profile-meta">

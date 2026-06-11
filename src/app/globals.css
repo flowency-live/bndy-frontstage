@@ -3824,6 +3824,16 @@ select:focus-visible {
    ====================================================== */
 
 /* Wrap - max width container */
+/* Per-page accent: artists orange, venues cyan (Jason 2026-06-11) */
+.artist-profile-page {
+  --pf-accent: var(--lv-orange);
+  --pf-accent-glow: var(--lv-orange-glow);
+}
+.venue-profile-page {
+  --pf-accent: var(--lv-cyan);
+  --pf-accent-glow: rgba(25, 211, 245, 0.25);
+}
+
 .profile-wrap {
   max-width: 1020px;
   margin: 0 auto;
@@ -3958,9 +3968,28 @@ select:focus-visible {
   }
 }
 
-.profile-name.venue,
+/* White-hot core + coloured halo — the one neon-text moment per page */
 .profile-name.artist {
+  color: #fff8f2;
+  text-shadow: 0 0 14px rgba(255, 122, 26, 0.55), 0 0 34px rgba(255, 122, 26, 0.3);
+}
+
+.profile-name.venue {
+  color: #f4feff;
+  text-shadow: 0 0 14px rgba(25, 211, 245, 0.5), 0 0 34px rgba(25, 211, 245, 0.28);
+}
+
+.profile-name.venue.live {
+  color: #fff5f9;
+  text-shadow: 0 0 14px rgba(255, 46, 136, 0.5), 0 0 34px rgba(255, 46, 136, 0.28);
+}
+
+/* Light theme: halo on white paper doesn't work — crisp ink instead */
+:root:not(.dark) .profile-name.artist,
+:root:not(.dark) .profile-name.venue,
+:root:not(.dark) .profile-name.venue.live {
   color: var(--lv-text);
+  text-shadow: none;
 }
 
 /* Meta line */
@@ -4365,17 +4394,23 @@ select:focus-visible {
 }
 
 .profile-date-day {
-  font-family: var(--font-anton), Impact, sans-serif;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 800;
   font-size: 17px;
   line-height: 0.95;
   letter-spacing: 0.02em;
   color: var(--lv-text);
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.profile-date-day .dow {
+  color: var(--pf-accent, var(--lv-orange));
 }
 
 @media (min-width: 721px) {
   .profile-date-day {
-    font-size: 26px;
+    font-size: 22px;
   }
 }
 
@@ -4462,7 +4497,7 @@ select:focus-visible {
   top: 8px;
   bottom: 8px;
   width: 2px;
-  background: var(--lv-orange);
+  background: var(--pf-accent, var(--lv-orange));
   border-radius: 2px;
   opacity: 0.4;
   transform: scaleY(1);
@@ -4498,9 +4533,9 @@ select:focus-visible {
   grid-row: 1;
   font-family: var(--font-mono), monospace;
   font-size: 13px;
-  color: var(--lv-cyan);
+  color: var(--lv-text-2);
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   align-self: center;
 }
@@ -4526,43 +4561,32 @@ select:focus-visible {
 /* Counterpart (artist on venue page, venue on artist page) */
 .profile-ev-counterpart {
   flex: 0 1 auto;
-  font-family: var(--font-anton), Impact, sans-serif;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 700;
   text-decoration: none;
-  line-height: 1;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   position: relative;
   z-index: 2;
   min-width: 0;
+  color: var(--lv-text);
 }
 
-.profile-ev-counterpart.artist {
-  font-size: 20px;
-  color: var(--lv-orange);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 0 16px var(--lv-orange-glow);
-}
-
-@media (min-width: 721px) {
-  .profile-ev-counterpart.artist {
-    font-size: 22px;
-  }
-}
-
+.profile-ev-counterpart.artist,
 .profile-ev-counterpart.venue {
-  font-size: 14px;
-  color: var(--lv-cyan);
+  font-size: 15px;
 }
 
 @media (min-width: 721px) {
+  .profile-ev-counterpart.artist,
   .profile-ev-counterpart.venue {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 
 .profile-ev-counterpart:hover {
-  color: var(--lv-text);
+  color: var(--pf-accent, var(--lv-orange));
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
@@ -4632,15 +4656,19 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  width: 48px;
-  font-family: var(--font-anton), Impact, sans-serif;
+  height: 22px;
+  min-width: 50px;
+  padding: 0 10px;
+  font-family: var(--font-archivo), system-ui, sans-serif;
   font-size: 10px;
-  letter-spacing: 0.03em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: var(--lv-green-soft);
-  color: var(--lv-green);
-  border: 1px dashed var(--lv-green);
+  background: var(--lv-green);
+  color: #073018;
+  border: none;
+  border-radius: 99px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--lv-green) 40%, transparent);
   position: relative;
   transition: all 0.12s;
   z-index: 1;
@@ -4651,49 +4679,15 @@ select:focus-visible {
   .profile-ev-stub {
     grid-column: 4;
     grid-row: 1;
-    width: 56px;
-    height: 22px;
-    font-size: 12px;
+    font-size: 10.5px;
   }
 }
 
-/* Perforated edges */
-.profile-ev-stub::before,
-.profile-ev-stub::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: var(--lv-bg);
-  border-radius: 50%;
-  top: 50%;
-  transform: translateY(-50%);
-  transition: background 0.12s;
-}
-
-.profile-ev-stub::before {
-  left: -3px;
-}
-
-.profile-ev-stub::after {
-  right: -3px;
-}
-
 .profile-ev-stub.paid {
-  background: var(--lv-orange-soft);
-  color: var(--lv-orange);
-  border-color: var(--lv-orange);
-}
-
-/* Hover effects on stub */
-.profile-ev:hover .profile-ev-stub {
-  background: var(--lv-green);
-  color: var(--lv-bg);
-}
-
-.profile-ev:hover .profile-ev-stub.paid {
-  background: var(--lv-orange);
-  color: var(--lv-bg);
+  background: transparent;
+  color: var(--lv-text-2);
+  border: 1px solid var(--lv-rule-strong);
+  box-shadow: none;
 }
 
 .profile-ev:hover .profile-ev-stub::before,
