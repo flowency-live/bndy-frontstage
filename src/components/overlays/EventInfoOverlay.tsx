@@ -83,6 +83,15 @@ export default function EventInfoOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
+  // Mobile: clear the floating map buttons out of the way while open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("bndy-overlay-open", isOpen && isMobile);
+    return () => {
+      document.body.classList.remove("bndy-overlay-open");
+    };
+  }, [isOpen, isMobile]);
+
   // Venue record (for precise directions / googlePlaceId)
   useEffect(() => {
     if (currentEvent?.venueId) {

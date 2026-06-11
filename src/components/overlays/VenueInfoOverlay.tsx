@@ -99,6 +99,15 @@ export default function VenueInfoOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
+  // Mobile: clear the floating map buttons out of the way while open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("bndy-overlay-open", isOpen && isMobile);
+    return () => {
+      document.body.classList.remove("bndy-overlay-open");
+    };
+  }, [isOpen, isMobile]);
+
   const today = todayLocalISO();
 
   // Fallback fetch when the parent doesn't supply events (e.g. list view)

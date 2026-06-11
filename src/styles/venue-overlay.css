@@ -146,6 +146,7 @@ a.vol-name:hover { color: #19d3f5; }
 }
 .vol-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .vol-gig-info { flex: 1; min-width: 0; }
+.vol-gig-artist, .vol-gig-meta { display: block; }
 .vol-gig-artist { font-size: 13.5px; font-weight: 700; color: #f2f5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vol-gig-meta { font-size: 11.5px; color: #8b93a7; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vol-gig-meta b { color: #c6cddb; font-weight: 600; }
@@ -189,7 +190,9 @@ a.vol-name:hover { color: #19d3f5; }
    ============================================================ */
 .vol-sheet {
   --accent: #ff2e88;
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  position: fixed; left: 0; right: 0; z-index: 50;
+  /* sit on top of the mobile bottom nav (h-16), never cover it */
+  bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   border-radius: 22px 22px 0 0;
   background: rgba(13, 17, 27, 0.96);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
@@ -199,7 +202,6 @@ a.vol-name:hover { color: #19d3f5; }
   overflow: hidden;
   pointer-events: auto;
   touch-action: none;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 .vol-sheet.vol-idle { --accent: #19d3f5; }
 .vol-sheet-handle { display: flex; justify-content: center; padding: 9px 0 5px; cursor: grab; }
@@ -315,3 +317,14 @@ a.eo-artist:hover { color: var(--accent); }
 
 /* sibling event rows reuse .vol-gig-row; current one gets a ring */
 .eo-current { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+/* While a detail sheet is open on mobile, the floating map buttons get out
+   of the way (body class toggled by the overlay components). */
+@media (max-width: 767px) {
+  body.bndy-overlay-open .map-filter-button,
+  body.bndy-overlay-open .add-event-button {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+}

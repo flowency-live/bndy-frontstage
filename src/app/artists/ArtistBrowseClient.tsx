@@ -6,6 +6,7 @@ import { getAllArtists } from '@/lib/services/artist-service-new';
 import { fuzzyMatch } from '@/lib/utils/fuzzy-search';
 import ArtistCard from '@/components/artist/ArtistCard';
 import ArtistFilters from '@/components/artist/ArtistFilters';
+import { useAllPublicEvents } from '@/hooks/useAllPublicEvents';
 
 export default function ArtistBrowseClient() {
   const [allArtists, setAllArtists] = useState<Artist[]>([]);
@@ -20,6 +21,17 @@ export default function ArtistBrowseClient() {
   const [acousticFilter, setAcousticFilter] = useState<string>('all');
   const [actTypeFilter, setActTypeFilter] = useState<string>('');
   const [groupBy, setGroupBy] = useState<'alpha' | 'type' | 'location' | 'genre'>('alpha');
+
+  // Artists with upcoming gigs get the pink "gigging" dot (map language)
+  const todayStr = useMemo(() => new Date().toLocaleDateString('en-CA'), []);
+  const { data: futureEvents = [] } = useAllPublicEvents({ startDate: todayStr });
+  const giggingArtistIds = useMemo(() => {
+    const ids = new Set<string>();
+    futureEvents.forEach((event) => {
+      (event.artistIds || []).forEach((id) => ids.add(id));
+    });
+    return ids;
+  }, [futureEvents]);
 
   // Load saved search state from sessionStorage
   useEffect(() => {
@@ -237,6 +249,7 @@ export default function ArtistBrowseClient() {
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
+      <div className="bndy-filterbar">
       <ArtistFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -268,6 +281,7 @@ export default function ArtistBrowseClient() {
           }
         }}
       />
+      </div>
 
       {/* Results count */}
       <div className="text-sm text-muted-foreground flex items-center">
@@ -281,19 +295,42 @@ export default function ArtistBrowseClient() {
         {searching && <span className="ml-2 text-primary">Searching...</span>}
       </div>
 
+      {/* A-Z jump rail (alpha grouping only) */}
+      {groupBy === 'alpha' && displayedArtists.length > 0 && (
+        <nav className="bndy-alpha-rail hidden md:flex" aria-label="Jump to letter">
+          {Object.keys(groupedArtists).map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById(`artist-group-${letter}`)
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            >
+              {letter === '0-9' ? '#' : letter}
+            </button>
+          ))}
+        </nav>
+      )}
+
       {/* Artist Grid - Grouped */}
       {displayedArtists.length > 0 ? (
         <div className="space-y-10">
           {Object.entries(groupedArtists).map(([groupKey, artists]) => (
-            <div key={groupKey}>
+            <div key={groupKey} id={`artist-group-${groupKey}`} style={{ scrollMarginTop: '170px' }}>
               {/* Group Header */}
-              <h2 className="font-display text-2xl text-foreground mb-6 tracking-tight">
+              <h2 className="bndy-letter-head">
                 {groupKey}
               </h2>
               {/* Group Grid */}
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-5 md:gap-6">
                 {artists.map(artist => (
-                  <ArtistCard key={artist.id} artist={artist} />
+                  <ArtistCard
+                    key={artist.id}
+                    artist={artist}
+                    hasUpcomingGigs={giggingArtistIds.has(artist.id)}
+                  />
                 ))}
               </div>
             </div>

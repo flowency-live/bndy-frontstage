@@ -5,6 +5,7 @@ import { Anton, Archivo, JetBrains_Mono, Bebas_Neue, Caveat, Bungee, Permanent_M
 import "./globals.css";
 import "@/styles/markers.css";
 import "@/styles/venue-overlay.css";
+import "@/styles/bndy-ui.css";
 import Header from "@/components/Header";
 import DesktopNav from "@/components/DesktopNav";
 import Footer from "@/components/Footer";

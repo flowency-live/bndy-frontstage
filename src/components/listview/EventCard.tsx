@@ -26,36 +26,16 @@ function getInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-/**
- * Generate a consistent color based on artist name
- */
-function getAvatarColor(name: string): string {
-  const colors = [
-    "#ff7a3d", // orange
-    "#3ce0e0", // cyan
-    "#86eb8e", // green
-    "#ff6b9d", // pink
-    "#a78bfa", // purple
-    "#fbbf24", // amber
-    "#60a5fa", // blue
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
-
-export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour }: EventCardProps) {
+export function EventCard({ event, onClick, artistImageUrl }: EventCardProps) {
   const [imageError, setImageError] = useState(false);
   const hasArtist = event.artistIds && event.artistIds.length > 0;
   // Use formatArtistDisplay to show "Artist1 + N more" for multi-artist events
   const artistDisplayName = formatArtistDisplay(event);
   const primaryArtistName = event.artistName || event.name || "Live Music";
   const initials = getInitials(primaryArtistName);
-  // Use artist's display colour if provided, otherwise generate from name
-  const avatarColor = artistDisplayColour || getAvatarColor(primaryArtistName);
   const isFree = !event.ticketed;
+  const isTonight =
+    event.date.slice(0, 10) === new Date().toLocaleDateString("en-CA");
   const price = event.ticketinformation || null;
 
   // Show image if URL provided and no error loading it
@@ -69,10 +49,7 @@ export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour 
       </span>
 
       {/* Large Avatar */}
-      <div
-        className="lv-card-avatar"
-        style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
-      >
+      <div className="lv-card-avatar">
         {showImage ? (
           <Image
             src={artistImageUrl}
@@ -102,6 +79,7 @@ export function EventCard({ event, onClick, artistImageUrl, artistDisplayColour 
         ) : (
           <span className="lv-card-artist">{artistDisplayName}</span>
         )}
+        {isTonight && <span className="bndy-tonight">Tonight</span>}
 
         {/* Venue */}
         <Link

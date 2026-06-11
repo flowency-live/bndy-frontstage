@@ -26,16 +26,7 @@ function getInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function getAvatarColor(name: string): string {
-  const colors = ["#ff7a3d", "#3ce0e0", "#86eb8e", "#ff6b9d", "#a78bfa", "#fbbf24", "#60a5fa"];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
-
-export function EventRowV2({ event, index, onClick, artistImageUrl, artistDisplayColour }: EventRowV2Props) {
+export function EventRowV2({ event, index, onClick, artistImageUrl }: EventRowV2Props) {
   const [imageError, setImageError] = useState(false);
   const hasArtist = event.artistIds && event.artistIds.length > 0;
   const isFree = !event.ticketed;
@@ -44,8 +35,9 @@ export function EventRowV2({ event, index, onClick, artistImageUrl, artistDispla
   const artistDisplayName = formatArtistDisplay(event);
   const primaryArtistName = event.artistName || event.name || "Live Music";
   const initials = getInitials(primaryArtistName);
-  const avatarColor = artistDisplayColour || getAvatarColor(primaryArtistName);
   const showImage = artistImageUrl && !imageError;
+  const isTonight =
+    event.date.slice(0, 10) === new Date().toLocaleDateString("en-CA");
 
   return (
     <motion.div
@@ -67,10 +59,7 @@ export function EventRowV2({ event, index, onClick, artistImageUrl, artistDispla
       <span className="ev-link" aria-label="View event details" />
 
       {/* Avatar - mobile only */}
-      <div
-        className="ev-avatar"
-        style={{ backgroundColor: showImage ? 'transparent' : avatarColor }}
-      >
+      <div className="ev-avatar">
         {showImage ? (
           <Image
             src={artistImageUrl}
@@ -102,6 +91,7 @@ export function EventRowV2({ event, index, onClick, artistImageUrl, artistDispla
         ) : (
           <span className="ev-artist">{artistDisplayName}</span>
         )}
+        {isTonight && <span className="bndy-tonight">Tonight</span>}
         <span className="ev-sep">·</span>
         <Link
           href={`/venues/${event.venueId}`}
