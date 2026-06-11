@@ -85,19 +85,13 @@ export function useDiffedMarkers({ map, isMapReady, sourceId, enabled, buildSpec
       // Source may be missing briefly after a style change
       let features: GeoJSON.Feature[] = [];
       try {
-        if (!map.getSource(sourceId)) {
-          console.log(`[useDiffedMarkers:${sourceId}] No source found`);
-          return;
-        }
+        if (!map.getSource(sourceId)) return;
         features = map.querySourceFeatures(sourceId) as unknown as GeoJSON.Feature[];
-        console.log(`[useDiffedMarkers:${sourceId}] querySourceFeatures returned ${features.length} features`);
-      } catch (e) {
-        console.log(`[useDiffedMarkers:${sourceId}] Error querying:`, e);
+      } catch {
         return; // style mid-load
       }
 
       const specs = buildSpecsRef.current(features);
-      console.log(`[useDiffedMarkers:${sourceId}] buildSpecs returned ${specs.length} specs`);
       const wanted = new Map<string, DiffedMarkerSpec>();
       for (const spec of specs) {
         if (!wanted.has(spec.key)) wanted.set(spec.key, spec); // dedupe tiles

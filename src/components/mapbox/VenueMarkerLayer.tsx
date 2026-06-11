@@ -132,13 +132,12 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
             },
           });
 
-          // Anchor layer: tiny radius to ensure tiles are processed for querySourceFeatures
-          // (circle-radius: 0 may prevent tile processing in clustered sources)
+          // Invisible anchor layer (markers are HTML; this just drives tiles)
           map.addLayer({
             id: VENUE_ANCHOR_LAYER,
             type: "circle",
             source: VENUE_SOURCE_ID,
-            paint: { "circle-radius": 0.5, "circle-opacity": 0 },
+            paint: { "circle-radius": 0, "circle-opacity": 0 },
           });
 
           console.log("[VenueMarkerLayer] Source created");
