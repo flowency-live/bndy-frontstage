@@ -57,7 +57,16 @@ export default function VenueHeroBanner({ socialMediaUrls, venueId, venueName }:
       />
 
       {/* Dark gradient at bottom for profile overlap */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
+      {/* Fade into page bg + neon seam (design kit: profile-kit.html) */}
+      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[var(--lv-bg)] via-[var(--lv-bg)]/55 to-transparent" />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px z-[2]"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, rgba(255,46,136,.55) 30%, rgba(255,46,136,.55) 70%, transparent)',
+          boxShadow: '0 0 12px rgba(255,46,136,.35)',
+        }}
+      />
 
       {/* Transparent Controls Overlay - Mobile only (desktop uses DesktopNav) */}
       <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center md:hidden">

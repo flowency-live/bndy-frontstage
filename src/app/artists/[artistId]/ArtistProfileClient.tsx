@@ -91,7 +91,10 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
       />
 
       {/* Artist Info Section - Avatar overlaps banner via negative margin in profile-intro */}
-      <ArtistInfo artist={initialData} />
+      <ArtistInfo
+        artist={initialData}
+        hasUpcomingGigs={initialData.upcomingEvents.length > 0}
+      />
 
       {/* Blurb (Bio) - italic quote style */}
       {initialData.bio && (

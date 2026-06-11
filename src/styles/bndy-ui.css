@@ -324,3 +324,17 @@
   box-shadow: 0 0 8px #ff2e88, 0 0 14px rgba(255, 46, 136, 0.5);
   animation: bndy-gig-breathe 2.4s ease-in-out infinite;
 }
+
+/* ============================================================
+   ARTIST MINI MAP (Leaflet)
+   ============================================================ */
+/* globals.css blue-washes all leaflet tiles for the old map — the neon
+   mini map wants its tiles untouched (dark_all / voyager as-is). */
+.artist-events-map .leaflet-tile-pane {
+  filter: none !important;
+}
+/* Leaflet divIcon wrapper must stay style-inert (Leaflet positions it) */
+.artist-map-marker-wrapper {
+  background: none;
+  border: none;
+}

@@ -3,7 +3,16 @@
 import { Venue, getSocialMediaURLs } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
-import { Building, Share2, MapPin, Navigation } from "lucide-react";
+import { Building, Share2, MapPin, Navigation, Plus } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+  SheetHeader,
+} from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { BaseEventWizard } from "@/components/events/BaseEventWizard";
 import ProfilePictureFetcher from "@/lib/utils/ProfilePictureFetcher";
 
 interface VenueInfoProps {
@@ -25,6 +34,7 @@ interface VenueInfoProps {
 export default function VenueInfo({ venue }: VenueInfoProps) {
   const [profileImageUrl, setProfileImageUrl] = useState(venue.profileImageUrl || venue.imageUrl || "");
   const [hasFetched, setHasFetched] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   // Format address for display
   const fullAddress = [venue.address, venue.postcode].filter(Boolean).join(", ");
@@ -111,7 +121,7 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           <div className="profile-meta">
             {fullAddress && (
               <>
-                <span className="pin">📍</span>
+                <span className="pin"><MapPin size={13} strokeWidth={2.2} /></span>
                 <span>{fullAddress}</span>
               </>
             )}
@@ -123,6 +133,14 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           <button onClick={handleDirections} className="profile-btn primary">
             <Navigation className="w-[14px] h-[14px]" />
             Directions
+          </button>
+
+          <button
+            onClick={() => setWizardOpen(true)}
+            className="profile-btn"
+          >
+            <Plus className="w-[14px] h-[14px]" strokeWidth={2.2} />
+            Add a gig
           </button>
 
           <button
@@ -148,6 +166,26 @@ export default function VenueInfo({ venue }: VenueInfoProps) {
           )}
         </div>
       </div>
+
+      {/* Community "Add a gig" wizard (venue pre-filled) */}
+      <Sheet open={wizardOpen} onOpenChange={setWizardOpen}>
+        <SheetContent
+          side="left"
+          className="w-[400px] sm:w-[540px] bg-background border-r border-border safari-modal"
+        >
+          <VisuallyHidden>
+            <SheetHeader>
+              <SheetTitle>Add a gig at {venue.name}</SheetTitle>
+              <SheetDescription>Create a new event for this venue</SheetDescription>
+            </SheetHeader>
+          </VisuallyHidden>
+          <BaseEventWizard
+            initialVenue={venue}
+            skipVenueStep
+            onSuccess={() => setWizardOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

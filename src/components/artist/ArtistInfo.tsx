@@ -2,10 +2,12 @@
 
 import { ArtistProfileData } from "@/lib/types/artist-profile";
 import Image from "next/image";
-import { Music, Share2, Play } from "lucide-react";
+import { Music, Share2, MapPin } from "lucide-react";
 
 interface ArtistInfoProps {
   artist: ArtistProfileData;
+  /** Pink breathing dot on the avatar — artist has upcoming gigs */
+  hasUpcomingGigs?: boolean;
 }
 
 /**
@@ -20,7 +22,7 @@ interface ArtistInfoProps {
  *
  * Uses CSS classes from globals.css (.profile-*)
  */
-export default function ArtistInfo({ artist }: ArtistInfoProps) {
+export default function ArtistInfo({ artist, hasUpcomingGigs }: ArtistInfoProps) {
   // Format artist type for kind badge
   const getKindLabel = (artistType?: string) => {
     if (!artistType) return "Artist";
@@ -33,11 +35,6 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
     if (type === "collective") return "Collective";
     return artistType.charAt(0).toUpperCase() + artistType.slice(1);
   };
-
-  // Get Spotify URL from socialMediaUrls if available
-  const spotifyUrl = artist.socialMediaUrls?.find(
-    (url: any) => url.platform === "spotify" || url.url?.includes("spotify")
-  )?.url;
 
   // Share handler
   const handleShare = async () => {
@@ -82,6 +79,9 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
               </span>
             </div>
           )}
+          {hasUpcomingGigs && (
+            <span className="profile-gigging-dot" title="Has upcoming gigs" />
+          )}
         </div>
 
         {/* Ident (name, badge, meta) */}
@@ -99,40 +99,20 @@ export default function ArtistInfo({ artist }: ArtistInfoProps) {
           <div className="profile-meta">
             {artist.location && (
               <>
-                <span className="pin">📍</span>
+                <span className="pin"><MapPin size={13} strokeWidth={2.2} /></span>
                 <span>{artist.location}</span>
               </>
             )}
           </div>
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons — Share is the only universal artist action.
+            (Follow removed until following exists; Spotify lives in the
+            hero social icons when the artist actually has it.) */}
         <div className="profile-actions">
-          <button className="profile-btn primary">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-[14px] h-[14px]">
-              <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" />
-            </svg>
-            Follow
-          </button>
-
-          {spotifyUrl && (
-            <a
-              href={spotifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="profile-btn icon"
-              aria-label="Listen on Spotify"
-            >
-              <Play className="w-[15px] h-[15px]" fill="currentColor" />
-            </a>
-          )}
-
-          <button
-            onClick={handleShare}
-            className="profile-btn icon"
-            aria-label="Share"
-          >
-            <Share2 className="w-[15px] h-[15px]" strokeWidth={1.8} />
+          <button onClick={handleShare} className="profile-btn primary">
+            <Share2 className="w-[14px] h-[14px]" strokeWidth={2} />
+            Share
           </button>
         </div>
       </div>

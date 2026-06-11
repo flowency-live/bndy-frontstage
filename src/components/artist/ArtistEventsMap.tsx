@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Event } from "@/lib/types";
 import { MapPin, Calendar, Clock, ExternalLink } from "lucide-react";
+import { createMarkerElement, clusterTier } from "@/components/mapbox/markerElements";
+import { useViewToggle } from "@/context/ViewToggleContext";
 import Link from "next/link";
 
 interface ArtistEventsMapProps {
@@ -109,6 +111,7 @@ function PopupContent({ group, onClose }: { group: EventGroup; onClose: () => vo
  * - Responsive design with proper container sizing
  */
 export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
+  const { isDarkMode } = useViewToggle();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -193,8 +196,9 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
       attributionControl: false,
     });
 
-    // Add CARTO Voyager tiles (free, no API key needed)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    // CARTO tiles (free, no API key) — dark_all matches the neon theme
+    const tileStyle = isDarkMode ? "dark_all" : "rastertiles/voyager";
+    L.tileLayer(`https://{s}.basemaps.cartocdn.com/${tileStyle}/{z}/{x}/{y}{r}.png`, {
       maxZoom: 19,
       subdomains: "abcd",
     }).addTo(map);
@@ -254,32 +258,23 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
 
       const count = group.events.length;
 
-      // Create custom SVG marker
-      const markerHtml = `
-        <div class="artist-map-marker">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 28 38">
-            <defs>
-              <filter id="marker-shadow-${index}" x="-50%" y="-20%" width="200%" height="150%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
-              </filter>
-            </defs>
-            <path d="M14,0 C6.3,0 0,6.3 0,14 C0,24 14,38 14,38 C14,38 28,24 28,14 C28,6.3 21.7,0 14,0 Z"
-              fill="#F97316" stroke="#FFFFFF" stroke-width="2.5" filter="url(#marker-shadow-${index})"/>
-            ${count > 1
-              ? `<text x="14" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700"
-                  text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF">${count}</text>`
-              : `<circle cx="14" cy="14" r="5" fill="#FFFFFF"/>`
-            }
-          </svg>
-        </div>
-      `;
+      // Neon glass markers (same system as the main map — markers.css).
+      // Leaflet positions the divIcon wrapper itself, and createMarkerElement
+      // returns a style-inert .bndy-mk-anchor root, so transforms never clash.
+      const markerEl = createMarkerElement(
+        count > 1
+          ? { type: "cluster", count, kind: "gig" }
+          : { type: "gig", label: group.venueName },
+      );
+      const tierSizes = { sm: 32, md: 40, lg: 48 } as const;
+      const size = count > 1 ? tierSizes[clusterTier(count)] : 18;
 
       const icon = L.divIcon({
         className: "artist-map-marker-wrapper",
-        html: markerHtml,
-        iconSize: [32, 42],
-        iconAnchor: [16, 42],
-        popupAnchor: [0, -38],
+        html: markerEl.outerHTML,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -(size / 2 + 6)],
       });
 
       const marker = L.marker([group.lat, group.lng], { icon });
@@ -354,6 +349,7 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
   return (
     <div
       data-testid="artist-events-map"
+      className="artist-events-map"
       style={{
         position: 'relative',
         width: '100%',

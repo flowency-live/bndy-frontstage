@@ -29,13 +29,6 @@ export default function VenueInfoStrip({
       ? "£ree Entry"
       : "Varies";
 
-  // Format capacity
-  const capacityDisplay = capacity
-    ? typeof capacity === "number"
-      ? `~ ${capacity}`
-      : capacity
-    : "—";
-
   // Format venue type
   const typeDisplay = venueType || "Live Music Venue";
 
@@ -46,13 +39,9 @@ export default function VenueInfoStrip({
         <div className="profile-vinfo-value">{typeDisplay}</div>
       </div>
       <div className="profile-vinfo-cell">
-        <div className="profile-vinfo-label">Capacity</div>
-        <div className="profile-vinfo-value">{capacityDisplay}</div>
-      </div>
-      <div className="profile-vinfo-cell">
-        <div className="profile-vinfo-label">Avg. Door</div>
+        <div className="profile-vinfo-label">Entry</div>
         <div className={`profile-vinfo-value ${doorDisplay === "£ree Entry" ? "cyan" : ""}`}>
-          {doorDisplay}
+          {doorDisplay === "£ree Entry" ? "FREE" : doorDisplay}
         </div>
       </div>
     </div>
