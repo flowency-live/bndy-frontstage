@@ -6,6 +6,7 @@ import { Event } from "@/lib/types";
 import { MapPin, Calendar, Clock, ExternalLink } from "lucide-react";
 import { createMarkerElement, clusterTier } from "@/components/mapbox/markerElements";
 import { useViewToggle } from "@/context/ViewToggleContext";
+import { useEvents } from "@/context/EventsContext";
 import Link from "next/link";
 
 interface ArtistEventsMapProps {
@@ -112,6 +113,7 @@ function PopupContent({ group, onClose }: { group: EventGroup; onClose: () => vo
  */
 export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
   const { isDarkMode } = useViewToggle();
+  const { userLocation } = useEvents();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -287,9 +289,10 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
       const popup = L.popup({
         closeButton: false,
         className: "artist-map-popup",
-        maxWidth: 320,
-        minWidth: 260,
+        maxWidth: 300,
+        minWidth: 250,
         autoPan: true,
+        autoPanPadding: L.point(24, 24),
       }).setContent(popupContainer);
 
       marker.bindPopup(popup);
@@ -307,23 +310,50 @@ export default function ArtistEventsMap({ events }: ArtistEventsMapProps) {
         );
       });
 
+      // Centre the clicked marker low in the view so the popup (which opens
+      // upward) is fully visible inside the small map container.
+      marker.on("click", () => {
+        const px = map.project(marker.getLatLng(), map.getZoom());
+        px.y -= 110; // half the typical popup height
+        map.panTo(map.unproject(px, map.getZoom()), { animate: true });
+      });
+
       marker.addTo(markersLayer);
     });
 
-    // Fit bounds to show all markers
-    if (bounds.length > 0) {
-      const latLngBounds = L.latLngBounds(bounds as [number, number][]);
-      if (latLngBounds.isValid()) {
-        // Small delay to ensure map is fully rendered
-        setTimeout(() => {
+    // "You are here" dot (neon kit user marker)
+    if (userLocation) {
+      const userEl = createMarkerElement({ type: "user" });
+      const userIcon = L.divIcon({
+        className: "artist-map-marker-wrapper",
+        html: userEl.outerHTML,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+      L.marker([userLocation.lat, userLocation.lng], {
+        icon: userIcon,
+        interactive: false,
+        zIndexOffset: -100,
+      }).addTo(markersLayer);
+    }
+
+    // Frame the view around the user AND the gigs when we know where the
+    // user is (so "how far from me?" is answered at a glance); gigs only
+    // otherwise. maxZoom keeps the close-together case readable.
+    setTimeout(() => {
+      const frame: [number, number][] = [...bounds];
+      if (userLocation) frame.push([userLocation.lat, userLocation.lng]);
+      if (frame.length > 0) {
+        const latLngBounds = L.latLngBounds(frame);
+        if (latLngBounds.isValid()) {
           map.fitBounds(latLngBounds, {
             padding: [50, 50],
             maxZoom: 11,
           });
-        }, 50);
+        }
       }
-    }
-  }, [leaflet, eventGroups, isMapReady]);
+    }, 50);
+  }, [leaflet, eventGroups, isMapReady, userLocation]);
 
   // Empty state
   if (validEvents.length === 0) {
