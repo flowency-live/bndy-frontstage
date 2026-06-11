@@ -34,7 +34,9 @@ function todayLocalISO(): string {
  * IMPORTANT: This component stays mounted. Visibility is controlled by prop.
  */
 export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }: EventMarkerLayerProps) {
+  console.log("[EventMarkerLayer] RENDER - visible:", visible, "events:", events.length);
   const { map, isMapReady, currentStyleMode } = useMapbox();
+  console.log("[EventMarkerLayer] CONTEXT - map:", !!map, "isMapReady:", isMapReady);
   const initializedRef = useRef(false);
   const lastMapIdRef = useRef<string | null>(null);
   const onEventClickRef = useRef(onEventClick);
@@ -89,18 +91,28 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
 
   // Initialize source ONCE (or reinitialize after style change)
   useEffect(() => {
-    if (!map || !isMapReady) return;
+    console.log("[EventMarkerLayer] Init effect - map:", !!map, "isMapReady:", isMapReady);
+    if (!map || !isMapReady) {
+      console.log("[EventMarkerLayer] Skipping init - map or isMapReady false");
+      return;
+    }
 
     try {
-      if (initializedRef.current && map.getSource(EVENT_SOURCE_ID)) return;
+      if (initializedRef.current && map.getSource(EVENT_SOURCE_ID)) {
+        console.log("[EventMarkerLayer] Already initialized, skipping");
+        return;
+      }
     } catch {
       // Style not loaded yet, proceed with initialization
     }
 
+    console.log("[EventMarkerLayer] Starting init()");
     const init = async () => {
       try {
         const mapContainer = map.getContainer();
+        console.log("[EventMarkerLayer] mapContainer:", !!mapContainer, "inDOM:", mapContainer ? document.body.contains(mapContainer) : false);
         if (!mapContainer || !document.body.contains(mapContainer)) {
+          console.log("[EventMarkerLayer] Container not in DOM, aborting");
           return;
         }
 
@@ -110,11 +122,15 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
         } catch {
           styleLoaded = false;
         }
+        console.log("[EventMarkerLayer] styleLoaded:", styleLoaded);
         if (!styleLoaded) {
+          console.log("[EventMarkerLayer] Waiting for style.load...");
           await new Promise<void>(resolve => map.once("style.load", () => resolve()));
+          console.log("[EventMarkerLayer] style.load fired");
         }
 
         if (!map.getSource(EVENT_SOURCE_ID)) {
+          console.log("[EventMarkerLayer] Adding source with", eventsRef.current.length, "events");
           map.addSource(EVENT_SOURCE_ID, {
             type: "geojson",
             data: eventsToGeoJSON(eventsRef.current),
@@ -123,12 +139,13 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
             clusterRadius: 40,
           });
 
-          // Invisible anchor layer (markers are HTML; this just drives tiles)
+          // Anchor layer: tiny radius to ensure tiles are processed for querySourceFeatures
+          // (circle-radius: 0 may prevent tile processing in clustered sources)
           map.addLayer({
             id: EVENT_ANCHOR_LAYER,
             type: "circle",
             source: EVENT_SOURCE_ID,
-            paint: { "circle-radius": 0, "circle-opacity": 0 },
+            paint: { "circle-radius": 0.5, "circle-opacity": 0 },
           });
 
           console.log("[EventMarkerLayer] Source created");
