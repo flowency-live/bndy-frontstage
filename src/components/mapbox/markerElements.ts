@@ -25,6 +25,8 @@ export interface VenueMarkerOpts {
   hasGigs: boolean;
   label?: string;
   sub?: string;
+  /** Show the name pill permanently (zoom-gated by the layer) */
+  labeled?: boolean;
 }
 
 export interface ClusterMarkerOpts {
@@ -77,7 +79,7 @@ export function markerOptsKey(opts: MarkerOpts): string {
     case "gig":
       return `gig|${opts.isTonight ? 1 : 0}|${opts.label ?? ""}|${opts.sub ?? ""}`;
     case "venue":
-      return `venue|${opts.hasGigs ? 1 : 0}|${opts.label ?? ""}|${opts.sub ?? ""}`;
+      return `venue|${opts.hasGigs ? 1 : 0}|${opts.labeled ? 1 : 0}|${opts.label ?? ""}|${opts.sub ?? ""}`;
     case "cluster":
       return `cluster|${opts.kind}|${opts.count}`;
     case "user":
@@ -118,6 +120,7 @@ export function createMarkerElement(opts: MarkerOpts): HTMLDivElement {
       el.className = cx(
         "bndy-mk bndy-mk--dot",
         opts.hasGigs ? "bndy-mk--venue-live" : "bndy-mk--venue-idle",
+        opts.labeled && "is-labeled",
       );
       if (opts.hasGigs) staggerBreathe(el);
       el.innerHTML = labelHtml(opts.label, opts.sub);

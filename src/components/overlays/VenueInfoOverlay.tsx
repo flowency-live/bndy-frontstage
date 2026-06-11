@@ -1,30 +1,74 @@
 // src/components/overlays/VenueInfoOverlay.tsx
 "use client";
 
-import React from "react"; // removed { useState }
-import { motion, AnimatePresence } from "framer-motion";
+/**
+ * VenueInfoOverlay — neon glass venue details
+ *
+ * Design source of truth: Projects/bndy/design-kit/venue-modal-kit.html
+ * Styles: src/styles/venue-overlay.css (imported in app/layout.tsx)
+ *
+ * Desktop (md+): floating card docked right, map stays alive (no backdrop dim).
+ * Mobile: bottom sheet — collapsed peek (NEXT GIG strip) → drag/tap to expand.
+ * Accent follows the marker: pink = venue has upcoming gigs, cyan = idle.
+ */
+
+import React, { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
-  MapPin,
-  Building,
+  X,
+  Navigation,
   Globe,
-  Phone,
-  Mail,
   Facebook,
   Instagram,
-  Navigation,
-  ExternalLink,
+  Plus,
+  ChevronRight,
+  Music,
+  CalendarDays,
 } from "lucide-react";
-import SocialShareButton from "@/components/shared/SocialShareButton";
 import Link from "next/link";
-import Image from "next/image";
-import { Venue, SocialMediaURL } from "@/lib/types";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+  SheetHeader,
+} from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import SocialShareButton from "@/components/shared/SocialShareButton";
+import { Venue, Event, SocialMediaURL } from "@/lib/types";
 import { getDirectionsUrl } from "@/lib/utils/mapLinks";
+import { formatTime } from "@/lib/utils/date-utils";
+import { useAllPublicEvents } from "@/hooks/useAllPublicEvents";
+import { useArtistImages, getArtistImage } from "@/hooks/useArtistImages";
+import { BaseEventWizard } from "@/components/events/BaseEventWizard";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface VenueInfoOverlayProps {
   venue: Venue;
   isOpen: boolean;
   onClose: () => void;
   position?: "map" | "list";
+  /** Upcoming events for this venue. Fetched internally when omitted. */
+  upcomingEvents?: Event[];
+  /** Called when a gig row is clicked (e.g. open EventInfoOverlay). */
+  onEventSelect?: (event: Event) => void;
+}
+
+const MAX_VISIBLE_GIGS = 4;
+const SHEET_COLLAPSED_PX = 188;
+
+function todayLocalISO(): string {
+  return new Date().toLocaleDateString("en-CA");
+}
+
+function dateParts(dateStr: string): { dow: string; day: string; mon: string } {
+  const d = new Date(`${dateStr.slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return { dow: "—", day: "?", mon: "—" };
+  return {
+    dow: d.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase(),
+    day: String(d.getDate()),
+    mon: d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase(),
+  };
 }
 
 export default function VenueInfoOverlay({
@@ -32,197 +76,390 @@ export default function VenueInfoOverlay({
   isOpen,
   onClose,
   position = "map",
+  upcomingEvents,
+  onEventSelect,
 }: VenueInfoOverlayProps) {
-  // Get directions URL
-  const directionsUrl = getDirectionsUrl(venue);
+  const isMobile = useIsMobile();
+  const [expanded, setExpanded] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
-  // Generate share data for the venue
-  const getShareData = () => ({
-    title: `${venue.name} | bndy`,
-    text: `Check out ${venue.name} on bndy.live`,
-    url: `${typeof window !== 'undefined' ? window.location.origin : ''}/venues/${venue.id}`,
+  // Reset sheet state when a different venue opens
+  useEffect(() => {
+    setExpanded(false);
+    setWizardOpen(false);
+  }, [venue?.id, isOpen]);
+
+  // Esc closes (desktop convenience)
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
+  const today = todayLocalISO();
+
+  // Fallback fetch when the parent doesn't supply events (e.g. list view)
+  const { data: fetchedEvents = [] } = useAllPublicEvents({
+    startDate: today,
+    enabled: isOpen && !upcomingEvents,
   });
 
-  // Get social media links
-  const getSocialLink = (platform: string): string | undefined => {
-    return venue.socialMediaUrls?.find(
-      (social: SocialMediaURL) => social.platform === platform
+  const gigs = useMemo(() => {
+    const source = upcomingEvents ?? fetchedEvents;
+    return source
+      .filter((e) => e.venueId === venue?.id && e.date >= today)
+      .sort((a, b) =>
+        a.date === b.date
+          ? (a.startTime || "").localeCompare(b.startTime || "")
+          : a.date.localeCompare(b.date),
+      );
+  }, [upcomingEvents, fetchedEvents, venue?.id, today]);
+
+  const visibleGigs = gigs.slice(0, MAX_VISIBLE_GIGS);
+  const isLive = gigs.length > 0;
+
+  // Artist avatars for visible gig rows
+  const { artistImages } = useArtistImages(
+    visibleGigs.flatMap((g) => g.artistIds || []),
+  );
+
+  const directionsUrl = getDirectionsUrl(venue);
+  const heroImage = venue?.profileImageUrl || venue?.imageUrl || null;
+  const monogram = (venue?.name || "?").charAt(0).toUpperCase();
+
+  const getSocialLink = (platform: string): string | undefined =>
+    venue?.socialMediaUrls?.find(
+      (social: SocialMediaURL) => social.platform === platform,
     )?.url;
+
+  const websiteUrl = venue?.website || getSocialLink("website");
+  const facebookUrl = getSocialLink("facebook");
+  const instagramUrl = getSocialLink("instagram");
+
+  const shareData = {
+    title: `${venue?.name} | bndy`,
+    text: `Check out ${venue?.name} on bndy.live`,
+    url: `${typeof window !== "undefined" ? window.location.origin : ""}/venues/${venue?.id}`,
   };
 
-  // Define the outer overlay container styles
-  const overlayStyles =
-    position === "map"
-      ? "fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center backdrop-blur-sm"
-      : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm";
+  const accentClass = isLive ? "" : "vol-idle";
+
+  /* ---------- shared fragments ---------- */
+
+  const renderGigRow = (event: Event) => {
+    const { dow, day, mon } = dateParts(event.date);
+    const isTonight = event.date.slice(0, 10) === today;
+    const artistLabel =
+      event.artistName || (event.name !== "Unnamed Event" ? event.name : "TBA");
+    const artistId = event.artistIds?.[0];
+    const img = getArtistImage(artistImages, artistId);
+
+    const row = (
+      <>
+        <span className="vol-gig-date">
+          <span className="vol-dow">{dow}</span>
+          <span className="vol-day">{day}</span>
+          <span className="vol-mon">{mon}</span>
+        </span>
+        <span
+          className="vol-avatar"
+          style={
+            !img?.profileImageUrl && img?.displayColour
+              ? { background: img.displayColour }
+              : undefined
+          }
+        >
+          {img?.profileImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={img.profileImageUrl} alt="" loading="lazy" />
+          ) : (
+            artistLabel.charAt(0).toUpperCase()
+          )}
+        </span>
+        <span className="vol-gig-info">
+          <span className="vol-gig-artist">
+            {artistLabel}
+            {isTonight && <span className="vol-tonight">TONIGHT</span>}
+          </span>
+          <span className="vol-gig-meta">
+            <b>{event.startTime ? formatTime(event.startTime) : "TBA"}</b>
+            {event.isOpenMic ? " · Open mic" : ""}
+            {event.ticketed ? " · Ticketed" : ""}
+          </span>
+        </span>
+        <ChevronRight size={16} className="vol-gig-chev" />
+      </>
+    );
+
+    if (!onEventSelect) {
+      return (
+        <div key={event.id} className="vol-gig-row" style={{ cursor: "default" }}>
+          {row}
+        </div>
+      );
+    }
+    return (
+      <button
+        key={event.id}
+        type="button"
+        className="vol-gig-row"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEventSelect(event);
+        }}
+      >
+        {row}
+      </button>
+    );
+  };
+
+  const actions = (
+    <div className="vol-actions">
+      {directionsUrl && (
+        <a
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="vol-btn vol-btn-primary"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Navigation size={14} /> Directions
+        </a>
+      )}
+      <Link
+        href={`/venues/${venue?.id}`}
+        className="vol-btn vol-btn-secondary"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CalendarDays size={14} /> View gigs
+      </Link>
+      <span className="vol-share-wrap" onClick={(e) => e.stopPropagation()}>
+        <SocialShareButton {...shareData} variant="icon" size="sm" />
+      </span>
+    </div>
+  );
+
+  const gigsSection = isLive ? (
+    <>
+      <div className="vol-gigs-head">
+        <span className="vol-gigs-title">Upcoming gigs</span>
+        <Link
+          href={`/venues/${venue?.id}`}
+          className="vol-gigs-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          View all ↗
+        </Link>
+      </div>
+      <div>{visibleGigs.map((event) => renderGigRow(event))}</div>
+    </>
+  ) : (
+    <div className="vol-empty">
+      <div className="vol-glyph">
+        <Music size={24} />
+      </div>
+      <div className="vol-t1">No gigs listed yet</div>
+      <div className="vol-t2">Know what&apos;s on here? Help keep live music alive.</div>
+      <button
+        type="button"
+        className="vol-add-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          setWizardOpen(true);
+        }}
+      >
+        <Plus size={14} /> Add a gig
+      </button>
+    </div>
+  );
+
+  const socialsStrip = (websiteUrl || facebookUrl || instagramUrl) && (
+    <div className="vol-contact" onClick={(e) => e.stopPropagation()}>
+      {websiteUrl && (
+        <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
+          <Globe size={13} /> Website
+        </a>
+      )}
+      {facebookUrl && (
+        <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
+          <Facebook size={13} /> Facebook
+        </a>
+      )}
+      {instagramUrl && (
+        <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
+          <Instagram size={13} /> Instagram
+        </a>
+      )}
+    </div>
+  );
+
+  /* ---------- mobile sheet drag ---------- */
+
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.y < -60) {
+      setExpanded(true);
+    } else if (info.offset.y > 60) {
+      if (expanded) setExpanded(false);
+      else onClose();
+    }
+  };
+
+  const expandedHeight =
+    typeof window !== "undefined"
+      ? Math.min(Math.round(window.innerHeight * 0.72), 580)
+      : 480;
+
+  /* ---------- render ---------- */
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className={overlayStyles} onClick={onClose}>
-          <motion.div
-            onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.9, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -20 }}
-            className="relative w-[300px] bg-[#f5f1e8] rounded-lg shadow-2xl border-2 border-[#d4c5a0]"
-            style={{
-              boxShadow: "0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5)",
-              background: "linear-gradient(135deg, #f5f1e8 0%, #e8dfc8 100%)"
-            }}
+    <>
+      <AnimatePresence>
+        {isOpen && !isMobile && (
+          <div
+            className="fixed inset-0 z-50 pointer-events-none flex items-center justify-end pr-[4vw]"
+            data-position={position}
           >
-            {/* Luggage tag hole with string */}
-            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
-              <div className="w-1 h-6 bg-[#8b7355]" />
-              <div className="w-12 h-12 rounded-full bg-[#f5f1e8] border-4 border-[#d4c5a0] shadow-md"
-                   style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.2), inset 0 0 0 8px #e8dfc8" }} />
+            <motion.div
+              className={`vol-card ${accentClass}`}
+              initial={{ opacity: 0, scale: 0.92, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 14 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="vol-hero">
+                {heroImage && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={heroImage} alt="" className="vol-hero-img" />
+                )}
+                <span className="vol-chip">{isLive ? "Live music venue" : "Venue"}</span>
+                <button type="button" className="vol-close" onClick={onClose} aria-label="Close">
+                  <X size={15} />
+                </button>
+                <div className="vol-monogram">{monogram}</div>
+              </div>
+              <div className="vol-body">
+                <div className="vol-name-row">
+                  <Link href={`/venues/${venue?.id}`} className="vol-name">
+                    {venue?.name}
+                  </Link>
+                  {isLive && <span className="vol-live-dot" />}
+                </div>
+                <div className="vol-addr">
+                  {venue?.address}
+                  <br />
+                  {venue?.city && <span className="vol-city">{venue.city}</span>}
+                  {venue?.postcode && <> · {venue.postcode}</>}
+                </div>
+                {actions}
+                {gigsSection}
+                {socialsStrip}
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {isOpen && isMobile && (
+          <motion.div
+            className={`vol-sheet ${accentClass}`}
+            initial={{ y: "100%" }}
+            animate={{ y: 0, height: expanded ? expandedHeight : SHEET_COLLAPSED_PX }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0.06, bottom: 0.25 }}
+            onDragEnd={handleDragEnd}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="vol-sheet-handle"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              <span />
+            </div>
+            <div className="vol-sheet-head">
+              <div className="vol-sheet-mono">
+                {heroImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={heroImage} alt="" />
+                ) : (
+                  monogram
+                )}
+              </div>
+              <div className="vol-sheet-names">
+                <div className="vol-sheet-name">{venue?.name}</div>
+                <div className="vol-sheet-addr">
+                  {venue?.address}
+                  {venue?.city ? ` · ${venue.city}` : ""}
+                </div>
+              </div>
+              <button type="button" className="vol-sheet-close" onClick={onClose} aria-label="Close">
+                <X size={13} />
+              </button>
             </div>
 
-            <div className="pt-10 pb-6 px-6">
-              {/* Venue badge */}
-              <div className="flex justify-center mb-4">
-                <div className="inline-block px-4 py-1 bg-[#0891b2] text-white text-xs font-bold uppercase tracking-wider rounded">
-                  Venue
-                </div>
+            {isLive ? (
+              <div className="vol-next-gig">
+                <div className="vol-ng-tag">NEXT GIG</div>
+                {renderGigRow(gigs[0])}
               </div>
+            ) : (
+              <div style={{ padding: "0 14px" }}>{gigsSection}</div>
+            )}
 
-              {/* Venue Name - Clickable */}
-              <Link
-                href={`/venues/${venue.id}`}
-                className="block text-center mb-6 group"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h2 className="text-[#0891b2] text-2xl font-bold hover:text-[#0e7490] transition-colors flex items-center justify-center gap-2">
-                  {venue.name}
-                  <ExternalLink className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
-                </h2>
-              </Link>
-
-              {/* Decorative divider */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <div className="h-px flex-1 bg-[#d4c5a0]" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[#d4c5a0]" />
-                <div className="h-px flex-1 bg-[#d4c5a0]" />
-              </div>
-
-              {/* Address section */}
-              <div className="text-center space-y-2">
-                <div className="text-xs text-[#8b7355] uppercase tracking-wide font-semibold mb-2">
-                  Address
-                </div>
-                {venue.address && (
-                  <div className="text-sm text-[#4a4035] font-medium leading-relaxed">
-                    {venue.address}
+            <div className="vol-sheet-body">
+              {actions}
+              {isLive && gigs.length > 1 && (
+                <>
+                  <div className="vol-gigs-head">
+                    <span className="vol-gigs-title">Upcoming gigs</span>
+                    <Link
+                      href={`/venues/${venue?.id}`}
+                      className="vol-gigs-all"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      View all ↗
+                    </Link>
                   </div>
-                )}
-                {venue.city && (
-                  <div className="text-base text-[#2d2417] font-bold">
-                    {venue.city}
-                  </div>
-                )}
-                <div className="text-xs text-[#8b7355]">
-                  United Kingdom
-                </div>
-              </div>
-
-              {/* Bottom tag section with BNDY branding */}
-              <div className="mt-6 pt-4 border-t-2 border-dashed border-[#d4c5a0] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white border-2 border-[#0891b2] flex items-center justify-center">
-                    <Building className="w-4 h-4 text-[#0891b2]" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-[#8b7355] uppercase">BNDY</div>
-                    <div className="text-[8px] text-[#8b7355]">#{venue.id.substring(0, 5)}</div>
-                  </div>
-                </div>
-
-                {/* Directions link */}
-                {directionsUrl && (
-                  <a
-                    href={directionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[#0891b2] text-white text-xs font-semibold rounded hover:bg-[#0e7490] transition-colors"
+                  <div
+                    className="vol-sheet-gigs"
+                    style={{ maxHeight: Math.max(expandedHeight - 330, 120) }}
                   >
-                    <Navigation className="w-3 h-3" />
-                    Directions
-                  </a>
-                )}
-              </div>
-
-              {/* Additional contact info - collapsed by default */}
-              {(venue.phone || venue.email || getSocialLink("website") || getSocialLink("facebook")) && (
-                <div className="mt-4 pt-4 border-t border-[#d4c5a0]/50 space-y-2">
-                  {venue.phone && (
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <Phone className="w-3 h-3 text-[#8b7355]" />
-                      <a
-                        href={`tel:${venue.phone}`}
-                        className="text-[#4a4035] hover:text-[#0891b2] transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {venue.phone}
-                      </a>
-                    </div>
-                  )}
-                  {venue.email && (
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <Mail className="w-3 h-3 text-[#8b7355]" />
-                      <a
-                        href={`mailto:${venue.email}`}
-                        className="text-[#4a4035] hover:text-[#0891b2] transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {venue.email}
-                      </a>
-                    </div>
-                  )}
-                  {getSocialLink("website") && (
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <Globe className="w-3 h-3 text-[#8b7355]" />
-                      <a
-                        href={getSocialLink("website")}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#0891b2] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Website
-                      </a>
-                    </div>
-                  )}
-                  {getSocialLink("facebook") && (
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <Facebook className="w-3 h-3 text-[#8b7355]" />
-                      <a
-                        href={getSocialLink("facebook")}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#0891b2] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Facebook
-                      </a>
-                    </div>
-                  )}
-                </div>
+                    {visibleGigs.slice(1).map((event) => renderGigRow(event))}
+                  </div>
+                </>
               )}
-            </div>
-
-            {/* Share button */}
-            <div className="absolute top-2 right-2">
-              <SocialShareButton
-                {...getShareData()}
-                variant="icon"
-                size="sm"
-                className="hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-shadow"
-              />
+              {socialsStrip}
             </div>
           </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+
+      {/* Community "Add a gig" wizard (idle venues) */}
+      <Sheet open={wizardOpen} onOpenChange={setWizardOpen}>
+        <SheetContent
+          side="left"
+          className="w-[400px] sm:w-[540px] bg-background border-r border-border safari-modal"
+        >
+          <VisuallyHidden>
+            <SheetHeader>
+              <SheetTitle>Add a gig at {venue?.name}</SheetTitle>
+              <SheetDescription>
+                Create a new event for this venue
+              </SheetDescription>
+            </SheetHeader>
+          </VisuallyHidden>
+          <BaseEventWizard
+            initialVenue={venue}
+            skipVenueStep
+            onSuccess={() => setWizardOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

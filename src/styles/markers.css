@@ -167,6 +167,19 @@
   opacity: 1; transform: translateX(-50%) translateY(0) scale(1);
 }
 
+/* Always-visible name pills — zoom-gated by the layer via .is-labeled
+   (live venues from z11, all venues from z13). pointer-events restored so
+   the pill is a tap target on mobile (click bubbles to the marker root). */
+.bndy-mk.is-labeled .bndy-mk-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.bndy-mk--venue-idle.is-labeled .bndy-mk-label {
+  opacity: .72; /* idle venues read quieter */
+}
+
 /* ============================================================
    4. USER LOCATION — blue core + sonar
    ============================================================ */

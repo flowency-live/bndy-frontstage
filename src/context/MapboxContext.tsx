@@ -21,6 +21,8 @@ export type MapStyleMode = "dark" | "light";
 declare global {
   interface Window {
     __BNDY_MAP__: mapboxgl.Map | null;
+    /** Set after the once-per-session auto-center to user location */
+    __BNDY_AUTO_CENTERED__?: boolean;
   }
 }
 

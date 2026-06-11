@@ -19,6 +19,10 @@ const VENUE_SOURCE_ID = "venues";
 // querySourceFeatures() returns features. Never visible.
 const VENUE_ANCHOR_LAYER = "venue-anchors";
 
+// Always-visible name pills: live venues from z11, all venues from z13
+const LABEL_MIN_ZOOM_LIVE = 11;
+const LABEL_MIN_ZOOM_ALL = 13;
+
 /**
  * VenueMarkerLayer - Renders neon HTML venue markers with clustering on Mapbox
  *
@@ -139,6 +143,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
   const buildSpecs = useCallback((features: GeoJSON.Feature[]): DiffedMarkerSpec[] => {
     const specs: DiffedMarkerSpec[] = [];
     const mapInstance = map;
+    const zoom = mapInstance ? mapInstance.getZoom() : 0;
 
     for (const feature of features) {
       if (feature.geometry.type !== "Point") continue;
@@ -183,6 +188,7 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
           hasGigs,
           label: name,
           sub: hasGigs ? "live gigs" : undefined,
+          labeled: zoom >= LABEL_MIN_ZOOM_ALL || (hasGigs && zoom >= LABEL_MIN_ZOOM_LIVE),
         },
         onClick: () => {
           const venue = venueMapRef.current.get(venueId);

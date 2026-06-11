@@ -49,12 +49,15 @@ export function MapboxContainer({ userLocation, isDarkMode = true, className, on
         onMapReady(mapInstance);
       }
 
-      // Fly to user location if provided
-      if (userLocation) {
+      // Auto-center close to the user ONCE per session — the UK-wide default
+      // is unreadably dense in venue mode. Session-guarded so remounts and
+      // route changes never yank the map away from where the user panned.
+      if (userLocation && typeof window !== "undefined" && !window.__BNDY_AUTO_CENTERED__) {
+        window.__BNDY_AUTO_CENTERED__ = true;
         mapInstance.flyTo({
           center: [userLocation.lng, userLocation.lat],
           zoom: 12,
-          duration: 1000,
+          duration: 1200,
         });
       }
     }

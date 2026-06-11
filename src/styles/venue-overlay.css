@@ -1,0 +1,317 @@
+/* ============================================================
+   bndy — Venue Info Overlay (neon glass)
+   Design source of truth: Projects/bndy/design-kit/venue-modal-kit.html
+   Desktop: floating card (right-docked) · Mobile: bottom sheet
+   Accent: pink #ff2e88 = venue has gigs · cyan #19d3f5 = idle
+   ============================================================ */
+
+.vol-card {
+  --accent: #ff2e88;
+  position: relative;
+  width: 372px;
+  max-width: calc(100vw - 32px);
+  border-radius: 20px;
+  background: rgba(13, 17, 27, 0.94);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 44px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 28px 64px rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  pointer-events: auto;
+}
+.vol-card.vol-idle { --accent: #19d3f5; }
+
+/* hero */
+.vol-hero {
+  position: relative;
+  height: 116px;
+  background:
+    radial-gradient(ellipse 90% 130% at 20% 0%, color-mix(in srgb, var(--accent) 38%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 120% at 85% 100%, rgba(25, 211, 245, 0.25) 0%, transparent 60%),
+    linear-gradient(160deg, #141b2c 0%, #0c1019 100%);
+}
+.vol-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+.vol-hero::after {
+  content: '';
+  position: absolute; inset: auto 0 0 0; height: 54px;
+  background: linear-gradient(to bottom, transparent, rgba(13, 17, 27, 0.94));
+  pointer-events: none;
+}
+.vol-monogram {
+  position: absolute; left: 20px; bottom: -12px; z-index: 2;
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 85%, #fff) 0%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 20px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+.vol-monogram img { width: 100%; height: 100%; object-fit: cover; }
+.vol-chip {
+  position: absolute; left: 20px; top: 14px; z-index: 2;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
+  color: #fff; padding: 5px 11px; border-radius: 99px;
+  background: color-mix(in srgb, var(--accent) 26%, rgba(10, 14, 24, 0.6));
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.vol-close {
+  position: absolute; right: 12px; top: 12px; z-index: 3;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 14, 24, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #aab3c5; cursor: pointer;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: all 140ms ease;
+}
+.vol-close:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); transform: rotate(90deg); }
+
+/* body */
+.vol-body { padding: 22px 20px 18px; }
+.vol-name-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; padding-left: 68px; min-height: 34px; }
+.vol-name { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; color: #fff; line-height: 1.15; text-decoration: none; }
+a.vol-name:hover { color: #19d3f5; }
+.vol-live-dot {
+  flex: none; width: 9px; height: 9px; border-radius: 50%; margin-top: 7px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 50%, transparent);
+  animation: vol-breathe 2.4s ease-in-out infinite;
+}
+@keyframes vol-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.vol-addr { padding-left: 68px; color: #8b93a7; font-size: 12.5px; line-height: 1.5; margin-bottom: 16px; }
+.vol-addr .vol-city { color: #c6cddb; font-weight: 600; }
+
+/* actions */
+.vol-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+.vol-btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  border-radius: 12px; padding: 11px 0; cursor: pointer;
+  transition: all 140ms ease; border: none; text-decoration: none;
+}
+.vol-btn-primary { flex: 1.2; background: #19d3f5; color: #06222b; box-shadow: 0 0 16px rgba(25, 211, 245, 0.35); }
+.vol-btn-primary:hover { background: #4adef7; box-shadow: 0 0 24px rgba(25, 211, 245, 0.55); }
+.vol-btn-secondary { flex: 1; background: transparent; color: #19d3f5; border: 1.5px solid rgba(25, 211, 245, 0.5); }
+.vol-btn-secondary:hover { border-color: #19d3f5; background: rgba(25, 211, 245, 0.08); }
+.vol-btn-ghost { flex: none; width: 42px; background: transparent; color: #8b93a7; border: 1.5px solid rgba(139, 147, 167, 0.3); }
+.vol-btn-ghost:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+/* SocialShareButton renders its own button inside this wrapper */
+.vol-share-wrap { flex: none; display: flex; }
+.vol-share-wrap > * { width: 42px; border-radius: 12px; border: 1.5px solid rgba(139, 147, 167, 0.3); color: #8b93a7; display: flex; align-items: center; justify-content: center; }
+.vol-share-wrap > *:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+
+/* gigs */
+.vol-gigs-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.vol-gigs-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.vol-gigs-all { font-size: 11.5px; font-weight: 600; color: #8b93a7; text-decoration: none; transition: color 120ms; }
+.vol-gigs-all:hover { color: #19d3f5; }
+
+.vol-gig-row {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; text-align: left;
+  background: transparent; border: none; font-family: inherit;
+  padding: 8px 8px; border-radius: 12px; cursor: pointer;
+  transition: background 130ms ease;
+}
+.vol-gig-row:hover { background: rgba(255, 255, 255, 0.05); }
+.vol-gig-date {
+  flex: none; width: 44px; text-align: center; padding: 6px 0 7px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--accent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.vol-gig-date .vol-dow { display: block; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--accent); }
+.vol-gig-date .vol-day { display: block; font-size: 17px; font-weight: 800; color: #fff; line-height: 1.1; }
+.vol-gig-date .vol-mon { display: block; font-size: 9px; font-weight: 600; letter-spacing: 1px; color: #8b93a7; }
+.vol-avatar {
+  flex: none; width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent);
+  overflow: hidden;
+}
+.vol-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.vol-gig-info { flex: 1; min-width: 0; }
+.vol-gig-artist { font-size: 13.5px; font-weight: 700; color: #f2f5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vol-gig-meta { font-size: 11.5px; color: #8b93a7; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vol-gig-meta b { color: #c6cddb; font-weight: 600; }
+.vol-gig-chev { flex: none; color: #4a5266; transition: all 130ms; }
+.vol-gig-row:hover .vol-gig-chev { color: var(--accent); transform: translateX(2px); }
+.vol-tonight {
+  font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #06222b;
+  background: #19d3f5; padding: 2px 7px; border-radius: 99px; margin-left: 6px;
+  vertical-align: 2px; box-shadow: 0 0 10px rgba(25, 211, 245, 0.5);
+}
+
+/* empty state */
+.vol-empty { text-align: center; padding: 14px 12px 6px; }
+.vol-empty .vol-glyph { display: flex; justify-content: center; opacity: 0.5; margin-bottom: 8px; color: #c6cddb; }
+.vol-empty .vol-t1 { font-size: 13.5px; font-weight: 700; color: #c6cddb; margin-bottom: 3px; }
+.vol-empty .vol-t2 { font-size: 12px; color: #8b93a7; margin-bottom: 14px; }
+.vol-add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: var(--accent); background: transparent;
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 140ms;
+}
+.vol-add-btn:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); border-style: solid; }
+
+/* contact / socials strip */
+.vol-contact {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  margin-top: 14px; padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.vol-contact a {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; color: #8b93a7;
+  text-decoration: none; transition: color 130ms;
+}
+.vol-contact a:hover { color: #19d3f5; }
+
+/* ============================================================
+   MOBILE BOTTOM SHEET
+   ============================================================ */
+.vol-sheet {
+  --accent: #ff2e88;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  border-radius: 22px 22px 0 0;
+  background: rgba(13, 17, 27, 0.96);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-bottom: none;
+  box-shadow: 0 -8px 44px color-mix(in srgb, var(--accent) 12%, transparent), 0 -18px 60px rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.vol-sheet.vol-idle { --accent: #19d3f5; }
+.vol-sheet-handle { display: flex; justify-content: center; padding: 9px 0 5px; cursor: grab; }
+.vol-sheet-handle span { width: 40px; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.22); }
+.vol-sheet-head { display: flex; align-items: center; gap: 11px; padding: 2px 16px 10px; }
+.vol-sheet-mono {
+  flex: none; width: 42px; height: 42px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 85%, #fff) 0%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+  overflow: hidden;
+}
+.vol-sheet-mono img { width: 100%; height: 100%; object-fit: cover; }
+.vol-sheet-names { flex: 1; min-width: 0; }
+.vol-sheet-name { font-size: 16px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vol-sheet-addr { font-size: 11px; color: #8b93a7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vol-sheet-close {
+  flex: none; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #aab3c5; cursor: pointer;
+}
+
+/* NEXT GIG strip */
+.vol-next-gig {
+  margin: 0 14px; border-radius: 12px; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.vol-next-gig .vol-ng-tag { font-size: 9px; font-weight: 800; letter-spacing: 1.6px; color: color-mix(in srgb, var(--accent) 70%, #fff); padding: 6px 12px 0; }
+.vol-next-gig .vol-gig-row { padding: 5px 12px 9px; }
+.vol-next-gig .vol-gig-row:hover { background: transparent; }
+.vol-next-gig .vol-gig-date { width: 40px; background: rgba(10, 14, 24, 0.5); }
+
+.vol-sheet-body { padding: 12px 14px 0; }
+.vol-sheet .vol-actions { margin-bottom: 12px; }
+.vol-sheet .vol-btn { padding: 10px 0; font-size: 12.5px; border-radius: 11px; }
+.vol-sheet-gigs { overflow-y: auto; padding-bottom: 12px; }
+
+/* prefers-reduced-motion: kill the breathing dot */
+@media (prefers-reduced-motion: reduce) {
+  .vol-live-dot { animation: none; }
+}
+
+/* ============================================================
+   EVENT OVERLAY — shares the vol-* primitives above
+   Orange accent ties the card to the gig-map markers.
+   ============================================================ */
+.vol-card.vol-gig, .vol-sheet.vol-gig { --accent: #ff7a1a; }
+
+.eo-hero {
+  position: relative; height: 150px;
+  background:
+    radial-gradient(ellipse 90% 130% at 25% 0%, color-mix(in srgb, var(--accent) 38%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 120% at 85% 100%, rgba(25, 211, 245, 0.22) 0%, transparent 60%),
+    linear-gradient(160deg, #141b2c 0%, #0c1019 100%);
+}
+.eo-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.eo-hero::after {
+  content: ''; position: absolute; inset: auto 0 0 0; height: 64px;
+  background: linear-gradient(to bottom, transparent, rgba(13, 17, 27, 0.96));
+  pointer-events: none;
+}
+.eo-hero-mono {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 56px; font-weight: 800; color: rgba(255, 255, 255, 0.22);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.eo-chips { position: absolute; left: 16px; top: 14px; z-index: 2; display: flex; gap: 6px; }
+.eo-chip {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
+  color: #fff; padding: 5px 11px; border-radius: 99px;
+  background: color-mix(in srgb, var(--accent) 26%, rgba(10, 14, 24, 0.6));
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.eo-chip-tonight {
+  background: #19d3f5; color: #06222b; border-color: #19d3f5;
+  box-shadow: 0 0 14px rgba(25, 211, 245, 0.55);
+}
+
+.eo-artist {
+  display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+  color: #fff; line-height: 1.12; text-decoration: none; margin-bottom: 4px;
+}
+a.eo-artist:hover { color: var(--accent); }
+.eo-venue-line { color: #8b93a7; font-size: 12.5px; line-height: 1.5; margin-bottom: 14px; }
+.eo-venue-line a { color: #c6cddb; font-weight: 600; text-decoration: none; }
+.eo-venue-line a:hover { color: #19d3f5; }
+
+.eo-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.eo-tile {
+  text-align: center; padding: 9px 4px 10px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--accent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.eo-tile .eo-l { display: block; font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+.eo-tile .eo-v { display: block; font-size: 14.5px; font-weight: 800; color: #fff; line-height: 1.15; }
+.eo-tile .eo-s { display: block; font-size: 9.5px; font-weight: 600; color: #8b93a7; margin-top: 1px; }
+.eo-free { color: #6dff9c !important; text-shadow: 0 0 10px rgba(109, 255, 156, 0.4); }
+
+.eo-desc {
+  font-size: 12.5px; color: #aab3c5; line-height: 1.55; margin-bottom: 14px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.eo-disclaimer { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.07); opacity: 0.8; }
+.eo-disclaimer * { font-size: 10px !important; color: #6c7689 !important; }
+
+/* sibling event rows reuse .vol-gig-row; current one gets a ring */
+.eo-current { background: color-mix(in srgb, var(--accent) 8%, transparent); }
