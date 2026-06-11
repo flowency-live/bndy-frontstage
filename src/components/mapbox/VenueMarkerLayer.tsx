@@ -93,64 +93,46 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
   }, [map]);
 
   // Initialize source ONCE (or reinitialize after style change)
+  // IMPORTANT: This must be synchronous so source exists before useDiffedMarkers runs
   useEffect(() => {
     if (!map || !isMapReady) return;
 
+    // Skip if already initialized and source exists
     try {
       if (initializedRef.current && map.getSource(VENUE_SOURCE_ID)) return;
     } catch {
-      // Style not loaded yet, proceed with initialization
+      // Style not loaded yet - but isMapReady should guarantee it is
     }
 
-    const init = async () => {
-      try {
-        const mapContainer = map.getContainer();
-        if (!mapContainer || !document.body.contains(mapContainer)) {
-          return;
-        }
+    // Verify map container is valid
+    const mapContainer = map.getContainer();
+    if (!mapContainer || !document.body.contains(mapContainer)) return;
 
-        let styleLoaded = false;
-        try {
-          styleLoaded = map.isStyleLoaded();
-        } catch {
-          styleLoaded = false;
-        }
-        if (!styleLoaded) {
-          await new Promise<void>(resolve => map.once("style.load", () => resolve()));
-        }
+    // isMapReady guarantees style is loaded, so create source synchronously
+    try {
+      if (!map.getSource(VENUE_SOURCE_ID)) {
+        map.addSource(VENUE_SOURCE_ID, {
+          type: "geojson",
+          data: venuesToGeoJSON(venuesRef.current, venueIdsWithEventsRef.current),
+          cluster: true,
+          clusterMaxZoom: 10,
+          clusterRadius: 30,
+          clusterProperties: {
+            hasLive: ["any", ["to-boolean", ["get", "hasEvents"]]],
+          },
+        });
 
-        if (!map.getSource(VENUE_SOURCE_ID)) {
-          map.addSource(VENUE_SOURCE_ID, {
-            type: "geojson",
-            data: venuesToGeoJSON(venuesRef.current, venueIdsWithEventsRef.current),
-            cluster: true,
-            clusterMaxZoom: 10,
-            clusterRadius: 30,
-            // A cluster is "live" if ANY member venue has upcoming gigs
-            clusterProperties: {
-              hasLive: ["any", ["to-boolean", ["get", "hasEvents"]]],
-            },
-          });
-
-          // Invisible anchor layer (markers are HTML; this just drives tiles)
-          map.addLayer({
-            id: VENUE_ANCHOR_LAYER,
-            type: "circle",
-            source: VENUE_SOURCE_ID,
-            paint: { "circle-radius": 0, "circle-opacity": 0 },
-          });
-
-          console.log("[VenueMarkerLayer] Source created");
-        }
-
-        initializedRef.current = true;
-        console.log("[VenueMarkerLayer] Initialized");
-      } catch (error) {
-        console.error("[VenueMarkerLayer] Init failed:", error);
+        map.addLayer({
+          id: VENUE_ANCHOR_LAYER,
+          type: "circle",
+          source: VENUE_SOURCE_ID,
+          paint: { "circle-radius": 1, "circle-opacity": 0 },
+        });
       }
-    };
-
-    init();
+      initializedRef.current = true;
+    } catch (error) {
+      console.error("[VenueMarkerLayer] Init failed:", error);
+    }
   }, [map, isMapReady, currentStyleMode]);
 
   // Build marker specs from clustered source features (stable; reads via refs)

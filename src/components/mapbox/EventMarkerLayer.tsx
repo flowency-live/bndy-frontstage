@@ -88,60 +88,43 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
   }, [map]);
 
   // Initialize source ONCE (or reinitialize after style change)
+  // IMPORTANT: This must be synchronous so source exists before useDiffedMarkers runs
   useEffect(() => {
     if (!map || !isMapReady) return;
 
+    // Skip if already initialized and source exists
     try {
       if (initializedRef.current && map.getSource(EVENT_SOURCE_ID)) return;
     } catch {
-      // Style not loaded yet, proceed with initialization
+      // Style not loaded yet - but isMapReady should guarantee it is
     }
 
-    const init = async () => {
-      try {
-        const mapContainer = map.getContainer();
-        if (!mapContainer || !document.body.contains(mapContainer)) {
-          return;
-        }
+    // Verify map container is valid
+    const mapContainer = map.getContainer();
+    if (!mapContainer || !document.body.contains(mapContainer)) return;
 
-        let styleLoaded = false;
-        try {
-          styleLoaded = map.isStyleLoaded();
-        } catch {
-          styleLoaded = false;
-        }
-        if (!styleLoaded) {
-          await new Promise<void>(resolve => map.once("style.load", () => resolve()));
-        }
+    // isMapReady guarantees style is loaded, so create source synchronously
+    try {
+      if (!map.getSource(EVENT_SOURCE_ID)) {
+        map.addSource(EVENT_SOURCE_ID, {
+          type: "geojson",
+          data: eventsToGeoJSON(eventsRef.current),
+          cluster: true,
+          clusterMaxZoom: 11,
+          clusterRadius: 40,
+        });
 
-        if (!map.getSource(EVENT_SOURCE_ID)) {
-          map.addSource(EVENT_SOURCE_ID, {
-            type: "geojson",
-            data: eventsToGeoJSON(eventsRef.current),
-            cluster: true,
-            clusterMaxZoom: 11,
-            clusterRadius: 40,
-          });
-
-          // Invisible anchor layer (markers are HTML; this just drives tiles)
-          map.addLayer({
-            id: EVENT_ANCHOR_LAYER,
-            type: "circle",
-            source: EVENT_SOURCE_ID,
-            paint: { "circle-radius": 0, "circle-opacity": 0 },
-          });
-
-          console.log("[EventMarkerLayer] Source created");
-        }
-
-        initializedRef.current = true;
-        console.log("[EventMarkerLayer] Initialized");
-      } catch (error) {
-        console.error("[EventMarkerLayer] Init failed:", error);
+        map.addLayer({
+          id: EVENT_ANCHOR_LAYER,
+          type: "circle",
+          source: EVENT_SOURCE_ID,
+          paint: { "circle-radius": 1, "circle-opacity": 0 },
+        });
       }
-    };
-
-    init();
+      initializedRef.current = true;
+    } catch (error) {
+      console.error("[EventMarkerLayer] Init failed:", error);
+    }
   }, [map, isMapReady, currentStyleMode]);
 
   // Build marker specs from clustered source features (stable; reads via refs)
