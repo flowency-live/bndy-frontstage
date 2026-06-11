@@ -177,19 +177,133 @@
   box-shadow: 0 0 8px color-mix(in srgb, var(--lv-orange) 60%, transparent);
 }
 
-/* Dark-glass filter selects (wrap the artist filters) */
-.bndy-filterbar select,
-.bndy-filterbar [role="combobox"],
-.bndy-filterbar button[data-state] {
-  background: var(--lv-surface) !important;
-  border: 1px solid var(--lv-rule) !important;
-  border-radius: 10px !important;
-  color: var(--lv-text-2) !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
+/* ============================================================
+   FILTER CONTROLS (neon glass)
+   ============================================================ */
+.bndy-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  color: var(--lv-text-2);
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 130ms ease;
 }
-.bndy-filterbar select:hover,
-.bndy-filterbar [role="combobox"]:hover,
-.bndy-filterbar button[data-state]:hover {
-  border-color: color-mix(in srgb, var(--lv-cyan) 45%, transparent) !important;
+.bndy-select-trigger:hover {
+  border-color: color-mix(in srgb, var(--lv-cyan) 45%, transparent);
+  color: var(--lv-text);
+}
+.bndy-select-trigger:focus-visible {
+  outline: none;
+  border-color: var(--lv-cyan);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--lv-cyan) 25%, transparent);
+}
+
+.bndy-select-menu {
+  background: rgba(13, 17, 27, 0.97);
+  border: 1px solid var(--lv-rule-strong);
+  border-radius: 12px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  padding: 4px;
+}
+:root:not(.dark) .bndy-select-menu {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 8px 28px rgba(15, 20, 30, 0.18);
+}
+.bndy-select-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--lv-text-2);
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 110ms ease;
+}
+.bndy-select-option:hover {
+  background: var(--lv-orange-soft);
+  color: var(--lv-text);
+}
+.bndy-select-option.on {
+  color: var(--lv-text);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--lv-cyan) 10%, transparent);
+}
+.bndy-select-count {
+  background: var(--lv-orange);
+  color: #06222b;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--lv-orange) 60%, transparent);
+}
+
+.bndy-search-input {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  color: var(--lv-text);
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule);
+  border-radius: 11px;
+  transition: all 130ms ease;
+}
+.bndy-search-input::placeholder { color: var(--lv-text-3); }
+.bndy-search-input:hover { border-color: var(--lv-rule-strong); }
+.bndy-search-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--lv-cyan) 60%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--lv-cyan) 18%, transparent);
+}
+
+/* Gigging-only toggle pill */
+.bndy-gig-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  color: var(--lv-text-2);
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-rule);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+.bndy-gig-toggle .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lv-text-3);
+  transition: all 140ms ease;
+}
+.bndy-gig-toggle:hover { border-color: rgba(255, 46, 136, 0.45); }
+.bndy-gig-toggle.on {
+  color: #fff;
+  border-color: rgba(255, 46, 136, 0.6);
+  background: rgba(255, 46, 136, 0.1);
+  box-shadow: 0 0 14px rgba(255, 46, 136, 0.18);
+}
+:root:not(.dark) .bndy-gig-toggle.on { color: #99174f; }
+.bndy-gig-toggle.on .dot {
+  background: #ff2e88;
+  box-shadow: 0 0 8px #ff2e88, 0 0 14px rgba(255, 46, 136, 0.5);
+  animation: bndy-gig-breathe 2.4s ease-in-out infinite;
 }

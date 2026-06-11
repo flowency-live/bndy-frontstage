@@ -92,7 +92,7 @@ export function EventCard({ event, onClick, artistImageUrl }: EventCardProps) {
 
         {/* Meta: Location · Distance · Time */}
         <div className="lv-card-meta">
-          {event.venueCity}
+          <span className="lv-card-town">{event.venueCity}</span>
           {event.distanceMiles !== null && (
             <span className="lv-card-distance">
               {formatDistance(event.distanceMiles)}

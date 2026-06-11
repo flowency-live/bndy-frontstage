@@ -21,6 +21,7 @@ export default function ArtistBrowseClient() {
   const [acousticFilter, setAcousticFilter] = useState<string>('all');
   const [actTypeFilter, setActTypeFilter] = useState<string>('');
   const [groupBy, setGroupBy] = useState<'alpha' | 'type' | 'location' | 'genre'>('alpha');
+  const [giggingOnly, setGiggingOnly] = useState(false);
 
   // Artists with upcoming gigs get the pink "gigging" dot (map language)
   const todayStr = useMemo(() => new Date().toLocaleDateString('en-CA'), []);
@@ -70,6 +71,8 @@ export default function ArtistBrowseClient() {
           if (savedGroupBy && ['alpha', 'type', 'location', 'genre'].includes(savedGroupBy)) {
             setGroupBy(savedGroupBy);
           }
+          const { giggingOnly: savedGigging } = JSON.parse(savedState);
+          if (typeof savedGigging === 'boolean') setGiggingOnly(savedGigging);
         } catch (error) {
           console.error('Error loading saved search state:', error);
           // Clear corrupted state
@@ -90,10 +93,11 @@ export default function ArtistBrowseClient() {
         acousticFilter,
         actTypeFilter,
         groupBy,
+        giggingOnly,
       };
       sessionStorage.setItem('artistBrowseState', JSON.stringify(state));
     }
-  }, [searchQuery, locationFilter, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, groupBy]);
+  }, [searchQuery, locationFilter, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, groupBy, giggingOnly]);
 
   // Load all artists on component mount
   useEffect(() => {
@@ -132,13 +136,14 @@ export default function ArtistBrowseClient() {
         (acousticFilter === 'non-acoustic' && !artist.acoustic);
       const matchesActType = !actTypeFilter ||
         (artist.actType && artist.actType.includes(actTypeFilter as any));
-      return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType;
+      const matchesGigging = !giggingOnly || giggingArtistIds.has(artist.id);
+      return matchesSearch && matchesLocation && matchesType && matchesGenre && matchesAcoustic && matchesActType && matchesGigging;
     });
     setDisplayedArtists(filtered);
 
     // No need for backend search - we have all artists loaded and fuzzy matching locally
     // This is faster and provides better UX with prefix stripping and typo tolerance
-  }, [allArtists, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter]);
+  }, [allArtists, artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, giggingOnly, giggingArtistIds]);
 
   // Effect to trigger search when query or location changes
   useEffect(() => {
@@ -152,7 +157,7 @@ export default function ArtistBrowseClient() {
   // Effect to re-filter when filters change - performSearch handles all cases with fuzzy matching
   useEffect(() => {
     performSearch(searchQuery, locationFilter);
-  }, [artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, allArtists, searchQuery, locationFilter, performSearch]);
+  }, [artistTypeFilter, genreFilter, acousticFilter, actTypeFilter, giggingOnly, allArtists, searchQuery, locationFilter, performSearch]);
 
   // Get unique locations for filter dropdown
   const availableLocations = useMemo(() => {
@@ -275,6 +280,7 @@ export default function ArtistBrowseClient() {
           setGenreFilter([]);
           setAcousticFilter('all');
           setActTypeFilter('');
+          setGiggingOnly(false);
           // Clear saved state
           if (typeof window !== 'undefined') {
             sessionStorage.removeItem('artistBrowseState');
@@ -283,7 +289,17 @@ export default function ArtistBrowseClient() {
       />
       </div>
 
-      {/* Results count */}
+      {/* Gigging toggle + results count */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <button
+          type="button"
+          className={`bndy-gig-toggle ${giggingOnly ? 'on' : ''}`}
+          onClick={() => setGiggingOnly((v) => !v)}
+          aria-pressed={giggingOnly}
+        >
+          <span className="dot" />
+          Gigging
+        </button>
       <div className="text-sm text-muted-foreground flex items-center">
         {searching && (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
@@ -293,6 +309,7 @@ export default function ArtistBrowseClient() {
           : `Showing ${displayedArtists.length} of ${allArtists.length} artists`
         }
         {searching && <span className="ml-2 text-primary">Searching...</span>}
+      </div>
       </div>
 
       {/* A-Z jump rail (alpha grouping only) */}
@@ -353,6 +370,7 @@ export default function ArtistBrowseClient() {
                 setGenreFilter([]);
                 setAcousticFilter('all');
                 setActTypeFilter('');
+          setGiggingOnly(false);
                 // Clear saved state
                 if (typeof window !== 'undefined') {
                   sessionStorage.removeItem('artistBrowseState');
