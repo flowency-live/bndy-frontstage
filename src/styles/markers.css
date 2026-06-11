@@ -31,6 +31,15 @@
   will-change: transform;
   /* Mapbox: anchor 'center' for dots/clusters */
 }
+
+/* Mapbox marker ROOT — Mapbox GL positions this element with an inline
+   `transform: translate(...)`. It must carry NO transform/transition of its
+   own, or markers swim during zoom/pan. All visual effects live on the
+   inner .bndy-mk element. */
+.bndy-mk-anchor { display: flex; }
+.bndy-mk-anchor:hover { z-index: 5; }
+.bndy-mk-anchor.is-selected-root { z-index: 6; }
+
 .bndy-mk:hover { transform: scale(1.14); z-index: 5; }
 .bndy-mk.is-selected { transform: scale(1.18); z-index: 6; }
 

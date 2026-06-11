@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import { createMarkerElement, markerOptsKey, MarkerOpts } from "./markerElements";
+import { createMarkerElement, getMarkerVisual, markerOptsKey, MarkerOpts } from "./markerElements";
 
 /**
  * useDiffedMarkers - renders neon HTML markers from a clustered GeoJSON source.
@@ -15,6 +15,10 @@ import { createMarkerElement, markerOptsKey, MarkerOpts } from "./markerElements
  *   - markers whose visual opts changed are rebuilt in place
  *
  * Updates are scheduled on map move/zoom/sourcedata, coalesced via rAF.
+ *
+ * NOTE: marker elements are a .bndy-mk-anchor ROOT (Mapbox positions it via
+ * inline transform — it must stay style-inert) wrapping the .bndy-mk visual.
+ * All class toggles (is-selected) go on the visual via getMarkerVisual().
  */
 
 export interface DiffedMarkerSpec {
@@ -68,6 +72,11 @@ export function useDiffedMarkers({ map, isMapReady, sourceId, enabled, buildSpec
     let rafId = 0;
     let disposed = false;
 
+    const setSelectedClasses = (root: HTMLElement, on: boolean) => {
+      root.classList.toggle("is-selected-root", on);
+      getMarkerVisual(root)?.classList.toggle("is-selected", on);
+    };
+
     const removeAll = () => {
       entriesRef.current.forEach((entry) => entry.marker.remove());
       entriesRef.current.clear();
@@ -117,12 +126,10 @@ export function useDiffedMarkers({ map, isMapReady, sourceId, enabled, buildSpec
           existing.spec = spec;
           existing.marker.setLngLat(spec.lngLat);
           if (existing.optsKey !== newOptsKey) {
-            // Visual changed (e.g. count, hasGigs flip) — rebuild element content
+            // Visual changed (e.g. count, hasGigs flip) — rebuild inner visual
             const fresh = createMarkerElement(spec.opts);
-            existing.el.className = fresh.className;
-            existing.el.innerHTML = fresh.innerHTML;
-            existing.el.style.animationDelay = fresh.style.animationDelay;
-            if (selectedKeyRef.current === key) existing.el.classList.add("is-selected");
+            existing.el.replaceChildren(...Array.from(fresh.children));
+            if (selectedKeyRef.current === key) setSelectedClasses(existing.el, true);
             existing.optsKey = newOptsKey;
           }
           return;
@@ -144,10 +151,11 @@ export function useDiffedMarkers({ map, isMapReady, sourceId, enabled, buildSpec
           if (entry.spec.opts.type !== "cluster") {
             const prev = selectedKeyRef.current;
             if (prev && prev !== key) {
-              entriesRef.current.get(prev)?.el.classList.remove("is-selected");
+              const prevEl = entriesRef.current.get(prev)?.el;
+              if (prevEl) setSelectedClasses(prevEl, false);
             }
             selectedKeyRef.current = key;
-            el.classList.add("is-selected");
+            setSelectedClasses(el, true);
           }
           entry.spec.onClick?.();
         });
@@ -168,7 +176,8 @@ export function useDiffedMarkers({ map, isMapReady, sourceId, enabled, buildSpec
       // Background click clears selection (marker clicks stopPropagation)
       const prev = selectedKeyRef.current;
       if (prev) {
-        entriesRef.current.get(prev)?.el.classList.remove("is-selected");
+        const prevEl = entriesRef.current.get(prev)?.el;
+        if (prevEl) setSelectedClasses(prevEl, false);
         selectedKeyRef.current = null;
       }
     };

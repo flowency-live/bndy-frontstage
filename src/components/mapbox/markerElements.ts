@@ -85,8 +85,22 @@ export function markerOptsKey(opts: MarkerOpts): string {
   }
 }
 
+/**
+ * Returns the inner visual element (.bndy-mk) of a marker root.
+ * Class toggles (is-selected etc.) belong on the visual, never the root —
+ * Mapbox owns the root's transform.
+ */
+export function getMarkerVisual(root: HTMLElement): HTMLElement | null {
+  return root.querySelector<HTMLElement>(".bndy-mk");
+}
+
 export function createMarkerElement(opts: MarkerOpts): HTMLDivElement {
+  // ROOT: positioned by Mapbox via inline transform — must stay style-inert
+  // (see .bndy-mk-anchor in markers.css). Visual effects go on the inner el.
+  const root = document.createElement("div");
+  root.className = "bndy-mk-anchor";
   const el = document.createElement("div");
+  root.appendChild(el);
 
   switch (opts.type) {
     case "gig":
@@ -131,5 +145,5 @@ export function createMarkerElement(opts: MarkerOpts): HTMLDivElement {
       break;
   }
 
-  return el;
+  return root;
 }

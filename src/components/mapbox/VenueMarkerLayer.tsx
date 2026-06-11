@@ -169,9 +169,15 @@ export function VenueMarkerLayer({ venues, venueIdsWithEvents, onVenueClick, vis
       const name = (props?.name as string) ?? "";
       const hasGigs = Boolean(props?.hasEvents);
 
+      // Tile geometry is quantized — pin singles to their exact stored coords
+      const venueRecord = venueMapRef.current.get(venueId);
+      const exact: [number, number] = venueRecord?.location
+        ? [venueRecord.location.lng, venueRecord.location.lat]
+        : [lng, lat];
+
       specs.push({
         key: `v:${venueId}`,
-        lngLat: [lng, lat],
+        lngLat: exact,
         opts: {
           type: "venue",
           hasGigs,

@@ -166,9 +166,19 @@ export function EventMarkerLayer({ events, eventGroups, onEventClick, visible }:
       const venueName = (props?.venueName as string) ?? "";
       const date = (props?.date as string) ?? "";
 
+      // locationKey carries the exact original coords ("lat,lng") — tile
+      // geometry is quantized, so parse it back for a pinned position
+      const [latStr, lngStr] = locationKey.split(",");
+      const exactLat = parseFloat(latStr);
+      const exactLng = parseFloat(lngStr);
+      const exact: [number, number] =
+        Number.isFinite(exactLat) && Number.isFinite(exactLng)
+          ? [exactLng, exactLat]
+          : [lng, lat];
+
       specs.push({
         key: `e:${locationKey}`,
-        lngLat: [lng, lat],
+        lngLat: exact,
         opts: {
           type: "gig",
           isTonight: date.startsWith(today),
