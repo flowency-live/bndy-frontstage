@@ -34,6 +34,11 @@ export default function ArtistBrowseClient() {
     return ids;
   }, [futureEvents]);
 
+  const giggingCount = useMemo(
+    () => allArtists.filter((artist) => giggingArtistIds.has(artist.id)).length,
+    [allArtists, giggingArtistIds],
+  );
+
   // Load saved search state from sessionStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -298,7 +303,7 @@ export default function ArtistBrowseClient() {
           aria-pressed={giggingOnly}
         >
           <span className="dot" />
-          Gigging
+          Has gigs{giggingCount > 0 && <span className="cnt">{giggingCount}</span>}
         </button>
       <div className="text-sm text-muted-foreground flex items-center">
         {searching && (

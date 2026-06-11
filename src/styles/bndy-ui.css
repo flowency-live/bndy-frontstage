@@ -294,6 +294,23 @@
   background: var(--lv-text-3);
   transition: all 140ms ease;
 }
+.bndy-gig-toggle .cnt {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--lv-text-3);
+  background: var(--lv-surface-2);
+  border: 1px solid var(--lv-rule);
+  padding: 1px 7px;
+  border-radius: 99px;
+  line-height: 1.4;
+  transition: all 140ms ease;
+}
+.bndy-gig-toggle.on .cnt {
+  color: #fff;
+  background: rgba(255, 46, 136, 0.25);
+  border-color: rgba(255, 46, 136, 0.5);
+}
+:root:not(.dark) .bndy-gig-toggle.on .cnt { color: #99174f; }
 .bndy-gig-toggle:hover { border-color: rgba(255, 46, 136, 0.45); }
 .bndy-gig-toggle.on {
   color: #fff;
