@@ -79,54 +79,10 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Bundle optimization
-  webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size for production
-    if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 5,
-              reuseExistingChunk: true,
-            },
-            // Separate chunk for large libraries
-            maps: {
-              test: /[\\/]node_modules[\\/](leaflet|@googlemaps)[\\/]/,
-              name: 'maps',
-              chunks: 'all',
-              priority: 15,
-            },
-            ui: {
-              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion)[\\/]/,
-              name: 'ui',
-              chunks: 'all',
-              priority: 12,
-            },
-          },
-        },
-      };
-
-      // Tree shaking optimizations
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
-    }
-
-    // Optimize for mobile performance - removed problematic react-icons aliases
-
-    return config;
-  },
+  // NOTE: custom webpack splitChunks removed 2026-07-02. It forced all of
+  // node_modules into a single ~3MB vendors chunk loaded on every route, and
+  // optimization.sideEffects=false DISABLED tree-shaking. Next.js defaults
+  // produce granular per-route chunks.
 
   // Headers for better mobile performance
   async headers() {

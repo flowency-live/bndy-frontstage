@@ -139,20 +139,20 @@ export default function VAEventsList({
             )}
           </div>
           
-          {/* Ticket Column */}
+          {/* Ticket Column - only show if we have ticket info */}
           <div className="col-span-2 flex justify-end items-center">
             {(() => {
-              const rawPrice = event.price;
+              const rawPrice = event.price || event.ticketinformation;
               const priceValue = rawPrice?.replace(/^from\s+/i, '');
-              const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
-              return isFree ? (
-                <span className="text-xs font-medium text-[var(--secondary)]">
-                  £ree
-                </span>
-              ) : (
+              const hasTicketInfo = !!(
+                event.ticketUrl ||
+                (priceValue && priceValue !== "Free" && priceValue !== "0")
+              );
+              if (!hasTicketInfo) return null;
+              return (
                 <div className="flex items-center text-xs">
                   <Ticket className="w-3 h-3 mr-1 text-[var(--primary)]" />
-                  <span>{priceValue || event.ticketinformation || "Ticketed"}</span>
+                  <span>{priceValue || "Tickets"}</span>
                 </div>
               );
             })()}

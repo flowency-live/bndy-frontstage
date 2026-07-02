@@ -14,7 +14,6 @@ import { ViewToggleProvider } from "@/context/ViewToggleContext";
 import { TenantProvider } from "@/context/TenantContext";
 import { Providers } from "./providers";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import { MapboxProvider } from "@/context/MapboxContext";
 import { EventsProvider } from "@/context/EventsContext";
 
 // Display font - bold impactful headlines (gig poster aesthetic)
@@ -147,8 +146,7 @@ export default async function RootLayout({
           {/* TenantProvider for white-label subdomain support */}
           <TenantProvider subdomain={subdomain}>
             <ViewToggleProvider>
-              {/* MapboxProvider at layout level - map survives route navigation */}
-              <MapboxProvider>
+              {/* MapboxProvider moved into MapView so mapbox-gl only ships on the map route */}
                 {/* EventsProvider at layout level - state survives route navigation */}
                 <EventsProvider>
                   <ServiceWorkerRegistration />
@@ -160,7 +158,6 @@ export default async function RootLayout({
                   <Footer />
                   <MobileBottomNav />
                 </EventsProvider>
-              </MapboxProvider>
             </ViewToggleProvider>
           </TenantProvider>
         </Providers>

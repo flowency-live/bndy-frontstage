@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useMemo,
   ReactNode
 } from "react";
 import { CITY_LOCATIONS } from "@/lib/constants";
@@ -67,23 +68,23 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const availableLocations = [
-    ...(userLocation ? [userLocation] : []),
-    CITY_LOCATIONS.STOKE_ON_TRENT,
-    CITY_LOCATIONS.STOCKPORT
-  ];
+  const value = useMemo(() => ({
+    userLocation,
+    selectedLocation,
+    setSelectedLocation,
+    radius,
+    setRadius,
+    dateRange,
+    setDateRange,
+    availableLocations: [
+      ...(userLocation ? [userLocation] : []),
+      CITY_LOCATIONS.STOKE_ON_TRENT,
+      CITY_LOCATIONS.STOCKPORT
+    ]
+  }), [userLocation, selectedLocation, radius, dateRange]);
 
   return (
-    <EventsContext.Provider value={{
-      userLocation,
-      selectedLocation,
-      setSelectedLocation,
-      radius,
-      setRadius,
-      dateRange,
-      setDateRange,
-      availableLocations
-    }}>
+    <EventsContext.Provider value={value}>
       {children}
     </EventsContext.Provider>
   );

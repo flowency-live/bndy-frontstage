@@ -1,7 +1,7 @@
 // src/context/ViewToggleContext.tsx - Modified
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
 
 type View = "map" | "list";
 type MapMode = "events" | "venues";
@@ -57,7 +57,7 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Function to toggle theme and save preference
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setIsDarkMode(prev => {
       const newValue = !prev;
       // Save to localStorage
@@ -66,7 +66,7 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
       document.documentElement.classList.toggle("dark", newValue);
       return newValue;
     });
-  };
+  }, []);
 
   // Save view preference when it changes
   useEffect(() => {
@@ -78,17 +78,17 @@ export function ViewToggleProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("bndy-map-mode-preference", mapMode);
   }, [mapMode]);
 
+  const value = useMemo(() => ({
+    activeView,
+    setActiveView,
+    mapMode,
+    setMapMode,
+    isDarkMode,
+    toggleTheme
+  }), [activeView, mapMode, isDarkMode, toggleTheme]);
+
   return (
-    <ViewToggleContext.Provider
-      value={{
-        activeView,
-        setActiveView,
-        mapMode,
-        setMapMode,
-        isDarkMode,
-        toggleTheme
-      }}
-    >
+    <ViewToggleContext.Provider value={value}>
       {children}
     </ViewToggleContext.Provider>
   );

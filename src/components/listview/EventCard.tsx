@@ -33,20 +33,28 @@ export function EventCard({ event, onClick, artistImageUrl }: EventCardProps) {
   const artistDisplayName = formatArtistDisplay(event);
   const primaryArtistName = event.artistName || event.name || "Live Music";
   const initials = getInitials(primaryArtistName);
-  const isFree = !event.ticketed;
   const isTonight =
     event.date.slice(0, 10) === new Date().toLocaleDateString("en-CA");
-  const price = event.ticketinformation || null;
+
+  // Only show ticket info if we have meaningful data (not "Free" or empty)
+  const rawPrice = event.price || event.ticketinformation;
+  const hasTicketInfo = !!(
+    event.ticketUrl ||
+    (rawPrice && rawPrice !== "Free" && rawPrice !== "0")
+  );
+  const priceDisplay = rawPrice?.replace(/^from\s+/i, "") || null;
 
   // Show image if URL provided and no error loading it
   const showImage = artistImageUrl && !imageError;
 
   return (
     <div className="lv-event-card" onClick={onClick}>
-      {/* Ticket Stub - top right */}
-      <span className={`lv-card-stub ${isFree ? "" : "paid"}`}>
-        {isFree ? "£ree" : price || "TBC"}
-      </span>
+      {/* Ticket Stub - only show if we have ticket info */}
+      {hasTicketInfo && (
+        <span className="lv-card-stub paid">
+          {priceDisplay || "Tickets"}
+        </span>
+      )}
 
       {/* Large Avatar */}
       <div className="lv-card-avatar">

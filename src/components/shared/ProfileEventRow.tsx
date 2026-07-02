@@ -40,12 +40,13 @@ export default function ProfileEventRow({
   // Format time (24hr format)
   const formattedTime = event.startTime?.slice(0, 5) || "";
 
-  // Determine ticket display - Event uses 'price' field
-  // Strip "From " prefix for cleaner display
-  const rawPrice = event.price;
+  // Only show ticket info if we have meaningful data (not "Free" or empty)
+  const rawPrice = event.price || event.ticketinformation;
   const priceValue = rawPrice?.replace(/^from\s+/i, '');
-  const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
-  const ticketDisplay = isFree ? "£ree" : priceValue || "TBC";
+  const hasTicketInfo = !!(
+    event.ticketUrl ||
+    (priceValue && priceValue !== "Free" && priceValue !== "0")
+  );
 
   // Format distance if provided
   const formatDistance = (dist: number) => {
@@ -128,10 +129,12 @@ export default function ProfileEventRow({
         )}
       </div>
 
-      {/* Ticket stub */}
-      <span className={`profile-ev-stub ${isFree ? "" : "paid"}`}>
-        {ticketDisplay}
-      </span>
+      {/* Ticket stub - only show if we have ticket info */}
+      {hasTicketInfo && (
+        <span className="profile-ev-stub paid">
+          {priceValue || "Tickets"}
+        </span>
+      )}
     </div>
   );
 }

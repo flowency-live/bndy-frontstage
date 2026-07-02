@@ -9,10 +9,11 @@ import { MapDateStrip } from "./filters/MapDateStrip";
 import { useState, useRef, useEffect } from "react";
 import { AddEventButton } from "./events/AddEventButton";
 import { useViewToggle } from "@/context/ViewToggleContext";
-import { VenueModeIndicator } from "./map/VenueModeIndicator";
+import { VenueModeIndicator } from "./shared/VenueModeIndicator";
+import { MapboxProvider } from "@/context/MapboxContext";
 import EventDisclaimer from "./shared/EventDisclaimer";
 
-export default function MapView() {
+function MapViewInner() {
   const { mapMode } = useViewToggle();
   const [filterType, setFilterType] = useState<'artist' | 'venue' | 'nomatch' | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
@@ -93,5 +94,17 @@ export default function MapView() {
       {/* Event accuracy disclaimer - banner at bottom */}
       {mapMode === 'events' && <EventDisclaimer variant="banner" />}
     </div>
+  );
+}
+/**
+ * MapboxProvider lives here (not the root layout) so that mapbox-gl is only
+ * loaded in this dynamically-imported chunk, not on every route.
+ * The map instance itself still survives navigation via window.__BNDY_MAP__.
+ */
+export default function MapView() {
+  return (
+    <MapboxProvider>
+      <MapViewInner />
+    </MapboxProvider>
   );
 }

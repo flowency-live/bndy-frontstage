@@ -47,22 +47,6 @@ jest.mock('leaflet', () => ({
   },
 }));
 
-// Mock the Leaflet settings
-jest.mock('@/components/map/LeafletSettings/leaflet-icon-fix', () => ({
-  completeLeafletIconFix: jest.fn(),
-}));
-
-jest.mock('@/components/map/LeafletSettings/TileProviders', () => ({
-  tileLayer: {
-    url: 'https://{s}.tile.test/{z}/{x}/{y}.png',
-    className: 'test-tiles',
-  },
-}));
-
-jest.mock('@/components/map/LeafletSettings/LeafletMarkers', () => ({
-  createEventMarkerIcon: jest.fn(() => ({})),
-}));
-
 // Mock EventMarkerPopup
 jest.mock('../EventMarkerPopup', () => {
   return function MockEventMarkerPopup({ events, onClose }: { events: Event[]; onClose: () => void }) {

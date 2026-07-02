@@ -131,16 +131,15 @@ export default function EventInfoOverlay({
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = dateOnly === tomorrow.toLocaleDateString("en-CA");
 
-    const rawPrice = currentEvent.price;
+    const rawPrice = currentEvent.price || currentEvent.ticketinformation;
     const priceValue = rawPrice?.replace(/^from\s+/i, "");
-    const isFree =
-      !currentEvent.ticketed ||
-      priceValue === "Free" ||
-      priceValue === "0" ||
-      !priceValue;
-    const priceDisplay = isFree
-      ? "FREE"
-      : priceValue || currentEvent.ticketinformation || "Ticketed";
+    const hasTicketInfo = !!(
+      currentEvent.ticketUrl ||
+      (priceValue && priceValue !== "Free" && priceValue !== "0")
+    );
+    const priceDisplay = hasTicketInfo
+      ? (priceValue || "Tickets")
+      : null;
 
     const distanceMiles = (currentEvent as Event & { distanceMiles?: number })
       .distanceMiles;
@@ -150,7 +149,7 @@ export default function EventInfoOverlay({
       artistName,
       isToday,
       isTomorrow,
-      isFree,
+      hasTicketInfo,
       priceDisplay,
       venueName: venue?.name || currentEvent.venueName || "Venue",
       venueCity: currentEvent.venueCity || venue?.city || "",
@@ -239,12 +238,12 @@ export default function EventInfoOverlay({
         <span className="eo-l">From</span>
         <span className="eo-v">{formattedTime}</span>
       </div>
-      <div className="eo-tile">
-        <span className="eo-l">Entry</span>
-        <span className={`eo-v ${derived.isFree ? "eo-free" : ""}`}>
-          {derived.priceDisplay}
-        </span>
-      </div>
+      {derived.hasTicketInfo && (
+        <div className="eo-tile">
+          <span className="eo-l">Entry</span>
+          <span className="eo-v">{derived.priceDisplay}</span>
+        </div>
+      )}
     </div>
   );
 

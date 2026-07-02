@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useRef, useCallback, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useRef, useCallback, useState, useEffect, useMemo, ReactNode } from "react";
 import mapboxgl from "mapbox-gl";
 
 // Set Mapbox access token
@@ -239,7 +239,7 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
     };
   }, []);
 
-  const value: MapboxContextValue = {
+  const value: MapboxContextValue = useMemo(() => ({
     map: mapRef.current,
     mapContainer,
     isMapReady,
@@ -248,7 +248,8 @@ export function MapboxProvider({ children }: MapboxProviderProps) {
     initializeMap,
     setMapContainer,
     setMapStyle,
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [mapContainer, isMapReady, isBot, currentStyleMode, initializeMap, setMapStyle]);
 
   return (
     <MapboxContext.Provider value={value}>

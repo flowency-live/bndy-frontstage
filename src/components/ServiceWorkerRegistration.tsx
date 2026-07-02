@@ -18,15 +18,8 @@ export default function ServiceWorkerRegistration() {
         });
       });
 
-      // Clear all caches
-      if ('caches' in window) {
-        caches.keys().then(cacheNames => {
-          cacheNames.forEach(cacheName => {
-            caches.delete(cacheName);
-            console.log('Cache deleted:', cacheName);
-          });
-        });
-      }
+      // NOTE: cache-nuking removed 2026-07-02 - it deleted ALL CacheStorage
+      // on every page load for every user, defeating any browser caching.
     }
   }, []);
 

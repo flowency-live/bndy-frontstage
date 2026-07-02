@@ -5,11 +5,11 @@ import { motion } from "framer-motion";
 
 interface TicketStubProps {
   price: string | null;
-  isFree: boolean;
 }
 
-export function TicketStub({ price, isFree }: TicketStubProps) {
-  const displayText = isFree ? "£ree" : price || "TBC";
+export function TicketStub({ price }: TicketStubProps) {
+  // Don't render if no price info
+  if (!price) return null;
 
   return (
     <motion.span
@@ -17,9 +17,9 @@ export function TicketStub({ price, isFree }: TicketStubProps) {
         rotate: [0, -2, 2, 0],
         transition: { duration: 0.2 }
       }}
-      className={`ev-stub ${!isFree ? "paid" : ""}`}
+      className="ev-stub paid"
     >
-      {displayText}
+      {price}
     </motion.span>
   );
 }

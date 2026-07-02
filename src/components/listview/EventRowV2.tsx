@@ -29,9 +29,15 @@ function getInitials(name: string): string {
 export function EventRowV2({ event, index, onClick, artistImageUrl }: EventRowV2Props) {
   const [imageError, setImageError] = useState(false);
   const hasArtist = event.artistIds && event.artistIds.length > 0;
-  const isFree = !event.ticketed;
-  const price = event.ticketinformation || null;
   const distanceClass = getDistanceClass(event.distanceMiles);
+
+  // Only show ticket info if we have meaningful data (not "Free" or empty)
+  const rawPrice = event.price || event.ticketinformation;
+  const hasTicketInfo = !!(
+    event.ticketUrl ||
+    (rawPrice && rawPrice !== "Free" && rawPrice !== "0")
+  );
+  const priceDisplay = hasTicketInfo ? (rawPrice?.replace(/^from\s+/i, "") || "Tickets") : null;
   const artistDisplayName = formatArtistDisplay(event);
   const primaryArtistName = event.artistName || event.name || "Live Music";
   const initials = getInitials(primaryArtistName);
@@ -117,8 +123,8 @@ export function EventRowV2({ event, index, onClick, artistImageUrl }: EventRowV2
         )}
       </div>
 
-      {/* Ticket Stub */}
-      <TicketStub price={price} isFree={isFree} />
+      {/* Ticket Stub - only shows if priceDisplay is set */}
+      <TicketStub price={priceDisplay} />
     </motion.div>
   );
 }

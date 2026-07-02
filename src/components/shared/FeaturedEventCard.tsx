@@ -42,11 +42,13 @@ export default function FeaturedEventCard({
   const formattedDate = format(eventDate, "EEE, d MMM yyyy");
   const formattedTime = event.startTime?.slice(0, 5) || "";
 
-  // Determine ticket display - strip "From " prefix
-  const rawPrice = event.price;
+  // Only show ticket info if we have meaningful data (not "Free" or empty)
+  const rawPrice = event.price || event.ticketinformation;
   const priceValue = rawPrice?.replace(/^from\s+/i, '');
-  const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
-  const ticketDisplay = isFree ? "Free" : priceValue || "Tickets";
+  const hasTicketInfo = !!(
+    event.ticketUrl ||
+    (priceValue && priceValue !== "Free" && priceValue !== "0")
+  );
 
   // Format distance if provided
   const formatDistance = (dist: number) => {
@@ -120,9 +122,11 @@ export default function FeaturedEventCard({
             </span>
           )}
         </div>
-        <span className={`profile-ev-stub ${isFree ? "" : "paid"}`}>
-          {ticketDisplay}
-        </span>
+        {hasTicketInfo && (
+          <span className="profile-ev-stub paid">
+            {priceValue || "Tickets"}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-// src/components/Map/VenueModeIndicator.tsx
+// src/components/shared/VenueModeIndicator.tsx
 import { Building, Info, X } from 'lucide-react';
 import { useViewToggle } from '@/context/ViewToggleContext';
 import { useState } from 'react';

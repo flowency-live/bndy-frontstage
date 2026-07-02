@@ -90,20 +90,20 @@ export default function TodayEventHighlight({
             )}
           </div>
 
-          {/* Price column */}
+          {/* Price column - only show if we have ticket info */}
           <div className="sm:col-span-2 flex justify-start sm:justify-end items-center">
             {(() => {
-              const rawPrice = event.price;
+              const rawPrice = event.price || event.ticketinformation;
               const priceValue = rawPrice?.replace(/^from\s+/i, '');
-              const isFree = !event.ticketed || priceValue === "Free" || priceValue === "0" || !priceValue;
-              return isFree ? (
-                <div className="text-sm font-medium text-[var(--secondary)]">
-                  £ree
-                </div>
-              ) : (
+              const hasTicketInfo = !!(
+                event.ticketUrl ||
+                (priceValue && priceValue !== "Free" && priceValue !== "0")
+              );
+              if (!hasTicketInfo) return null;
+              return (
                 <div className="flex items-center text-[var(--foreground)]">
                   <Ticket className="w-4 h-4 mr-1 text-[var(--primary)]" />
-                  <span>{priceValue || event.ticketinformation || "Ticketed"}</span>
+                  <span>{priceValue || "Tickets"}</span>
                 </div>
               );
             })()}
