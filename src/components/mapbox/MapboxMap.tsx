@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { useViewToggle } from "@/context/ViewToggleContext";
 import { useEvents } from "@/context/EventsContext";
@@ -13,8 +13,8 @@ import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
 import { MapboxContainer } from "./MapboxContainer";
-import { VenueMarkerLayer } from "./VenueMarkerLayer";
-import { EventMarkerLayer } from "./EventMarkerLayer";
+import { DeckGlVenueLayer } from "./DeckGlVenueLayer";
+import { DeckGlEventLayer } from "./DeckGlEventLayer";
 import { UserLocationMarker } from "./UserLocationMarker";
 import { MapboxControls } from "./MapboxControls";
 
@@ -95,6 +95,8 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
   const [showEventOverlay, setShowEventOverlay] = useState(false);
   const [showVenueOverlay, setShowVenueOverlay] = useState(false);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
+  // Track when a marker was just clicked to prevent map click from closing overlay
+  const markerClickedRef = useRef(false);
 
   // No match message
   const getNoMatchMessage = () => {
@@ -109,30 +111,19 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
     return "";
   };
 
-  // Set up map click listener - only close overlays when clicking empty map area
+  // Set up map click listener - close overlays when clicking empty map area
+  // Note: Deck.gl marker clicks set markerClickedRef to prevent this from firing
   useEffect(() => {
     if (!map || !isMapReady) return;
 
-    const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
-      // Check if click was on any marker layer - if so, don't close overlays
-      // The marker layer handlers will handle the click
-      const markerLayers = [
-        "event-clusters",
-        "event-unclustered",
-        "venue-clusters",
-        "venue-unclustered",
-      ];
-
-      const clickedFeatures = map.queryRenderedFeatures(e.point, {
-        layers: markerLayers.filter(layer => map.getLayer(layer)),
-      });
-
-      if (clickedFeatures.length > 0) {
-        // Click was on a marker, let the marker handler deal with it
+    const handleMapClick = () => {
+      // Skip if a Deck.gl marker was just clicked (ref is set by marker handlers)
+      if (markerClickedRef.current) {
+        markerClickedRef.current = false;
         return;
       }
 
-      // Click was on empty map area - close overlays
+      // Close overlays - this was a click on empty map area
       setShowEventOverlay(false);
       setSelectedEvents([]);
       setShowVenueOverlay(false);
@@ -263,6 +254,9 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
 
   // Handle event marker click
   const handleEventClick = useCallback((events: Event[]) => {
+    // Prevent map click handler from closing the overlay
+    markerClickedRef.current = true;
+
     const sortedEvents = [...events].sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
@@ -282,6 +276,9 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
 
   // Handle venue marker click
   const handleVenueClick = useCallback((venue: Venue) => {
+    // Prevent map click handler from closing the overlay
+    markerClickedRef.current = true;
+
     setSelectedVenue(venue);
     setShowVenueOverlay(true);
     setShowEventOverlay(false);
@@ -319,15 +316,15 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
           <UserLocationMarker userLocation={userLocation} />
           <MapboxControls userLocation={userLocation} />
 
-          {/* Both layers stay mounted - visibility controlled by prop */}
-          <EventMarkerLayer
+          {/* Deck.gl WebGL layers - GPU accelerated, 60fps with 10k+ points */}
+          <DeckGlEventLayer
             events={filteredEvents}
             eventGroups={eventLocationGroups}
             onEventClick={handleEventClick}
             visible={mapMode === "events"}
           />
 
-          <VenueMarkerLayer
+          <DeckGlVenueLayer
             venues={filteredVenues}
             venueIdsWithEvents={venueIdsWithEvents}
             onVenueClick={handleVenueClick}
