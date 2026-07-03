@@ -2,13 +2,6 @@
 
 /**
  * DeckGlVenueLayer - GPU-accelerated venue markers using Deck.gl
- *
- * Performance: 60fps with 10k+ points vs ~5fps with HTML markers.
- *
- * Visual effects achieved through layer stacking:
- * - Glow: Multiple ScatterplotLayers with decreasing opacity
- * - Breathing: Animated radius via requestAnimationFrame
- * - Labels: TextLayer with outline halo
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -25,7 +18,6 @@ interface DeckGlVenueLayerProps {
   visible: boolean;
 }
 
-// Color constants (RGBA arrays for Deck.gl)
 const COLORS = {
   liveFill: [255, 46, 136, 255] as [number, number, number, number],
   liveGlowInner: [255, 46, 136, 120] as [number, number, number, number],
@@ -53,17 +45,19 @@ export function DeckGlVenueLayer({
 }: DeckGlVenueLayerProps) {
   const { map, isMapReady } = useMapbox();
   const overlayRef = useRef<MapboxOverlay | null>(null);
-  const [zoom, setZoom] = useState(10);
-  const breathePhaseRef = useRef(0);
   const animationIdRef = useRef<number | null>(null);
+  const breathePhaseRef = useRef(0);
 
-  // Store callbacks in refs to avoid recreating layers
-  const onVenueClickRef = useRef(onVenueClick);
+  // Store all dynamic values in refs so animation loop reads current values
+  const zoomRef = useRef(10);
+  const visibleRef = useRef(visible);
   const venuesRef = useRef(venues);
-  useEffect(() => {
-    onVenueClickRef.current = onVenueClick;
-    venuesRef.current = venues;
-  }, [onVenueClick, venues]);
+  const onVenueClickRef = useRef(onVenueClick);
+
+  // Update refs when props change
+  useEffect(() => { visibleRef.current = visible; }, [visible]);
+  useEffect(() => { venuesRef.current = venues; }, [venues]);
+  useEffect(() => { onVenueClickRef.current = onVenueClick; }, [onVenueClick]);
 
   // Transform venues into render data
   const venueData = useMemo((): VenueRenderData[] => {
@@ -81,16 +75,22 @@ export function DeckGlVenueLayer({
   const liveVenues = useMemo(() => venueData.filter((v) => v.hasEvents), [venueData]);
   const idleVenues = useMemo(() => venueData.filter((v) => !v.hasEvents), [venueData]);
 
+  // Store computed data in refs too
+  const liveVenuesRef = useRef(liveVenues);
+  const idleVenuesRef = useRef(idleVenues);
+  useEffect(() => { liveVenuesRef.current = liveVenues; }, [liveVenues]);
+  useEffect(() => { idleVenuesRef.current = idleVenues; }, [idleVenues]);
+
   // Track zoom level
   useEffect(() => {
     if (!map || !isMapReady) return;
-    const handleZoom = () => setZoom(map.getZoom());
+    const handleZoom = () => { zoomRef.current = map.getZoom(); };
     map.on("zoom", handleZoom);
-    setZoom(map.getZoom());
+    zoomRef.current = map.getZoom();
     return () => { map.off("zoom", handleZoom); };
   }, [map, isMapReady]);
 
-  // Handle venue click
+  // Handle click - reads from refs
   const handleClick = useCallback((info: PickingInfo) => {
     if (!info.object) return;
     const data = info.object as VenueRenderData;
@@ -98,9 +98,14 @@ export function DeckGlVenueLayer({
     if (venue) onVenueClickRef.current(venue);
   }, []);
 
-  // Build layers - called by animation loop
-  const buildLayers = useCallback((breathePhase: number, currentZoom: number, isVisible: boolean) => {
-    if (!isVisible) return [];
+  // Build layers function - reads from refs for current values
+  const buildLayers = useCallback(() => {
+    if (!visibleRef.current) return [];
+
+    const breathePhase = breathePhaseRef.current;
+    const currentZoom = zoomRef.current;
+    const live = liveVenuesRef.current;
+    const idle = idleVenuesRef.current;
 
     const layers = [];
     const showLabels = currentZoom >= 12;
@@ -110,7 +115,7 @@ export function DeckGlVenueLayer({
     layers.push(
       new ScatterplotLayer({
         id: "venue-live-glow-outer",
-        data: liveVenues,
+        data: live,
         getPosition: (d) => d.position,
         getRadius: (d) => 22 + Math.sin(breathePhase + d.animOffset) * 4,
         radiusUnits: "pixels",
@@ -125,7 +130,7 @@ export function DeckGlVenueLayer({
     layers.push(
       new ScatterplotLayer({
         id: "venue-live-glow-inner",
-        data: liveVenues,
+        data: live,
         getPosition: (d) => d.position,
         getRadius: (d) => 14 + Math.sin(breathePhase + d.animOffset) * 2,
         radiusUnits: "pixels",
@@ -140,7 +145,7 @@ export function DeckGlVenueLayer({
     layers.push(
       new ScatterplotLayer({
         id: "venue-live-core",
-        data: liveVenues,
+        data: live,
         getPosition: (d) => d.position,
         getRadius: 8,
         radiusUnits: "pixels",
@@ -157,12 +162,12 @@ export function DeckGlVenueLayer({
       })
     );
 
-    // Idle venue glow (higher zoom only)
+    // Idle venue glow
     if (currentZoom >= 10) {
       layers.push(
         new ScatterplotLayer({
           id: "venue-idle-glow",
-          data: idleVenues,
+          data: idle,
           getPosition: (d) => d.position,
           getRadius: 10,
           radiusUnits: "pixels",
@@ -177,7 +182,7 @@ export function DeckGlVenueLayer({
     layers.push(
       new ScatterplotLayer({
         id: "venue-idle-core",
-        data: idleVenues,
+        data: idle,
         getPosition: (d) => d.position,
         getRadius: 5,
         radiusUnits: "pixels",
@@ -194,12 +199,12 @@ export function DeckGlVenueLayer({
       })
     );
 
-    // Labels at high zoom
+    // Labels
     if (showLabels) {
       layers.push(
         new TextLayer({
           id: "venue-live-labels",
-          data: liveVenues,
+          data: live,
           getPosition: (d) => d.position,
           getText: (d) => d.name,
           getSize: 12,
@@ -222,7 +227,7 @@ export function DeckGlVenueLayer({
         layers.push(
           new TextLayer({
             id: "venue-idle-labels",
-            data: idleVenues,
+            data: idle,
             getPosition: (d) => d.position,
             getText: (d) => d.name,
             getSize: 11,
@@ -244,9 +249,9 @@ export function DeckGlVenueLayer({
     }
 
     return layers;
-  }, [liveVenues, idleVenues, handleClick]);
+  }, [handleClick]);
 
-  // Initialize overlay ONCE and manage via animation loop
+  // Initialize overlay and animation
   useEffect(() => {
     if (!map || !isMapReady) return;
 
@@ -254,51 +259,32 @@ export function DeckGlVenueLayer({
     if (!overlayRef.current) {
       overlayRef.current = new MapboxOverlay({
         interleaved: true,
-        layers: [],
+        layers: buildLayers(),
       });
       map.addControl(overlayRef.current);
     }
 
-    // Animation loop - updates layers without recreating overlay
+    // Animation loop
     const animate = () => {
       breathePhaseRef.current = (breathePhaseRef.current + 0.03) % (Math.PI * 2);
 
       if (overlayRef.current) {
-        overlayRef.current.setProps({
-          layers: buildLayers(breathePhaseRef.current, zoom, visible),
-        });
+        overlayRef.current.setProps({ layers: buildLayers() });
       }
 
       animationIdRef.current = requestAnimationFrame(animate);
     };
 
-    // Start animation
     animationIdRef.current = requestAnimationFrame(animate);
 
-    // Cleanup only on unmount
     return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
+      if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current);
       if (overlayRef.current) {
-        try {
-          map.removeControl(overlayRef.current);
-        } catch {
-          // Map may be torn down
-        }
+        try { map.removeControl(overlayRef.current); } catch {}
         overlayRef.current = null;
       }
     };
-  }, [map, isMapReady]); // Only depend on map - NOT on buildLayers or zoom
-
-  // Update layers when data/zoom/visibility changes (outside animation)
-  useEffect(() => {
-    if (overlayRef.current) {
-      overlayRef.current.setProps({
-        layers: buildLayers(breathePhaseRef.current, zoom, visible),
-      });
-    }
-  }, [buildLayers, zoom, visible]);
+  }, [map, isMapReady, buildLayers]);
 
   return null;
 }

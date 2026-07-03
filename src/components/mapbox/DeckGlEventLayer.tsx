@@ -9,7 +9,7 @@
  * - TextLayer for venue/event names at high zoom
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { ScatterplotLayer, TextLayer } from "@deck.gl/layers";
 import type { PickingInfo } from "@deck.gl/core";
@@ -56,13 +56,17 @@ export function DeckGlEventLayer({
 }: DeckGlEventLayerProps) {
   const { map, isMapReady } = useMapbox();
   const overlayRef = useRef<MapboxOverlay | null>(null);
-  const [zoom, setZoom] = useState(10);
   const pulsePhaseRef = useRef(0);
   const animationIdRef = useRef<number | null>(null);
 
-  // Store callbacks in refs
+  // Store all dynamic values in refs so animation loop reads current values
+  const zoomRef = useRef(10);
+  const visibleRef = useRef(visible);
   const onEventClickRef = useRef(onEventClick);
   const eventGroupsRef = useRef(eventGroups);
+
+  // Update refs when props change
+  useEffect(() => { visibleRef.current = visible; }, [visible]);
   useEffect(() => {
     onEventClickRef.current = onEventClick;
     eventGroupsRef.current = eventGroups;
@@ -96,12 +100,20 @@ export function DeckGlEventLayer({
   const tonightEvents = useMemo(() => eventData.filter((e) => e.isTonight), [eventData]);
   const regularEvents = useMemo(() => eventData.filter((e) => !e.isTonight), [eventData]);
 
-  // Track zoom
+  // Store computed data in refs too
+  const eventDataRef = useRef(eventData);
+  const tonightEventsRef = useRef(tonightEvents);
+  const regularEventsRef = useRef(regularEvents);
+  useEffect(() => { eventDataRef.current = eventData; }, [eventData]);
+  useEffect(() => { tonightEventsRef.current = tonightEvents; }, [tonightEvents]);
+  useEffect(() => { regularEventsRef.current = regularEvents; }, [regularEvents]);
+
+  // Track zoom level
   useEffect(() => {
     if (!map || !isMapReady) return;
-    const handleZoom = () => setZoom(map.getZoom());
+    const handleZoom = () => { zoomRef.current = map.getZoom(); };
     map.on("zoom", handleZoom);
-    setZoom(map.getZoom());
+    zoomRef.current = map.getZoom();
     return () => { map.off("zoom", handleZoom); };
   }, [map, isMapReady]);
 
@@ -115,9 +127,15 @@ export function DeckGlEventLayer({
     }
   }, []);
 
-  // Build layers
-  const buildLayers = useCallback((pulsePhase: number, currentZoom: number, isVisible: boolean) => {
-    if (!isVisible) return [];
+  // Build layers function - reads from refs for current values
+  const buildLayers = useCallback(() => {
+    if (!visibleRef.current) return [];
+
+    const pulsePhase = pulsePhaseRef.current;
+    const currentZoom = zoomRef.current;
+    const tonight = tonightEventsRef.current;
+    const regular = regularEventsRef.current;
+    const allEvents = eventDataRef.current;
 
     const layers = [];
     const showLabels = currentZoom >= 12;
@@ -126,7 +144,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-tonight-sonar",
-        data: tonightEvents,
+        data: tonight,
         getPosition: (d) => d.position,
         getRadius: (d) => {
           const phase = (pulsePhase + d.animOffset) % (Math.PI * 2);
@@ -155,7 +173,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-tonight-glow",
-        data: tonightEvents,
+        data: tonight,
         getPosition: (d) => d.position,
         getRadius: 16,
         radiusUnits: "pixels",
@@ -169,7 +187,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-tonight-core",
-        data: tonightEvents,
+        data: tonight,
         getPosition: (d) => d.position,
         getRadius: 9,
         radiusUnits: "pixels",
@@ -190,7 +208,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-glow-outer",
-        data: regularEvents,
+        data: regular,
         getPosition: (d) => d.position,
         getRadius: 18,
         radiusUnits: "pixels",
@@ -204,7 +222,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-glow-inner",
-        data: regularEvents,
+        data: regular,
         getPosition: (d) => d.position,
         getRadius: 12,
         radiusUnits: "pixels",
@@ -218,7 +236,7 @@ export function DeckGlEventLayer({
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-core",
-        data: regularEvents,
+        data: regular,
         getPosition: (d) => d.position,
         getRadius: 7,
         radiusUnits: "pixels",
@@ -236,7 +254,7 @@ export function DeckGlEventLayer({
     );
 
     // Event count badges
-    const multiEventLocations = eventData.filter((e) => e.count > 1);
+    const multiEventLocations = allEvents.filter((e) => e.count > 1);
     if (multiEventLocations.length > 0) {
       layers.push(
         new TextLayer({
@@ -265,7 +283,7 @@ export function DeckGlEventLayer({
       layers.push(
         new TextLayer({
           id: "event-labels",
-          data: eventData,
+          data: allEvents,
           getPosition: (d) => d.position,
           getText: (d) => d.name,
           getSize: 12,
@@ -286,9 +304,9 @@ export function DeckGlEventLayer({
     }
 
     return layers;
-  }, [tonightEvents, regularEvents, eventData, handleClick]);
+  }, [handleClick]);
 
-  // Initialize overlay ONCE and manage via animation loop
+  // Initialize overlay and animation
   useEffect(() => {
     if (!map || !isMapReady) return;
 
@@ -296,7 +314,7 @@ export function DeckGlEventLayer({
     if (!overlayRef.current) {
       overlayRef.current = new MapboxOverlay({
         interleaved: true,
-        layers: [],
+        layers: buildLayers(),
       });
       map.addControl(overlayRef.current);
     }
@@ -306,9 +324,7 @@ export function DeckGlEventLayer({
       pulsePhaseRef.current = (pulsePhaseRef.current + 0.05) % (Math.PI * 2);
 
       if (overlayRef.current) {
-        overlayRef.current.setProps({
-          layers: buildLayers(pulsePhaseRef.current, zoom, visible),
-        });
+        overlayRef.current.setProps({ layers: buildLayers() });
       }
 
       animationIdRef.current = requestAnimationFrame(animate);
@@ -317,28 +333,13 @@ export function DeckGlEventLayer({
     animationIdRef.current = requestAnimationFrame(animate);
 
     return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
+      if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current);
       if (overlayRef.current) {
-        try {
-          map.removeControl(overlayRef.current);
-        } catch {
-          // Map may be torn down
-        }
+        try { map.removeControl(overlayRef.current); } catch {}
         overlayRef.current = null;
       }
     };
-  }, [map, isMapReady]); // Only depend on map
-
-  // Update layers when data/zoom/visibility changes
-  useEffect(() => {
-    if (overlayRef.current) {
-      overlayRef.current.setProps({
-        layers: buildLayers(pulsePhaseRef.current, zoom, visible),
-      });
-    }
-  }, [buildLayers, zoom, visible]);
+  }, [map, isMapReady, buildLayers]);
 
   return null;
 }
