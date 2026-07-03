@@ -13,7 +13,7 @@ import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
 import { MapboxContainer } from "./MapboxContainer";
-import { DeckGlMapLayers } from "./DeckGlMapLayers";
+import { MapboxNativeLayers } from "./MapboxNativeLayers";
 import { UserLocationMarker } from "./UserLocationMarker";
 import { MapboxControls } from "./MapboxControls";
 
@@ -315,8 +315,8 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
           <UserLocationMarker userLocation={userLocation} />
           <MapboxControls userLocation={userLocation} />
 
-          {/* Single unified Deck.gl overlay - prevents WebGL context conflicts */}
-          <DeckGlMapLayers
+          {/* Native Mapbox layers with built-in clustering */}
+          <MapboxNativeLayers
             venues={filteredVenues}
             venueIdsWithEvents={venueIdsWithEvents}
             onVenueClick={handleVenueClick}
