@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Artist } from '@/lib/types';
 import { getAllArtists } from '@/lib/services/artist-service-new';
 import { fuzzyMatch } from '@/lib/utils/fuzzy-search';
-import ArtistCard from '@/components/artist/ArtistCard';
 import ArtistFilters from '@/components/artist/ArtistFilters';
+import VirtualizedArtistGrid from '@/components/artist/VirtualizedArtistGrid';
 import { useAllPublicEvents } from '@/hooks/useAllPublicEvents';
 
 export default function ArtistBrowseClient() {
@@ -317,18 +317,24 @@ export default function ArtistBrowseClient() {
       </div>
       </div>
 
-      {/* A-Z jump rail (alpha grouping only) */}
+      {/* A-Z jump rail (alpha grouping only) - uses virtualized scroll */}
       {groupBy === 'alpha' && displayedArtists.length > 0 && (
         <nav className="bndy-alpha-rail hidden md:flex" aria-label="Jump to letter">
           {Object.keys(groupedArtists).map((letter) => (
             <button
               key={letter}
               type="button"
-              onClick={() =>
-                document
-                  .getElementById(`artist-group-${letter}`)
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
+              onClick={() => {
+                // Try virtualized grid scroll first, fallback to DOM
+                const grid = document.querySelector('[data-virtualized-grid]');
+                if (grid && (grid as any).scrollToGroup) {
+                  (grid as any).scrollToGroup(letter);
+                } else {
+                  document
+                    .getElementById(`artist-group-${letter}`)
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
             >
               {letter === '0-9' ? '#' : letter}
             </button>
@@ -336,28 +342,13 @@ export default function ArtistBrowseClient() {
         </nav>
       )}
 
-      {/* Artist Grid - Grouped */}
+      {/* Virtualized Artist Grid - only renders visible cards */}
       {displayedArtists.length > 0 ? (
-        <div className="space-y-10">
-          {Object.entries(groupedArtists).map(([groupKey, artists]) => (
-            <div key={groupKey} id={`artist-group-${groupKey}`} style={{ scrollMarginTop: '170px' }}>
-              {/* Group Header */}
-              <h2 className="bndy-letter-head">
-                {groupKey}
-              </h2>
-              {/* Group Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-5 md:gap-6">
-                {artists.map(artist => (
-                  <ArtistCard
-                    key={artist.id}
-                    artist={artist}
-                    hasUpcomingGigs={giggingArtistIds.has(artist.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <VirtualizedArtistGrid
+          groupedArtists={groupedArtists}
+          giggingArtistIds={giggingArtistIds}
+          groupBy={groupBy}
+        />
       ) : (
         <div className="text-center py-12">
           <div className="text-muted-foreground mb-4">
