@@ -26,6 +26,19 @@ function todayLocalISO(): string {
   return new Date().toLocaleDateString("en-CA");
 }
 
+function isEventToday(eventDate: string, todayStr: string): boolean {
+  // Handle various date formats
+  // e.date could be "2026-07-03", "2026-07-03T19:00:00", "July 3, 2026", etc.
+  try {
+    const eventDateObj = new Date(eventDate);
+    const eventDateStr = eventDateObj.toLocaleDateString("en-CA");
+    return eventDateStr === todayStr;
+  } catch {
+    // Fallback to string comparison
+    return eventDate.startsWith(todayStr);
+  }
+}
+
 export function MapboxNativeLayers({
   venues,
   venueIdsWithEvents,
@@ -71,7 +84,7 @@ export function MapboxNativeLayers({
     const features = Object.entries(eventGroups).map(([locationKey, eventsAtLocation]) => {
       const [latStr, lngStr] = locationKey.split(",");
       const firstEvent = eventsAtLocation[0];
-      const hasTonight = eventsAtLocation.some((e) => e.date.startsWith(today));
+      const hasTonight = eventsAtLocation.some((e) => isEventToday(e.date, today));
       return {
         type: "Feature" as const,
         properties: {
