@@ -3,13 +3,10 @@
 /**
  * DeckGlEventLayer - GPU-accelerated event markers using Deck.gl
  *
- * PROTOTYPE: Replaces HTML event markers with WebGL-rendered layers.
- *
  * Features:
- * - "Tonight" events pulse more intensely (sonar effect)
+ * - "Tonight" events pulse with sonar effect
  * - Stacked glow layers for neon appearance
  * - TextLayer for venue/event names at high zoom
- * - Clustering handled by Mapbox source, Deck.gl renders features
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -26,17 +23,12 @@ interface DeckGlEventLayerProps {
   visible: boolean;
 }
 
-// Color constants
 const COLORS = {
-  // Event markers (orange/coral)
   eventFill: [255, 140, 66, 255] as [number, number, number, number],
   eventGlowInner: [255, 140, 66, 130] as [number, number, number, number],
   eventGlowOuter: [255, 140, 66, 50] as [number, number, number, number],
-  // Tonight events (brighter, cyan accent)
   tonightFill: [6, 232, 255, 255] as [number, number, number, number],
   tonightGlowInner: [6, 232, 255, 150] as [number, number, number, number],
-  tonightGlowOuter: [6, 232, 255, 60] as [number, number, number, number],
-  // Shared
   stroke: [255, 255, 255, 220] as [number, number, number, number],
   labelText: [255, 255, 255, 255] as [number, number, number, number],
   labelHalo: [0, 25, 48, 230] as [number, number, number, number],
@@ -65,18 +57,26 @@ export function DeckGlEventLayer({
   const { map, isMapReady } = useMapbox();
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const [zoom, setZoom] = useState(10);
-  const [pulsePhase, setPulsePhase] = useState(0);
+  const pulsePhaseRef = useRef(0);
+  const animationIdRef = useRef<number | null>(null);
+
+  // Store callbacks in refs
+  const onEventClickRef = useRef(onEventClick);
+  const eventGroupsRef = useRef(eventGroups);
+  useEffect(() => {
+    onEventClickRef.current = onEventClick;
+    eventGroupsRef.current = eventGroups;
+  }, [onEventClick, eventGroups]);
 
   const today = useMemo(() => todayLocalISO(), []);
 
-  // Transform events into render data (one per location)
+  // Transform events into render data
   const eventData = useMemo((): EventRenderData[] => {
     return Object.entries(eventGroups).map(([locationKey, eventsAtLocation]) => {
       const firstEvent = eventsAtLocation[0];
       const [latStr, lngStr] = locationKey.split(",");
       const lat = parseFloat(latStr);
       const lng = parseFloat(lngStr);
-
       const hasTonight = eventsAtLocation.some((e) => e.date.startsWith(today));
 
       return {
@@ -93,78 +93,47 @@ export function DeckGlEventLayer({
     });
   }, [eventGroups, today]);
 
-  // Separate tonight and regular events
-  const tonightEvents = useMemo(
-    () => eventData.filter((e) => e.isTonight),
-    [eventData]
-  );
-  const regularEvents = useMemo(
-    () => eventData.filter((e) => !e.isTonight),
-    [eventData]
-  );
+  const tonightEvents = useMemo(() => eventData.filter((e) => e.isTonight), [eventData]);
+  const regularEvents = useMemo(() => eventData.filter((e) => !e.isTonight), [eventData]);
 
   // Track zoom
   useEffect(() => {
     if (!map || !isMapReady) return;
-
     const handleZoom = () => setZoom(map.getZoom());
     map.on("zoom", handleZoom);
     setZoom(map.getZoom());
-
-    return () => {
-      map.off("zoom", handleZoom);
-    };
+    return () => { map.off("zoom", handleZoom); };
   }, [map, isMapReady]);
 
-  // Pulse animation for tonight events (faster than venue breathing)
-  useEffect(() => {
-    if (!visible) return;
-
-    let animationId: number;
-    const animate = () => {
-      setPulsePhase((p) => (p + 0.05) % (Math.PI * 2));
-      animationId = requestAnimationFrame(animate);
-    };
-    animationId = requestAnimationFrame(animate);
-
-    return () => cancelAnimationFrame(animationId);
-  }, [visible]);
-
   // Handle click
-  const handleClick = useCallback(
-    (info: PickingInfo) => {
-      if (!info.object) return;
-      const data = info.object as EventRenderData;
-      const eventsAtLocation = eventGroups[data.locationKey] || [];
-      if (eventsAtLocation.length > 0) {
-        onEventClick(eventsAtLocation);
-      }
-    },
-    [eventGroups, onEventClick]
-  );
+  const handleClick = useCallback((info: PickingInfo) => {
+    if (!info.object) return;
+    const data = info.object as EventRenderData;
+    const eventsAtLocation = eventGroupsRef.current[data.locationKey] || [];
+    if (eventsAtLocation.length > 0) {
+      onEventClickRef.current(eventsAtLocation);
+    }
+  }, []);
 
   // Build layers
-  const buildLayers = useCallback(() => {
-    if (!visible) return [];
+  const buildLayers = useCallback((pulsePhase: number, currentZoom: number, isVisible: boolean) => {
+    if (!isVisible) return [];
 
     const layers = [];
-    const showLabels = zoom >= 12;
+    const showLabels = currentZoom >= 12;
 
-    // === TONIGHT EVENT LAYERS (cyan, intense pulse) ===
-
-    // Sonar ping effect - expanding ring
+    // Tonight sonar effect
     layers.push(
       new ScatterplotLayer({
         id: "event-tonight-sonar",
         data: tonightEvents,
         getPosition: (d) => d.position,
-        // Sonar: radius expands then resets
         getRadius: (d) => {
           const phase = (pulsePhase + d.animOffset) % (Math.PI * 2);
           return 12 + (phase / Math.PI) * 20;
         },
         radiusUnits: "pixels",
-        getFillColor: [0, 0, 0, 0], // Transparent fill
+        getFillColor: [0, 0, 0, 0],
         stroked: true,
         getLineColor: (d) => {
           const phase = (pulsePhase + d.animOffset) % (Math.PI * 2);
@@ -217,9 +186,7 @@ export function DeckGlEventLayer({
       })
     );
 
-    // === REGULAR EVENT LAYERS (orange) ===
-
-    // Outer glow
+    // Regular event glow outer
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-glow-outer",
@@ -233,7 +200,7 @@ export function DeckGlEventLayer({
       })
     );
 
-    // Inner glow
+    // Regular event glow inner
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-glow-inner",
@@ -247,7 +214,7 @@ export function DeckGlEventLayer({
       })
     );
 
-    // Core dot
+    // Regular event core
     layers.push(
       new ScatterplotLayer({
         id: "event-regular-core",
@@ -268,8 +235,7 @@ export function DeckGlEventLayer({
       })
     );
 
-    // === EVENT COUNT BADGES (for locations with multiple events) ===
-
+    // Event count badges
     const multiEventLocations = eventData.filter((e) => e.count > 1);
     if (multiEventLocations.length > 0) {
       layers.push(
@@ -294,8 +260,7 @@ export function DeckGlEventLayer({
       );
     }
 
-    // === TEXT LABELS (high zoom) ===
-
+    // Labels at high zoom
     if (showLabels) {
       layers.push(
         new TextLayer({
@@ -321,33 +286,40 @@ export function DeckGlEventLayer({
     }
 
     return layers;
-  }, [
-    visible,
-    zoom,
-    tonightEvents,
-    regularEvents,
-    eventData,
-    pulsePhase,
-    handleClick,
-  ]);
+  }, [tonightEvents, regularEvents, eventData, handleClick]);
 
-  // Initialize overlay
+  // Initialize overlay ONCE and manage via animation loop
   useEffect(() => {
     if (!map || !isMapReady) return;
 
+    // Create overlay once
     if (!overlayRef.current) {
       overlayRef.current = new MapboxOverlay({
         interleaved: true,
-        layers: buildLayers(),
+        layers: [],
       });
       map.addControl(overlayRef.current);
-    } else {
-      overlayRef.current.setProps({
-        layers: buildLayers(),
-      });
     }
 
+    // Animation loop
+    const animate = () => {
+      pulsePhaseRef.current = (pulsePhaseRef.current + 0.05) % (Math.PI * 2);
+
+      if (overlayRef.current) {
+        overlayRef.current.setProps({
+          layers: buildLayers(pulsePhaseRef.current, zoom, visible),
+        });
+      }
+
+      animationIdRef.current = requestAnimationFrame(animate);
+    };
+
+    animationIdRef.current = requestAnimationFrame(animate);
+
     return () => {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
+      }
       if (overlayRef.current) {
         try {
           map.removeControl(overlayRef.current);
@@ -357,16 +329,16 @@ export function DeckGlEventLayer({
         overlayRef.current = null;
       }
     };
-  }, [map, isMapReady, buildLayers]);
+  }, [map, isMapReady]); // Only depend on map
 
-  // Update layers
+  // Update layers when data/zoom/visibility changes
   useEffect(() => {
     if (overlayRef.current) {
       overlayRef.current.setProps({
-        layers: buildLayers(),
+        layers: buildLayers(pulsePhaseRef.current, zoom, visible),
       });
     }
-  }, [buildLayers]);
+  }, [buildLayers, zoom, visible]);
 
   return null;
 }
