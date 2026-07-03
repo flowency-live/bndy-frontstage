@@ -13,8 +13,7 @@ import EventInfoOverlay from "../overlays/EventInfoOverlay";
 import VenueInfoOverlay from "../overlays/VenueInfoOverlay";
 import { useMapbox } from "@/context/MapboxContext";
 import { MapboxContainer } from "./MapboxContainer";
-import { DeckGlVenueLayer } from "./DeckGlVenueLayer";
-import { DeckGlEventLayer } from "./DeckGlEventLayer";
+import { DeckGlMapLayers } from "./DeckGlMapLayers";
 import { UserLocationMarker } from "./UserLocationMarker";
 import { MapboxControls } from "./MapboxControls";
 
@@ -316,19 +315,16 @@ const MapboxMap = ({ filterType, filterId, entityExists = false, onClearSearch }
           <UserLocationMarker userLocation={userLocation} />
           <MapboxControls userLocation={userLocation} />
 
-          {/* Deck.gl WebGL layers - GPU accelerated, 60fps with 10k+ points */}
-          <DeckGlEventLayer
-            events={filteredEvents}
-            eventGroups={eventLocationGroups}
-            onEventClick={handleEventClick}
-            visible={mapMode === "events"}
-          />
-
-          <DeckGlVenueLayer
+          {/* Single unified Deck.gl overlay - prevents WebGL context conflicts */}
+          <DeckGlMapLayers
             venues={filteredVenues}
             venueIdsWithEvents={venueIdsWithEvents}
             onVenueClick={handleVenueClick}
-            visible={mapMode === "venues"}
+            showVenues={mapMode === "venues"}
+            events={filteredEvents}
+            eventGroups={eventLocationGroups}
+            onEventClick={handleEventClick}
+            showEvents={mapMode === "events"}
           />
         </>
       )}
