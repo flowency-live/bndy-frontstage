@@ -123,9 +123,21 @@ export default function FeaturedEventCard({
           )}
         </div>
         {hasTicketInfo && (
-          <span className="profile-ev-stub paid">
-            {priceValue || "Tickets"}
-          </span>
+          event.ticketUrl ? (
+            <a
+              href={event.ticketUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="profile-ev-stub paid"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {priceValue || "Tickets"}
+            </a>
+          ) : (
+            <span className="profile-ev-stub paid">
+              {priceValue || "Tickets"}
+            </span>
+          )
         )}
       </div>
     </div>

@@ -51,9 +51,21 @@ export function EventCard({ event, onClick, artistImageUrl }: EventCardProps) {
     <div className="lv-event-card" onClick={onClick}>
       {/* Ticket Stub - only show if we have ticket info */}
       {hasTicketInfo && (
-        <span className="lv-card-stub paid">
-          {priceDisplay || "Tickets"}
-        </span>
+        event.ticketUrl ? (
+          <a
+            href={event.ticketUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lv-card-stub paid"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {priceDisplay || "Tickets"}
+          </a>
+        ) : (
+          <span className="lv-card-stub paid">
+            {priceDisplay || "Tickets"}
+          </span>
+        )
       )}
 
       {/* Large Avatar */}

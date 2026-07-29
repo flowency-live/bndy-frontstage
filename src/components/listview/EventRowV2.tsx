@@ -124,7 +124,7 @@ export function EventRowV2({ event, index, onClick, artistImageUrl }: EventRowV2
       </div>
 
       {/* Ticket Stub - only shows if priceDisplay is set */}
-      <TicketStub price={priceDisplay} />
+      <TicketStub price={priceDisplay} ticketUrl={event.ticketUrl} />
     </motion.div>
   );
 }

@@ -149,12 +149,23 @@ export default function VAEventsList({
                 (priceValue && priceValue !== "Free" && priceValue !== "0")
               );
               if (!hasTicketInfo) return null;
-              return (
+              const ticketContent = (
                 <div className="flex items-center text-xs">
                   <Ticket className="w-3 h-3 mr-1 text-[var(--primary)]" />
                   <span>{priceValue || "Tickets"}</span>
                 </div>
               );
+              return event.ticketUrl ? (
+                <a
+                  href={event.ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:opacity-80"
+                >
+                  {ticketContent}
+                </a>
+              ) : ticketContent;
             })()}
           </div>
         </div>

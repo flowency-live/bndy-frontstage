@@ -5,13 +5,14 @@ import { motion } from "framer-motion";
 
 interface TicketStubProps {
   price: string | null;
+  ticketUrl?: string | null;
 }
 
-export function TicketStub({ price }: TicketStubProps) {
+export function TicketStub({ price, ticketUrl }: TicketStubProps) {
   // Don't render if no price info
   if (!price) return null;
 
-  return (
+  const stubContent = (
     <motion.span
       whileTap={{
         rotate: [0, -2, 2, 0],
@@ -22,4 +23,19 @@ export function TicketStub({ price }: TicketStubProps) {
       {price}
     </motion.span>
   );
+
+  if (ticketUrl) {
+    return (
+      <a
+        href={ticketUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {stubContent}
+      </a>
+    );
+  }
+
+  return stubContent;
 }
