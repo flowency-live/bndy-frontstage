@@ -110,7 +110,7 @@ export default function ArtistProfileClient({ initialData, error, artistId }: Ar
         </div>
       )}
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation - Events/Availability section tabs */}
       <TabNavigation
         artistId={initialData.id}
         hasVideos={false}
