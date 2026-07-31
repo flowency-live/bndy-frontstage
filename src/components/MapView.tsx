@@ -12,6 +12,9 @@ import { useViewToggle } from "@/context/ViewToggleContext";
 import { VenueModeIndicator } from "./shared/VenueModeIndicator";
 import { MapboxProvider } from "@/context/MapboxContext";
 import EventDisclaimer from "./shared/EventDisclaimer";
+import { BndyMap } from "./map";
+
+const MAP_ENGINE = process.env.NEXT_PUBLIC_MAP_ENGINE === "maplibre" ? "maplibre" : "mapbox";
 
 function MapViewInner() {
   const { mapMode } = useViewToggle();
@@ -51,12 +54,21 @@ function MapViewInner() {
 
   return (
     <div className="map-container relative h-[calc(100vh-116px)]">
-      <Map 
-        filterType={filterType} 
-        filterId={filterId}
-        entityExists={entityExists}
-        onClearSearch={handleClearSearch}
-      />
+      {MAP_ENGINE === "maplibre" ? (
+        <BndyMap
+          filterType={filterType}
+          filterId={filterId}
+          entityExists={entityExists}
+          onClearSearch={handleClearSearch}
+        />
+      ) : (
+        <Map
+          filterType={filterType}
+          filterId={filterId}
+          entityExists={entityExists}
+          onClearSearch={handleClearSearch}
+        />
+      )}
 
       {/* Search filter above the map - leave room for map controls on right */}
       <div className="absolute top-2 left-0 right-16 z-20 px-4 py-2 pointer-events-none">
@@ -75,7 +87,7 @@ function MapViewInner() {
       </div>
 
       {/* Date strip picker - centered above quick filter, only show in events mode */}
-      {mapMode === 'events' && (
+      {mapMode === 'events' && MAP_ENGINE !== 'maplibre' && (
         <MapDateStrip />
       )}
 

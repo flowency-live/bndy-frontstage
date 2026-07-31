@@ -60,6 +60,10 @@ export interface Artist {
   location?: string;
   displayColour?: string;  // Color for artist tiles when no profile image exists
   publishAvailability?: boolean;  // Whether to display availability tab publicly
+  availabilityMode?: 'selected_dates_only' | 'free_weekends';  // How availability is shown
+  contactMethod?: 'phone' | 'whatsapp';  // Preferred contact method for bookings
+  phoneNumber?: string | null;  // Contact phone number
+  whatsappNumber?: string | null;  // WhatsApp number for bookings
   // Legacy fields from backend
   facebookUrl?: string;
   instagramUrl?: string;

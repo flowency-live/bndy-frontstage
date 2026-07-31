@@ -147,6 +147,35 @@ export async function getArtistAvailability(
 }
 
 /**
+ * Update artist settings - Calls DynamoDB PATCH API
+ */
+export async function updateArtist(
+  artistId: string,
+  updates: Partial<Artist>
+): Promise<Artist> {
+  try {
+    const response = await fetch(`https://api.bndy.co.uk/api/artists/${artistId}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Failed to update artist: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating artist:', error);
+    throw error;
+  }
+}
+
+/**
  * Search for artists - Calls DynamoDB fuzzy search API
  */
 export async function searchArtists(searchTerm: string, location?: string): Promise<Artist[]> {

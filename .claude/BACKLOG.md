@@ -1,6 +1,6 @@
 # BNDY Product Backlog
 
-**Last Updated:** 2026-06-10
+**Last Updated:** 2026-06-15
 **Status:** Active
 
 ---
@@ -23,6 +23,7 @@
 |----|---------|----------|-------------|
 | BS-01 | Notification System | High | Push/email notifications for gig confirmations, member votes, etc. |
 | BS-03 | Find my artist/band | Medium | Search and request to join existing artists |
+| BS-07 | Artist acts/variants | Medium | Artists can have multiple "acts" (e.g. "The Vanz Roxx" full band, "The Vanz Acoustic Duo", "The Vanz Party Band"). **Current state:** No acts field exists - `actType` is for performance style (covers/originals), `artistType` is for solo/band/duo. Duplicates created as separate artist records. **Implementation:** Add `acts[]` array to Artist schema with `{id, name, description?, isDefault?}`. Event schema needs `actId` or `actName`. Backstage: acts management UI, act selector on event creation. Frontstage: display act name on gig cards. **Files:** `bndy-types/src/artist.ts:7-31`, `bndy-serverless-api/artists-lambda/handler.js`, `bndy-frontstage/src/lib/utils/artist-display.ts`. |
 
 ### Builder Platform (Multi-Persona)
 
@@ -50,6 +51,7 @@
 | DQ-01 | Venue deduplication | Medium | Multiple records for same venue (name variants) |
 | DQ-02 | Artist validation queue | Medium | Review `ai_created` and `needs_review` flagged artists |
 | DQ-03 | Event date cleanup | Low | Remove past events older than 1 year |
+| DQ-04 | Artist act duplicates | Medium | Merge duplicate artist records that are actually acts of the same artist (e.g. "The Vanz Band" + "Vanz Acoustic Duo" → single artist with two acts). Requires BS-07 first. Migration script needed to reassign events to primary artist with correct act. |
 
 ---
 

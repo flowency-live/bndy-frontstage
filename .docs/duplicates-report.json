@@ -1,0 +1,2070 @@
+{
+  "generatedAt": "2026-07-03T09:16:46.101Z",
+  "duplicateVenues": {
+    "total": 69,
+    "items": [
+      {
+        "name": "The Royal Oak",
+        "count": 6,
+        "venues": [
+          {
+            "id": "3920d000-65b2-47eb-870a-c8aeb0f4df11",
+            "city": "Abbots Langley",
+            "address": "Kitters Green, Abbots Langley WD5 0ET, United Kingdom"
+          },
+          {
+            "id": "95ea9321-74f1-4c3a-bf91-217179d2567e",
+            "city": "Nuneaton",
+            "address": "337 Arbury Rd, Nuneaton CV10 7NQ, United Kingdom"
+          },
+          {
+            "id": "WsBRSoZMrKTVxhbLQfVF",
+            "city": "Stoke-on-Trent",
+            "address": "132 Heathcote Rd, Miles Green Rd, Bignall End, Stoke-on-Trent ST7 8LL, United Kingdom"
+          },
+          {
+            "id": "37bb18fb-9a81-4451-ae04-230b6472fd13",
+            "city": "Alfreton",
+            "address": "Royal Oak, 20 High St, Tibshelf, Alfreton DE55 5NY, United Kingdom"
+          },
+          {
+            "id": "8c693461-a368-45a9-89e1-8659208fdf81",
+            "city": "Blackpool",
+            "address": "322 Lytham Rd, Blackpool FY1 6EY, United Kingdom"
+          },
+          {
+            "id": "8797ff7a-ddce-4f70-9a39-e67265ebaa80",
+            "city": "Eccleshall",
+            "address": "25 High St, Eccleshall, Stafford ST21 6BW, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Railway",
+        "count": 5,
+        "venues": [
+          {
+            "id": "1c942b25-a512-483d-b39c-07d826723f2a",
+            "city": "Whaley Bridge",
+            "address": "33-35 Market St, Whaley Bridge, High Peak SK23 7AA, United Kingdom"
+          },
+          {
+            "id": "7b8a2172-1112-403b-9f60-59f8f573bffb",
+            "city": "Belper",
+            "address": "25 King St, Belper DE56 1PW, United Kingdom"
+          },
+          {
+            "id": "1a4f86f8-3373-466b-a861-4c0acc743195",
+            "city": "Sale",
+            "address": "35 Chapel Rd, Sale M33 7FD, United Kingdom"
+          },
+          {
+            "id": "NwEtqexKQqLHyBcPVgJF",
+            "city": "Oldham",
+            "address": "11 Shaw Hall Bank Rd, Greenfield, Oldham OL3 7JZ, United Kingdom"
+          },
+          {
+            "id": "WVSAbjPEiVfP6zCIV69Q",
+            "city": "Stockport",
+            "address": "74 Wellington Rd N, Stockport SK4 1HF, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Royal British Legion",
+        "count": 5,
+        "venues": [
+          {
+            "id": "c5345529-e102-4818-8f7e-6d2a8e8cdb38",
+            "city": "Stratford upon Avon",
+            "address": "29 Bull St, Stratford-upon-Avon CV37 6DT"
+          },
+          {
+            "id": "d1c4030f-13c4-4df4-9f25-a74263ed536d",
+            "city": "Wickford",
+            "address": "73 Runwell Rd, Wickford SS11 7HL, United Kingdom"
+          },
+          {
+            "id": "gbHZGvRa7AwIpNUgyKlO",
+            "city": "Middlewich",
+            "address": "100 Lewin St, Middlewich CW10 9AS, United Kingdom"
+          },
+          {
+            "id": "f1da7bdf-f5e7-45ee-9ffe-c9b3a61a7c9d",
+            "city": "Rayleigh",
+            "address": "2 London Hill, Rayleigh SS6 7HP, United Kingdom"
+          },
+          {
+            "id": "74b050c5-22ce-47d0-9f89-1e14d4aa6612",
+            "city": "Derby",
+            "address": "30 Poppyfields Dr, Mickleover, Derby DE3 9GB, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Red Lion",
+        "count": 5,
+        "venues": [
+          {
+            "id": "6dc41794-48d4-4f69-ab9b-05376b9e9363",
+            "city": "Alfreton",
+            "address": "Red Lion, The, 77 Main Rd, Alfreton DE55 6BB, United Kingdom"
+          },
+          {
+            "id": "ea6faef1-501d-40e1-a0d3-eb560981962b",
+            "city": "Derby",
+            "address": "Main St, Hollington, Ashbourne DE6 3HA, United Kingdom"
+          },
+          {
+            "id": "7dd36d63-114c-4a5a-8e27-69f8d2c97244",
+            "city": "Whitley Bay",
+            "address": "1 Front St, Earsdon, Whitley Bay NE25 9JU, United Kingdom"
+          },
+          {
+            "id": "3e653671-f28d-4ccb-8164-be3848d0a797",
+            "city": "Derby",
+            "address": "3 Burton Rd, Repton, Derby DE65 6FL, United Kingdom"
+          },
+          {
+            "id": "26c85b35-d474-49f0-9245-6faece7f47f7",
+            "city": null,
+            "address": "7 Market Pl, Leek ST13 5HH, UK"
+          }
+        ]
+      },
+      {
+        "name": "The George & Dragon",
+        "count": 4,
+        "venues": [
+          {
+            "id": "80ff4a53-a03b-4bc6-9f5e-3ba2f8e93e91",
+            "city": "Belper",
+            "address": "117 Bridge St, Belper DE56 1BA, United Kingdom"
+          },
+          {
+            "id": "e717545c-d64a-41c9-ae3f-7dcaf0b783f9",
+            "city": "Derbyshire",
+            "address": "43 Market Pl, Market Place, Ashbourne DE6 1EU, United Kingdom"
+          },
+          {
+            "id": "108f8433-7c83-476f-ae3d-afeb04e6228f",
+            "city": "Norton",
+            "address": "109 High St, Norton, Stockton-on-Tees TS20 1AA, United Kingdom"
+          },
+          {
+            "id": "0698a59b-0586-411e-99d2-83a4cc27aadd",
+            "city": "Alfreton",
+            "address": "13 Cragg Ln, Newton, Alfreton DE55 5TN, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Royal Oak",
+        "count": 4,
+        "venues": [
+          {
+            "id": "7e63acba-6ffc-4c07-b4cc-aa826f7a860a",
+            "city": "Stevenage",
+            "address": "Royal Oak, 24 Walkern Rd, Stevenage SG1 3RA, United Kingdom"
+          },
+          {
+            "id": "d9fe0d38-69c0-45fe-98dd-ff1e0b849919",
+            "city": "Alfreton",
+            "address": "Royal Oak, 20 High St, Tibshelf, Alfreton DE55 5NY"
+          },
+          {
+            "id": "66c4795a-6c3b-484a-8304-6b672b06cb08",
+            "city": "Stoke-on-Trent",
+            "address": "Royal Oak, 42 High St, Harriseahead, Stoke-on-Trent ST7 4JT, UK"
+          },
+          {
+            "id": "0x3dT0oH6L1WfVHVgTAP",
+            "city": "Stoke-on-Trent",
+            "address": "Royal Oak, 1 Station Rd, Biddulph, Stoke-on-Trent ST8 6BL, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Crown",
+        "count": 4,
+        "venues": [
+          {
+            "id": "xyERKljjDSlCFaYKMWPH",
+            "city": "Stockport",
+            "address": "98 Heaton Moor Rd, Stockport SK4 4NZ, United Kingdom"
+          },
+          {
+            "id": "V7jfQCotLP4xJGuts36K",
+            "city": "Knutsford",
+            "address": "Crown Ln, Lower Peover, Knutsford WA16 9QB, United Kingdom"
+          },
+          {
+            "id": "9e6164f5-791b-4045-bdf8-59021646047c",
+            "city": "Market Drayton",
+            "address": "1 Stafford St, Market Drayton TF9 1HX, UK"
+          },
+          {
+            "id": "5d645a7d-3e88-4504-b5cd-085bc00362c9",
+            "city": "Whickham",
+            "address": "48-50 Front St, Whickham, Newcastle upon Tyne NE16 4DT, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The White Lion",
+        "count": 4,
+        "venues": [
+          {
+            "id": "dc7b6b7c-fc83-4c8a-a248-cf0742f775f5",
+            "city": "Kimberley",
+            "address": "74 Swingate, Kimberley, Nottingham NG16 2PQ, United Kingdom"
+          },
+          {
+            "id": "78647e71-a4ba-4110-b055-a34c0f72db5f",
+            "city": "Sheffield",
+            "address": "615 London Rd, Heeley, Sheffield S2 4HT, United Kingdom"
+          },
+          {
+            "id": "f11bdcd9-9cee-4a1d-a092-ebb4b39d935f",
+            "city": "Houghton le Spring",
+            "address": "Newbottle St, Houghton le Spring DH4 4AN"
+          },
+          {
+            "id": "buU3n8vQUSK9EnGHhMs2",
+            "city": "Macclesfield",
+            "address": "105 Mill St, Macclesfield SK11 6NN, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Red Lion",
+        "count": 4,
+        "venues": [
+          {
+            "id": "8a35b204-cd8d-4422-bf78-abaa6c9ab6f6",
+            "city": "Sheffield",
+            "address": "Red Lion, Penistone Rd, Grenoside, Sheffield S35 8QH, UK"
+          },
+          {
+            "id": "2cf4db4c-34c9-47c6-9029-714dc6d18881",
+            "city": "Swadlincote",
+            "address": "Red Lion, 28 Main St, Linton, Swadlincote DE12 6PZ"
+          },
+          {
+            "id": "b2f9304b-2e74-4795-a500-0770d63c32d3",
+            "city": "Cheddleton",
+            "address": "37 Cheadle Rd, Cheddleton, Leek ST13 7HN, United Kingdom"
+          },
+          {
+            "id": "76c82fde-dcc0-41e2-b5fb-beda165df7ed",
+            "city": "Rugeley",
+            "address": "170 Main Rd, Brereton, Rugeley WS15 1EB"
+          }
+        ]
+      },
+      {
+        "name": "The Globe",
+        "count": 3,
+        "venues": [
+          {
+            "id": "0f96c3f0-28f0-462d-9146-a87e890f0fdb",
+            "city": "Stoke-on-Trent",
+            "address": "53 High St, Tunstall, Stoke-on-Trent ST6 5TA, United Kingdom"
+          },
+          {
+            "id": "1e3d87a1-8752-411d-864a-e06c2b0b89c3",
+            "city": null,
+            "address": "100 Audlem Rd, Nantwich CW5 7EA, UK"
+          },
+          {
+            "id": "njgBYMOIyoHc6kihZYmF",
+            "city": "Glossop",
+            "address": "144 High St W, Glossop SK13 8HJ, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Prince of Wales",
+        "count": 3,
+        "venues": [
+          {
+            "id": "b3df15fe-ca88-4616-b5ad-efc427a20b82",
+            "city": "Spondon",
+            "address": "Prince of Wales, 7 Chapel St, Spondon, Derby DE21 7JP, UK"
+          },
+          {
+            "id": "37f0cf67-a178-48eb-984d-d2950db97c10",
+            "city": "Jarrow",
+            "address": "Calf Cl Ln, Jarrow NE32 4SX, United Kingdom"
+          },
+          {
+            "id": "GlvrhNfJDfyItAz8n6n8",
+            "city": "Glossop",
+            "address": "Milltown, Glossop SK13 8PX, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Cross Keys",
+        "count": 3,
+        "venues": [
+          {
+            "id": "4aa83fe8-00bc-4782-85f3-12775775e008",
+            "city": "Knaresborough",
+            "address": "17 Cheapside, Knaresborough HG5 8AX, United Kingdom"
+          },
+          {
+            "id": "ecffb8e5-6518-4f32-89ac-4a2500ba1dcf",
+            "city": "Belper",
+            "address": "35 Market Pl, Belper DE56 1FZ, United Kingdom"
+          },
+          {
+            "id": "425b3b99-4571-4a6f-891f-0942f28550c7",
+            "city": "Washington",
+            "address": "The Grn, Washington NE38 7AB, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Victoria",
+        "count": 3,
+        "venues": [
+          {
+            "id": "5a862a90-4c9d-4c35-bca7-2b071cc86282",
+            "city": "Preston",
+            "address": "54 Watkin Ln, Lostock Hall, Preston PR5 5RD, United Kingdom"
+          },
+          {
+            "id": "aNJvhjLrO6PhN5l7xLgL",
+            "city": "Newcastle",
+            "address": "62 King St, Newcastle-under-Lyme, Newcastle ST5 1HX, United Kingdom"
+          },
+          {
+            "id": "9c931dd1-759d-4083-ad12-29aa88c6245d",
+            "city": "Swindon",
+            "address": "88 Victoria Rd, Swindon SN1 3BD, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The New Inn",
+        "count": 3,
+        "venues": [
+          {
+            "id": "5dcf4e68-ecbc-47ad-8605-257b87f900c4",
+            "city": "Little Hulton",
+            "address": "The New Inn, 73-79 Manchester Rd E, Little Hulton, Manchester M38 9AF, United Kingdom"
+          },
+          {
+            "id": "5381113f-ffeb-456a-9de6-1cdcf0c91a22",
+            "city": "Chesterfield",
+            "address": "160 Queen Victoria Rd, New Tupton, Chesterfield S42 6DU, United Kingdom"
+          },
+          {
+            "id": "OhvEaWNaAfYPKbyD7ybv",
+            "city": "Newport",
+            "address": "2 Stafford Rd, Newport TF10 7LX, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Coach & Horses",
+        "count": 3,
+        "venues": [
+          {
+            "id": "df7371da-9366-4592-842f-60fe951e8307",
+            "city": "Newcastle",
+            "address": "Wideopen, Newcastle upon Tyne NE13 6LN, United Kingdom"
+          },
+          {
+            "id": "45b189eb-a737-4505-8d12-405992515322",
+            "city": "Markfield",
+            "address": "Leicester Rd, Markfield LE67 9RF, United Kingdom"
+          },
+          {
+            "id": "e333d743-3ad8-4780-927a-8527a0788d04",
+            "city": "Derby",
+            "address": "Victoria Rd, Draycott, Derby DE72 3PS, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The White Hart",
+        "count": 3,
+        "venues": [
+          {
+            "id": "6de33e51-114e-47b8-92d3-abccb4fe6bf6",
+            "city": "Stockport",
+            "address": "170 Hyde Rd, Woodley, Stockport SK6 1NP, UK"
+          },
+          {
+            "id": "c47hZqHsgRr7VTA5FB87",
+            "city": "Stoke-on-Trent",
+            "address": "41 Roundwell St, Tunstall, Stoke-on-Trent ST6 5JJ, United Kingdom"
+          },
+          {
+            "id": "966d5192-a136-4e0a-a24c-cfdb870fc454",
+            "city": "Whaley Bridge",
+            "address": "Market St, Whaley Bridge, High Peak SK23 7HN"
+          }
+        ]
+      },
+      {
+        "name": "Kings Head",
+        "count": 3,
+        "venues": [
+          {
+            "id": "bY73hTwRGQTg73wLqHOm",
+            "city": "Stoke-on-Trent",
+            "address": "101 Ford Green Rd, Stoke-on-Trent ST6 1NT, United Kingdom"
+          },
+          {
+            "id": "4703c54e-51dd-40dd-8b34-295dac0a88e1",
+            "city": "Huddersfield",
+            "address": "18 St George's Square, Huddersfield HD1 1JF, United Kingdom"
+          },
+          {
+            "id": "8cvj31xXxPFgUCfM8Hw2",
+            "city": "Lichfield",
+            "address": "21 Bird St, Lichfield WS13 6PW, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Travellers Rest",
+        "count": 3,
+        "venues": [
+          {
+            "id": "jD5u9ulKHxUyGLfuPOiw",
+            "city": "Stoke-on-Trent",
+            "address": "Travellers Rest, 1903 Leek Rd, Milton, Stoke-on-Trent ST2 7AQ, UK"
+          },
+          {
+            "id": "60618350-2f68-4a87-98b7-a1d1686e1c4f",
+            "city": "Stoke-on-Trent",
+            "address": "Werrington Rd, Bucknall, Stoke-on-Trent ST2 9AW, United Kingdom"
+          },
+          {
+            "id": "8fb1d111-a92f-48f1-9886-5722bebf12ff",
+            "city": "Stoke-on-Trent",
+            "address": "109 Kidsgrove Rd, Stoke-on-Trent ST6 5SJ, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Bulls Head",
+        "count": 3,
+        "venues": [
+          {
+            "id": "zAKdAy5wuzos30QC2cC9",
+            "city": "Sandbach",
+            "address": "Newcastle Rd, Sandbach CW11 2TY, United Kingdom"
+          },
+          {
+            "id": "581dea02-cd89-4b62-b2c9-5f175b0308c5",
+            "city": "Baildon",
+            "address": "6 Westgate, Baildon, Shipley BD17 5EJ, United Kingdom"
+          },
+          {
+            "id": "0e1b3bf3-314a-4350-bd90-8c857981af0d",
+            "city": "Bakewell",
+            "address": "Church St, Monyash, Bakewell DE45 1JH, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Barley Mow",
+        "count": 3,
+        "venues": [
+          {
+            "id": "3763445b-56b5-42ed-b888-1ea100ab4fb1",
+            "city": "Biddulph",
+            "address": "Church Rd, Braddocks Hey, Biddulph, Stoke-on-Trent ST8 6NE"
+          },
+          {
+            "id": "33852be8-b247-4829-8eae-4725fb2dc619",
+            "city": "Southsea",
+            "address": "Barley Mow, 39 Castle Rd, Southsea, Portsmouth, Southsea PO5 3DE"
+          },
+          {
+            "id": "39819d2e-7bf2-4a94-85ba-3f132ecffcee",
+            "city": "Bonsall",
+            "address": "The Dl, Bonsall, Matlock DE4 2AY, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Masons Arms",
+        "count": 2,
+        "venues": [
+          {
+            "id": "f578ac89-a8b8-4574-9c90-4a0545e5834c",
+            "city": null,
+            "address": "57 High St, New Mills, High Peak SK22 4BR, UK"
+          },
+          {
+            "id": "11a94543-0257-4c9e-8c40-c84ad74a83d7",
+            "city": "Knutton",
+            "address": "Masons Arms, High St, Knutton, Newcastle ST5 6DN, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Tavern",
+        "count": 2,
+        "venues": [
+          {
+            "id": "ef4a3356-0e1b-4508-a10c-864341034d37",
+            "city": "Hatton",
+            "address": "Station Rd, Hatton DE65 5EH, United Kingdom"
+          },
+          {
+            "id": "c40add37-04a1-43c2-acf9-2f425f145a65",
+            "city": "Derby",
+            "address": "123 Nottingham Rd, Derby DE1 3QR, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Princess Royal",
+        "count": 2,
+        "venues": [
+          {
+            "id": "n28ZWaM3zIV4kk2HmHdm",
+            "city": "Stoke-on-Trent",
+            "address": "Princess Royal, 34 Carlisle St, Dresden, Stoke-on-Trent ST3 4HA, United Kingdom"
+          },
+          {
+            "id": "11e7b8f8-a06f-4da1-8d6e-504a8636662c",
+            "city": "Sheffield",
+            "address": "43 Slinn St, Sheffield S10 1NW"
+          }
+        ]
+      },
+      {
+        "name": "Railway Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "82c6dd4e-1f41-4d56-80be-320913edfa66",
+            "city": "Greenfield",
+            "address": "11 Shaw Hall Bank Rd, Greenfield, Oldham OL3 7JZ"
+          },
+          {
+            "id": "7bad448d-33a9-4c47-bd2d-d7586ca8dd2e",
+            "city": "Belper",
+            "address": "120 Ashbourne Rd, Cowers Lane, Belper DE56 2LF, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Stone Cricket Club",
+        "count": 2,
+        "venues": [
+          {
+            "id": "020a9f02-b2c6-43cc-aab7-ada9d825b6f8",
+            "city": "Stone",
+            "address": "80 Lichfield Rd, Stone ST15 8JW, UK"
+          },
+          {
+            "id": "3ecb8752-e7f2-4cee-aefe-5280e873f17b",
+            "city": "Stone",
+            "address": "80 Lichfield Rd, Stone ST15 8JW, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Furlong",
+        "count": 2,
+        "venues": [
+          {
+            "id": "d186e8da-662f-401f-9b0f-cbae9b63401c",
+            "city": "Stoke-on-Trent",
+            "address": "Furlong Rd, Tunstall, Stoke-on-Trent ST6 5UP, UK"
+          },
+          {
+            "id": "39079840-13c7-4428-adff-8ee0d89bba0f",
+            "city": "Stoke-on-Trent",
+            "address": "Furlong Rd, Tunstall, Stoke-on-Trent ST6 5UP, UK"
+          }
+        ]
+      },
+      {
+        "name": "Bulls Head",
+        "count": 2,
+        "venues": [
+          {
+            "id": "Umi5WmYPVDwcYw81GIeC",
+            "city": "Oldham",
+            "address": "Bulls Head, 17 Brideoak St, Oldham OL4 2HB, UK"
+          },
+          {
+            "id": "f322f921-609b-418f-bab4-2e9f158c6f03",
+            "city": "Derbyshire",
+            "address": "Bulls Head, Holymoorside, Chesterfield S42 7EW, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Cross",
+        "count": 2,
+        "venues": [
+          {
+            "id": "fc4d1d03-2bb4-4693-b0dd-5971d1c8b6cf",
+            "city": "Royston",
+            "address": "The Cross, 7 Summer Ln, Royston, Barnsley S71 4SE, UK"
+          },
+          {
+            "id": "4b446492-c4fe-4f59-b0c5-a83d52e72a9e",
+            "city": "Barnsley",
+            "address": "The Cross, Silkstone, Barnsley, UK"
+          }
+        ]
+      },
+      {
+        "name": "New Finney Gardens",
+        "count": 2,
+        "venues": [
+          {
+            "id": "88edfa74-bbd3-4734-aea2-cd0a9343f05c",
+            "city": "Stoke-on-Trent",
+            "address": "Bucknall, Stoke-on-Trent ST1 6AJ"
+          },
+          {
+            "id": "e768ed6f-910c-43f9-843a-f7f08d0c5d3b",
+            "city": null,
+            "address": "Bucknall, Stoke-on-Trent ST1 6AJ, UK"
+          }
+        ]
+      },
+      {
+        "name": "Sitwell Arms",
+        "count": 2,
+        "venues": [
+          {
+            "id": "863e3575-936f-4f1d-b2a0-81ed0af92041",
+            "city": "Alfreton",
+            "address": "Main Rd, Morton, Alfreton DE55 6GS, United Kingdom"
+          },
+          {
+            "id": "b4b01846-8ee9-415f-9d03-ba1b4c6da775",
+            "city": "Rotherham",
+            "address": "Pleasley Rd, Whiston, Rotherham S60 4HQ, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Hop Pole",
+        "count": 2,
+        "venues": [
+          {
+            "id": "f15b1894-b102-421c-b52a-30023fee72e1",
+            "city": "Beeston",
+            "address": "2 High Rd, Chilwell, Beeston, Nottingham NG9 4AE, United Kingdom"
+          },
+          {
+            "id": "cdc1f740-50ec-4f30-ad92-045cbb2a22d7",
+            "city": null,
+            "address": "140-142 Wistaston Rd, Crewe CW2 7RQ, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Swan Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "6e5381d8-3124-4a9c-af79-16394fbfa0d8",
+            "city": "Hatfield Peverel",
+            "address": "The St, Hatfield Peverel, Chelmsford CM3 2DW, United Kingdom"
+          },
+          {
+            "id": "pq6Rk3XQeVXCU5nxcvd9",
+            "city": "Wilmslow",
+            "address": "2 Swan St, Wilmslow SK9 1HE, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Miners Arms",
+        "count": 2,
+        "venues": [
+          {
+            "id": "bdcccfe3-1719-4088-b26e-4915d1162dcf",
+            "city": "Alfreton",
+            "address": "Park St, Alfreton DE55 7JE, United Kingdom"
+          },
+          {
+            "id": "5efd7bd6-6ff8-4908-9f54-0b6bebde3768",
+            "city": "Madeley",
+            "address": "74 Prince St, Telford TF7 4DY, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Marquis of Granby",
+        "count": 2,
+        "venues": [
+          {
+            "id": "462bdcc3-a7d3-4eca-acf8-4eab394a40d7",
+            "city": "Stoke-on-Trent",
+            "address": "51 St Thomas Pl, Stoke-on-Trent ST4 7LA"
+          },
+          {
+            "id": "4e7717fc-8b3e-4424-a14a-933c4ef0e92f",
+            "city": "Keighley",
+            "address": "1 Hospital Rd, Riddlesden, Keighley BD20 5EP, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Old Post Office",
+        "count": 2,
+        "venues": [
+          {
+            "id": "2677bb30-51dc-440c-ac13-f6de5aa62704",
+            "city": "Shrewsbury",
+            "address": "1 Milk St, Shrewsbury SY1 1SZ, United Kingdom"
+          },
+          {
+            "id": "ocqMyrVLWZkxk5zEjJ2w",
+            "city": "Stoke-on-Trent",
+            "address": "The old post office, 12 Wedgwood St, Burslem, Stoke-on-Trent"
+          }
+        ]
+      },
+      {
+        "name": "The Black Swan",
+        "count": 2,
+        "venues": [
+          {
+            "id": "8e889abe-6150-4962-8144-e5c38b474f0c",
+            "city": "Edwinstowe",
+            "address": "High St, Edwinstowe, Mansfield NG21 9QR, United Kingdom"
+          },
+          {
+            "id": "pospIitlktbIWvz0e8dM",
+            "city": "Leek",
+            "address": "Black Swan, Sheep Market, Leek ST13 5HW, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Golden Lion",
+        "count": 2,
+        "venues": [
+          {
+            "id": "ed70db16-218c-422f-8d74-1232e7895f73",
+            "city": "Ashton in Makerfield",
+            "address": "40 Gerard St, Ashton-in-Makerfield, Wigan WN4 9AE, United Kingdom"
+          },
+          {
+            "id": "d3200659-f23b-4a19-a2c3-63e036b75c56",
+            "city": "Havant",
+            "address": "54 Bedhampton Rd, Bedhampton, Havant PO9 3EY, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Roebuck",
+        "count": 2,
+        "venues": [
+          {
+            "id": "3b12fdec-4644-40c4-a50c-608a377e1f88",
+            "city": "Keighley",
+            "address": "372 Skipton Rd, Utley, Keighley BD20 6EJ, United Kingdom"
+          },
+          {
+            "id": "QbvafQDh5wCl0UmDB1u6",
+            "city": "Leek",
+            "address": "18 Derby St, Leek ST13 5AB, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Green Man",
+        "count": 2,
+        "venues": [
+          {
+            "id": "PzB0cOLYGbHPA0qMgXQa",
+            "city": "Stafford",
+            "address": "Sandon Ln, Milwich, Stafford ST18 0EG, United Kingdom"
+          },
+          {
+            "id": "e4b5751a-c758-45f3-b72a-4f5b190499d4",
+            "city": "Derby",
+            "address": "1 Canal Bridge, Willington, Derby DE65 6BQ, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "New Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "07d06445-d8c5-46dd-b990-8bc3b1d54049",
+            "city": "Hadnall",
+            "address": "Shrewsbury Rd, Shrewsbury SY4 4AE, United Kingdom"
+          },
+          {
+            "id": "KkWVggB3hdH9zqXZDhXY",
+            "city": "Heanor",
+            "address": "107 Derby Rd, Heanor DE75 7QL, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Greyhound Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "490777a1-48fd-4d7b-a31b-a9b1fcb08d99",
+            "city": "Swadlincote",
+            "address": "149 Ashby Rd, Swadlincote DE11 7BU, United Kingdom"
+          },
+          {
+            "id": "17f8c2c2-a3e0-463a-bdb1-4d605f6f044e",
+            "city": "Belper",
+            "address": "17 Whitemoor Ln, Belper DE56 0HB, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Queens Head",
+        "count": 2,
+        "venues": [
+          {
+            "id": "u5Y5GTc4KDECOSy0amBH",
+            "city": "Stoke-on-Trent",
+            "address": "28 Market St, Kidsgrove, Stoke-on-Trent ST7 4AB, United Kingdom"
+          },
+          {
+            "id": "953d2479-5f17-4a1b-8ecf-69cf1170b0de",
+            "city": "Heanor",
+            "address": "1 Breach Rd, Marlpool, Heanor DE75 7NJ, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Farmers Arms",
+        "count": 2,
+        "venues": [
+          {
+            "id": "9d5c213f-5f37-4637-adb0-95e01bdb0df4",
+            "city": "Congleton",
+            "address": "Farmers Arms, 79 West St, Congleton CW12 1JY"
+          },
+          {
+            "id": "3d769e43-be50-4dba-a45b-b88aa6c9adf1",
+            "city": "Nantwich",
+            "address": "Marsh Ln, Nantwich CW5 8PN, UK"
+          }
+        ]
+      },
+      {
+        "name": "The George Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "d59eee37-a708-4236-915f-2cab5fb6530b",
+            "city": "Portsdown Hill",
+            "address": "Portsdown Hill Rd, Drayton, Portsmouth PO6 1BE, United Kingdom"
+          },
+          {
+            "id": "00712053-79a5-4226-a9fd-9b772c861355",
+            "city": "Hampshire",
+            "address": "The George Inn, Andover SP11 6BG"
+          }
+        ]
+      },
+      {
+        "name": "The White Swan",
+        "count": 2,
+        "venues": [
+          {
+            "id": "699697fc-b6ae-4474-aee2-d534a481a002",
+            "city": "Pemberton",
+            "address": "828 Ormskirk Rd, Pemberton, Wigan WN5 8AU, United Kingdom"
+          },
+          {
+            "id": "b9877a84-f92d-4894-9fd6-130e89f54f47",
+            "city": "Morpeth",
+            "address": "18 Newgate St, Morpeth NE61 1BA, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Albert",
+        "count": 2,
+        "venues": [
+          {
+            "id": "Vmth731WC1cPu9R4k4L8",
+            "city": "Stoke-on-Trent",
+            "address": "The albert, Boothen, Stoke-on-Trent ST4 5DA, United Kingdom"
+          },
+          {
+            "id": "4d12e4f8-84de-42c2-b79c-4972e2841f71",
+            "city": "Newcastle-under-Lyme",
+            "address": "78 Liverpool Rd, Newcastle-under-Lyme, Stoke-on-Trent ST5 2AX, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Cock Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "LQtPjX86BPVxftmBEoTS",
+            "city": "Stafford",
+            "address": "Newport Rd, Woodseaves, Stafford ST20 0NP, United Kingdom"
+          },
+          {
+            "id": "ty1aOZiIsEDpFBBPM6m5",
+            "city": "Leek",
+            "address": "29 Derby St, Leek ST13 6HN, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Top Pub - Brown Edge",
+        "count": 2,
+        "venues": [
+          {
+            "id": "20eced38-130a-4378-9e45-c8218a3216e7",
+            "city": "Stoke-on-Trent",
+            "address": "Hill Top, Brown Edge, Stoke-on-Trent ST6 8TX, UK"
+          },
+          {
+            "id": "afcf412e-536f-45fc-9e75-cbb30f716fed",
+            "city": "Stoke-on-Trent",
+            "address": "Hill Top, Brown Edge, Stoke-on-Trent ST6 8TX, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Underground",
+        "count": 2,
+        "venues": [
+          {
+            "id": "dcee1656-6571-4bba-b74d-a96022f361f6",
+            "city": "Bradford",
+            "address": "9 Duke St, Bradford BD1 3QR, United Kingdom"
+          },
+          {
+            "id": "vzWTYVGllln9h8WQCaNf",
+            "city": "Stoke-on-Trent",
+            "address": "The Underground, 2 Morley St, Hanley, Stoke-on-Trent ST1 4LS, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Keys",
+        "count": 2,
+        "venues": [
+          {
+            "id": "602c26b3-6180-40a0-a8ea-f4a2cc11fc03",
+            "city": "Stratford upon Avon",
+            "address": "6 Ely St, Stratford-upon-Avon CV37 6LW"
+          },
+          {
+            "id": "2f525f61-7357-4697-b581-9ba1289a24c6",
+            "city": "Ripley",
+            "address": "29 Grosvenor Rd, Ripley DE5 3JE, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Glebe",
+        "count": 2,
+        "venues": [
+          {
+            "id": "6a301f4a-4935-49e3-abda-326b69ecaccb",
+            "city": "Unknown",
+            "address": "36a Glebe Pl, London SW3 5JP, United Kingdom"
+          },
+          {
+            "id": "ano2IUt9HBfjJjm0mBke",
+            "city": "Stoke-on-Trent",
+            "address": "35 Glebe St, Stoke-on-Trent ST4 1HG, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Ship Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "e0c8fa3f-41c2-4f93-aa39-f3154911183a",
+            "city": "Acaster Malbis",
+            "address": "Hauling Ln, Acaster Malbis, York YO23 2UH, United Kingdom"
+          },
+          {
+            "id": "fb5e1765-84e6-4056-be72-09256c21b816",
+            "city": "Whitby",
+            "address": "Marine Parade, Whitby YO21 3PR"
+          }
+        ]
+      },
+      {
+        "name": "The Crown Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "f54d4cbe-e6f1-4bb0-9c9d-03c6c9d78470",
+            "city": null,
+            "address": "154 Heaton Ln, Stockport SK4 1AR, UK"
+          },
+          {
+            "id": "3AynHVShOedKil6wTesE",
+            "city": "Stockport",
+            "address": "96 Stockport Rd E, Bredbury, Stockport SK6 2AA, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Jug",
+        "count": 2,
+        "venues": [
+          {
+            "id": "6916dbc7-2d8f-40f8-8080-c5098727a5f6",
+            "city": "Newcastle",
+            "address": "41 Bridge St, Newcastle-under-Lyme, Newcastle ST5 2RY, UK"
+          },
+          {
+            "id": "KFWFxYJASE6UQJQKV0eN",
+            "city": "Newcastle",
+            "address": "41 Bridge St, Newcastle-under-Lyme, Newcastle ST5 2RY, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Fox & Hounds",
+        "count": 2,
+        "venues": [
+          {
+            "id": "c65d2a95-9288-408a-9643-9e41e378388e",
+            "city": "Waterlooville",
+            "address": "Fox Hounds, 160 Stakes Hill Rd, Waterlooville PO7 7BS, United Kingdom"
+          },
+          {
+            "id": "da1c3d9e-a9d8-41d8-a279-3f8d9ec8fac6",
+            "city": "Leyburn",
+            "address": "Back Nook, West Burton, Leyburn DL8 4JY, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Nags Head",
+        "count": 2,
+        "venues": [
+          {
+            "id": "f0e01a30-e46d-4f4a-82b4-df4e0aeb2456",
+            "city": "Belper",
+            "address": "5 High Pavement, Belper DE56 1GD, United Kingdom"
+          },
+          {
+            "id": "3AtaBBDfT4xp3pTYiIUZ",
+            "city": "Macclesfield",
+            "address": "60 Waters Green, Macclesfield SK11 6JT, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Highwayman",
+        "count": 2,
+        "venues": [
+          {
+            "id": "b8e7ea21-ca32-4655-be01-f0d4711a13f6",
+            "city": "Chester-le-Street",
+            "address": "Whickham Hwy, Gateshead NE11 9QJ, United Kingdom"
+          },
+          {
+            "id": "d59ea974-f780-4894-97af-a115b15cdc62",
+            "city": null,
+            "address": "Lambton, Washington NE38 0QA, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Station",
+        "count": 2,
+        "venues": [
+          {
+            "id": "22044021-9985-4ab3-a1dd-7193a815f121",
+            "city": "Cannock",
+            "address": "Unit 53, Cannock Shopping Centre, Market Hall St, Cannock WS11 4AS, United Kingdom"
+          },
+          {
+            "id": "590f9061-f1e7-4dfc-a7dd-39534e3c75b6",
+            "city": "Killingworth",
+            "address": "Killingworth, Newcastle upon Tyne NE12 6RA, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Commercial",
+        "count": 2,
+        "venues": [
+          {
+            "id": "guAUvAYaULiDEMj9hYhT",
+            "city": "Rochdale",
+            "address": "868 Manchester Rd, Castleton, Rochdale OL11 2SP, United Kingdom"
+          },
+          {
+            "id": "8efd1867-7c1b-4a3c-8648-f1958019e308",
+            "city": "Burnley",
+            "address": "448 Briercliffe Rd, Burnley BB10 2HA, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Boat Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "6IfTnQife4HCNNhrwkcB",
+            "city": "Stafford",
+            "address": "Cannock Rd, Penkridge, Stafford ST19 5DT, United Kingdom"
+          },
+          {
+            "id": "7307c63f-0a1f-491b-b0c7-12a2c863f54e",
+            "city": "Matlock",
+            "address": "The Boat Inn, Scarthin, Cromford, Matlock DE4 3QF, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Ashcombury Music Festival",
+        "count": 2,
+        "venues": [
+          {
+            "id": "b2301bcf-a321-4a93-a2ea-bc14960a42f5",
+            "city": "Stoke-on-Trent",
+            "address": "A64, Staxton, Scarborough YO12 4HS"
+          },
+          {
+            "id": "abcc9d87-221c-4630-9b72-3409c077ebfd",
+            "city": "Stoke-on-Trent",
+            "address": "St John's Community Hall, Auction Cl, Market Place, Ashbourne DE6 1EA"
+          }
+        ]
+      },
+      {
+        "name": "Railway Hotel",
+        "count": 2,
+        "venues": [
+          {
+            "id": "c0619b75-4c76-49cb-980a-f25c0dd8e557",
+            "city": "Chorley",
+            "address": "20 Steeley Ln, Chorley PR6 0RD, United Kingdom"
+          },
+          {
+            "id": "c809511e-9a51-483c-91e1-c1dc23d947d2",
+            "city": "Radcliffe",
+            "address": "Railway Hotel, Ainsworth Rd, Radcliffe, Manchester M26 4HN, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Sun Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "2902e955-4ccb-49f3-b816-4f7054dd6953",
+            "city": "Stafford",
+            "address": "7 Lichfield Rd, Stafford ST17 4JX, United Kingdom"
+          },
+          {
+            "id": "e844cb5b-d12e-4226-8381-5994ed445ffe",
+            "city": "Llangollen",
+            "address": "49 Regent St, Llangollen LL20 8HN, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Bowling Green",
+        "count": 2,
+        "venues": [
+          {
+            "id": "8rwZ9VhoUZpOIoReKrPD",
+            "city": "Bolton",
+            "address": "175 Lee Ln, Horwich, Bolton BL6 7JD, United Kingdom"
+          },
+          {
+            "id": "2f267d08-9a64-4c86-a9d3-b95e3d68f173",
+            "city": null,
+            "address": "164 London Rd, Northwich CW9 8AA, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "White Swan",
+        "count": 2,
+        "venues": [
+          {
+            "id": "94a81619-af6d-45d3-a7c5-2c2a57945e25",
+            "city": "Burntwood",
+            "address": "2 Cannock Rd, Burntwood Island, Burntwood WS7 0BJ, United Kingdom"
+          },
+          {
+            "id": "83e3016b-d8cb-4f71-8d6d-6baec1601808",
+            "city": "Ovingham",
+            "address": "Main Rd, Ovingham, Prudhoe NE42 6AG, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "George & Dragon",
+        "count": 2,
+        "venues": [
+          {
+            "id": "KcIpCx2WnBLupNsteSpL",
+            "city": "Stone",
+            "address": "Meaford, Stone ST15 0PX, United Kingdom"
+          },
+          {
+            "id": "03dfca15-2583-4b54-ab8b-83233b19a49a",
+            "city": null,
+            "address": "63 Delamere St, Winsford CW7 2LX, UK"
+          }
+        ]
+      },
+      {
+        "name": "The Devonshire Arms",
+        "count": 2,
+        "venues": [
+          {
+            "id": "be0b8284-4e40-4e6a-945f-ec6ef89e5a09",
+            "city": "Alfreton",
+            "address": "241 Somercotes Hill, Somercotes, Alfreton DE55 4HX, United Kingdom"
+          },
+          {
+            "id": "73e0d31d-5ea1-422a-b12d-edb129e8d0d8",
+            "city": "Derbyshire",
+            "address": "Bakewell DE45 1SR, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "Swan Inn",
+        "count": 2,
+        "venues": [
+          {
+            "id": "JbcIXQqMpvU0edJlSbig",
+            "city": "Oth Hill",
+            "address": "Swan Bank, Talke, Oth Hill ST7 1PS, United Kingdom"
+          },
+          {
+            "id": "74BjwiHSxHDxdUghRVB9",
+            "city": "Stone",
+            "address": "18 Stafford St, Stone ST15 8QW, United Kingdom"
+          }
+        ]
+      },
+      {
+        "name": "The Boulevard",
+        "count": 2,
+        "venues": [
+          {
+            "id": "e6ee8af1-39b2-46b2-a079-504be8d11867",
+            "city": "Wigan",
+            "address": "19 Wallgate, Wigan WN1 1LD, United Kingdom"
+          },
+          {
+            "id": "a7c157f1-b969-4cd1-8598-fa58f5fecbb4",
+            "city": "Newcastle",
+            "address": "6 Lymelight Boulevard, Newcastle-under-Lyme, Newcastle ST5 1PT, UK"
+          }
+        ]
+      }
+    ]
+  },
+  "duplicateArtists": {
+    "total": 96,
+    "items": [
+      {
+        "name": "Star Breaker",
+        "count": 4,
+        "ids": [
+          "5a264791-9d39-49da-b1ca-50823429a1ea",
+          "77ae1e93-3f37-4c40-a5f8-b3f83d9e63b9",
+          "244d6bba-ddaa-48d9-ab39-5d056bc2dc98",
+          "33a54e7c-0165-4a60-9ab1-7d95bee4eb53"
+        ]
+      },
+      {
+        "name": "The Zone",
+        "count": 4,
+        "ids": [
+          "822370d4-94fc-44eb-bb7e-cfcc23291df1",
+          "017c397e-0eb0-4cb1-88d2-d75501c3bc30",
+          "d2317957-7c70-454e-89d7-f6e900a4b928",
+          "2b832e36-e476-4e53-b80f-8f69a4b8ff1a"
+        ]
+      },
+      {
+        "name": "Helen Spooner",
+        "count": 3,
+        "ids": [
+          "a14a292d-f41b-4963-9a9f-24835cfbf84f",
+          "c8edb2fc-267c-4695-a721-8a6a167f6b56",
+          "3cfacff3-3657-448f-8def-31e4bfbcab29"
+        ]
+      },
+      {
+        "name": "Roy Pimmy",
+        "count": 3,
+        "ids": [
+          "b5c6f545-86be-4881-befe-f35babd136da",
+          "08dbb952-9d2d-4d0f-9e59-a890655d7f9f",
+          "692f14d8-fd4b-4e29-b4a0-427605c3e379"
+        ]
+      },
+      {
+        "name": "A Band Called Malice",
+        "count": 3,
+        "ids": [
+          "eefcdb78-1493-4d6c-b307-47f95ac9d3f2",
+          "f392a07b-ec31-4560-9a73-ee32f6617676",
+          "4092017b-c3ce-4886-be63-9e77a0855c99"
+        ]
+      },
+      {
+        "name": "Danny Brab",
+        "count": 3,
+        "ids": [
+          "FIT600aoQ5lpNSejGctN",
+          "f6c766d5-1986-4135-9729-6db57efaea86",
+          "211e504a-0830-4518-812b-b2b855b7bf01"
+        ]
+      },
+      {
+        "name": "Tubesnake",
+        "count": 3,
+        "ids": [
+          "c3ddaa45-8b08-4885-bf8b-71ae6f55cda3",
+          "f698cb43-9573-4293-b105-982f7a141dcc",
+          "f8aa9069-a885-4934-b2bf-b35728444422"
+        ]
+      },
+      {
+        "name": "Adam Ede",
+        "count": 3,
+        "ids": [
+          "75d6088a-0b4e-4957-b126-e5375f7aa8d8",
+          "074864c6-be80-4657-a28f-eadff08fcdc3",
+          "db21c0b9-f2ff-4cbc-8f4a-21f2841f602e"
+        ]
+      },
+      {
+        "name": "Rob Black",
+        "count": 3,
+        "ids": [
+          "fd67b15a-8c49-40a2-a95b-7fac745d7b42",
+          "c363854f-1afd-40fd-88be-a2a5211bca14",
+          "133373b6-87ee-4be0-8dbb-17b62907db6c"
+        ]
+      },
+      {
+        "name": "Ben Staz",
+        "count": 3,
+        "ids": [
+          "06a00b90-7cc2-488c-889e-1a2bb32c42c3",
+          "73ec8afa-d41f-4f95-9dc9-e8073809fffa",
+          "4ccdac26-eda5-4cf0-8522-b8e69bf65e42"
+        ]
+      },
+      {
+        "name": "Trilogy",
+        "count": 3,
+        "ids": [
+          "0a62b677-e848-4321-90e7-480d13383f18",
+          "5fa2d40b-035c-4859-b86f-6c5a23618b5e",
+          "3433dec8-eb2b-4d34-9bc8-123482becd61"
+        ]
+      },
+      {
+        "name": "Mike & The Floorfillers",
+        "count": 3,
+        "ids": [
+          "108f13ba-95e0-48f7-95b9-c5bae5aaf8ad",
+          "15d6142f-b0ba-4ff1-9151-6a23d9f83342",
+          "3eg14QpWlx1NTnLoJ5y1"
+        ]
+      },
+      {
+        "name": "Damien Lodrick",
+        "count": 3,
+        "ids": [
+          "3071ea1c-3dc3-4a6d-91be-a41d44ef3ede",
+          "b9e731fb-f2dd-4c09-a8e0-39885c129ad6",
+          "1f455af7-129f-4829-ab70-e6cc896ae09e"
+        ]
+      },
+      {
+        "name": "Blind 90",
+        "count": 2,
+        "ids": [
+          "fd1aea7d-5840-40a6-a920-6e1c25dc1445",
+          "c80548ed-246a-4de1-82e3-519ce130ae25"
+        ]
+      },
+      {
+        "name": "Lemonade",
+        "count": 2,
+        "ids": [
+          "918fccf9-7706-4933-93a2-f73e9edd833b",
+          "8d25337a-daf2-4d84-9539-950d6be95571"
+        ]
+      },
+      {
+        "name": "Blindsided",
+        "count": 2,
+        "ids": [
+          "14261eba-efa0-4e51-bdcf-26538663ca68",
+          "83f7c3dc-b644-4c26-8599-f1dbe3bcd963"
+        ]
+      },
+      {
+        "name": "Peppermint Soul Band",
+        "count": 2,
+        "ids": [
+          "078cc0fa-ce00-4f84-b26d-d56d0162e952",
+          "4dd461ea-9d1d-4de1-85b8-02a62222c468"
+        ]
+      },
+      {
+        "name": "Iwan Mitchell",
+        "count": 2,
+        "ids": [
+          "9e5f0717-d8d3-47b7-8881-c6fa0b392ecc",
+          "fbd7ec9d-412a-4a74-9c33-3c60a92a2871"
+        ]
+      },
+      {
+        "name": "Pierrepoint",
+        "count": 2,
+        "ids": [
+          "17b51101-4158-4f7a-964d-fcda63656bb6",
+          "5d80a090-729b-48ef-a274-2dddc441fc5e"
+        ]
+      },
+      {
+        "name": "Louise Sevier",
+        "count": 2,
+        "ids": [
+          "77b0c192-a9bc-46a1-80d2-7250762cb854",
+          "3563e8bd-b341-4866-8d9a-708b0ca137ad"
+        ]
+      },
+      {
+        "name": "Kimmi",
+        "count": 2,
+        "ids": [
+          "188d3246-daff-411e-a0d4-e4e68279c04c",
+          "6f71e4d8-10c5-4bba-8120-6a009ef454dd"
+        ]
+      },
+      {
+        "name": "Sean Sings Elvis",
+        "count": 2,
+        "ids": [
+          "94f3e358-81e1-477b-98cb-e90b9e303803",
+          "268c62a6-d4a5-45c0-a284-5f5eca5ca483"
+        ]
+      },
+      {
+        "name": "The Ant Hill Mob",
+        "count": 2,
+        "ids": [
+          "8bc112d4-d464-4602-8df7-c1ec7dd6f8d1",
+          "63d3f78c-f1f3-45f8-8b96-ad2308f65038"
+        ]
+      },
+      {
+        "name": "No band on tonight",
+        "count": 2,
+        "ids": [
+          "d80e3e0a-78ca-4b8c-ae55-4b270b85930a",
+          "253a1c38-4228-4959-9771-8ccd061ed237"
+        ]
+      },
+      {
+        "name": "Mike Wooldridge",
+        "count": 2,
+        "ids": [
+          "46c31f48-2ed2-4f11-b2f2-a1daf660f961",
+          "9f0b9a3f-b721-4876-b5c6-7a84c757d8a0"
+        ]
+      },
+      {
+        "name": "Scarlett Fever",
+        "count": 2,
+        "ids": [
+          "c9badf89-6acb-464f-a25b-0ea4fabe3a4a",
+          "88b5ddff-2a7e-498f-abda-da2ea08a85ec"
+        ]
+      },
+      {
+        "name": "Cry Havoc",
+        "count": 2,
+        "ids": [
+          "7i2ulUrTigX6y4E4Rb5N",
+          "f6d49ae6-821a-4302-aa7a-bb83ecedab77"
+        ]
+      },
+      {
+        "name": "Faye Carpenter",
+        "count": 2,
+        "ids": [
+          "4be5ea9a-f3f2-478d-98ea-4dd7e9b4900b",
+          "015261a6-6adf-4fc1-bedb-a05feeb6286c"
+        ]
+      },
+      {
+        "name": "C&C Duo",
+        "count": 2,
+        "ids": [
+          "956d324b-8618-41b1-80d0-51259abb4617",
+          "GfYlNk9J3qqdWrxSnRPW"
+        ]
+      },
+      {
+        "name": "Dog In A Box",
+        "count": 2,
+        "ids": [
+          "0b85886f-9974-4491-afab-8e8294183686",
+          "e9e0b454-daf9-4044-a0d1-5f508eb87abf"
+        ]
+      },
+      {
+        "name": "Six Nowt",
+        "count": 2,
+        "ids": [
+          "64d5e261-c075-4926-b0c7-9307284cad3b",
+          "8b4f58d6-c21f-423e-a841-a8a9f4fd0953"
+        ]
+      },
+      {
+        "name": "Mugshot",
+        "count": 2,
+        "ids": [
+          "49a44817-cd55-4f94-8290-c4feff794739",
+          "02823656-b4ea-44a6-b624-0737b8deddd4"
+        ]
+      },
+      {
+        "name": "The Kilns",
+        "count": 2,
+        "ids": [
+          "f439453f-c4d9-47e5-a187-27299dc82ff7",
+          "76b890e7-7df1-42ec-aec1-c823fc109749"
+        ]
+      },
+      {
+        "name": "Pretty Weeds",
+        "count": 2,
+        "ids": [
+          "66913800-b073-4209-bc93-1e07d25cc83a",
+          "f403789c-f79d-4725-92bc-04f048005032"
+        ]
+      },
+      {
+        "name": "Rosie",
+        "count": 2,
+        "ids": [
+          "9ba90439-c5ab-48d1-881f-51a384636311",
+          "731b02da-7b76-4246-b761-68efe8f38245"
+        ]
+      },
+      {
+        "name": "Cadency",
+        "count": 2,
+        "ids": [
+          "f5bb8d4f-4b3e-4fc6-8310-f08a6712f9b7",
+          "8e56529a-b164-4571-b44f-da02c52129a1"
+        ]
+      },
+      {
+        "name": "Finley Simpson",
+        "count": 2,
+        "ids": [
+          "532ae312-6dcf-4bdd-9f41-9c3ae2f339ce",
+          "4c5c482f-f99a-43d5-8847-082d96222e0d"
+        ]
+      },
+      {
+        "name": "Brydon Trio",
+        "count": 2,
+        "ids": [
+          "9638e2c5-74e7-44c8-8fe3-3f54117a8ca5",
+          "d9c3a4cc-edf5-4cd6-9b3d-375ce2cdba82"
+        ]
+      },
+      {
+        "name": "We 3 Colonels",
+        "count": 2,
+        "ids": [
+          "5484ad43-86d2-4ab4-9db2-646734914981",
+          "55b75666-318b-406d-9b57-c93a7b65d133"
+        ]
+      },
+      {
+        "name": "Sticky Fingers",
+        "count": 2,
+        "ids": [
+          "017c863f-4790-4e00-9fbe-c55f8aea06f9",
+          "efd30563-be14-481e-a964-00e32324cff5"
+        ]
+      },
+      {
+        "name": "Savage Budgiez",
+        "count": 2,
+        "ids": [
+          "y8AmPUaIfXJmA6roG7S3",
+          "e0d39574-92d7-40ba-9510-fe940e6a0809"
+        ]
+      },
+      {
+        "name": "Music Justified",
+        "count": 2,
+        "ids": [
+          "f36bfe6b-f072-4883-98db-3191bed2bd70",
+          "JUHqGvjcPBCmKjqNfk0X"
+        ]
+      },
+      {
+        "name": "Sarah Thomas",
+        "count": 2,
+        "ids": [
+          "e53ecf44-2035-4147-a665-377520118b55",
+          "7bf20de5-ef9e-4010-ad9e-b8b6ecf3509b"
+        ]
+      },
+      {
+        "name": "Audio Jacks",
+        "count": 2,
+        "ids": [
+          "e3bf9e2c-8532-4b04-9081-a0e3a7d35a3a",
+          "9b0a93fe-5fcf-4063-af2a-50b3a116cb35"
+        ]
+      },
+      {
+        "name": "Rock Machine",
+        "count": 2,
+        "ids": [
+          "57d82136-f425-4067-807d-df98ec07b00a",
+          "d0b995f8-120b-4f7b-9e7b-81cc060cefba"
+        ]
+      },
+      {
+        "name": "Kloe Louise",
+        "count": 2,
+        "ids": [
+          "5a4c9407-8b2e-4f49-9a49-c3728d7f13a6",
+          "H3OZRJMOjRpZUrotAKke"
+        ]
+      },
+      {
+        "name": "The Flames",
+        "count": 2,
+        "ids": [
+          "b840d474-c280-4cc7-9c3a-a5c57f32d6c7",
+          "d2eb61f4-c0b9-4100-9180-fe79739967eb"
+        ]
+      },
+      {
+        "name": "Tommy P & the Crew",
+        "count": 2,
+        "ids": [
+          "50a4267f-0eb6-449e-baac-034c53eed664",
+          "18ceb7cb-b4ac-425b-8997-fcb10864e4aa"
+        ]
+      },
+      {
+        "name": "The Rubber Souls",
+        "count": 2,
+        "ids": [
+          "101dc4f7-0f1e-4655-898c-5f7f17e2a24a",
+          "75257a29-b472-47e4-868d-c28b3306073e"
+        ]
+      },
+      {
+        "name": "The Magnetic Jellyfish",
+        "count": 2,
+        "ids": [
+          "zQdNXfDcXxeUCDIDmjXy",
+          "0fdc1941-07a4-461c-917b-5ea4c323683a"
+        ]
+      },
+      {
+        "name": "Foxed Up",
+        "count": 2,
+        "ids": [
+          "CrQ4HTLAdayQszNaFJp4",
+          "4f3a256a-4cd1-4a44-90c1-d7b815572218"
+        ]
+      },
+      {
+        "name": "Jo Safina",
+        "count": 2,
+        "ids": [
+          "a0d275d8-f7c6-482f-aba2-037efe0d076f",
+          "8fb8ef15-5b2a-45c3-add3-2e738ff649b6"
+        ]
+      },
+      {
+        "name": "Trilogy Rock Band",
+        "count": 2,
+        "ids": [
+          "XJ2gV4N1qIe6vK2R562Q",
+          "a6b1adbc-8201-4934-a1ba-55f8ce5dfb69"
+        ]
+      },
+      {
+        "name": "Undercover Band",
+        "count": 2,
+        "ids": [
+          "a25b2473-1190-4132-a94b-6c5cd1390377",
+          "8573e476-7041-48c4-975b-e8651e01f9f0"
+        ]
+      },
+      {
+        "name": "Martin Stephenson & The Daintees",
+        "count": 2,
+        "ids": [
+          "52dcf502-854a-42c3-b03d-0369a6a62612",
+          "2ca47718-c756-4a41-b59d-76b6c08b33ef"
+        ]
+      },
+      {
+        "name": "Elvis",
+        "count": 2,
+        "ids": [
+          "ba59013f-5d6f-471c-87d5-961bfc524b03",
+          "4c4a49b7-c3d2-4f26-8d10-2cc751af2629"
+        ]
+      },
+      {
+        "name": "7 Sins",
+        "count": 2,
+        "ids": [
+          "f1903d5b-c5ea-49bc-bca3-d57c641b4d83",
+          "737cc16a-86bc-49ca-8600-aebf7ec6fea1"
+        ]
+      },
+      {
+        "name": "Four Letter Word",
+        "count": 2,
+        "ids": [
+          "aadc0f12-b30b-48fd-a712-4e725bfca388",
+          "12930034-7a32-48f4-98fd-aa12b1d6e42c"
+        ]
+      },
+      {
+        "name": "Eva Iglestas",
+        "count": 2,
+        "ids": [
+          "6a34efb0-a210-4dde-a71a-15deb7960dbc",
+          "3f9ef775-1f10-4373-a83f-9da11f7298f5"
+        ]
+      },
+      {
+        "name": "The Warehouse Blues Band",
+        "count": 2,
+        "ids": [
+          "LqNhG6aHxJGB6FP6lLrR",
+          "eb48dacd-3835-4a3c-ba7d-429c034b96d8"
+        ]
+      },
+      {
+        "name": "The White Line",
+        "count": 2,
+        "ids": [
+          "8d58852e-9eb7-4631-be8f-e889c738faf0",
+          "706316a5-d004-4bb3-9408-0a7486c6f366"
+        ]
+      },
+      {
+        "name": "Trilo3y",
+        "count": 2,
+        "ids": [
+          "qnPMZq8vTzPATVmFEjld",
+          "3d90ae0d-cd27-4194-8461-bde794301c66"
+        ]
+      },
+      {
+        "name": "The Ace Tones",
+        "count": 2,
+        "ids": [
+          "dc590e43-8acc-4f7d-8a17-35b95dd1ace7",
+          "34f44578-a923-4ad9-8c14-f4576413d2b4"
+        ]
+      },
+      {
+        "name": "Russell Keith",
+        "count": 2,
+        "ids": [
+          "ca732c7c-aa1e-45ea-9708-ed54999b2633",
+          "2eb6e531-6b8e-485a-becf-169b033098e1"
+        ]
+      },
+      {
+        "name": "Trevor John Band",
+        "count": 2,
+        "ids": [
+          "289454b3-e299-4086-aed2-0a0126ee3260",
+          "4ab3f3e2-a9ad-4a10-83e7-ebc4290c4ac6"
+        ]
+      },
+      {
+        "name": "The Chase",
+        "count": 2,
+        "ids": [
+          "97445235-27f8-4950-8b68-67ad690d203a",
+          "09c5d121-9cfc-482f-88b0-4c26132dda45"
+        ]
+      },
+      {
+        "name": "The Panthers",
+        "count": 2,
+        "ids": [
+          "af594384-c1aa-4c48-984e-69f2a0285c5e",
+          "95b4a3fa-b85f-4f51-a611-e15432352f56"
+        ]
+      },
+      {
+        "name": "Rebel Radio",
+        "count": 2,
+        "ids": [
+          "cdedd99b-befe-47f7-9ab9-a0db6ac7e349",
+          "3569edaa-a963-4e64-a50b-e6c4b30f6b09"
+        ]
+      },
+      {
+        "name": "Blind Tiger",
+        "count": 2,
+        "ids": [
+          "LEaHULH3pxKD5Kk2g32C",
+          "1f856469-71d7-4596-934b-442bfb2ba27b"
+        ]
+      },
+      {
+        "name": "Jack Woodward",
+        "count": 2,
+        "ids": [
+          "ba8eea2a-468b-4f7e-ab36-21289bf7019a",
+          "KCFSMGtbJfL4TWx5sLk0"
+        ]
+      },
+      {
+        "name": "Harrison Rhys",
+        "count": 2,
+        "ids": [
+          "e262e794-5b20-4ce1-8caf-f1db66dbf795",
+          "a4f67375-4a3b-48e6-88ed-c14ef304edf9"
+        ]
+      },
+      {
+        "name": "Joe McShane",
+        "count": 2,
+        "ids": [
+          "69b46066-a469-40a1-ac49-2a466bd0853d",
+          "647f14af-f6c0-4fbc-8194-d4b2d197162e"
+        ]
+      },
+      {
+        "name": "James Michael",
+        "count": 2,
+        "ids": [
+          "911b0b5c-326f-4e6a-bc2b-5146a3ee7241",
+          "59392f4f-bb11-47ee-aef5-83b2e264e70c"
+        ]
+      },
+      {
+        "name": "6ix Ways 2 Sunday",
+        "count": 2,
+        "ids": [
+          "d7cdc094-35f9-4123-8721-a2bb65deba2a",
+          "cbb0b4ba-eb3d-4e92-bc08-73c40f2c8c8f"
+        ]
+      },
+      {
+        "name": "Mutton Dressed As Glam",
+        "count": 2,
+        "ids": [
+          "a3b7b769-c1cf-48f4-a49f-9a0ab8e5cb89",
+          "261bd9ad-e139-425a-b41f-effd940884a5"
+        ]
+      },
+      {
+        "name": "Blue Ridge Band",
+        "count": 2,
+        "ids": [
+          "e4d07ecb-8fd2-4b9c-9647-57fe59b8766c",
+          "70e29c87-6afc-487d-a4a5-6d30356466cd"
+        ]
+      },
+      {
+        "name": "Mick Taylor",
+        "count": 2,
+        "ids": [
+          "14431eb2-3199-46f5-943a-9e3ea2380d25",
+          "67a1e340-66ae-4b46-97a3-26b73b4ea7b1"
+        ]
+      },
+      {
+        "name": "Crosshair",
+        "count": 2,
+        "ids": [
+          "80260793-71c1-4fb7-a25a-fb2a153f29d4",
+          "5M2OlxTbMCg7LdmCqLDx"
+        ]
+      },
+      {
+        "name": "Blistered Molly",
+        "count": 2,
+        "ids": [
+          "5fb8a877-5487-4a28-8a12-f3da1830caf1",
+          "2e69a57e-4088-496c-8ce2-ab1bf67fc05d"
+        ]
+      },
+      {
+        "name": "Guitar Monkey",
+        "count": 2,
+        "ids": [
+          "7FDaYyPgFt7HzALIhTdk",
+          "8096982c-73e6-4c37-9a9e-7d292fcea646"
+        ]
+      },
+      {
+        "name": "Kindred Spirit",
+        "count": 2,
+        "ids": [
+          "3a9a7a3f-4627-4cb1-be77-3593d6a6a41c",
+          "eced1c7a-cddc-4674-b932-ea106be4945d"
+        ]
+      },
+      {
+        "name": "And Then Some",
+        "count": 2,
+        "ids": [
+          "a38416d1-9c95-45d6-9f4f-e1c68f75cb7b",
+          "7d78f309-8b46-4fdd-8e0f-c5e0e1435726"
+        ]
+      },
+      {
+        "name": "Gone Country Live Duo",
+        "count": 2,
+        "ids": [
+          "167b14d5-90c0-4d9c-ba3a-286e44142d54",
+          "0ba94103-ce20-4bed-9f5c-f87636d5f55e"
+        ]
+      },
+      {
+        "name": "Perfect Storm",
+        "count": 2,
+        "ids": [
+          "8b725158-7b81-4a18-9751-380024e1e088",
+          "e974f863-aade-4b06-8210-4747a9e26425"
+        ]
+      },
+      {
+        "name": "Catalyst",
+        "count": 2,
+        "ids": [
+          "606e259f-1399-4866-aa8d-06fddc4d6067",
+          "9e3abec3-2ed9-4a37-9e84-91a429fb7a27"
+        ]
+      },
+      {
+        "name": "Craig Foster",
+        "count": 2,
+        "ids": [
+          "536687db-6f5d-4c2b-ac7e-6d70f5a69041",
+          "e8879a0b-5a0a-4dd4-bd0e-d9206476df9f"
+        ]
+      },
+      {
+        "name": "The Vanz",
+        "count": 2,
+        "ids": [
+          "7a16a3b6-ed61-4d0f-8191-1d89fdcf440f",
+          "c7f3a6df-3793-4ffd-a962-897095f2af34"
+        ]
+      },
+      {
+        "name": "Giroscope",
+        "count": 2,
+        "ids": [
+          "907c52ac-1b53-4b79-95ad-3cf9cc740f95",
+          "6272aef0-3792-46a4-bd96-ae63d279ea4e"
+        ]
+      },
+      {
+        "name": "Lisa Marie",
+        "count": 2,
+        "ids": [
+          "ab7f336e-4ccd-4508-b5c2-5f4ad5a453bc",
+          "36270a7b-0703-4874-af0f-c63f575dde89"
+        ]
+      },
+      {
+        "name": "Hybrids",
+        "count": 2,
+        "ids": [
+          "1c2bff07-453a-45c0-ba73-0e133b9f92ae",
+          "bcccacd8-a089-42c4-8436-f015e4a9ba4d"
+        ]
+      },
+      {
+        "name": "Jason Keady",
+        "count": 2,
+        "ids": [
+          "4398e652-2cf1-4ca9-8304-a016139311d2",
+          "3643838e-faf9-4647-93b3-5e302b38e2c7"
+        ]
+      },
+      {
+        "name": "Notorious 80s",
+        "count": 2,
+        "ids": [
+          "e233cc4c-2fb1-4faf-8f97-01bc59db7d79",
+          "a25b974c-8192-4418-a792-d7736c23645a"
+        ]
+      },
+      {
+        "name": "Adam Austin",
+        "count": 2,
+        "ids": [
+          "77bcaeab-4b94-4338-878d-ea788362985b",
+          "42417674-6c05-48d0-91d1-3bc8e8a05630"
+        ]
+      },
+      {
+        "name": "Dreadnought",
+        "count": 2,
+        "ids": [
+          "ad417bfd-e6a0-4e5c-95e2-835ce031e73e",
+          "eaecc12b-cf3c-4572-a17e-da2b4fe8f2d2"
+        ]
+      },
+      {
+        "name": "The Marvilles",
+        "count": 2,
+        "ids": [
+          "b526b214-d80c-4175-89fa-37e5e47b0182",
+          "21658180-c890-4d65-ad96-a4deac18ddcb"
+        ]
+      },
+      {
+        "name": "Baxtrax",
+        "count": 2,
+        "ids": [
+          "1896acb0-b4be-434f-b002-08d366c0b68e",
+          "c07326a9-4f78-49c7-9369-0d0bc404d0ee"
+        ]
+      }
+    ]
+  }
+}

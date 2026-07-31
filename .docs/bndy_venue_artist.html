@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bndy — venue & artist pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1530;
+    --bg-2: #111a3a;
+    --surface: #18234a;
+    --surface-2: #1f2c5a;
+    --rule: rgba(255,255,255,0.07);
+    --rule-strong: rgba(255,255,255,0.16);
+    --text:   #f0eee6;
+    --text-2: #c8cee0;
+    --text-3: #95a0bd;
+    --orange: #ff7a3d;
+    --orange-soft: rgba(255,122,61,0.14);
+    --cyan: #3ce0e0;
+    --cyan-soft: rgba(60,224,224,0.12);
+    --green: #86eb8e;
+    --green-soft: rgba(134,235,142,0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'tnum';
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3CfeColorMatrix values='0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+  }
+
+  /* ─── EXISTING HEADER (left untouched, just here for context) ─── */
+  .hero {
+    position: relative;
+    height: 220px;
+    background:
+      radial-gradient(ellipse at 50% 60%, rgba(255,165,0,0.35) 0%, transparent 55%),
+      linear-gradient(135deg, #1a3a52 0%, #2a4858 50%, #1a3a52 100%);
+    overflow: hidden;
+    z-index: 2;
+  }
+  .hero-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Anton', sans-serif;
+    font-size: 130px;
+    color: #ffb84a;
+    text-transform: lowercase;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    text-shadow:
+      0 0 8px #ffa500,
+      0 0 20px #ff8c00,
+      0 0 40px rgba(255,107,0,0.6);
+    opacity: 0.9;
+  }
+  .hero-nav-l, .hero-nav-r {
+    position: absolute;
+    top: 16px;
+    z-index: 5;
+    display: flex;
+    gap: 8px;
+  }
+  .hero-nav-l { left: 16px; }
+  .hero-nav-r { right: 16px; }
+  .hero-btn {
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font: 600 13px 'Archivo', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .hero-btn:hover { background: rgba(0,0,0,0.75); }
+  .hero-btn svg { width: 14px; height: 14px; }
+  .hero-btn.icon { padding: 0; width: 36px; height: 36px; justify-content: center; border-radius: 50%; }
+  .hero-btn.icon svg { width: 16px; height: 16px; }
+
+  .wrap {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    position: relative;
+    z-index: 3;
+  }
+
+  /* ═════════════════════════════════════════════════════════
+     PAGE INTRO — avatar overlapping into hero
+     ═════════════════════════════════════════════════════════ */
+  .intro {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: end;
+    margin-top: -56px;
+    margin-bottom: 0;
+    padding-bottom: 22px;
+  }
+  .avatar {
+    width: 128px;
+    height: 128px;
+    border-radius: 18px;
+    border: 4px solid var(--bg);
+    background: var(--surface);
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  }
+  .avatar svg { display: block; width: 100%; height: 100%; }
+
+  .ident { padding-bottom: 4px; min-width: 0; }
+  .ident-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: var(--orange-soft);
+    border: 1px solid rgba(255,122,61,0.3);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .ident-kind.venue {
+    color: var(--cyan);
+    background: var(--cyan-soft);
+    border-color: rgba(60,224,224,0.3);
+  }
+  .ident-name {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 0.9;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 10px;
+    word-break: break-word;
+  }
+  .ident-name.venue { color: var(--cyan); }
+  .ident-name.artist { color: var(--orange); }
+  .ident-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+  .ident-meta .pin { color: var(--orange); }
+  .ident-meta .dot { color: var(--text-3); }
+
+  .ident-actions {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+  .act-btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--rule-strong);
+    padding: 9px 14px;
+    border-radius: 4px;
+    font: 600 13px 'Archivo', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.12s;
+  }
+  .act-btn:hover { background: var(--surface-2); border-color: var(--orange); }
+  .act-btn svg { width: 14px; height: 14px; }
+  .act-btn.primary {
+    background: var(--orange);
+    color: var(--bg);
+    border-color: var(--orange);
+  }
+  .act-btn.primary:hover { background: var(--text); border-color: var(--text); }
+  .act-btn.icon { padding: 0; width: 38px; height: 38px; justify-content: center; }
+  .act-btn.icon svg { width: 15px; height: 15px; }
+
+  /* ─── Tagline / Description row ─── */
+  .blurb {
+    padding: 14px 0 18px;
+    font-size: 14.5px;
+    color: var(--text-2);
+    line-height: 1.55;
+    max-width: 720px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 22px;
+  }
+  .blurb.italic { font-style: italic; }
+
+  /* ─── GENRES (artist) ─── */
+  .genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: -8px 0 18px;
+  }
+  .genre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: var(--orange-soft);
+    border: 1px solid rgba(255,122,61,0.3);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  /* ─── VENUE INFO STRIP ─── */
+  .vinfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    margin-bottom: 22px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-2);
+  }
+  .vinfo-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--rule);
+    min-width: 0;
+  }
+  .vinfo-cell:last-child { border-right: none; }
+  .vinfo-cell .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .vinfo-cell .value {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .vinfo-cell .value.cyan { color: var(--cyan); }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 14px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    padding: 12px 4px;
+    margin-right: 24px;
+    font-family: 'Anton', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.12s;
+  }
+  .tab .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--orange);
+  }
+  .tab.active .count { color: var(--orange); }
+  .tab:not(.active):hover { color: var(--text-2); }
+
+  /* ─── VIEW TOGGLE (artist page) ─── */
+  .view-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .view-toggle-segments {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg {
+    background: transparent;
+    border: none;
+    padding: 7px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+  .seg svg { width: 12px; height: 12px; }
+  .seg.active {
+    background: var(--orange);
+    color: var(--bg);
+  }
+  .seg:not(.active):hover { color: var(--text); }
+  .view-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .view-meta .acc { color: var(--cyan); }
+
+  /* ═════════════════════════════════════════════════════════
+     UPCOMING SECTION
+     ═════════════════════════════════════════════════════════ */
+  .section { margin-bottom: 32px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0 8px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 2px solid var(--text);
+  }
+  .section-name {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .section-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-left: auto;
+  }
+  .section-toggle { color: var(--text-2); }
+  .section-toggle svg { width: 14px; height: 14px; }
+
+  /* ─── DATE GROUP ─── */
+  .date-group {
+    display: grid;
+    grid-template-columns: 124px 1fr;
+    gap: 22px;
+    padding: 14px 0 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .date-label {
+    border-right: 1px dashed var(--rule-strong);
+    padding-right: 14px;
+    padding-top: 8px;
+  }
+  .date-day {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px;
+    line-height: 0.95;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .date-dow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    margin-top: 6px;
+  }
+  .date-when {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: var(--orange-soft);
+    padding: 3px 7px;
+    border-radius: 2px;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .date-events { display: flex; flex-direction: column; min-width: 0; }
+
+  /* ─── EVENT ROW ─── */
+  .ev {
+    position: relative;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto 70px;
+    column-gap: 16px;
+    align-items: center;
+    padding: 10px 12px 10px 10px;
+    border-top: 1px dashed var(--rule);
+    border-radius: 3px;
+    min-height: 44px;
+    transition: background 0.12s;
+  }
+  .ev:first-child { border-top: none; }
+  .ev::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--orange);
+    border-radius: 2px;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.15s ease;
+  }
+  .ev:hover { background: var(--surface); }
+  .ev:hover::before { transform: scaleY(1); }
+  .ev:hover .ev-stub { background: var(--green); color: #0a1124; }
+  .ev:hover .ev-stub.paid { background: var(--orange); color: #0a1124; }
+  .ev:hover .ev-stub::before, .ev:hover .ev-stub::after { background: var(--surface); }
+
+  .ev-link {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+  .ev-time {
+    grid-column: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* On venue page: counterpart = artist (orange).
+     On artist page: counterpart = venue (cyan). */
+  .ev-headline {
+    grid-column: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ev-counterpart {
+    flex: 0 1 auto;
+    font-family: 'Anton', sans-serif;
+    font-size: 19px;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-decoration: none;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+  }
+  .ev-counterpart.artist { color: var(--orange); }
+  .ev-counterpart.venue { color: var(--cyan); font-weight: 600; font-size: 16px; }
+  .ev-counterpart:hover {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+
+  .ev-meta {
+    grid-column: 3;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text-2);
+    white-space: nowrap;
+  }
+  .ev-town { color: var(--text-2); max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .ev-dot { color: var(--text-3); }
+  .ev-dist {
+    color: var(--text-3);
+    font-weight: 500;
+    min-width: 46px;
+    text-align: right;
+  }
+  .ev-dist.near { color: var(--cyan); }
+  .ev-dist.very-near { color: var(--cyan); font-weight: 600; }
+
+  .ev-stub {
+    grid-column: 4;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 70px;
+    font-family: 'Anton', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1px dashed var(--green);
+    position: relative;
+    transition: all 0.12s;
+    z-index: 1;
+  }
+  .ev-stub::before, .ev-stub::after {
+    content: '';
+    position: absolute;
+    width: 7px; height: 7px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .ev-stub::before { left: -3.5px; }
+  .ev-stub::after { right: -3.5px; }
+  .ev-stub.paid {
+    background: var(--orange-soft);
+    color: var(--orange);
+    border-color: var(--orange);
+  }
+
+  /* ─── PAST events folded ─── */
+  .ev.past .ev-counterpart,
+  .ev.past .ev-time,
+  .ev.past .ev-meta { opacity: 0.5; }
+  .ev.past .ev-stub {
+    background: transparent;
+    color: var(--text-3);
+    border-color: var(--rule-strong);
+    border-style: solid;
+  }
+
+  /* ─── PAGE DIVIDER ─── */
+  .page-divider {
+    margin: 80px 0 48px;
+    text-align: center;
+    border-top: 2px dashed var(--rule-strong);
+    padding-top: 48px;
+  }
+  .page-divider span {
+    background: var(--bg);
+    padding: 0 20px;
+    margin-top: -60px;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 720px) {
+    .wrap { padding: 0 16px 80px; }
+    .intro {
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      margin-top: -48px;
+    }
+    .avatar { width: 88px; height: 88px; border-width: 3px; }
+    .ident-name { font-size: 32px; }
+    .ident-actions {
+      grid-column: 1 / -1;
+      padding-top: 8px;
+      flex-wrap: wrap;
+    }
+    .vinfo {
+      grid-template-columns: 1fr;
+    }
+    .vinfo-cell {
+      border-right: none;
+      border-bottom: 1px solid var(--rule);
+    }
+    .vinfo-cell:last-child { border-bottom: none; }
+
+    .date-group { grid-template-columns: 1fr; gap: 0; padding: 0 0 8px; }
+    .date-label {
+      border-right: none;
+      border-bottom: 1px solid var(--rule);
+      padding: 12px 4px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--bg);
+      backdrop-filter: blur(8px);
+      margin: 0 -4px;
+    }
+    .date-day { font-size: 17px; }
+    .date-dow { font-size: 10px; margin: 0; }
+    .date-when { margin: 0; font-size: 9.5px; padding: 2px 6px; }
+
+    .ev {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      column-gap: 12px;
+      row-gap: 4px;
+      padding: 12px 6px 12px 10px;
+      min-height: 56px;
+    }
+    .ev::before { top: 12px; bottom: 12px; }
+    .ev-time { grid-column: 1; grid-row: 1; align-self: center; }
+    .ev-headline { grid-column: 2; grid-row: 1; }
+    .ev-counterpart.artist, .ev-counterpart.venue { font-size: 16px; }
+    .ev-meta { grid-column: 2; grid-row: 2; font-size: 11.5px; gap: 8px; }
+    .ev-stub { grid-column: 3; grid-row: 1 / span 2; align-self: center; width: 64px; height: 30px; font-size: 14px; }
+
+    .tabs { overflow-x: auto; }
+    .tab { flex-shrink: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════════════════════════════════════════
+     VENUE PAGE
+     ═════════════════════════════════════════════════════════ -->
+
+<div class="hero">
+  <div class="hero-nav-l">
+    <button class="hero-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Map
+    </button>
+  </div>
+  <div class="hero-logo">bndy</div>
+  <div class="hero-nav-r">
+    <button class="hero-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-3 3-6 7-6s7 3 7 6"/></svg>
+      Artists
+    </button>
+    <button class="hero-btn icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- intro -->
+  <div class="intro">
+    <div class="avatar">
+      <!-- venue avatar : pub-style icon on tinted bg -->
+      <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="va" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3ce0e0" stop-opacity="0.3"/>
+            <stop offset="1" stop-color="#1a3a52"/>
+          </linearGradient>
+        </defs>
+        <rect width="128" height="128" fill="url(#va)"/>
+        <g fill="none" stroke="#3ce0e0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(34 30)">
+          <rect x="0" y="14" width="60" height="44" rx="1"/>
+          <path d="M 0 14 L 30 0 L 60 14"/>
+          <rect x="10" y="28" width="14" height="14"/>
+          <rect x="36" y="28" width="14" height="14"/>
+          <rect x="22" y="46" width="16" height="12"/>
+        </g>
+        <text x="64" y="108" text-anchor="middle" fill="#3ce0e0" font-family="Anton" font-size="11" letter-spacing="2">ARDEN ARMS</text>
+      </svg>
+    </div>
+
+    <div class="ident">
+      <span class="ident-kind venue">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/></svg>
+        Venue
+      </span>
+      <h1 class="ident-name venue">Arden Arms</h1>
+      <div class="ident-meta">
+        <span class="pin">📍</span>
+        <span>23 Millgate, Stockport SK1 2LX</span>
+        <span class="dot">·</span>
+        <span>2 mi away</span>
+      </div>
+    </div>
+
+    <div class="ident-actions">
+      <button class="act-btn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Directions
+      </button>
+      <button class="act-btn icon" aria-label="Share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+      </button>
+      <button class="act-btn icon" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- venue info strip : the right way to show address -->
+  <div class="vinfo">
+    <div class="vinfo-cell">
+      <div class="label">Type</div>
+      <div class="value">Pub · Live Music</div>
+    </div>
+    <div class="vinfo-cell">
+      <div class="label">Capacity</div>
+      <div class="value">~ 80</div>
+    </div>
+    <div class="vinfo-cell">
+      <div class="label">Avg. Door</div>
+      <div class="value cyan">£ree Entry</div>
+    </div>
+  </div>
+
+  <!-- tabs (forward-compatible: Photos, Reviews can be added later) -->
+  <div class="tabs">
+    <button class="tab active">Events <span class="count">3</span></button>
+    <button class="tab">About</button>
+    <button class="tab">Photos</button>
+  </div>
+
+  <!-- UPCOMING -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-name">Upcoming</h2>
+      <span class="section-count">2 Events</span>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day">Sat 02</div>
+        <div class="date-dow">May 2026</div>
+        <div class="date-when">Tomorrow</div>
+      </div>
+      <div class="date-events">
+        <div class="ev">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">21:00</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart artist">Blind Tiger</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Rock · Pop · Indie</span>
+          </div>
+          <span class="ev-stub">£ree</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day">Fri 22</div>
+        <div class="date-dow">Aug 2026</div>
+        <div class="date-when">In 16 weeks</div>
+      </div>
+      <div class="date-events">
+        <div class="ev">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">21:00</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart artist">Just Jane</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Acoustic · Folk</span>
+          </div>
+          <span class="ev-stub">£ree</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAST -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-name" style="color: var(--text-3);">Past</h2>
+      <span class="section-count">1 Event</span>
+      <span class="section-toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day" style="color: var(--text-3);">Fri 11</div>
+        <div class="date-dow">Apr 2026</div>
+      </div>
+      <div class="date-events">
+        <div class="ev past">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">21:00</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart artist">Millhouse</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Rock · Britpop</span>
+          </div>
+          <span class="ev-stub">£ree</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     ARTIST PAGE
+     ═════════════════════════════════════════════════════════ -->
+
+<div class="page-divider">
+  <span>↓ Artist Page ↓</span>
+</div>
+
+<div class="hero">
+  <div class="hero-nav-l">
+    <button class="hero-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Map
+    </button>
+  </div>
+  <div class="hero-logo">bndy</div>
+  <div class="hero-nav-r">
+    <button class="hero-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-3 3-6 7-6s7 3 7 6"/></svg>
+      Artists
+    </button>
+    <button class="hero-btn icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- intro -->
+  <div class="intro">
+    <div class="avatar">
+      <!-- band tiger logo -->
+      <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="64" cy="64" r="64" fill="#ffd23a"/>
+        <g transform="translate(64 64)">
+          <!-- ears -->
+          <path d="M -28 -22 Q -32 -36 -22 -38 Q -16 -32 -16 -22 Z" fill="#ff8a3d" stroke="#0c1530" stroke-width="2"/>
+          <path d="M 28 -22 Q 32 -36 22 -38 Q 16 -32 16 -22 Z" fill="#ff8a3d" stroke="#0c1530" stroke-width="2"/>
+          <!-- face -->
+          <ellipse cx="0" cy="0" rx="34" ry="32" fill="#ffa64a" stroke="#0c1530" stroke-width="2.5"/>
+          <!-- stripes -->
+          <path d="M -28 -10 Q -24 -16 -20 -10" fill="none" stroke="#0c1530" stroke-width="2.5"/>
+          <path d="M 28 -10 Q 24 -16 20 -10" fill="none" stroke="#0c1530" stroke-width="2.5"/>
+          <path d="M -22 12 Q -18 6 -14 10" fill="none" stroke="#0c1530" stroke-width="2.5"/>
+          <path d="M 22 12 Q 18 6 14 10" fill="none" stroke="#0c1530" stroke-width="2.5"/>
+          <!-- sunglasses -->
+          <rect x="-26" y="-8" width="22" height="14" rx="3" fill="#0c1530"/>
+          <rect x="4" y="-8" width="22" height="14" rx="3" fill="#0c1530"/>
+          <rect x="-4" y="-3" width="8" height="3" fill="#0c1530"/>
+          <!-- nose -->
+          <path d="M -4 8 Q 0 12 4 8 Q 0 14 -4 8 Z" fill="#0c1530"/>
+          <!-- mouth -->
+          <path d="M 0 14 L 0 18" stroke="#0c1530" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 0 18 Q -4 22 -8 20" fill="none" stroke="#0c1530" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 0 18 Q 4 22 8 20" fill="none" stroke="#0c1530" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="ident">
+      <span class="ident-kind">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Band
+      </span>
+      <h1 class="ident-name artist">Blind Tiger</h1>
+      <div class="ident-meta">
+        <span class="pin">📍</span>
+        <span>Sale, UK</span>
+        <span class="dot">·</span>
+        <span>Active since 2019</span>
+        <span class="dot">·</span>
+        <span>5 piece</span>
+      </div>
+    </div>
+
+    <div class="ident-actions">
+      <button class="act-btn primary">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>
+        Follow
+      </button>
+      <button class="act-btn icon" aria-label="Listen on Spotify">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+      </button>
+      <button class="act-btn icon" aria-label="Share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <p class="blurb italic">"Classic Rock, Pop &amp; Indie covers — done loud, done right."</p>
+
+  <div class="genres">
+    <span class="genre">Rock</span>
+    <span class="genre">Pop</span>
+    <span class="genre">Indie</span>
+    <span class="genre">Britpop</span>
+    <span class="genre">Motown</span>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab active">Events <span class="count">3</span></button>
+    <button class="tab">Listen</button>
+    <button class="tab">About</button>
+  </div>
+
+  <!-- view toggle -->
+  <div class="view-toggle">
+    <div class="view-toggle-segments">
+      <button class="seg active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="1"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        By Date
+      </button>
+      <button class="seg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        By Distance
+      </button>
+      <button class="seg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3l-6 3v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg>
+        Map
+      </button>
+    </div>
+    <span class="view-meta">From <span class="acc">Stockport</span></span>
+  </div>
+
+  <!-- UPCOMING -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-name">Upcoming</h2>
+      <span class="section-count">3 Events</span>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day">Sat 02</div>
+        <div class="date-dow">May 2026</div>
+        <div class="date-when">Tomorrow</div>
+      </div>
+      <div class="date-events">
+        <div class="ev">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">21:00</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart venue">Arden Arms</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Stockport</span>
+            <span class="ev-dot">·</span>
+            <span class="ev-dist very-near">2 mi</span>
+          </div>
+          <span class="ev-stub">£ree</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day">Sat 09</div>
+        <div class="date-dow">May 2026</div>
+        <div class="date-when">In 8 days</div>
+      </div>
+      <div class="date-events">
+        <div class="ev">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">21:00</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart venue">Brickhouse Tavern</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Saint Helens</span>
+            <span class="ev-dot">·</span>
+            <span class="ev-dist">30 mi</span>
+          </div>
+          <span class="ev-stub">£ree</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">
+        <div class="date-day">Sat 16</div>
+        <div class="date-dow">May 2026</div>
+        <div class="date-when">In 15 days</div>
+      </div>
+      <div class="date-events">
+        <div class="ev">
+          <a href="#" class="ev-link" aria-label="View event"></a>
+          <span class="ev-time">20:30</span>
+          <div class="ev-headline">
+            <a href="#" class="ev-counterpart venue">The Greyhound</a>
+          </div>
+          <div class="ev-meta">
+            <span class="ev-town">Manchester</span>
+            <span class="ev-dot">·</span>
+            <span class="ev-dist very-near">8 mi</span>
+          </div>
+          <span class="ev-stub paid">£12</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAST -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-name" style="color: var(--text-3);">Past</h2>
+      <span class="section-count">12 Events</span>
+      <span class="section-toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

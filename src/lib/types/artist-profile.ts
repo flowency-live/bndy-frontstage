@@ -12,6 +12,10 @@ export interface ArtistProfileData {
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls'
   upcomingEvents: Event[];
   publishAvailability?: boolean; // Whether to display availability tab publicly
+  availabilityMode?: 'selected_dates_only' | 'free_weekends';  // How availability is shown
+  contactMethod?: 'phone' | 'whatsapp';  // Preferred contact method for bookings
+  phoneNumber?: string | null;  // Contact phone number
+  whatsappNumber?: string | null;  // WhatsApp number for bookings
 }
 
 export interface ArtistProfileMetaTags {

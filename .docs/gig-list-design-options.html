@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bndy Gig List - Design Options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Archivo', system-ui, sans-serif;
+      background: #0a0a12;
+      color: #f0eee6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 32px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #ff8a4d;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #95a0bd;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .option {
+      background: #0c1530;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .option-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #111a3a 0%, #0c1530 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .option-header h2 {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .option-header p {
+      font-size: 13px;
+      color: #95a0bd;
+      line-height: 1.4;
+    }
+
+    .option-body {
+      padding: 0;
+    }
+
+    .date-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #111a3a;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .date-day {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 18px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .date-month {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #95a0bd;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .date-relative {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #3ce0e0;
+      background: rgba(60,224,224,0.12);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    /* ═══════════════════════════════════════
+       CURRENT DESIGN (for comparison)
+       ═══════════════════════════════════════ */
+    .current-row {
+      display: grid;
+      grid-template-columns: 44px auto 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .current-row:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .current-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 16px;
+      color: #fff;
+    }
+    .current-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #c8cee0;
+      font-variant-numeric: tabular-nums;
+    }
+    .current-headline {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .current-artist {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 19px;
+      text-transform: uppercase;
+      color: #ff7a3d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .current-sep {
+      color: #95a0bd;
+      font-size: 13px;
+    }
+    .current-venue {
+      font-size: 14px;
+      font-weight: 600;
+      color: #3ce0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .current-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #95a0bd;
+      display: flex;
+      gap: 8px;
+    }
+    .current-stub {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      background: rgba(134,235,142,0.14);
+      color: #86eb8e;
+      border: 1px dashed #86eb8e;
+      position: relative;
+    }
+    .current-stub::before,
+    .current-stub::after {
+      content: '';
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      background: #0c1530;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .current-stub::before { left: -4px; }
+    .current-stub::after { right: -4px; }
+
+    /* ═══════════════════════════════════════
+       OPTION A: BOLD PRESENCE
+       ═══════════════════════════════════════ */
+    .bold-row {
+      display: grid;
+      grid-template-columns: 52px auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .bold-row:hover {
+      background: rgba(255,138,77,0.06);
+    }
+    .bold-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(255,138,77,0.3);
+    }
+    .bold-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #3ce0e0;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .bold-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    }
+    .bold-artist {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 26px;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      color: #ff8a4d;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 0 20px rgba(255,138,77,0.25);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+    }
+    .bold-venue-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .bold-venue {
+      color: #3ce0e0;
+      font-weight: 600;
+    }
+    .bold-dot {
+      color: #4a5578;
+    }
+    .bold-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #95a0bd;
+    }
+    .bold-stub {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 16px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      background: rgba(134,235,142,0.18);
+      color: #86eb8e;
+      border: 1px dashed #86eb8e;
+      border-radius: 2px;
+      position: relative;
+      box-shadow: 0 0 12px rgba(134,235,142,0.15);
+    }
+    .bold-stub::before,
+    .bold-stub::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #0c1530;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .bold-stub::before { left: -5px; }
+    .bold-stub::after { right: -5px; }
+
+    /* ═══════════════════════════════════════
+       OPTION B: CLEAN HIERARCHY
+       ═══════════════════════════════════════ */
+    .clean-row {
+      display: grid;
+      grid-template-columns: 4px 44px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .clean-row:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    .clean-bar {
+      width: 4px;
+      height: 100%;
+      min-height: 48px;
+      background: linear-gradient(180deg, #ff8a4d 0%, #ff6a2d 100%);
+      border-radius: 0 2px 2px 0;
+    }
+    .clean-time-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .clean-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #fff;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .clean-time-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: #6b7394;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .clean-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow: hidden;
+    }
+    .clean-artist {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 22px;
+      text-transform: uppercase;
+      color: #ff8a4d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.15;
+    }
+    .clean-venue-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .clean-venue {
+      color: #a8b4d0;
+      font-weight: 500;
+      /* Note: NOT uppercase, sentence case */
+    }
+    .clean-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #6b7394;
+    }
+    .clean-stub {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      background: transparent;
+      color: #86eb8e;
+      border: 1px solid rgba(134,235,142,0.4);
+      border-radius: 4px;
+    }
+
+    /* ═══════════════════════════════════════
+       OPTION C: GIG POSTER ROW
+       ═══════════════════════════════════════ */
+    .poster-row {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(255,138,77,0.03) 0%, transparent 60%);
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .poster-row::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .poster-row:hover {
+      background: linear-gradient(135deg, rgba(255,138,77,0.08) 0%, rgba(60,224,224,0.04) 100%);
+    }
+    .poster-avatar {
+      position: relative;
+      z-index: 1;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 20px;
+      color: #fff;
+      box-shadow:
+        0 0 0 3px rgba(255,138,77,0.4),
+        0 0 0 6px rgba(255,138,77,0.15),
+        0 4px 12px rgba(0,0,0,0.3);
+    }
+    .poster-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    }
+    .poster-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .poster-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #3ce0e0;
+      background: rgba(60,224,224,0.12);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .poster-artist {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #ff8a4d;
+      text-shadow:
+        1px 1px 0 rgba(0,0,0,0.4),
+        0 0 30px rgba(255,138,77,0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+    }
+    .poster-venue-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .poster-at {
+      color: #6b7394;
+      font-style: italic;
+    }
+    .poster-venue {
+      color: #3ce0e0;
+      font-weight: 600;
+    }
+    .poster-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #6b7394;
+    }
+    .poster-stub {
+      position: relative;
+      z-index: 1;
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(134,235,142,0.2) 0%, rgba(134,235,142,0.1) 100%);
+      color: #86eb8e;
+      border: 2px dashed #86eb8e;
+      border-radius: 0;
+      transform: rotate(-2deg);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    }
+    .poster-stub::before,
+    .poster-stub::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #0c1530;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .poster-stub::before { left: -6px; }
+    .poster-stub::after { right: -6px; }
+
+    /* ═══════════════════════════════════════
+       OPTION D: HIGH CONTRAST MINIMAL
+       ═══════════════════════════════════════ */
+    .minimal-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .minimal-row:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .minimal-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #6b7394;
+      font-variant-numeric: tabular-nums;
+      min-width: 48px;
+    }
+    .minimal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .minimal-artist {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 22px;
+      text-transform: uppercase;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .minimal-venue {
+      font-size: 13px;
+      color: #6b7394;
+    }
+    .minimal-venue-name {
+      color: #95a0bd;
+    }
+    .minimal-stub {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #86eb8e;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .minimal-stub.paid {
+      color: #ff8a4d;
+    }
+    .minimal-accent {
+      width: 3px;
+      height: 24px;
+      background: #ff8a4d;
+      border-radius: 2px;
+      margin-left: -16px;
+      margin-right: 13px;
+    }
+
+    /* ═══════════════════════════════════════
+       COMPARISON NOTES
+       ═══════════════════════════════════════ */
+    .comparison-note {
+      background: rgba(60,224,224,0.08);
+      border-left: 3px solid #3ce0e0;
+      padding: 12px 16px;
+      margin: 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      color: #a8b4d0;
+    }
+    .comparison-note strong {
+      color: #3ce0e0;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    .tag-recommended {
+      background: rgba(134,235,142,0.15);
+      color: #86eb8e;
+    }
+    .tag-current {
+      background: rgba(255,138,77,0.15);
+      color: #ff8a4d;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gig List Readability Options</h1>
+  <p class="subtitle">Compare the current design with four improvement options</p>
+
+  <div class="options-grid">
+
+    <!-- CURRENT DESIGN -->
+    <div class="option">
+      <div class="option-header">
+        <h2>Current Design <span class="tag tag-current">Baseline</span></h2>
+        <p>Your existing gig list styling. Orange artist names at 19px, cyan venues, tight spacing.</p>
+      </div>
+      <div class="option-body">
+        <div class="date-header">
+          <span class="date-day">FRI 12</span>
+          <span class="date-month">Jun 2026</span>
+          <span class="date-relative">In 14 days</span>
+        </div>
+        <div class="current-row">
+          <div class="current-avatar" style="background: #ff7a3d;">TH</div>
+          <span class="current-time">18:00</span>
+          <div class="current-headline">
+            <span class="current-artist">Tom Hingley</span>
+            <span class="current-sep">·</span>
+            <span class="current-venue">The Acoustic Lounge</span>
+          </div>
+          <div class="current-meta">
+            <span>Stockport</span>
+            <span>·</span>
+            <span>3 mi</span>
+          </div>
+          <span class="current-stub">£ree</span>
+        </div>
+        <div class="current-row">
+          <div class="current-avatar" style="background: #3ce0e0;">RM</div>
+          <span class="current-time">21:00</span>
+          <div class="current-headline">
+            <span class="current-artist">Rumour Mill</span>
+            <span class="current-sep">·</span>
+            <span class="current-venue">The Acoustic Lounge</span>
+          </div>
+          <div class="current-meta">
+            <span>Stockport</span>
+            <span>·</span>
+            <span>3 mi</span>
+          </div>
+          <span class="current-stub">£ree</span>
+        </div>
+        <div class="current-row">
+          <div class="current-avatar" style="background: #a78bfa;">BT</div>
+          <span class="current-time">21:00</span>
+          <div class="current-headline">
+            <span class="current-artist">Blind Tiger</span>
+            <span class="current-sep">·</span>
+            <span class="current-venue">The Flying Coach</span>
+          </div>
+          <div class="current-meta">
+            <span>Stockport</span>
+            <span>·</span>
+            <span>4 mi</span>
+          </div>
+          <span class="current-stub">£ree</span>
+        </div>
+      </div>
+      <div class="comparison-note">
+        <strong>Issues:</strong> Artist names compete with venue names. Orange on dark navy has limited contrast. 19px font feels small for scanning.
+      </div>
+    </div>
+
+    <!-- OPTION A: BOLD PRESENCE -->
+    <div class="option">
+      <div class="option-header">
+        <h2>Option A: Bold Presence <span class="tag tag-recommended">Recommended</span></h2>
+        <p>Maximum readability. 26px artists with glow, two-line layout, larger avatars, more breathing room.</p>
+      </div>
+      <div class="option-body">
+        <div class="date-header">
+          <span class="date-day">FRI 12</span>
+          <span class="date-month">Jun 2026</span>
+          <span class="date-relative">In 14 days</span>
+        </div>
+        <div class="bold-row">
+          <div class="bold-avatar" style="background: #ff7a3d;">TH</div>
+          <span class="bold-time">18:00</span>
+          <div class="bold-content">
+            <span class="bold-artist">Tom Hingley</span>
+            <div class="bold-venue-line">
+              <span class="bold-venue">The Acoustic Lounge</span>
+              <span class="bold-dot">·</span>
+              <span class="bold-meta">Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="bold-stub">£ree</span>
+        </div>
+        <div class="bold-row">
+          <div class="bold-avatar" style="background: #3ce0e0;">RM</div>
+          <span class="bold-time">21:00</span>
+          <div class="bold-content">
+            <span class="bold-artist">Rumour Mill</span>
+            <div class="bold-venue-line">
+              <span class="bold-venue">The Acoustic Lounge</span>
+              <span class="bold-dot">·</span>
+              <span class="bold-meta">Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="bold-stub">£ree</span>
+        </div>
+        <div class="bold-row">
+          <div class="bold-avatar" style="background: #a78bfa;">BT</div>
+          <span class="bold-time">21:00</span>
+          <div class="bold-content">
+            <span class="bold-artist">Blind Tiger</span>
+            <div class="bold-venue-line">
+              <span class="bold-venue">The Flying Coach</span>
+              <span class="bold-dot">·</span>
+              <span class="bold-meta">Stockport · 4 mi</span>
+            </div>
+          </div>
+          <span class="bold-stub">£ree</span>
+        </div>
+      </div>
+      <div class="comparison-note">
+        <strong>Key changes:</strong> Artist 26px with text-shadow + glow. Venue on second line. Cyan time accent. Larger padding. Ring on avatar.
+      </div>
+    </div>
+
+    <!-- OPTION B: CLEAN HIERARCHY -->
+    <div class="option">
+      <div class="option-header">
+        <h2>Option B: Clean Hierarchy</h2>
+        <p>Structured tiers. Solid color bar, sentence-case venues, time as focal block, minimal decoration.</p>
+      </div>
+      <div class="option-body">
+        <div class="date-header">
+          <span class="date-day">FRI 12</span>
+          <span class="date-month">Jun 2026</span>
+          <span class="date-relative">In 14 days</span>
+        </div>
+        <div class="clean-row">
+          <div class="clean-bar"></div>
+          <div class="clean-time-block">
+            <span class="clean-time">18:00</span>
+            <span class="clean-time-label">Doors</span>
+          </div>
+          <div class="clean-content">
+            <span class="clean-artist">Tom Hingley</span>
+            <div class="clean-venue-line">
+              <span class="clean-venue">The Acoustic Lounge</span>
+              <span class="clean-meta">· Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="clean-stub">Free</span>
+        </div>
+        <div class="clean-row">
+          <div class="clean-bar"></div>
+          <div class="clean-time-block">
+            <span class="clean-time">21:00</span>
+            <span class="clean-time-label">Doors</span>
+          </div>
+          <div class="clean-content">
+            <span class="clean-artist">Rumour Mill</span>
+            <div class="clean-venue-line">
+              <span class="clean-venue">The Acoustic Lounge</span>
+              <span class="clean-meta">· Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="clean-stub">Free</span>
+        </div>
+        <div class="clean-row">
+          <div class="clean-bar"></div>
+          <div class="clean-time-block">
+            <span class="clean-time">21:00</span>
+            <span class="clean-time-label">Doors</span>
+          </div>
+          <div class="clean-content">
+            <span class="clean-artist">Blind Tiger</span>
+            <div class="clean-venue-line">
+              <span class="clean-venue">The Flying Coach</span>
+              <span class="clean-meta">· Stockport · 4 mi</span>
+            </div>
+          </div>
+          <span class="clean-stub">Free</span>
+        </div>
+      </div>
+      <div class="comparison-note">
+        <strong>Key changes:</strong> 4px left bar. Venue in gray sentence-case. Time as stacked block. Simpler stub. No avatars (optional).
+      </div>
+    </div>
+
+    <!-- OPTION C: GIG POSTER ROW -->
+    <div class="option">
+      <div class="option-header">
+        <h2>Option C: Gig Poster Row</h2>
+        <p>Each row is a mini-poster. Textured gradient, double-ring avatars, rotated ticket stub, vintage feel.</p>
+      </div>
+      <div class="option-body">
+        <div class="date-header">
+          <span class="date-day">FRI 12</span>
+          <span class="date-month">Jun 2026</span>
+          <span class="date-relative">In 14 days</span>
+        </div>
+        <div class="poster-row">
+          <div class="poster-avatar" style="background: #ff7a3d;">TH</div>
+          <div class="poster-content">
+            <div class="poster-top">
+              <span class="poster-time">18:00</span>
+            </div>
+            <span class="poster-artist">Tom Hingley</span>
+            <div class="poster-venue-line">
+              <span class="poster-at">at</span>
+              <span class="poster-venue">The Acoustic Lounge</span>
+              <span class="poster-meta">· Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="poster-stub">£ree</span>
+        </div>
+        <div class="poster-row">
+          <div class="poster-avatar" style="background: #3ce0e0;">RM</div>
+          <div class="poster-content">
+            <div class="poster-top">
+              <span class="poster-time">21:00</span>
+            </div>
+            <span class="poster-artist">Rumour Mill</span>
+            <div class="poster-venue-line">
+              <span class="poster-at">at</span>
+              <span class="poster-venue">The Acoustic Lounge</span>
+              <span class="poster-meta">· Stockport · 3 mi</span>
+            </div>
+          </div>
+          <span class="poster-stub">£ree</span>
+        </div>
+        <div class="poster-row">
+          <div class="poster-avatar" style="background: #a78bfa;">BT</div>
+          <div class="poster-content">
+            <div class="poster-top">
+              <span class="poster-time">21:00</span>
+            </div>
+            <span class="poster-artist">Blind Tiger</span>
+            <div class="poster-venue-line">
+              <span class="poster-at">at</span>
+              <span class="poster-venue">The Flying Coach</span>
+              <span class="poster-meta">· Stockport · 4 mi</span>
+            </div>
+          </div>
+          <span class="poster-stub">£ree</span>
+        </div>
+      </div>
+      <div class="comparison-note">
+        <strong>Key changes:</strong> Noise texture overlay. Diagonal gradient on hover. Double-ring avatar. Rotated ticket. "at" before venue.
+      </div>
+    </div>
+
+    <!-- OPTION D: HIGH CONTRAST MINIMAL -->
+    <div class="option">
+      <div class="option-header">
+        <h2>Option D: High Contrast Minimal</h2>
+        <p>Maximum legibility through restraint. White artist names, minimal decoration, stripped-down layout.</p>
+      </div>
+      <div class="option-body">
+        <div class="date-header">
+          <span class="date-day">FRI 12</span>
+          <span class="date-month">Jun 2026</span>
+          <span class="date-relative">In 14 days</span>
+        </div>
+        <div class="minimal-row">
+          <span class="minimal-accent"></span>
+          <span class="minimal-time">18:00</span>
+          <div class="minimal-content">
+            <span class="minimal-artist">Tom Hingley</span>
+            <span class="minimal-venue"><span class="minimal-venue-name">The Acoustic Lounge</span> · Stockport</span>
+          </div>
+          <span class="minimal-stub">Free</span>
+        </div>
+        <div class="minimal-row">
+          <span class="minimal-accent"></span>
+          <span class="minimal-time">21:00</span>
+          <div class="minimal-content">
+            <span class="minimal-artist">Rumour Mill</span>
+            <span class="minimal-venue"><span class="minimal-venue-name">The Acoustic Lounge</span> · Stockport</span>
+          </div>
+          <span class="minimal-stub">Free</span>
+        </div>
+        <div class="minimal-row">
+          <span class="minimal-accent"></span>
+          <span class="minimal-time">21:00</span>
+          <div class="minimal-content">
+            <span class="minimal-artist">Blind Tiger</span>
+            <span class="minimal-venue"><span class="minimal-venue-name">The Flying Coach</span> · Stockport</span>
+          </div>
+          <span class="minimal-stub">Free</span>
+        </div>
+      </div>
+      <div class="comparison-note">
+        <strong>Key changes:</strong> White artist text (max contrast). No avatars. No ticket decoration. Orange accent bar only. Gray venue.
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

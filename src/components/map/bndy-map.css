@@ -1,0 +1,67 @@
+/* bndy Map v2 — module styles (scoped to the map surface + its DOM hero marker) */
+
+.bndy-map-root { position: absolute; inset: 0; }
+.bndy-map-root .maplibregl-map { position: absolute; inset: 0; }
+.bndy-map-root canvas { outline: none; }
+
+.bndy-map-root .maplibregl-ctrl-attrib { background: rgba(5, 6, 11, 0.55) !important; font-size: 9px; }
+.bndy-map-root .maplibregl-ctrl-attrib a { color: #5b6376 !important; }
+.bndy-map-root .maplibregl-ctrl-group {
+  background: rgba(12, 16, 26, 0.66) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4) !important;
+}
+.bndy-map-root .maplibregl-ctrl-group button + button { border-top: 1px solid rgba(255, 255, 255, 0.1) !important; }
+.bndy-map-root .maplibregl-ctrl-icon { filter: invert(1) hue-rotate(180deg) brightness(1.6) opacity(0.8); }
+
+/* ---- DOM hero marker: the single focused/selected point ---- */
+.bndy-hero {
+  --clr: #ff7a1a; --hot: #ffe2c4;
+  width: 20px; height: 20px; border-radius: 50%; cursor: pointer; position: relative;
+  background: radial-gradient(circle at 50% 40%, var(--hot) 0%, var(--clr) 60%, color-mix(in srgb, var(--clr) 65%, #000) 100%);
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--clr) 30%, transparent),
+    0 0 14px color-mix(in srgb, var(--clr) 95%, transparent),
+    0 0 34px color-mix(in srgb, var(--clr) 60%, transparent),
+    0 0 60px color-mix(in srgb, var(--clr) 30%, transparent);
+}
+.bndy-hero::after {
+  content: ""; position: absolute; inset: -9px; border-radius: 50%;
+  border: 2px solid var(--clr); opacity: 0.9;
+  animation: bndy-sonar 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes bndy-sonar { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(2.1); opacity: 0; } }
+.bndy-hero.gig  { --clr: #ff7a1a; --hot: #ffe2c4; }
+.bndy-hero.live { --clr: #ff2e88; --hot: #ffd0e4; }
+.bndy-hero.idle { --clr: #19d3f5; --hot: #cdf4ff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bndy-hero::after { animation: none; }
+}
+
+
+/* ---- date bar: quick ranges + pick-a-day (next 7) ---- */
+.bndy-datebar {
+  position: absolute; top: 56px; left: 0; right: 0; z-index: 30;
+  display: flex; gap: 8px; padding: 0 12px; overflow-x: auto;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.bndy-datebar::-webkit-scrollbar { display: none; }
+.bndy-chip {
+  flex-shrink: 0; border: 1px solid rgba(255,255,255,.1); background: rgba(12,16,26,.66);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #8b93a9;
+  font: 800 12.5px Inter, system-ui, sans-serif; padding: 8px 14px; border-radius: 12px;
+  cursor: pointer; white-space: nowrap; display: flex; flex-direction: column; align-items: center;
+  gap: 1px; line-height: 1.1; box-shadow: 0 4px 16px rgba(0,0,0,.28);
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+}
+.bndy-chip small { font-size: 9px; font-weight: 700; color: #5b6376; letter-spacing: .3px; }
+.bndy-chip.on {
+  color: #fff; border-color: color-mix(in srgb, #ff7a1a 60%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, #ff7a1a 26%, rgba(12,16,26,.66)), rgba(12,16,26,.66));
+  box-shadow: 0 4px 20px color-mix(in srgb, #ff7a1a 30%, transparent), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.bndy-chip.on small { color: #ffd9b0; }
+.bndy-datebar-sep { flex-shrink: 0; width: 1px; align-self: stretch; margin: 6px 2px; background: rgba(255,255,255,.12); }
