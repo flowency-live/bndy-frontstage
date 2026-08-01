@@ -2,8 +2,8 @@ import { X } from 'lucide-react';
 import { GENRES, type Genre } from '@/lib/constants/genres';
 
 interface GenreSelectorProps {
-  selectedGenres: string[];
-  onChange: (genres: string[]) => void;
+  selectedGenres: Genre[];
+  onChange: (genres: Genre[]) => void;
   className?: string;
 }
 
@@ -15,7 +15,7 @@ export function GenreSelector({ selectedGenres, onChange, className = '' }: Genr
     onChange(newGenres);
   };
 
-  const removeGenre = (genre: string) => {
+  const removeGenre = (genre: Genre) => {
     onChange(selectedGenres.filter(g => g !== genre));
   };
 

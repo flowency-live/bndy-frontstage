@@ -1,5 +1,5 @@
 // Shared genre constants for BNDY platform
-// Simplified flat list (25 genres) - Updated 2025-11-18
+// Simplified flat list (36 genres) - Updated 2026-08-01
 // Used across backstage and frontstage applications
 // DO NOT duplicate this list - import from here
 
@@ -10,6 +10,7 @@ export const GENRES = [
   'Grunge',
   'Metal',
   'Punk',
+  'Hardcore',
   'Alternative',
   'New Wave',
 
@@ -27,9 +28,11 @@ export const GENRES = [
 
   // Folk & Soul
   'Folk',
+  'Irish',
   'Soul',
   'Funk',
   'Motown',
+  'Disco',
 
   // Electronic & Dance
   'Electronic',
@@ -39,7 +42,16 @@ export const GENRES = [
   'Jazz',
   'Classical',
   'Reggae',
+  'Ska',
   'Latin',
+
+  // Era tags
+  '50s',
+  '60s',
+  '70s',
+  '80s',
+  '90s',
+  '00s',
 
   // Catchall
   'Other'

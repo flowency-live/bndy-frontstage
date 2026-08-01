@@ -1,4 +1,5 @@
 // src/lib/types.ts - Updated with new fields
+import type { Genre } from './constants/genres';
 
 // =========================================
 // CURRENT ACTIVE TYPES - USED IN APP
@@ -50,7 +51,7 @@ export interface Artist {
   artist_type?: 'band' | 'solo' | 'duo' | 'trio' | 'group' | 'dj' | 'collective'; // No "Band" entity - use artist_type field
   artistType?: string; // NEW: Lambda now returns both artist_type and artistType for compatibility
   socialMediaUrls?: any[];  // Backend uses lowercase 'Urls' - legacy individual URL fields also exist
-  genres?: string[];  // Flat list of genres (simplified 2025-11-07)
+  genres?: Genre[];  // Flat list of genres (typed 2026-07-31)
   acoustic?: boolean;  // NEW: Indicates acoustic performance capability
   actType?: ('originals' | 'covers' | 'tribute')[]; // NEW: Type of act (multiselect)
   createdAt?: string;
